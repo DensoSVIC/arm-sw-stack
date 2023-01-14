@@ -1,0 +1,7 @@
+/*artifacts*
+/*build*
+/.envrc
+/.vscode
+/venv
+__pycache__
+*.pyc
