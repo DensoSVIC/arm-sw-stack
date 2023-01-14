@@ -1,0 +1,70 @@
+# Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+---
+version: "2"
+plugins:
+  duplication:
+  structure:
+  pep8:
+    enabled: true
+  sonar-python:
+    enabled: true
+  shellcheck:
+    enabled: true
+    file_types:
+      - "shell script"
+      - "bats script"
+      - "bash script"
+  fixme:
+    enabled: true
+    exclude_patterns:
+      - "/Dangerfile"
+  spellcheck:
+    enabled: true
+    exclude_patterns:
+      - GITIGNORE_CONTENTS
+      - "*.git"
+      - ".gitignore"
+      - ".rubocop.yml"
+      - ".eslintrc.yml"
+      - "coffeelint.json"
+      - ".csslintrc"
+      - ".eslintignore"
+      - "/.codeclimate.yml"
+      - "/.gitlab-ci.yml"
+      - "/.gitlab/"
+      - "/Dangerfile"
+      - "/license.rst"
+  yamllint:
+    enabled: true
+    exclude_patterns:
+      - ".rubocop.yml"
+      - ".eslintrc.yml"
+  headercheck:
+    enabled: true
+    original_works_licenses:
+      - "MIT"
+      - "Apache-2.0"
+      - "GPL-2.0-only"
+    external_works_licenses:
+      - "MIT"
+    exclude_patterns:
+      - GITIGNORE_CONTENTS
+      - "*.git"
+      - "*.gitignore"
+      - ".gitlab"
+      - ".rubocop.yml"
+      - ".eslintignore"
+      - ".eslintrc.yml"
+      - ".csslintrc"
+      - "coffeelint.json"
+      - "*.png"
+      - "*.svg"
+      - "*.cfg"
+      - "*.css"
+      - "*.log"
+      - "*.scc"
+      - "*.patch"
+      - "*__init__.py"
+      - "/license.rst"

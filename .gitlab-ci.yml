@@ -37,6 +37,7 @@ include:
     file:
       - gitlab-ci/common_gitlab-ci.yml
       - gitlab-ci/danger-review_gitlab-ci.yml
+      - gitlab-ci/static-analysis_gitlab-ci.yml
   - local: '.gitlab/ci/rules.yml'
 
 dummy-job:
