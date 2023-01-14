@@ -18,6 +18,7 @@
 # Changes patterns
 .ci-patterns: &ci-patterns
   - ".gitlab-ci.yml"
+  - ".gitlab/ci/docs-build.yml"
   - ".gitlab/ci/rules.yml"
   - ".gitlab/ci/trigger-image-builds.yml"
 

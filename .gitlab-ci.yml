@@ -41,6 +41,7 @@ include:
       - gitlab-ci/static-analysis_gitlab-ci.yml
   - local: '.gitlab/ci/rules.yml'
   - local: '.gitlab/ci/docker-image-builds.yml'
+  - local: '.gitlab/ci/docs-build.yml'
 
 dummy-job:
   stage: Setup

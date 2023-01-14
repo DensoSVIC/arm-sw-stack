@@ -6,8 +6,12 @@ version: "2"
 plugins:
   duplication:
   structure:
+    exclude_patterns:
+      - "/documentation/variables.py"
   pep8:
     enabled: true
+    exclude_patterns:
+      - "/documentation/variables.py"
   sonar-python:
     enabled: true
   shellcheck:
@@ -36,6 +40,12 @@ plugins:
       - "/.gitlab/"
       - "/Dangerfile"
       - "/license.rst"
+      - "/documentation/requirements.txt"
+      - "/documentation/license_link.rst"
+      - "/documentation/*.py"
+      - "documentation/_static/"
+      - "/config/"
+    dict_path: "config/qa-checks/dictionary.txt"
   yamllint:
     enabled: true
     exclude_patterns:
@@ -68,3 +78,4 @@ plugins:
       - "*.patch"
       - "*__init__.py"
       - "/license.rst"
+      - "/config/qa-checks/dictionary.txt"

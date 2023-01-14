@@ -1,0 +1,23 @@
+# Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+---
+Docs-Build:
+  extends: .resource-request
+  stage: Build
+  image: ${MIRROR_DOCKER}/python:3.8
+  before_script:
+    - python3 -m pip install -U -r documentation/requirements.txt
+  script:
+    - sphinx-build -b html -a -W documentation public
+  artifacts:
+    expose_as: 'Built Documentation'
+    name: Documentation
+    paths:
+      - public
+    expire_in: 1 day
+  rules:
+    - changes:
+        - .gitlab/ci/docs-build.yml
+        - documentation/**/*
+        - documentation/*
