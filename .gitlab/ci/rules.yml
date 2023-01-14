@@ -1,0 +1,21 @@
+# Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+---
+# Conditions
+.if-merge-request-or-push: &if-merge-request-or-push
+  if: '$CI_MERGE_REQUEST_IID || $CI_PIPELINE_SOURCE == "push"'
+
+.if-scheduled-or-manual: &if-scheduled-or-manual
+  if: '$CI_PIPELINE_SOURCE == "schedule" || $CI_PIPELINE_SOURCE == "web"'
+
+.if-nightly: &if-nightly
+  if: '$FREQUENCY == "nightly"'
+
+.if-weekly: &if-weekly
+  if: '$FREQUENCY == "weekly"'
+
+# Changes patterns
+.ci-patterns: &ci-patterns
+  - ".gitlab-ci.yml"
+  - ".gitlab/ci/rules.yml"

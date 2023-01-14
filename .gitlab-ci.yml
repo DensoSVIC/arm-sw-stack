@@ -1,0 +1,46 @@
+# Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+---
+variables:
+  BUILD_HOST_ARCH:
+    value: x86_64
+    description: What build host architecture should be used
+                 (x86_64, arm64)
+  BUILD_IMAGE:
+    value: none
+    description: Comma seperated list of images to build
+                 (none)
+  CI_DEBUG_TRACE:
+    value: 'false'
+    description: Enable debug information output to the log
+                 (true, false)
+  DOCKER_IMAGE_TAG:
+    value: $CI_COMMIT_REF_SLUG
+    description: Name tag used by the Docker image
+  FORCE_TESTS:
+    value: none
+    description: Comma seperated list of tests that must be run
+                 (none)
+  FREQUENCY:
+    value: adhoc
+    description: How frequently is this build run
+                 (adhoc, nightly, weekly)
+  RELEASE_BRANCH:
+    value: main
+    description: Target release branch
+
+# Include jobs
+include:
+  - project: $PIPELINE_TEMPLATE_PROJECT
+    ref: v1.1.1
+    file:
+      - gitlab-ci/common_gitlab-ci.yml
+      - gitlab-ci/danger-review_gitlab-ci.yml
+  - local: '.gitlab/ci/rules.yml'
+
+dummy-job:
+  stage: Setup
+  extends: .resource-request
+  script:
+    - echo "Dummy job"
