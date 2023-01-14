@@ -1,0 +1,118 @@
+# Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+---
+
+# Modify the yocto/kas base build with specific settings
+.yocto_base:
+  variables:
+    CACHE_DIR: /sstate-cache
+    SSTATE_DIR: $CACHE_DIR/$PROJECT_VERSION/yocto-sstate
+    DL_DIR: $CACHE_DIR/$PROJECT_VERSION/yocto-downloads
+    TOOLCHAIN_DIR: $CACHE_DIR/$PROJECT_VERSION/toolchains
+
+.kas_build:
+  image: ${MIRROR_GHCR}/siemens/kas/kas:3.2
+  variables:
+    KAS_REPO_REF_DIR: $CACHE_DIR/$PROJECT_VERSION/repos
+    # These are needed as the Kas docker image doesn't respect the container
+    # entrypoint by default
+    FF_KUBERNETES_HONOR_ENTRYPOINT: 1
+    FF_USE_LEGACY_KUBERNETES_EXECUTION_STRATEGY: 0
+    USER_ID: 999
+    GROUP_ID: 999
+
+# Extend the kas base build to enable to use of repos that are not yet public
+.kas_build_kronos:
+  extends:
+    - .kas_build
+  variables:
+    IMAGE_DIR: $CACHE_DIR/$PROJECT_VERSION/images
+  before_script:
+    # Set the url and refspec for the specific repos
+    - |
+      cat << EOF >> yocto/kas/ci.yml
+      repos:
+        meta-arm:
+          url: $REPOS_META_ARM_URL
+          refspec: $REPOS_META_ARM_REFSPEC
+      EOF
+    - mkdir -p ~/.ssh
+    - eval "$(ssh-agent -s)"
+    - if [ -n "${SSH_PRIVATE_GITLAB+x}" ]; then
+        echo "${SSH_PRIVATE_GITLAB}" | tr -d '\r' | ssh-add - > /dev/null;
+      fi
+    - ssh-keyscan -t rsa ${CI_SERVER_HOST}  >> ~/.ssh/known_hosts
+    # Ensure git is usable without prompts
+    - git config --global url.ssh://git@${CI_SERVER_HOST}.insteadOf
+        https://${CI_SERVER_HOST}
+    - git config --global user.email "you@example.com"
+    - git config --global user.name "Your Name"
+    # Export parent pipeline global variables
+    - echo PARENT_PIPELINE_ID = $PARENT_PIPELINE_ID
+    - !reference [".kas_build", before_script]
+    # Setup workspace
+    - echo "Persistent cache volume could be empty, create directories required"
+    - mkdir --verbose --parents
+        $IMAGE_DIR
+
+# Delete stored images
+Delete-Images:
+  extends: .kas_build_kronos
+  stage: Setup
+  needs: []
+  allow_failure: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "parent_pipeline" && $CI_COMMIT_TAG'
+    - if: '$CI_PIPELINE_SOURCE == "parent_pipeline"'
+      when: manual
+  script:
+    - rm -rf $IMAGE_DIR/*
+
+# Report on disk usage including the image directory
+Disk-Usage:
+  extends: .kas_build_kronos
+  needs: []
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "parent_pipeline"'
+      when: manual
+  script:
+    - du -h -s $DL_DIR $SSTATE_DIR $TOOLCHAIN_DIR $KAS_REPO_REF_DIR $IMAGE_DIR
+
+# Suppress the use of the yocto/kas helper jobs as they
+# should only be run in the child pipeline
+Prune-Cache:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "parent_pipeline" && $FREQUENCY == "nightly"'
+    - if: '$CI_PIPELINE_SOURCE == "parent_pipeline" && $FREQUENCY == "adhoc"'
+      when: manual
+  needs: []
+
+Update-Repos:
+  variables:
+    UPDATE_REPO_SCRIPT: "./.gitlab/scripts/update-repos.py"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "parent_pipeline"'
+
+Delete-DL-Dir:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "parent_pipeline" && $CI_COMMIT_TAG'
+    - if: '$CI_PIPELINE_SOURCE == "parent_pipeline"'
+      when: manual
+
+Delete-SState:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "parent_pipeline" && $CI_COMMIT_TAG'
+    - if: '$CI_PIPELINE_SOURCE == "parent_pipeline"'
+      when: manual
+
+Delete-Toolchains:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "parent_pipeline" && $CI_COMMIT_TAG'
+    - if: '$CI_PIPELINE_SOURCE == "parent_pipeline"'
+      when: manual
+
+Delete-Repo-Dir:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "parent_pipeline"'
+      when: manual

@@ -1,0 +1,30 @@
+# Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+---
+
+# Validate layers are Yocto Project Compatible
+check-layers:
+  extends: .kas_build_kronos
+  script:
+    - |
+      echo "Validate layer $LAYER is Yocto Project compatible"
+      kas shell --update --force-checkout \
+        yocto/kas/baremetal.yml:yocto/kas/ci.yml \
+        --command \
+          "yocto-check-layer-wrapper \
+            $CI_PROJECT_DIR/yocto/$LAYER \
+            --dependency \
+              $KAS_WORK_DIR/layers/meta-* \
+              $KAS_WORK_DIR/layers/poky/meta \
+              $KAS_WORK_DIR/layers/poky/meta-poky \
+              $KAS_WORK_DIR/layers/meta-openembedded/meta-oe \
+              $KAS_WORK_DIR/layers/meta-openembedded/meta-python \
+            --no-auto-dependency"
+  parallel:
+    matrix:
+      - MACHINE: fvp-rd-kronos
+        LAYER: [meta-kronos]
+
+  rules:
+    - !reference [".layer-check:rules", rules]

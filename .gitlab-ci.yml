@@ -30,6 +30,7 @@ variables:
     value: main
     description: Target release branch
 
+
 # Include jobs
 include:
   - project: $PIPELINE_TEMPLATE_PROJECT
@@ -37,10 +38,13 @@ include:
     file:
       - gitlab-ci/common_gitlab-ci.yml
       - gitlab-ci/docker-image-base_gitlab-ci.yml
+      - gitlab-ci/child-pipeline_gitlab-ci.yml
       - gitlab-ci/danger-review_gitlab-ci.yml
       - gitlab-ci/static-analysis_gitlab-ci.yml
   - local: '.gitlab/ci/rules.yml'
   - local: '.gitlab/ci/docker-image-builds.yml'
+  - local: '.gitlab/ci/kronos-image-builds.yml'
+  - local: '.gitlab/ci/trigger-image-builds.yml'
   - local: '.gitlab/ci/docs-build.yml'
 
 dummy-job:

@@ -1,0 +1,15 @@
+# Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+---
+.generator-kronos:
+  extends: .generator
+  variables:
+    MACHINE: fvp-rd-kronos
+    RUN_TESTS: 'none'
+
+
+baremetal:
+  extends: .generator-kronos
+  rules:
+    - !reference [".build-image:rules:baremetal", rules]

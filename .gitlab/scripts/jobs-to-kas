@@ -1,0 +1,21 @@
+#! /bin/bash
+# Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+
+# Read a GitLab CI job name on $1 and transform it to a
+# list of Kas yaml files
+set -e -u
+
+# Read Job namne from $1 and split on /
+IFS=/ read -r -a PARTS<<<"${1}"
+
+# Prefix each part with yocto/kas/
+PARTS=("${PARTS[@]/#/yocto/kas/}")
+
+# Suffix each part with .yml
+PARTS=("${PARTS[@]/%/.yml}")
+
+# Print colon-separated with the ci only options appended
+IFS=":"
+echo "${PARTS[*]}:yocto/kas/ci.yml"
