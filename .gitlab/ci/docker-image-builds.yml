@@ -1,0 +1,32 @@
+# Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+---
+Build-Utility-Docker-Arch-Image:
+  extends: .build-docker-image
+  parallel: &Build-Matrix
+    matrix:
+      - BUILD_ARCH: x86_64
+        ARCH_SUFFIX: -amd64
+      - BUILD_ARCH: arm64
+        ARCH_SUFFIX: -arm64v8
+  tags: &Build-Tags
+    - ${BUILD_ARCH}
+  variables: &Build-Utility-Docker-Arch-Image_variables
+    DOCKER_IMAGE_NAME: utility-image
+    BUILD_CONTEXT: $CI_PROJECT_DIR/.gitlab/Dockerfiles/$DOCKER_IMAGE_NAME
+  rules: &Build-Utility-Docker-Arch-Image_rules
+    - changes:
+        - .gitlab-ci.yml
+        - .gitlab/ci/docker-image-builds.yml
+        - .gitlab/Dockerfiles/utility-image/**/*
+
+Build-Utility-Docker-Image:
+  extends:
+    - .build-docker-image
+    - .build-docker-multiarch-image
+  variables: *Build-Utility-Docker-Arch-Image_variables
+  rules: *Build-Utility-Docker-Arch-Image_rules
+  needs:
+    - job: Build-Utility-Docker-Arch-Image
+      artifacts: false

@@ -36,9 +36,11 @@ include:
     ref: v1.1.1
     file:
       - gitlab-ci/common_gitlab-ci.yml
+      - gitlab-ci/docker-image-base_gitlab-ci.yml
       - gitlab-ci/danger-review_gitlab-ci.yml
       - gitlab-ci/static-analysis_gitlab-ci.yml
   - local: '.gitlab/ci/rules.yml'
+  - local: '.gitlab/ci/docker-image-builds.yml'
 
 dummy-job:
   stage: Setup

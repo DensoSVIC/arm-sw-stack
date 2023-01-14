@@ -19,3 +19,8 @@
 .ci-patterns: &ci-patterns
   - ".gitlab-ci.yml"
   - ".gitlab/ci/rules.yml"
+  - ".gitlab/ci/trigger-image-builds.yml"
+
+.ci-docker-images-patterns: &ci-docker-images-patterns
+  - ".gitlab/Dockerfiles/**/*"
+  - ".gitlab/ci/docker-image-builds.yml"
