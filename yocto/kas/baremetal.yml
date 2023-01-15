@@ -1,0 +1,17 @@
+#
+# Copyright (c) 2023, Arm Limited.
+#
+# SPDX-License-Identifier: MIT
+
+---
+header:
+  version: 13
+  includes:
+    - yocto/kas/include/base.yml
+
+local_conf_header:
+  baremetal: |
+    TMPDIR = "${TOPDIR}/tmp_baremetal"
+
+target:
+  - unset
