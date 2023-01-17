@@ -37,6 +37,7 @@ extensions = [
     'sphinx_rtd_theme',
     'sphinx_copybutton',
     'sphinx_substitution_extensions',
+    'repo_links',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -99,3 +100,8 @@ copybutton_line_continuation_character = "\\"
 
 import variables    # noqa: E402
 rst_prolog = variables.generate_rst_prolog()
+
+# URL to use for references to repository paths
+repo_url_pattern = os.environ.get(
+    'REPO_URL_PATTERN',
+    'https://gitlab.arm.com/automotive-and-industrial/kronos/-/tree/{ref}/{path}')  # noqa
