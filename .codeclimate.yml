@@ -17,9 +17,9 @@ plugins:
   shellcheck:
     enabled: true
     file_types:
-      - "shell script"
-      - "bats script"
       - "bash script"
+      - "bats script"
+      - "shell script"
   fixme:
     enabled: true
     exclude_patterns:
@@ -29,53 +29,54 @@ plugins:
     exclude_patterns:
       - GITIGNORE_CONTENTS
       - "*.git"
-      - ".gitignore"
-      - ".rubocop.yml"
-      - ".eslintrc.yml"
-      - "coffeelint.json"
+      - "*.json"
+      - "*.yaml"
+      - "*.yml"
       - ".csslintrc"
       - ".eslintignore"
-      - "/.codeclimate.yml"
-      - "/.gitlab-ci.yml"
-      - "/.gitlab/"
-      - "/Dangerfile"
-      - "/license.rst"
-      - "/documentation/requirements.txt"
-      - "/documentation/license_link.rst"
+      - ".gitignore"
+      - ".gitlab/"
       - "/documentation/*.py"
-      - "documentation/_static/"
-      - "/config/"
+      - "/documentation/_static/"
+      - "/documentation/license_link.rst"
+      - "/documentation/requirements.txt"
+      - "/layers/"
+      - "Dangerfile"
+      - "__pycache__"
+      - "config/"
+      - "license.rst"
+      - "yocto/"
     dict_path: "config/qa-checks/dictionary.txt"
   yamllint:
     enabled: true
     exclude_patterns:
-      - ".rubocop.yml"
       - ".eslintrc.yml"
+      - ".rubocop.yml"
   headercheck:
     enabled: true
     original_works_licenses:
-      - "MIT"
       - "Apache-2.0"
       - "GPL-2.0-only"
+      - "MIT"
     external_works_licenses:
       - "MIT"
     exclude_patterns:
       - GITIGNORE_CONTENTS
-      - "*.git"
-      - "*.gitignore"
-      - ".gitlab"
-      - ".rubocop.yml"
-      - ".eslintignore"
-      - ".eslintrc.yml"
-      - ".csslintrc"
-      - "coffeelint.json"
-      - "*.png"
-      - "*.svg"
       - "*.cfg"
       - "*.css"
+      - "*.git"
+      - "*.gitignore"
       - "*.log"
-      - "*.scc"
       - "*.patch"
+      - "*.png"
+      - "*.scc"
+      - "*.svg"
       - "*__init__.py"
-      - "/license.rst"
+      - ".csslintrc"
+      - ".eslintignore"
+      - ".eslintrc.yml"
+      - ".gitlab"
+      - ".rubocop.yml"
       - "/config/qa-checks/dictionary.txt"
+      - "/license.rst"
+      - "coffeelint.json"
