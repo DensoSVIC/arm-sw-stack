@@ -30,7 +30,6 @@ variables:
     value: main
     description: Target release branch
 
-
 # Include jobs
 include:
   - project: $PIPELINE_TEMPLATE_PROJECT
@@ -46,9 +45,3 @@ include:
   - local: '.gitlab/ci/kronos-image-builds.yml'
   - local: '.gitlab/ci/trigger-image-builds.yml'
   - local: '.gitlab/ci/docs-build.yml'
-
-dummy-job:
-  stage: Setup
-  extends: .resource-request
-  script:
-    - echo "Dummy job"
