@@ -10,5 +10,22 @@ Image-Build-{{ CI_JOB_NAME_SLUG }}:
   extends: .kas_build_kronos
   variables:
     KAS_CONFIGS: "{{ CI_JOB_NAME }}"
+  after_script:
+    - python3 .gitlab/scripts/yoctoqa-to-junit.py
+        "${KAS_WORK_DIR}/build/tmp_{{ CI_JOB_NAME }}/log/cooker/{{ MACHINE }}/console-latest.log"
+        "TEST-autotest-{{ CI_JOB_NAME }}.xml"
+  # Store the build artifacts from the job.
+  artifacts:
+    name: "logs"
+    paths:
+      - $KAS_WORK_DIR/build/bitbake-cookerdaemon.log
+      - $KAS_WORK_DIR/build/tmp*/log/**/*
+      - $KAS_WORK_DIR/build/tmp*/work/**/pseudo.log
+      - $KAS_WORK_DIR/build/tmp*/work/**/temp/log.*
+      - $KAS_WORK_DIR/build/tmp*/work/**/testimage/*
+    reports:
+      junit:
+        - TEST-autotest-{{ CI_JOB_NAME }}.xml
+    expire_in: '3 days'
   # Shouldn't interrupt a build or the DL_DIR can become corrupt
   interruptible: false

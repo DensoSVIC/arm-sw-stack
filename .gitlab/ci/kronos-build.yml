@@ -15,7 +15,7 @@
   image: ${MIRROR_GHCR}/siemens/kas/kas:3.2
   variables:
     KAS_REPO_REF_DIR: $CACHE_DIR/$PROJECT_VERSION/repos
-    # These are needed as the Kas docker image doesn't respect the container
+    # These are needed as GitLab doesn't respect the container
     # entrypoint by default
     FF_KUBERNETES_HONOR_ENTRYPOINT: 1
     FF_USE_LEGACY_KUBERNETES_EXECUTION_STRATEGY: 0
@@ -48,6 +48,8 @@
         https://${CI_SERVER_HOST}
     - git config --global user.email "you@example.com"
     - git config --global user.name "Your Name"
+    # Install the module required by yoctoqa-to-junit.py
+    - pip3 install junit_xml
     # Export parent pipeline global variables
     - echo PARENT_PIPELINE_ID = $PARENT_PIPELINE_ID
     - !reference [".kas_build", before_script]
