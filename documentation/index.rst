@@ -14,4 +14,5 @@ Contents
 .. toctree::
    :maxdepth: 3
 
+   design/index
    license_link

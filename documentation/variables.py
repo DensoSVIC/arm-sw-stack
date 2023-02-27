@@ -25,6 +25,15 @@
 # Note the "_" which renders the substitution as a hyperlink is only possible
 # because the variable is defined as a link, to be resolved as a Sphinx target.
 
+yocto_version = "langdale"
+yocto_doc_version = yocto_version + "/"
+
+general_links = {
+  "link:testimage": f"https://docs.yoctoproject.org/{yocto_doc_version}ref-manual/classes.html#testimage-bbclass",
+  "link:Writing New Tests": f"https://docs.yoctoproject.org/{yocto_doc_version}dev-manual/common-tasks.html#writing-new-tests",
+  "link:testimage.bbclass": f"https://docs.yoctoproject.org/{yocto_doc_version}ref-manual/classes.html#testimage-bbclass",
+  "link:OEQA FVP": f"https://git.yoctoproject.org/meta-arm/tree/documentation/oeqa-fvp.md?h={yocto_version}",
+}
 
 other_definitions = {
   "Arm": "Arm\ :sup:`®`",
@@ -48,7 +57,8 @@ def generate_rst_prolog():
 
     rst_prolog = ""
 
-    for variables_group in [other_definitions]:
+    for variables_group in [general_links,
+                            other_definitions]:
 
         for key, value in variables_group.items():
             if key.startswith("link:"):
