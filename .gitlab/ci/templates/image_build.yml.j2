@@ -16,8 +16,11 @@ Image-Build-{{ CI_JOB_NAME_SLUG }}:
         "TEST-autotest-{{ CI_JOB_NAME }}.xml"
   # Store the build artifacts from the job.
   artifacts:
-    name: "logs"
+    name: "$CI_BUILD_REF_SLUG-$CI_JOB_NAME_SLUG-$CI_JOB_ID"
     paths:
+      # Configs
+      - $KAS_WORK_DIR/build/conf/*
+      # Logs
       - $KAS_WORK_DIR/build/bitbake-cookerdaemon.log
       - $KAS_WORK_DIR/build/tmp*/log/**/*
       - $KAS_WORK_DIR/build/tmp*/work/**/pseudo.log
