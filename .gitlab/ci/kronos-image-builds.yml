@@ -12,4 +12,4 @@
 baremetal:
   extends: .generator-kronos
   rules:
-    - !reference [".build-image:rules:baremetal", rules]
+    - !reference [".build-image:rules", rules]

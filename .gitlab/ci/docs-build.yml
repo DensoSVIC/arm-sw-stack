@@ -18,6 +18,7 @@ Docs-Build:
     expire_in: 1 day
   rules:
     - changes:
+        - .gitlab-ci.yml
         - .gitlab/ci/docs-build.yml
         - documentation/**/*
         - documentation/*

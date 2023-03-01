@@ -18,41 +18,33 @@
 # Changes patterns
 .ci-patterns: &ci-patterns
   - ".gitlab-ci.yml"
-  - ".gitlab/ci/docs-build.yml"
+  - ".gitlab/Dockerfiles/**/*"
+  - ".gitlab/ci/docker-image-builds.yml"
   - ".gitlab/ci/kronos-build.yml"
+  - ".gitlab/ci/kronos-image-builds.yml"
   - ".gitlab/ci/rules.yml"
+  - ".gitlab/ci/templates/image_build.yml.j2"
   - ".gitlab/ci/trigger-image-builds.yml"
   - ".gitlab/ci/yocto-qa.yml"
   - ".gitlab/scripts/**/*"
 
-.ci-docker-images-patterns: &ci-docker-images-patterns
-  - ".gitlab/Dockerfiles/**/*"
-  - ".gitlab/ci/docker-image-builds.yml"
+.yocto-patterns: &yocto-patterns
+  - "yocto/**/*"
 
-.ci-kronos-patterns: &ci-kronos-patterns
-  - ".gitlab/ci/kronos-image-builds.yml"
-
-.kas-common: &kas-common
-  - "yocto/kas/include/base.yml"
-
-.kas-baremetal: &kas-baremetal
-  - "yocto/kas/baremetal.yml"
-
-# Build rules
-.build-image:rules:baremetal:
+# Build image rules
+.build-image:rules:
   rules:
     - <<: *if-scheduled-or-manual
     - <<: *if-merge-request-or-push
       changes: *ci-patterns
     - <<: *if-merge-request-or-push
-      changes: *ci-kronos-patterns
-    - <<: *if-merge-request-or-push
-      changes: *kas-common
-    - <<: *if-merge-request-or-push
-      changes: *ci-docker-images-patterns
-    - <<: *if-merge-request-or-push
-      changes: *kas-baremetal
+      changes: *yocto-patterns
 
+# Layer check rules
 .layer-check:rules:
   rules:
-    - when: on_success
+    - <<: *if-scheduled-or-manual
+    - <<: *if-merge-request-or-push
+      changes: *ci-patterns
+    - <<: *if-merge-request-or-push
+      changes: *yocto-patterns
