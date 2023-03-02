@@ -9,6 +9,9 @@
 .if-scheduled-or-manual: &if-scheduled-or-manual
   if: '$CI_PIPELINE_SOURCE == "schedule" || $CI_PIPELINE_SOURCE == "web"'
 
+.if-api-or-pipeline: &if-api-or-pipeline
+  if: '$CI_PIPELINE_SOURCE == "api" || $CI_PIPELINE_SOURCE == "pipeline"'
+
 .if-nightly: &if-nightly
   if: '$FREQUENCY == "nightly"'
 
@@ -35,6 +38,7 @@
 .build-image:rules:
   rules:
     - <<: *if-scheduled-or-manual
+    - <<: *if-api-or-pipeline
     - <<: *if-merge-request-or-push
       changes: *ci-patterns
     - <<: *if-merge-request-or-push
@@ -44,6 +48,7 @@
 .layer-check:rules:
   rules:
     - <<: *if-scheduled-or-manual
+    - <<: *if-api-or-pipeline
     - <<: *if-merge-request-or-push
       changes: *ci-patterns
     - <<: *if-merge-request-or-push
