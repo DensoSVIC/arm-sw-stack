@@ -27,15 +27,26 @@
 
 yocto_version = "langdale"
 yocto_doc_version = yocto_version + "/"
+kronos_version = "main"
+kas_version = "3.2"
 
 general_links = {
-  "link:testimage": f"https://docs.yoctoproject.org/{yocto_doc_version}ref-manual/classes.html#testimage-bbclass",
+  "link:kas build tool": f"https://kas.readthedocs.io/en/{kas_version}/userguide.html",
+  "link:how to install the essential packages": f"https://docs.yoctoproject.org/{yocto_doc_version}singleindex.html#required-packages-for-the-build-host",
+  "link:kas Dependencies & installation": f"https://kas.readthedocs.io/en/{kas_version}/userguide.html#dependencies-installation",
+  "link:EULA": f"https://developer.arm.com/downloads/-/arm-ecosystem-fvps/eula",
   "link:Writing New Tests": f"https://docs.yoctoproject.org/{yocto_doc_version}dev-manual/common-tasks.html#writing-new-tests",
   "link:testimage.bbclass": f"https://docs.yoctoproject.org/{yocto_doc_version}ref-manual/classes.html#testimage-bbclass",
   "link:OEQA FVP": f"https://git.yoctoproject.org/meta-arm/tree/documentation/oeqa-fvp.md?h={yocto_version}",
 }
 
+layer_definitions = {
+  "kronos remote": "https://git.gitlab.arm.com/automotive-and-industrial/kronos/kronos.git",
+  "kronos version": f"{kronos_version}",
+}
+
 other_definitions = {
+  "kas version": f"{kas_version}",
   "Arm": "Arm\ :sup:`®`",
 }
 
@@ -58,6 +69,7 @@ def generate_rst_prolog():
     rst_prolog = ""
 
     for variables_group in [general_links,
+                            layer_definitions,
                             other_definitions]:
 
         for key, value in variables_group.items():

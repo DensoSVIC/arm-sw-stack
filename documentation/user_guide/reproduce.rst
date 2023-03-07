@@ -1,0 +1,192 @@
+..
+ # Copyright (c) 2023, Arm Limited.
+ #
+ # SPDX-License-Identifier: MIT
+
+#########
+Reproduce
+#########
+
+This section of the User Guide describes how to download, configure, build and
+execute this Reference Stack.
+
+************
+Introduction
+************
+
+This Reference Stack uses the |kas build tool|_ to configure and customize the
+different use cases via a set of configuration files.
+
+The :repo:`yocto/kas` directory contains the kas configuration files to support
+building and customizing the Reference Stack images. These kas configuration
+files contain preset settings for the following use cases:
+
+  * ``baremetal.yml`` to prepare an image for the baremetal architecture.
+
+These kas configuration files can be further used to build custom Reference
+Stack images.
+
+.. note::
+  All command examples on this page can be copied by clicking the copy button.
+  Any console prompts at the start of each line, comments, or empty lines will
+  be automatically excluded from the copied text.
+
+.. _user_guide_reproduce_environment_setup:
+
+****************************
+Build Host Environment Setup
+****************************
+
+
+System Requirements
+===================
+
+    * x86_64 host to build and execute the Kronos FVP
+    * Ubuntu 20.04 Linux distribution
+    * At least 200GiB of free disk for the download and builds
+
+
+Install Dependencies
+====================
+
+Please follow the Yocto Project documentation on
+|how to install the essential packages|_ required for the build host.
+
+Install the kas tool:
+
+.. code-block:: console
+  :substitutions:
+
+  sudo -H pip3 install --upgrade kas==|kas version|
+
+For more details on kas installation, see |kas Dependencies & installation|_.
+
+
+.. _user_guide_reproduce_download:
+
+********
+Download
+********
+
+Download the ``kronos`` repository using Git and checkout on the kronos branch,
+via:
+
+.. code-block:: shell
+  :substitutions:
+
+  # Change the tag or branch to be fetched by replacing the value supplied to
+  # the --branch parameter option
+
+  mkdir -p ~/kronos
+  cd ~/kronos
+  git clone |kronos remote| --branch |kronos version|
+
+.. _user_guide_reproduce_build:
+
+*****
+Build
+*****
+
+The provided kas configuration files can be used to build an image for
+different system architectures, and to apply different sets of customizable
+parameters. Therefore, the following build guidance is provided as a set of
+alternatives to target each of the main supported use cases.
+
+.. note::
+  To build and run any image for the Kronos FVP the user has to accept its
+  |EULA|_, which can be done by executing the following command in the build
+  environment:
+
+  .. code-block:: console
+
+    export ARM_FVP_EULA_ACCEPT=True
+
+Baremetal Architecture
+======================
+
+To build a baremetal image:
+
+  .. code-block:: console
+
+    kas build --update kronos/yocto/kas/baremetal.yml
+
+Validation tests can be run on the baremetal images.
+See :ref:`reproduce_run-time_integration_tests` for more details on running
+run-time validation tests.
+
+***
+Run
+***
+
+This section describes how to run the Reference Stack on its FVP and connect to
+the Primary Compute to manually execute commands and in this way try out its
+different functionalities. This can be done for the Baremetal Architecture.
+
+.. note::
+  FVPs, and Fast Models in general, are functionally accurate, meaning that they
+  fully execute all instructions correctly, however they are not cycle accurate.
+  The main goal of the Reference Stack is to prove functionality only, and
+  should not be used for performance analysis.
+
+The Reference Stack running on the Primary Compute can be logged into as
+``root`` user without password in the Linux terminal.
+
+Baremetal Architecture
+======================
+
+To start the FVP and connect to the Primary Compute terminal (running Linux):
+
+  .. code-block:: console
+
+    kas shell -c="../layers/meta-arm/scripts/runfvp --verbose --console" \
+    kronos/yocto/kas/baremetal.yml
+
+The user should wait for the system to boot and for the Linux prompt to appear.
+
+.. _reproduce_run-time_integration_tests:
+
+**********
+Validation
+**********
+
+The following validation tests can be performed on the Reference Stack:
+
+  * System Integration Tests:
+
+    * Baremetal Architecture Stack:
+
+      .. code-block:: console
+
+        TESTIMAGE_AUTO=1 kas build kronos/yocto/kas/baremetal.yml
+
+      The previous test takes around 10 minutes to complete.
+
+      A similar output should be printed out:
+
+      .. code-block:: console
+
+        NOTE: Executing Tasks
+        2022-12-07 09:05:58 - INFO     - Creating terminal default on terminal_ns_uart_ap
+        2022-12-07 09:05:58 - INFO     - Creating terminal tf-a on terminal_s_uart_ap
+        2022-12-07 09:05:58 - INFO     - Creating terminal scp on terminal_uart_scp
+        2022-12-07 09:05:58 - INFO     - Creating terminal mcp on terminal_uart_mcp
+        2022-12-07 09:05:58 - INFO     - Creating terminal lcp on terminal_uart_lcp
+        2022-12-07 09:05:59 - INFO     - Creating terminal rss on terminal_uart_rss
+        2022-12-07 09:05:59 - INFO     - default: Waiting for login prompt
+        2022-12-07 09:06:07 - INFO     - RESULTS:
+        2022-12-07 09:06:07 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (8.00s)
+        2022-12-07 09:06:07 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+        2022-12-07 09:06:07 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+        2022-12-07 09:06:07 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+        2022-12-07 09:10:02 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (201.16s)
+        2022-12-07 09:10:16 - INFO     - RESULTS - test_20_bsp.BspTest.test_networking: PASSED (13.54s)
+        2022-12-07 09:11:20 - INFO     - RESULTS - test_20_bsp.BspTest.test_rtc: PASSED (4.61s)
+        2022-12-07 09:11:56 - INFO     - RESULTS - test_20_bsp.BspTest.test_smp: PASSED (35.33s)
+        2022-12-07 09:12:01 - INFO     - RESULTS - test_20_bsp.BspTest.test_virtiorng: PASSED (5.58s)
+        2022-12-07 09:12:04 - INFO     - RESULTS - test_20_bsp.BspTest.test_watchdog: PASSED (3.45s)
+        2022-12-07 09:12:04 - INFO     - SUMMARY:
+        2022-12-07 09:12:04 - INFO     - baremetal-image () - Ran 10 tests in 271.671s
+        2022-12-07 09:12:04 - INFO     - baremetal-image - OK - All required tests passed (successes=10, skipped=0, failures=0, errors=0)
+
+  Please refer to :ref:`validation` for an explanation on how the validation
+  tests are set up and how they work in the Reference Stack.
