@@ -37,6 +37,17 @@
           url: $REPOS_META_ARM_URL
           refspec: $REPOS_META_ARM_REFSPEC
       EOF
+      cat yocto/kas/ci.yml
+    # Set the SRCREV for the specific recipes
+    - |
+      if ! [ -z "${COMPONENT_NAME}" ] && ! [ -z "${COMPONENT_SRCREV}" ]; then
+      # Must be aligned with above '|'
+      cat << EOF >> yocto/kas/ci.yml;
+      local_conf_header:
+        ${COMPONENT_NAME}: |
+          SRCREV:pn-${COMPONENT_NAME} = "${COMPONENT_SRCREV}"
+      EOF
+      fi
     - mkdir -p ~/.ssh
     - eval "$(ssh-agent -s)"
     - if [ -n "${SSH_PRIVATE_GITLAB+x}" ]; then
