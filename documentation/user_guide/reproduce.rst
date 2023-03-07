@@ -17,7 +17,7 @@ Introduction
 This Reference Stack uses the |kas build tool|_ to configure and customize the
 different use cases via a set of configuration files.
 
-The :repo:`yocto/kas` directory contains the kas configuration files to support
+The :kronos-repo:`yocto/kas` directory contains the kas configuration files to support
 building and customizing the Reference Stack images. These kas configuration
 files contain preset settings for the following use cases:
 

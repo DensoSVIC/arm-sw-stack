@@ -28,7 +28,8 @@ OEQA tests in meta-arm
 ======================
 
 The Compute Elements and Components tested by the framework are detailed below.
-The testing scripts can be found in `meta-arm/lib/oeqa/runtime/cases/`.
+The testing scripts can be found in
+:meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/`.
 
 All of the Computing Elements and Components have their terminal output logged
 for debugging.
@@ -67,7 +68,7 @@ BSP Tests
 
 
 The BSP Tests consist of a series of device tests that can be found in
-`meta-arm/lib/oeqa/runtime/cases/test_20_bsp.py`.
+:meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/test_20_bsp.py`.
 
 * networking
    Checks that the network device and its correct driver are available and
@@ -104,7 +105,8 @@ tests and starting the image.
 
 The |Writing New Tests|_ section of the Yocto Manual explains how to write new
 tests when using the testimage.bbclass. These are placed under
-`meta-arm/lib/oeqa/runtime/cases` and will be selected by the different
-machines/configurations by modifying the ``TEST_SUITES`` variable.
-For example, the file `meta-arm-bsp/conf/machine/fvp-kronos.conf` adds the
+:meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases` and will be selected by the
+different machines/configurations by modifying the ``TEST_SUITES`` variable.
+For example, the file
+:meta-arm-repo:`meta-arm-bsp/conf/machine/fvp-rd-kronos.conf` adds the
 ``test_10_linuxboot`` test to the ``TEST_SUITES`` variable.

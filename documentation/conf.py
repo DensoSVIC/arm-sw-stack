@@ -34,10 +34,10 @@ author = 'Arm Ltd.'
 # ones.
 extensions = [
     'sphinx.ext.autosectionlabel',
+    'sphinx.ext.extlinks',
     'sphinx_rtd_theme',
     'sphinx_copybutton',
     'sphinx_substitution_extensions',
-    'repo_links',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -105,3 +105,17 @@ rst_prolog = variables.generate_rst_prolog()
 repo_url_pattern = os.environ.get(
     'REPO_URL_PATTERN',
     'https://gitlab.arm.com/automotive-and-industrial/kronos/-/tree/{ref}/{path}')  # noqa
+# Read the Docs sometimes adds extra quotes to environment variables
+repo_url_pattern = repo_url_pattern.strip("'")
+
+meta_arm_url_repo_pattern = os.environ.get(
+    'META_ARM_REPO_URL_PATTERN',
+    'https://git.yoctoproject.org/meta-arm/tree/{path}?h={ref}')
+# Read the Docs sometimes adds extra quotes to environment variables
+meta_arm_url_repo_pattern = meta_arm_url_repo_pattern.strip("'")
+meta_arm_ref = os.environ.get('META_ARM_REF', variables.yocto_version)
+
+extlinks = {
+            'meta-arm-repo': (meta_arm_url_repo_pattern.format(path='%s', ref=meta_arm_ref), '%s'),  # noqa
+            'kronos-repo': (repo_url_pattern.format(path='%s', ref=variables.kronos_version), '%s'),  # noqa
+            }

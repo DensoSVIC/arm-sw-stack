@@ -13,7 +13,7 @@ do_testimage
 filesystem
 functionalities
 fvp
-fvp-kronos.conf
+fvp-rd-kronos.conf
 fvp_rd_kronos-poky-linux
 fvps
 html
