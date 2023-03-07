@@ -27,7 +27,6 @@ license_link
 linux
 lts
 maxdepth
-meta-rd-n2-automotive
 oeqa
 pip3
 prebuilt

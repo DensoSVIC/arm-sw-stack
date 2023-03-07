@@ -12,4 +12,5 @@ Solution Design
    :maxdepth: 1
    :caption: Contents
 
+   components
    validation
