@@ -35,29 +35,35 @@ All of the Computing Elements and Components have their terminal output logged
 for debugging.
 
  * LCP
-    The script that implements the test is ``test_00_lcp.py``.
+    The script that implements the test is
+    :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/test_00_lcp.py`.
     The test waits for the LCP to log that it has successfully initialized and
     started all of its internal modules. It also checks whether the LCP has
     logged any errors, in which case the test fails.
 
  * RSS
-    The script that implements the test is ``test_00_rss.py``.
+    The script that implements the test is
+    :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/test_00_rss.py`.
     The test waits for the RSS to log that it is releasing the SCP. This is its
     last action as part of the RSS boot process.
 
  * SCP
-    The script that implements the test is ``test_00_scp.py``.
+    The script that implements the test is
+    :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/test_00_scp.py`.
     The test waits for the SCP to log that it has successfully initialized and
     started all of its internal modules. It also checks whether the SCP has
     logged any errors, in which case the test fails.
 
  * Primary Compute
     * BSP
-       The entry point to these tests is ``test_20_bsp.py``. To find out more
-       about the applicable tests, please refer to :ref:`design_bsp_tests`.
+       The entry point to these tests is
+       :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/test_20_bsp.py`. To find
+       out more about the applicable tests, please refer to
+       :ref:`design_bsp_tests`.
 
     * TF-A
-       The script that implements the test is ``test_00_trusted_firmware_a.py``.
+       The script that implements the test is
+       :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/test_00_trusted_firmware_a.py`.
        The test waits for the Primary Compute to log that it is entering the
        normal world as defined in the RSS boot process.
 
