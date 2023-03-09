@@ -54,6 +54,7 @@ plugins:
       - ".rubocop.yml"
   headercheck:
     enabled: true
+    format_rule: format-1
     original_works_licenses:
       - "Apache-2.0"
       - "GPL-2.0-only"
