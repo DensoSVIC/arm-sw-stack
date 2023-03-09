@@ -38,6 +38,7 @@ rtc
 runtime
 scp
 smp
+spdx-filecopyrighttext
 spdx-license-identifier
 sphinx-build
 stack's
