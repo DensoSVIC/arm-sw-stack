@@ -29,25 +29,29 @@
   variables:
     IMAGE_DIR: $CACHE_DIR/$PROJECT_VERSION/images
   before_script:
+    - KASFILE_CI=yocto/kas/ci.yml
     # Set the url and refspec for the specific repos
     - |
-      cat << EOF >> yocto/kas/ci.yml
+      if ! [ -z "${REPOS_META_ARM_URL}" ] && ! [ -z "${REPOS_META_ARM_REFSPEC}" ]; then
+      # Must be aligned with above '|'
+      cat << EOF >> $KASFILE_CI
       repos:
         meta-arm:
           url: $REPOS_META_ARM_URL
           refspec: $REPOS_META_ARM_REFSPEC
       EOF
-      cat yocto/kas/ci.yml
+      fi
     # Set the SRCREV for the specific recipes
     - |
       if ! [ -z "${COMPONENT_NAME}" ] && ! [ -z "${COMPONENT_SRCREV}" ]; then
       # Must be aligned with above '|'
-      cat << EOF >> yocto/kas/ci.yml;
+      cat << EOF >> $KASFILE_CI;
       local_conf_header:
         ${COMPONENT_NAME}: |
           SRCREV:pn-${COMPONENT_NAME} = "${COMPONENT_SRCREV}"
       EOF
       fi
+      cat $KASFILE_CI
     - mkdir -p ~/.ssh
     - eval "$(ssh-agent -s)"
     - if [ -n "${SSH_PRIVATE_GITLAB+x}" ]; then
