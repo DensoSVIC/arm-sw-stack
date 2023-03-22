@@ -24,6 +24,12 @@ repos:
     url: https://git.yoctoproject.org/git/meta-arm
     path: layers/meta-arm
 
+  meta-virtualization:
+    url: https://git.yoctoproject.org/meta-virtualization
+    path: layers/meta-virtualization
+    layers:
+      .: excluded
+
 env:
   TESTIMAGE_AUTO:
 
