@@ -25,7 +25,7 @@ The stack comprises of the following components:
     - |SCP-Firmware version| (based on |SCP-Firmware base version|)
     - |SCP-Firmware repository|_
   * - :ref:`design_components_trusted-firmware-a`
-    - |Trusted Firmware-A version| (based on |Trusted Firmware-A base version|)
+    - |Trusted Firmware-A version|
     - |Trusted Firmware-A repository|_
   * - :ref:`design_components_u-boot`
     - |U-Boot version|

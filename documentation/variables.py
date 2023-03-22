@@ -30,15 +30,14 @@ yocto_version = "langdale"
 yocto_doc_version = yocto_version + "/"
 kronos_version = "main"
 kas_version = "3.2"
-trusted_firmware_m_version = "undefined"
-trusted_firmware_m_base_version = "undefined"
-scp_firmware_version = "undefined"
-scp_firmware_base_version = "undefined"
-trusted_firmware_a_version = "undefined"
-trusted_firmware_a_base_version = "undefined"
-uboot_version = "undefined"
-linux_version = "undefined"
-linux_version_patch = "undefined"
+trusted_firmware_m_version = "bd8c7c9c40e522d4db10d4b45412f7a56eb5dae7"
+trusted_firmware_m_base_version = "master branch post v1.7.0"
+scp_firmware_version = "f71f34237365b2c4b54be798aba79b740dcc4020"
+scp_firmware_base_version = "master branch post v2.11.0"
+trusted_firmware_a_version = "2.8.0"
+uboot_version = "2022.07"
+linux_version = "5.19"
+linux_version_patch = "17"
 
 general_links = {
   "link:kas build tool": f"https://kas.readthedocs.io/en/{kas_version}/userguide.html",
@@ -49,8 +48,8 @@ general_links = {
   "link:testimage.bbclass": f"https://docs.yoctoproject.org/{yocto_doc_version}ref-manual/classes.html#testimage-bbclass",
   "link:OEQA FVP": f"https://git.yoctoproject.org/meta-arm/tree/documentation/oeqa-fvp.md?h={yocto_version}",
   "link:Trusted Firmware-M repository": f"https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git/tree/?h={trusted_firmware_m_version}",
-  "link:SCP-Firmware repository": f"https://gitlab.arm.com/arm-reference-solutions/scp-firmware/-/tree/{scp_firmware_version}",
-  "link:Trusted Firmware-A repository": f"https://gitlab.arm.com/arm-reference-solutions/trusted-firmware-a/-/tree/{trusted_firmware_a_version}",
+  "link:SCP-Firmware repository": f"https://github.com/ARM-software/SCP-firmware/tree/{scp_firmware_version}",
+  "link:Trusted Firmware-A repository": f"https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/tree/?h=v{trusted_firmware_a_version}",
   "link:U-Boot repository": f"https://source.denx.de/u-boot/u-boot/-/tree/v{uboot_version}",
   "link:Linux repository": f"https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fbase",
 }
@@ -68,7 +67,6 @@ other_definitions = {
   "SCP-Firmware version": f"{scp_firmware_version}",
   "SCP-Firmware base version": f"{scp_firmware_base_version}",
   "Trusted Firmware-A version": f"{trusted_firmware_a_version}",
-  "Trusted Firmware-A base version": f"{trusted_firmware_a_base_version}",
   "U-Boot version": f"{uboot_version}",
   "Linux version": f"{linux_version}.{linux_version_patch}",
 }
