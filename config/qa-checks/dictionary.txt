@@ -4,7 +4,12 @@ analyze.py
 architectures
 b
 baremetal-image
+bl2
+bl31
+bl33
+boot_process
 bootable
+bootloader
 c
 cpus
 customizable
@@ -41,8 +46,10 @@ smp
 spdx-filecopyrighttext
 spdx-license-identifier
 sphinx-build
+sram
 stack's
 sudo
+systemreadytm
 test_00_lcp.py
 test_00_rss.py
 test_00_scp.py
@@ -58,6 +65,7 @@ titlesonly
 tmp_baremetal
 toctree
 ubuntu
+uefi
 user_guide
 virtio-rng
 virtiorng

@@ -52,6 +52,7 @@ general_links = {
   "link:Trusted Firmware-A repository": f"https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/tree/?h=v{trusted_firmware_a_version}",
   "link:U-Boot repository": f"https://source.denx.de/u-boot/u-boot/-/tree/v{uboot_version}",
   "link:Linux repository": f"https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fbase",
+  "link:Device Tree specification": "https://www.devicetree.org/",
 }
 
 layer_definitions = {
@@ -69,6 +70,7 @@ other_definitions = {
   "Trusted Firmware-A version": f"{trusted_firmware_a_version}",
   "U-Boot version": f"{uboot_version}",
   "Linux version": f"{linux_version}.{linux_version_patch}",
+  "Arm SystemReadyTM": "Arm SystemReady\ :sup:`TM`",
 }
 
 

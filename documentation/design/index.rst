@@ -13,5 +13,6 @@ Solution Design
    :maxdepth: 1
    :caption: Contents
 
+   boot_process
    components
    validation
