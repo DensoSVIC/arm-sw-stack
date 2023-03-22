@@ -1,0 +1,76 @@
+From 4d19cec3d39211860ff7cc38eac0e55d400ca83b Mon Sep 17 00:00:00 2001
+From: Peter Hoyes <Peter.Hoyes@arm.com>
+Date: Tue, 13 Sep 2022 17:02:45 +0100
+Subject: [PATCH 2/2] tools/xendomains: Only save/restore/migrate if supported
+ by xenlight
+
+Saving, restoring and migrating domains are not currently supported on
+arm and arm64 platforms, so xendomains prints the warning:
+
+  An error occurred while saving domain:
+  command not implemented
+
+when attempting to run `xendomains stop`. It otherwise continues to shut
+down the domains cleanly, with the unsupported steps skipped.
+
+Use `xl help` to detect whether save/restore/migrate is supported by the
+platform. If not, do not attempt to run the corresponding command.
+
+Issue-Id: SCM-4954
+Signed-off-by: Peter Hoyes <Peter.Hoyes@arm.com>
+Upstream-Status: Submitted [https://lists.xenproject.org/archives/html/xen-devel/2023-03/msg01637.html]
+---
+ tools/hotplug/Linux/xendomains.in | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/tools/hotplug/Linux/xendomains.in b/tools/hotplug/Linux/xendomains.in
+index 70f4129ef4..bafcb874e1 100644
+--- a/tools/hotplug/Linux/xendomains.in
++++ b/tools/hotplug/Linux/xendomains.in
+@@ -229,6 +229,15 @@ parseln()
+     [ -n "$name" -a -n "$id" ] && return 0 || return 1
+ }
+ 
++subcmd_supported()
++{
++    local output
++    output=$("$CMD help | grep "^ $1"")
++    if [ ! "$output" ]; then
++        return 1
++    fi
++}
++
+ is_running()
+ {
+     get_xsdomid
+@@ -260,7 +269,8 @@ start()
+ 
+     saved_domains=" "
+     if [ "$XENDOMAINS_RESTORE" = "true" ] &&
+-       contains_something "$XENDOMAINS_SAVE"
++       contains_something "$XENDOMAINS_SAVE" &&
++       subcmd_supported "restore"
+     then
+ 	echo -n "Restoring Xen domains:"
+ 	saved_domains=`ls $XENDOMAINS_SAVE`
+@@ -411,7 +421,7 @@ stop()
+ 	    echo -n "(zomb)"
+ 	    continue
+ 	fi
+-	if test -n "$XENDOMAINS_MIGRATE"; then
++	if test -n "$XENDOMAINS_MIGRATE" && subcmd_supported "migrate"; then
+ 	    echo -n "(migr)"
+ 	    watchdog_xencmd migrate &
+ 	    WDOG_PID=$!
+@@ -430,7 +440,7 @@ stop()
+ 		continue
+ 	    fi
+ 	fi
+-	if test -n "$XENDOMAINS_SAVE"; then
++	if test -n "$XENDOMAINS_SAVE" && subcmd_supported "save"; then
+ 	    echo -n "(save)"
+ 	    watchdog_xencmd save &
+ 	    WDOG_PID=$!
+-- 
+2.25.1
+

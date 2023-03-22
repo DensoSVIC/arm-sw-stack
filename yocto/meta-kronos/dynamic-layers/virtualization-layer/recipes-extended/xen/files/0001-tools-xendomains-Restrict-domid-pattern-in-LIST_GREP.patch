@@ -1,0 +1,44 @@
+From 0b96975d488f2bcaba178967ab387141a8a72ae3 Mon Sep 17 00:00:00 2001
+From: Peter Hoyes <Peter.Hoyes@arm.com>
+Date: Fri, 23 Sep 2022 12:30:30 +0100
+Subject: [PATCH 1/2] tools/xendomains: Restrict domid pattern in LIST_GREP
+
+The xendomains script uses the output of `xl list -l` to collect the
+id and name of each domain, which is used in the shutdown logic, amongst
+other purposes.
+
+The linked commit added a "domid" field to libxl_domain_create_info.
+This causes the output of `xl list -l` to contain two "domid"s per
+domain, which may not be equal. This in turn causes `xendomains stop` to
+issue two shutdown commands per domain, one of which is to a duplicate
+and/or invalid domid.
+
+To work around this, make the LIST_GREP pattern more restrictive for
+domid, so it only detects the domid at the top level and not the domid
+inside c_info.
+
+Issue-Id: SCM-4954
+Fixes: 4a3a25678d92 ("libxl: allow creation of domains with a specified
+or random domid")
+Signed-off-by: Peter Hoyes <Peter.Hoyes@arm.com>
+Upstream-Status: Backport [https://xenbits.xen.org/gitweb/?p=xen.git;a=commitdiff;h=0c06760be3dc3f286015e18c4b1d1694e55da026]
+---
+ tools/hotplug/Linux/xendomains.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/hotplug/Linux/xendomains.in b/tools/hotplug/Linux/xendomains.in
+index 334d244882..70f4129ef4 100644
+--- a/tools/hotplug/Linux/xendomains.in
++++ b/tools/hotplug/Linux/xendomains.in
+@@ -211,7 +211,7 @@ get_xsdomid()
+     fi
+ }
+ 
+-LIST_GREP='(domain\|(domid\|(name\|^    {$\|"name":\|"domid":'
++LIST_GREP='(domain\|(domid\|(name\|^    {$\|"name":\|^        "domid":'
+ parseln()
+ {
+     if [[ "$1" =~ '(domain' ]] || [[ "$1" = "{" ]]; then
+-- 
+2.25.1
+
