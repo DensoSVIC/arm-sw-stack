@@ -182,7 +182,7 @@ The following validation tests can be performed on the Reference Stack:
         2022-12-07 09:10:02 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (201.16s)
         2022-12-07 09:10:16 - INFO     - RESULTS - test_20_bsp.BspTest.test_networking: PASSED (13.54s)
         2022-12-07 09:11:20 - INFO     - RESULTS - test_20_bsp.BspTest.test_rtc: PASSED (4.61s)
-        2022-12-07 09:11:56 - INFO     - RESULTS - test_20_bsp.BspTest.test_smp: PASSED (35.33s)
+        2022-12-07 09:11:56 - INFO     - RESULTS - test_20_bsp.BspTest.test_cpu_hotplug: PASSED (35.33s)
         2022-12-07 09:12:01 - INFO     - RESULTS - test_20_bsp.BspTest.test_virtiorng: PASSED (5.58s)
         2022-12-07 09:12:04 - INFO     - RESULTS - test_20_bsp.BspTest.test_watchdog: PASSED (3.45s)
         2022-12-07 09:12:04 - INFO     - SUMMARY:

@@ -87,7 +87,7 @@ The BSP Tests consist of a series of device tests that can be found in
    available and accessible via the filesystem and verifies that the
    ``hwclock`` command runs successfully.
 
-* smp
+* cpu_hotplug
    Checks for CPU availability and that basic functionality works, like
    enabling and stopping CPUs and preventing all of them from being
    disabled at the same time.
