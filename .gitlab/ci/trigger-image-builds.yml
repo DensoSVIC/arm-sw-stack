@@ -10,6 +10,8 @@ merge_jobs:
       artifacts: false
     - job: baremetal
       optional: true
+    - job: virtualization
+      optional: true
   before_script:
     - |
       cat << EOF > ${CI_JOB_FILE}

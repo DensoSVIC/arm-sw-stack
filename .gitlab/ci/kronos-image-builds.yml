@@ -13,3 +13,8 @@ baremetal:
   extends: .generator-kronos
   rules:
     - !reference [".build-image:rules", rules]
+
+virtualization:
+  extends: .generator-kronos
+  rules:
+    - !reference [".build-image:rules", rules]
