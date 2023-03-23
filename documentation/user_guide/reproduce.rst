@@ -15,7 +15,7 @@ execute this Reference Stack.
 Introduction
 ************
 
-This Reference Stack uses the |kas build tool|_ to configure and customize the
+This Reference Stack uses the `kas build tool`_ to configure and customize the
 different use cases via a set of configuration files.
 
 The :kronos-repo:`yocto/kas` directory contains the kas configuration files to support
@@ -51,7 +51,7 @@ Install Dependencies
 ====================
 
 Please follow the Yocto Project documentation on
-|how to install the essential packages|_ required for the build host.
+`how to install the essential packages`_ required for the build host.
 
 Install the kas tool:
 
@@ -60,7 +60,7 @@ Install the kas tool:
 
   sudo -H pip3 install --upgrade kas==|kas version|
 
-For more details on kas installation, see |kas Dependencies & installation|_.
+For more details on kas installation, see `kas Dependencies & installation`_.
 
 
 .. _user_guide_reproduce_download:
@@ -95,7 +95,7 @@ alternatives to target each of the main supported use cases.
 
 .. note::
   To build and run any image for the Kronos FVP the user has to accept its
-  |EULA|_, which can be done by executing the following command in the build
+  EULA_, which can be done by executing the following command in the build
   environment:
 
   .. code-block:: console

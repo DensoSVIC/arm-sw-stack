@@ -20,7 +20,7 @@ The run-time integration tests are a mechanism for validating the Reference
 Stack's core functionalities.
 
 The tests are run on the image using the oeqa test framework. Please refer to
-|OEQA FVP|_ for more information on the this framework.
+`OEQA FVP`_ for more information on the this framework.
 
 In this section, details on the structure, implementation and debugging of the
 tests is given.
@@ -106,11 +106,11 @@ Integration Tests Implementation
 This section gives a high-level description of how the integration testing logic
 is implemented.
 
-To enable the integration tests, the |testimage.bbclass|_ is used. This class
+To enable the integration tests, the `testimage.bbclass`_ is used. This class
 supports running automated tests against images. The class handles loading the
 tests and starting the image.
 
-The |Writing New Tests|_ section of the Yocto Manual explains how to write new
+The `Writing New Tests`_ section of the Yocto Manual explains how to write new
 tests when using the testimage.bbclass. These are placed under
 :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases` and will be selected by the
 different machines/configurations by modifying the ``TEST_SUITES`` variable.

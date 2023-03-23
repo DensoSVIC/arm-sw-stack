@@ -20,19 +20,19 @@ The stack comprises of the following components:
     - Source
   * - Trusted Firmware-M (:ref:`design_components_rss`)
     - |Trusted Firmware-M version| (based on |Trusted Firmware-M base version|)
-    - |Trusted Firmware-M repository|_
+    - `Trusted Firmware-M repository`_
   * - :ref:`design_components_scp-firmware`
     - |SCP-Firmware version| (based on |SCP-Firmware base version|)
-    - |SCP-Firmware repository|_
+    - `SCP-Firmware repository`_
   * - :ref:`design_components_trusted-firmware-a`
     - |Trusted Firmware-A version|
-    - |Trusted Firmware-A repository|_
+    - `Trusted Firmware-A repository`_
   * - :ref:`design_components_u-boot`
     - |U-Boot version|
-    - |U-Boot repository|_
+    - `U-Boot repository`_
   * - :ref:`design_components_linux`
     - |Linux version|
-    - |Linux repository|_
+    - `Linux repository`_
 
 .. _design_components_rss:
 

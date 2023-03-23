@@ -16,10 +16,8 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute.
 
-# Append the documentation directory to the path, so we can import variables
 import os
 import sys
-sys.path.append(os.path.dirname(__file__))
 
 # -- Project information -----------------------------------------------------
 
@@ -99,8 +97,48 @@ copybutton_only_copy_prompt_lines = True
 copybutton_copy_empty_lines = False
 copybutton_line_continuation_character = "\\"
 
-import variables    # noqa: E402
-rst_prolog = variables.generate_rst_prolog()
+# Common variables for rst_prolog
+yocto_version = "langdale"
+yocto_doc_version = yocto_version + "/"
+kronos_version = "main"
+kas_version = "3.2"
+trusted_firmware_m_version = "bd8c7c9c40e522d4db10d4b45412f7a56eb5dae7"
+trusted_firmware_m_base_version = "master branch post v1.7.0"
+scp_firmware_version = "f71f34237365b2c4b54be798aba79b740dcc4020"
+scp_firmware_base_version = "master branch post v2.11.0"
+trusted_firmware_a_version = "2.8.0"
+uboot_version = "2022.07"
+linux_version = "5.19"
+linux_version_patch = "17"
+
+rst_prolog = f"""
+.. |kas version| replace:: 3.2
+.. |Arm| replace:: Arm\\ :sup:`®`
+.. |Trusted Firmware-M version| replace:: {trusted_firmware_m_version}
+.. |Trusted Firmware-M base version| replace:: {trusted_firmware_m_base_version}
+.. |SCP-Firmware version| replace:: {scp_firmware_version}
+.. |SCP-Firmware base version| replace:: {scp_firmware_base_version}
+.. |Trusted Firmware-A version| replace:: {trusted_firmware_a_version}
+.. |U-Boot version| replace:: {uboot_version}
+.. |Linux version| replace:: {linux_version}.{linux_version_patch}
+.. |Arm SystemReadyTM| replace:: Arm SystemReady\\ :sup:`TM`
+.. |kronos remote| replace:: https://git.gitlab.arm.com/automotive-and-industrial/kronos/kronos.git
+.. |kronos version| replace:: {kronos_version}
+
+.. _kas build tool: https://kas.readthedocs.io/en/{kas_version}/userguide.html
+.. _how to install the essential packages: https://docs.yoctoproject.org/{yocto_doc_version}singleindex.html#required-packages-for-the-build-host
+.. _kas Dependencies & installation: https://kas.readthedocs.io/en/{kas_version}/userguide.html#dependencies-installation
+.. _EULA: https://developer.arm.com/downloads/-/arm-ecosystem-fvps/eula
+.. _Writing New Tests: https://docs.yoctoproject.org/{yocto_doc_version}dev-manual/common-tasks.html#writing-new-tests
+.. _testimage.bbclass: https://docs.yoctoproject.org/{yocto_doc_version}ref-manual/classes.html#testimage-bbclass
+.. _OEQA FVP: https://git.yoctoproject.org/meta-arm/tree/documentation/oeqa-fvp.md?h={yocto_version}
+.. _Trusted Firmware-M repository: https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git/tree/?h={trusted_firmware_m_version}
+.. _SCP-Firmware repository: https://github.com/ARM-software/SCP-firmware/tree/{scp_firmware_version}
+.. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/tree/?h=v{trusted_firmware_a_version}
+.. _U-Boot repository: https://source.denx.de/u-boot/u-boot/-/tree/v{uboot_version}
+.. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fbase
+.. _Device Tree specification: https://www.devicetree.org/
+"""  # noqa: E501
 
 # URL to use for references to repository paths
 repo_url_pattern = os.environ.get(
@@ -114,9 +152,9 @@ meta_arm_url_repo_pattern = os.environ.get(
     'https://git.yoctoproject.org/meta-arm/tree/{path}?h={ref}')
 # Read the Docs sometimes adds extra quotes to environment variables
 meta_arm_url_repo_pattern = meta_arm_url_repo_pattern.strip("'")
-meta_arm_ref = os.environ.get('META_ARM_REF', variables.yocto_version)
+meta_arm_ref = os.environ.get('META_ARM_REF', yocto_version)
 
 extlinks = {
             'meta-arm-repo': (meta_arm_url_repo_pattern.format(path='%s', ref=meta_arm_ref), '%s'),  # noqa
-            'kronos-repo': (repo_url_pattern.format(path='%s', ref=variables.kronos_version), '%s'),  # noqa
+            'kronos-repo': (repo_url_pattern.format(path='%s', ref=kronos_version), '%s'),  # noqa
             }
