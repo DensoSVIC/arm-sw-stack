@@ -26,6 +26,10 @@ DOMU_NUMBER_OF_CPUS_DEFAULT ?= "4"
 DOMU_INSTANCES ?= "2"
 DOMU_ENV_PATH = "${WORKDIR}/envs"
 
+# Set extra configuration via DOMU${IDX}_EXTRA.
+DOMU1_EXTRA ?= "vif = ['script=vif-bridge,bridge=brext0,vifname=domu1.ext0']"
+DOMU2_EXTRA ?= "vif = ['script=vif-bridge,bridge=brext0,vifname=domu2.ext0']"
+
 python() {
     domu_instances = d.getVar("DOMU_INSTANCES")
 
