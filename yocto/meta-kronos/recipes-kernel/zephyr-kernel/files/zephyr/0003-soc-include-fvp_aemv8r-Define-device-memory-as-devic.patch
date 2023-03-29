@@ -1,0 +1,84 @@
+From 684d1b08323b52a5b3958242acb6f68f60c00293 Mon Sep 17 00:00:00 2001
+From: Luca Fancellu <luca.fancellu@arm.com>
+Date: Mon, 13 Mar 2023 11:16:25 +0000
+Subject: [PATCH] soc: include: fvp_aemv8r: Define device memory as
+ device tree node
+
+A recent change introduced the possibility to declare MPU memory
+regions using the device tree and the framework described in
+zephyr/linker/devicetree_regions.h.
+
+So remove the device region declared in mpu_regions[] and the used
+defines for the addresses, rename REGION_DEVICE_ATTR to REGION_IO_ATTR
+in arm_mpu.h to be compatible with the framework and add a device tree
+node to fvp_baser_aemv8r.dts to describe the device memory region.
+
+Signed-off-by: Luca Fancellu <luca.fancellu@arm.com>
+Upstream-Status: Backport [main:0deeb5ff6547519867a8a1d4cd0f213dbf8f3c84]
+---
+ boards/arm64/fvp_baser_aemv8r/fvp_baser_aemv8r.dts | 7 +++++++
+ include/zephyr/arch/arm64/cortex_r/arm_mpu.h       | 2 +-
+ soc/arm64/arm/fvp_aemv8r/arm_mpu_regions.c         | 9 ---------
+ 3 files changed, 8 insertions(+), 10 deletions(-)
+
+diff --git a/boards/arm64/fvp_baser_aemv8r/fvp_baser_aemv8r.dts b/boards/arm64/fvp_baser_aemv8r/fvp_baser_aemv8r.dts
+index 0466adfda18b..2c45920eb3ef 100644
+--- a/boards/arm64/fvp_baser_aemv8r/fvp_baser_aemv8r.dts
++++ b/boards/arm64/fvp_baser_aemv8r/fvp_baser_aemv8r.dts
+@@ -36,6 +36,13 @@
+ 			compatible = "mmio-dram";
+ 			reg = <0x0 DT_SIZE_M(128)>;
+ 		};
++
++		device_region: memory@80000000 {
++			compatible = "zephyr,memory-region", "mmio-sram";
++			reg = <0x80000000 DT_SIZE_M(2048)>;
++			zephyr,memory-region = "DEVICE_REGION";
++			zephyr,memory-region-mpu = "IO";
++		};
+ 	};
+ };
+ 
+diff --git a/include/zephyr/arch/arm64/cortex_r/arm_mpu.h b/include/zephyr/arch/arm64/cortex_r/arm_mpu.h
+index 12280f49eb4d..0c9ad2c00192 100644
+--- a/include/zephyr/arch/arm64/cortex_r/arm_mpu.h
++++ b/include/zephyr/arch/arm64/cortex_r/arm_mpu.h
+@@ -132,7 +132,7 @@
+  * recommended to use these helper defines only for configuring
+  * fixed MPU regions at build-time.
+  */
+-#define REGION_DEVICE_ATTR					      \
++#define REGION_IO_ATTR						      \
+ 	{							      \
+ 		/* AP, XN, SH */				      \
+ 		.rbar = NOT_EXEC | P_RW_U_NA_Msk | NON_SHAREABLE_Msk, \
+diff --git a/soc/arm64/arm/fvp_aemv8r/arm_mpu_regions.c b/soc/arm64/arm/fvp_aemv8r/arm_mpu_regions.c
+index 97b08d418b4f..ab261e2e45db 100644
+--- a/soc/arm64/arm/fvp_aemv8r/arm_mpu_regions.c
++++ b/soc/arm64/arm/fvp_aemv8r/arm_mpu_regions.c
+@@ -10,9 +10,6 @@
+ #include <zephyr/linker/devicetree_regions.h>
+ #include <zephyr/sys/util.h>
+ 
+-#define DEVICE_REGION_START 0x80000000UL
+-#define DEVICE_REGION_END   0xFFFFFFFFUL
+-
+ static const struct arm_mpu_region mpu_regions[] = {
+ 	/* Region 0 */
+ 	MPU_REGION_ENTRY("FLASH_0",
+@@ -43,12 +40,6 @@ static const struct arm_mpu_region mpu_regions[] = {
+ 			 (uintptr_t)__kernel_ram_end,
+ 			 REGION_RAM_ATTR),
+ 
+-	/* Region 4 device region */
+-	MPU_REGION_ENTRY("DEVICE",
+-			 DEVICE_REGION_START,
+-			 DEVICE_REGION_END,
+-			 REGION_DEVICE_ATTR),
+-
+ 	/* Extra regions defined in device tree */
+ 	LINKER_DT_REGION_MPU(MPU_REGION_ENTRY_FROM_DTS)
+ };
+-- 
+2.34.1
+

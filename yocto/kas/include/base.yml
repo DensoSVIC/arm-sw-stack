@@ -30,6 +30,12 @@ repos:
     layers:
       .: excluded
 
+  meta-zephyr:
+    url: https://git.yoctoproject.org/git/meta-zephyr
+    path: layers/meta-zephyr
+    layers:
+      meta-zephyr-core:
+
 env:
   TESTIMAGE_AUTO:
 

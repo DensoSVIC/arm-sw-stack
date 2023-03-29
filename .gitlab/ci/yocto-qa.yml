@@ -20,11 +20,15 @@ check-layers:
               $KAS_WORK_DIR/layers/poky/meta-poky \
               $KAS_WORK_DIR/layers/meta-openembedded/meta-oe \
               $KAS_WORK_DIR/layers/meta-openembedded/meta-python \
+              $KAS_WORK_DIR/layers/meta-zephyr/meta-zephyr-core \
             --no-auto-dependency"
   parallel:
     matrix:
       - MACHINE: fvp-rd-kronos
         LAYER: [meta-kronos]
+
+  variables:
+    TESTIMAGE_AUTO: "0"
 
   rules:
     - !reference [".layer-check:rules", rules]
