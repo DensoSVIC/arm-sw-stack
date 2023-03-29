@@ -42,6 +42,7 @@ plugins:
       - "__pycache__"
       - "config/"
       - "license.rst"
+      - "components/"
       - "yocto/"
     dict_path: "config/qa-checks/dictionary.txt"
   yamllint:

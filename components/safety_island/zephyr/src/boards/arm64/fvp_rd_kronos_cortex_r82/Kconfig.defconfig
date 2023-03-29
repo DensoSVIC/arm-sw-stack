@@ -1,0 +1,17 @@
+# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+if BOARD_FVP_RD_KRONOS_CORTEX_R82
+
+config BUILD_OUTPUT_BIN
+	default y
+
+config BOARD
+	default "fvp_rd_kronos_cortex_r82"
+
+config NUM_IRQS
+	default 256
+
+endif # BOARD_FVP_RD_KRONOS_CORTEX_R82
