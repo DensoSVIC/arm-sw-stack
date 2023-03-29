@@ -43,4 +43,4 @@ FEATURE_PACKAGES_domu = " \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 
-require ${@bb.utils.contains('MACHINE', 'fvp-rd-kronos', bb.utils.contains('EXTRA_IMAGE_FEATURES', 'virtualization', "${KRONOS_VIRTUALIZATION_DYNAMIC_DIR}/conf/machine/include/fvp-rd-kronos-xen.inc", '', d), '', d)}
+require ${@bb.utils.contains('MACHINE', 'fvp-rd-kronos', 'conf/machine/include/fvp-rd-kronos-extras.inc', '', d)}
