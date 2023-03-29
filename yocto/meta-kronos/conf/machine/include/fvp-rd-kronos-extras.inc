@@ -4,4 +4,9 @@
 #
 # SPDX-License-Identifier: MIT
 
+PREFERRED_VERSION_zephyr-kernel = "3.3.0"
+ZEPHYR_TOOLCHAIN_VARIANT = "zephyr"
+
+SAFETY_ISLAND_C0_IMAGE ??= "zephyr-app-si-cl0"
+
 require ${@bb.utils.contains('EXTRA_IMAGE_FEATURES', 'virtualization', "${KRONOS_VIRTUALIZATION_DYNAMIC_DIR}/conf/machine/include/fvp-rd-kronos-xen.inc", '', d)}
