@@ -12,15 +12,13 @@
     TOOLCHAIN_DIR: $CACHE_DIR/$PROJECT_VERSION/toolchains
 
 .kas_build:
-  image: ${MIRROR_GHCR}/siemens/kas/kas:3.2
+  image: ${MIRROR_GHCR}/siemens/kas/kas:3.2.3
   variables:
     KAS_REPO_REF_DIR: $CACHE_DIR/$PROJECT_VERSION/repos
     # These are needed as GitLab doesn't respect the container
     # entrypoint by default
     FF_KUBERNETES_HONOR_ENTRYPOINT: 1
     FF_USE_LEGACY_KUBERNETES_EXECUTION_STRATEGY: 0
-    USER_ID: 999
-    GROUP_ID: 999
 
 # Extend the kas base build to enable to use of repos that are not yet public
 .kas_build_kronos:
