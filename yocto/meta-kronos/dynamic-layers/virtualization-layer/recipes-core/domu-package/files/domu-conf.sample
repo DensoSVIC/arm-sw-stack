@@ -8,7 +8,7 @@ name = "${DOMU_HOSTNAME}"
 memory = ${DOMU_MEMORY_SIZE}
 vcpus = ${DOMU_NUMBER_OF_CPUS}
 extra = " earlyprintk=xenboot console=hvc0 rw"
-root = "/dev/xvda1"
+root = "/dev/ram0"
 kernel = "${DOMU_KERNEL_IMG}"
 
-disk = ['format=qcow2, vdev=xvda, access=rw, backendtype=qdisk, target=${DOMU_DISK_DST}']
+ramdisk = "${DOMU_RAMDISK}"

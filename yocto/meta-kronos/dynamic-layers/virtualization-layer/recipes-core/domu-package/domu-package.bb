@@ -44,8 +44,8 @@ do_install() {
         install -Dm 0644 ${DOMU_TMPDIR}/deploy/images/${DOMU_MACHINE}/${DOMU_KERNEL_IMG} \
         ${D}${DOMU_DIR}/Image-domu${idx}.bin
 
-        install -Dm 0644 ${DOMU_TMPDIR}/deploy/images/${DOMU_MACHINE}/domu${idx}-image-${DOMU_MACHINE}.wic.qcow2 \
-        ${D}${DOMU_DIR}/domu${idx}.wic.qcow2
+        install -Dm 0644 ${DOMU_TMPDIR}/deploy/images/${DOMU_MACHINE}/domu${idx}-image-${DOMU_MACHINE}.cpio.gz \
+        ${D}${DOMU_DIR}/domu${idx}.cpio.gz
 
         DOMU_HOSTNAME=$(grep -oP "(?<=DOMU${idx}_HOSTNAME=\")[^\"]*" \
                       ${DOMU_ENV_PATH}/domus.env)
@@ -61,7 +61,7 @@ do_install() {
 
         export DOMU_DIR="${datadir}/doms"
         export DOMU_KERNEL_IMG="${DOMU_DIR}/Image-domu${idx}.bin"
-        export DOMU_DISK_DST="${DOMU_DIR}/domu${idx}.wic.qcow2"
+        export DOMU_RAMDISK="${DOMU_DIR}/domu${idx}.cpio.gz"
         envsubst < ${DOMU_CFG_SRC} > "${D}${XEN_AUTO_DIR}/domu${idx}.cfg"
 
         # Extra configuration for domu idx can be set by DOMU{idx}_EXTRA

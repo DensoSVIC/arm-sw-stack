@@ -15,9 +15,8 @@ GRUB_BUILDIN:append = " chain"
 PACKAGECONFIG:remove:pn-xen = "sdl"
 PACKAGECONFIG:remove:pn-xen-tools = "sdl"
 
-# QEMU is only used to read qcow2 images, so remove unneeded items from its
-# PACKAGECONFIG
-PACKAGECONFIG:remove:pn-qemu = "sdl alsa virglrenderer epoxy"
+# Remove unneeded items from qemu PACKAGECONFIG
+PACKAGECONFIG:remove:pn-qemu = "sdl alsa virglrenderer epoxy kvm pie slirp"
 
 # Xen uses console hvc0
 SERIAL_CONSOLES = "115200;hvc0"

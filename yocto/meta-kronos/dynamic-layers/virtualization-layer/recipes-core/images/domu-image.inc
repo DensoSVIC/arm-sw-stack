@@ -9,10 +9,7 @@ IMAGE_LINGUAS = ""
 
 inherit core-image
 
-IMAGE_OVERHEAD_FACTOR = "1.5"
-IMAGE_FSTYPES = "wic.qcow2"
-
-WKS_FILE = "domu-disk.wks"
+IMAGE_FSTYPES = "cpio.gz"
 
 inherit features_check
 REQUIRED_IMAGE_FEATURES = "domu"
