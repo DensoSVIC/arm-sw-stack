@@ -1,0 +1,102 @@
+/*
+ * SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ * affiliates <open-source-office@arm.com></text>
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+
+#include <mem.h>
+#include <arm64/armv8-r.dtsi>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+
+/ {
+	#address-cells = <2>;
+	#size-cells = <1>;
+	model = "FVP RD-Kronos Cortex R82 Cluster 1";
+
+	chosen {
+		zephyr,sram = &sram0;
+		zephyr,console = &uart0;
+		zephyr,shell-uart = &uart0;
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-r82";
+			reg = <0x0>;
+		};
+
+		cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-r82";
+			reg = <0x0100>;
+		};
+
+	};
+
+	timer {
+		compatible = "arm,armv8-timer";
+		interrupt-parent = <&gic>;
+		interrupts = <GIC_PPI 13 IRQ_TYPE_LEVEL
+			      IRQ_DEFAULT_PRIORITY>,
+			     <GIC_PPI 4 IRQ_TYPE_LEVEL
+			      IRQ_DEFAULT_PRIORITY>,
+			     <GIC_PPI 11 IRQ_TYPE_LEVEL
+			      IRQ_DEFAULT_PRIORITY>,
+			     <GIC_PPI 3 IRQ_TYPE_LEVEL
+			      IRQ_DEFAULT_PRIORITY>;
+	};
+
+	uartclk: apb-pclk {
+		compatible = "fixed-clock";
+		clock-frequency = <24000000>;
+		#clock-cells = <0>;
+	};
+
+	soc {
+		#address-cells = <2>;
+		#size-cells = <1>;
+		interrupt-parent = <&gic>;
+
+		gic: interrupt-controller@30200000 {
+			compatible = "arm,gic";
+			reg = <0x0 0x30200000 0x10000>,
+			      <0x0 0x30280000 0x80000>;
+			interrupt-controller;
+			#interrupt-cells = <4>;
+			status = "okay";
+		};
+
+		uart0: uart@2a410000 {
+			compatible = "arm,pl011";
+			reg = <0x0 0x2a410000 0x10000>;
+			status = "disabled";
+			interrupts = <GIC_SPI 7 0 IRQ_TYPE_LEVEL>;
+			interrupt-names = "irq_0";
+			clocks = <&uartclk>;
+		};
+
+		sram0: memory@140000000 {
+			compatible = "mmio-sram";
+			reg = <0x1 0x40000000 DT_SIZE_M(4)>;
+		};
+
+		device_region_0: memory@28000000 {
+			compatible = "zephyr,memory-region", "mmio-sram";
+			reg = <0x0 0x28000000 DT_SIZE_M(384)>;
+			zephyr,memory-region = "DEVICE_REGION_0";
+			zephyr,memory-region-mpu = "IO";
+		};
+	};
+};
+
+&uart0 {
+	status = "okay";
+	current-speed = <115200>;
+};

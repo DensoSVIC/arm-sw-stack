@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+identifier: fvp_rd_kronos_cortex_r82_c1
+name: FVP Emulation FVP RD-Kronos Cortex R82 cluster 1
+arch: arm64
+type: sim
+toolchain:
+  - zephyr
+  - cross-compile
+ram: 4096
