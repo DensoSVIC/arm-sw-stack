@@ -42,7 +42,7 @@ Build Host Environment Setup
 System Requirements
 ===================
 
-    * x86_64 host to build and execute the Kronos FVP
+    * x86_64 or aarch64 host to build and execute the Kronos FVP
     * Ubuntu 20.04 Linux distribution
     * At least 200GiB of free disk for the download and builds
 

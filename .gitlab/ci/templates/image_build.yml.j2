@@ -3,10 +3,11 @@
 # SPDX-License-Identifier: MIT
 
 Image-Build-{{ CI_JOB_NAME_SLUG }}:
-{% if BUILD_HOST_ARCH == 'x86_64' %}
+  parallel:
+    matrix:
+      - FVP_RD_KRONOS_TAG: [arm64, x86_64]
   tags:
-    - x86_64
-{% endif %}
+   - ${FVP_RD_KRONOS_TAG}
   extends: .kas_build_kronos
   variables:
     KAS_CONFIGS: "{{ CI_JOB_NAME }}"

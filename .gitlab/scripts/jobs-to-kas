@@ -10,6 +10,14 @@ set -e -u
 # Read Job name from $1 and split on /
 IFS=/ read -r -a PARTS<<<"${1}"
 
+# Remove names NOT to be transformed
+for i in "${!PARTS[@]}"; do
+    part="${PARTS[i]}"
+	if [[ $part == 'arm64' || $part == 'x86_64' ]]; then
+        unset 'PARTS[i]'
+	fi
+done
+
 # Prefix each part with yocto/kas/
 PARTS=("${PARTS[@]/#/yocto/kas/}")
 

@@ -1,5 +1,6 @@
 1.0-r0
 200gib
+aarch64
 analyze.py
 architectures
 b
