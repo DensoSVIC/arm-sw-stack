@@ -27,8 +27,17 @@ DOMU_INSTANCES ?= "2"
 DOMU_ENV_PATH = "${WORKDIR}/envs"
 
 # Set extra configuration via DOMU${IDX}_EXTRA.
-DOMU1_EXTRA ?= "vif = ['script=vif-bridge,bridge=brext0,vifname=domu1.ext0']"
-DOMU2_EXTRA ?= "vif = ['script=vif-bridge,bridge=brext0,vifname=domu2.ext0']"
+DOMU1_BRIDGES ?= "vif = ['script=vif-bridge,bridge=brext0,vifname=domu1.ext0']"
+DOMU1_NUMBER_OF_CPUS ?= "2"
+# Refer to https://xenbits.xen.org/docs/4.17-testing/man/xl.cfg.5.html#CPU-Allocation
+# about how to set the CPULIST.
+DOMU1_VCPU_PIN ?= "cpus = [\"1-2\"]"
+DOMU1_EXTRA ?= "${DOMU1_BRIDGES}\\n${DOMU1_VCPU_PIN}"
+
+DOMU2_BRIDGES ?= "vif = ['script=vif-bridge,bridge=brext0,vifname=domu2.ext0']"
+DOMU2_NUMBER_OF_CPUS ?= "1"
+DOMU2_VCPU_PIN ?= "cpus = [\"3\"]"
+DOMU2_EXTRA ?= "${DOMU2_BRIDGES}\\n${DOMU2_VCPU_PIN}"
 
 python() {
     domu_instances = d.getVar("DOMU_INSTANCES")
@@ -67,7 +76,6 @@ python gen_domu_env_and_extra_conf() {
 
                 if value:
                     envf.write('%s="%s"\n' % (var, value.strip()))
-        envf.close()
 
     # Write extra configuration of domu idx into file domu{idx}-extra.cfg
     # Extra configuration for domu idx can be set by DOMU{idx}_EXTRA
@@ -80,5 +88,4 @@ python gen_domu_env_and_extra_conf() {
             value = value.replace("\\", "")
             with open(os.path.join(outdir, link_name) + '.cfg', 'w') as envf:
                 envf.write(value)
-                envf.close()
 }

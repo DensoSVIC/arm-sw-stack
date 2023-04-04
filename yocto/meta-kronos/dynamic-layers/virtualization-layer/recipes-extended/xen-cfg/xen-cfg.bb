@@ -14,14 +14,24 @@ LICENSE = "MIT"
 LIC_FILES_CHKSUM = "\
     file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302 \
     "
-SRC_URI = "file://xen.cfg"
 
 do_patch[noexec] = "1"
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 do_install[noexec] = "1"
 
+# Set Dom0 VCPU affinity
+EXTRA_XEN_CMDLINE_CONFIG ?= "maxcpus=4 dom0_max_vcpus=1 dom0_vcpus_pin"
+
 do_deploy() {
+    cat << EOF > ${WORKDIR}/xen.cfg
+[global]
+default=xen
+
+[xen]
+options=noreboot dom0_mem=1024M ${EXTRA_XEN_CMDLINE_CONFIG}
+kernel=Image console=hvc0 earlycon=xenboot root=/dev/vda2 rootwait
+EOF
     cp ${WORKDIR}/xen.cfg ${DEPLOYDIR}/xen.cfg
 }
 addtask deploy after do_install before do_build
