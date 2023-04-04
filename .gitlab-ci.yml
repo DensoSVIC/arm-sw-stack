@@ -10,7 +10,7 @@ variables:
                  (x86_64, arm64)
   BUILD_IMAGE:
     value: none
-    description: Comma seperated list of images to build
+    description: Comma separated list of images to build
                  (none)
   CI_DEBUG_TRACE:
     value: 'false'
@@ -21,7 +21,7 @@ variables:
     description: Name tag used by the Docker image
   FORCE_TESTS:
     value: none
-    description: Comma seperated list of tests that must be run
+    description: Comma separated list of tests that must be run
                  (none)
   FREQUENCY:
     value: adhoc
