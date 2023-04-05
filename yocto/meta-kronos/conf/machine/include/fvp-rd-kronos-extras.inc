@@ -9,4 +9,6 @@ ZEPHYR_TOOLCHAIN_VARIANT = "zephyr"
 
 SAFETY_ISLAND_C0_IMAGE ??= "zephyr-app-si-cl0"
 
+TEST_SUITES += "test_10_safety_island_c0"
+
 require ${@bb.utils.contains('EXTRA_IMAGE_FEATURES', 'virtualization', "${KRONOS_VIRTUALIZATION_DYNAMIC_DIR}/conf/machine/include/fvp-rd-kronos-xen.inc", '', d)}
