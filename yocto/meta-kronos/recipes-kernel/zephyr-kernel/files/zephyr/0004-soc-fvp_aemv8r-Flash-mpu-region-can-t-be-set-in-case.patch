@@ -1,0 +1,38 @@
+From 6faa521fdcc37494dd12871bdc0c57a0d8b11b00 Mon Sep 17 00:00:00 2001
+From: Yanqin Wei <yanqin.wei@arm.com>
+Date: Thu, 6 Apr 2023 19:47:41 +0800
+Subject: [PATCH] soc: fvp_aemv8r: Flash mpu region can't be set in case of no
+ flash
+
+Some platforms have not flash memory. The flash mpu region cannot
+be created in case CONFIG_FLASH_SIZE is zero.
+
+Signed-off-by: Yanqin Wei <yanqin.wei@arm.com>
+Upstream-Status: Pending
+---
+ soc/arm64/arm/fvp_aemv8r/arm_mpu_regions.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/soc/arm64/arm/fvp_aemv8r/arm_mpu_regions.c b/soc/arm64/arm/fvp_aemv8r/arm_mpu_regions.c
+index ab261e2e45..4165695710 100644
+--- a/soc/arm64/arm/fvp_aemv8r/arm_mpu_regions.c
++++ b/soc/arm64/arm/fvp_aemv8r/arm_mpu_regions.c
+@@ -11,13 +11,14 @@
+ #include <zephyr/sys/util.h>
+ 
+ static const struct arm_mpu_region mpu_regions[] = {
++#if CONFIG_FLASH_SIZE
+ 	/* Region 0 */
+ 	MPU_REGION_ENTRY("FLASH_0",
+ 			 CONFIG_FLASH_BASE_ADDRESS,
+ 			 CONFIG_FLASH_BASE_ADDRESS +
+ 			 KB(CONFIG_FLASH_SIZE),
+ 			 REGION_FLASH_ATTR),
+-
++#endif
+ 	/* Region 1 zephyr text */
+ 	MPU_REGION_ENTRY("SRAM_0",
+ 			 (uintptr_t)__text_region_start,
+-- 
+2.40.0
+

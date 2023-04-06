@@ -16,6 +16,7 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0001-include-arch-add-macro-for-mpu-memory-configuration.patch;patchdir=zephyr \
     file://zephyr/0002-soc-fvp_aemv8r-add-mpu-region-from-device-tree.patch;patchdir=zephyr \
     file://zephyr/0003-soc-include-fvp_aemv8r-Define-device-memory-as-devic.patch;patchdir=zephyr \
+    file://zephyr/0004-soc-fvp_aemv8r-Flash-mpu-region-can-t-be-set-in-case.patch;patchdir=zephyr \
     "
 SRC_URI += "${SRC_URI_ZEPHYR_EXTRA_PATCHES}"
 
