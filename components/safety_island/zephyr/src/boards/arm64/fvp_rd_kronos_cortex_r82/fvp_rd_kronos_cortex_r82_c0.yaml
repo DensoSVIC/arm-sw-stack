@@ -10,4 +10,4 @@ type: sim
 toolchain:
   - zephyr
   - cross-compile
-ram: 4096
+ram: 2048
