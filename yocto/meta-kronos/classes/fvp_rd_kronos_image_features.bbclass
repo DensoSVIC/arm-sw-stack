@@ -36,6 +36,7 @@ FEATURE_PACKAGES_virtualization = " \
     kernel-module-xen-gntdev \
     kernel-module-xen-netback \
     xen-tools \
+    virtualization-integration-tests-ptest \
     "
 
 FEATURE_PACKAGES_domu = " \
@@ -44,3 +45,14 @@ FEATURE_PACKAGES_domu = " \
     "
 
 require ${@bb.utils.contains('MACHINE', 'fvp-rd-kronos', 'conf/machine/include/fvp-rd-kronos-extras.inc', '', d)}
+
+def add_extra_test_suites(d):
+    test_suites = ""
+    extra_img_feat = (d.getVar('EXTRA_IMAGE_FEATURES') or "")
+    for feature in extra_img_feat.split():
+        if feature == 'virtualization':
+            test_suites += ' test_40_virtualization'
+
+    return test_suites
+
+TEST_SUITES:append = " test_10_linuxlogin ${@add_extra_test_suites(d)}"

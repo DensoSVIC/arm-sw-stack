@@ -28,7 +28,4 @@ WKS_SEARCH_PATH:prepend := "${KRONOS_VIRTUALIZATION_DYNAMIC_DIR}/wic:"
 WKS_FILE = "fvp-rd-kronos-xen-efi-disk.wks.in"
 
 # Set up the tests
-TEST_FVP_LINUX_BOOT_TIMEOUT="${@40*60}"
-
-# Skip BSP tests. It will be done in the future
-TEST_SUITES:remove="test_20_bsp"
+TEST_FVP_LINUX_BOOT_TIMEOUT = "${@40*60}"
