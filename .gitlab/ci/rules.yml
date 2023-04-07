@@ -12,6 +12,9 @@
 .if-api-or-pipeline: &if-api-or-pipeline
   if: '$CI_PIPELINE_SOURCE == "api" || $CI_PIPELINE_SOURCE == "pipeline"'
 
+.if-parent-pipeline: &if-parent-pipeline
+  if: '$CI_PIPELINE_SOURCE == "parent_pipeline"'
+
 .if-nightly: &if-nightly
   if: '$FREQUENCY == "nightly"'
 
@@ -57,4 +60,8 @@
     - <<: *if-merge-request-or-push
       changes: *ci-patterns
     - <<: *if-merge-request-or-push
+      changes: *yocto-patterns
+    - <<: *if-parent-pipeline
+      changes: *ci-patterns
+    - <<: *if-parent-pipeline
       changes: *yocto-patterns
