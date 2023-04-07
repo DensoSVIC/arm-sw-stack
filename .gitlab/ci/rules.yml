@@ -34,6 +34,9 @@
 .yocto-patterns: &yocto-patterns
   - "yocto/**/*"
 
+.components-patterns: &components-patterns
+  - "components/**/*"
+
 # Build image rules
 .build-image:rules:
   rules:
@@ -43,6 +46,8 @@
       changes: *ci-patterns
     - <<: *if-merge-request-or-push
       changes: *yocto-patterns
+    - <<: *if-merge-request-or-push
+      changes: *components-patterns
 
 # Layer check rules
 .layer-check:rules:
