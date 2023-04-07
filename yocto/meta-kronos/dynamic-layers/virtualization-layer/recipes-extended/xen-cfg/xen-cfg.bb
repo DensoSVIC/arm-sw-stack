@@ -20,8 +20,8 @@ do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 do_install[noexec] = "1"
 
-# Set Dom0 VCPU affinity
-EXTRA_XEN_CMDLINE_CONFIG ?= "maxcpus=4 dom0_max_vcpus=1 dom0_vcpus_pin"
+# Set Dom0 VCPU affinity and MPAM SLC config
+EXTRA_XEN_CMDLINE_CONFIG ?= "maxcpus=4 dom0_max_vcpus=1 dom0_vcpus_pin dom0_mpam=slc:0xf"
 
 do_deploy() {
     cat << EOF > ${WORKDIR}/xen.cfg
