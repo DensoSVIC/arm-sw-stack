@@ -1,0 +1,173 @@
+From 596b955d68568265bd444a6ce0d54d1e276b7dfd Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Thu, 21 Jul 2022 05:29:50 +0000
+Subject: [PATCH] xen/arm: Introduce detection of MPAM Memory-System
+ Component (MSC)
+
+A Memory-System Component (MSC) is a function, unit, or design block
+in a memory system that can have partitionable resources. MSCs consist
+of all units that handle load or store requests issued by any MPAM
+Requester. An MSC has resources that are used to process memory
+requests, and therefore the use of a resource can be controlled. SMMUs,
+caches, TLBs and memory channel controllers are examples of an MSC.
+From a software viewpoint, an MSC is a container of resources.
+
+This commit introduces a function `mpam_msc_probe()`, and the MPAM boot
+time initialization starts from there. In this patch, we start from
+probing the number of MSCs in firmware (device tree). This is based on
+checking the compatible property of each device node, which should match
+"arm,mpam-msc" according to the spec.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-5049
+Change-Id: Ia772777a31d0e43e815daccbb15c64e03bdfcb65
+---
+ xen/arch/arm/mpam.c        | 81 ++++++++++++++++++++++++++++++++++++++
+ xen/arch/arm/setup.c       |  5 +++
+ xen/include/asm-arm/mpam.h | 22 +++++++++++
+ 3 files changed, 108 insertions(+)
+ create mode 100644 xen/arch/arm/mpam.c
+ create mode 100644 xen/include/asm-arm/mpam.h
+
+diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
+new file mode 100644
+index 0000000000..3df0f59997
+--- /dev/null
++++ b/xen/arch/arm/mpam.c
+@@ -0,0 +1,81 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * xen/arch/arm/mpam.c
++ *
++ * Code of the Arm MPAM (Memory Partitioning And Monitoring) extension support.
++ *
++ * Copyright (C) 2022 Arm Ltd.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program. If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include <xen/device_tree.h>
++#include <xen/err.h>
++#include <asm/mpam.h>
++
++static int __init mpam_dt_count_msc(void)
++{
++    int count = 0;
++    const struct dt_device_node *node;
++
++    dt_for_each_device_node(dt_host, node)
++    {
++        if ( dt_device_is_compatible(node, "arm,mpam-msc") )
++            count++;
++    }
++
++    return count;
++}
++
++static int __init mpam_msc_probe(void)
++{
++    unsigned int num_msc = 0;
++
++    if ( !cpu_has_mpam )
++    {
++        printk(XENLOG_ERR "MPAM: MPAM is not supported in system\n");
++        return -EOPNOTSUPP;
++    }
++
++    num_msc = mpam_dt_count_msc();
++    printk(XENLOG_INFO "MPAM: Probed %d MSC from firmware\n",
++           num_msc);
++
++    if ( !num_msc )
++        return -EINVAL;
++
++    return 0;
++}
++
++void __init mpam_presmp_setup(void)
++{
++    int rc = 0;
++
++    rc = mpam_msc_probe();
++    if ( rc )
++    {
++        printk(XENLOG_WARNING
++               "MPAM: Skip MPAM pre-smp setup due to %s failure, rc: %d\n",
++               __func__, rc);
++        return;
++    }
++}
++
++/*
++ * Local variables:
++ * mode: C
++ * c-file-style: "BSD"
++ * c-basic-offset: 4
++ * indent-tabs-mode: nil
++ * End:
++ */
+diff --git a/xen/arch/arm/setup.c b/xen/arch/arm/setup.c
+index cc52a4e17a..7818f5b274 100644
+--- a/xen/arch/arm/setup.c
++++ b/xen/arch/arm/setup.c
+@@ -53,6 +53,7 @@
+ #include <asm/setup.h>
+ #include <xsm/xsm.h>
+ #include <asm/acpi.h>
++#include <asm/mpam.h>
+ 
+ struct bootinfo __initdata bootinfo;
+ 
+@@ -947,6 +948,10 @@ void __init start_xen(unsigned long boot_phys_offset,
+     printk(XENLOG_INFO "SMP: Allowing %u CPUs\n", cpus);
+     nr_cpu_ids = cpus;
+ 
++#ifdef CONFIG_MPAM
++    mpam_presmp_setup();
++#endif
++
+     /*
+      * Some errata relies on SMCCC version which is detected by psci_init()
+      * (called from smp_init_cpus()).
+diff --git a/xen/include/asm-arm/mpam.h b/xen/include/asm-arm/mpam.h
+new file mode 100644
+index 0000000000..1a5f8b20fa
+--- /dev/null
++++ b/xen/include/asm-arm/mpam.h
+@@ -0,0 +1,22 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (C) 2022 Arm Ltd.
++ */
++
++#ifndef __ARM_MPAM_H__
++#define __ARM_MPAM_H__
++
++#include <asm/cpufeature.h>
++
++extern void mpam_presmp_setup(void);
++
++#endif /* __ARM_MPAM_H__ */
++
++/*
++ * Local variables:
++ * mode: C
++ * c-file-style: "BSD"
++ * c-basic-offset: 4
++ * indent-tabs-mode: nil
++ * End:
++ */
+-- 
+2.25.1
+

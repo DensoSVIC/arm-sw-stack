@@ -1,0 +1,59 @@
+From 3f39391041fde621d1007ffc45b3ede7779647a8 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Fri, 7 Apr 2023 13:25:40 +0800
+Subject: [PATCH] xen/arm: Add get_logical_cpu_from_hw_id() to smp.h
+
+This is the backport of commit:
+2a77ad2db773 xen/common,arm: Move get_logical_cpu_from_hw_id() to smp.h
+
+Add `get_logical_cpu_from_hw_id()` to `include/asm-arm/smp.h`, thus
+enabling others to use this function.
+
+No functional change intended.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-5049
+Change-Id: I466a1e48f3b8be8694902e63b67d7026307d97c5
+---
+ xen/include/asm-arm/smp.h | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/xen/include/asm-arm/smp.h b/xen/include/asm-arm/smp.h
+index af5a2fe652..8719f4be39 100644
+--- a/xen/include/asm-arm/smp.h
++++ b/xen/include/asm-arm/smp.h
+@@ -4,6 +4,7 @@
+ #ifndef __ASSEMBLY__
+ #include <xen/cpumask.h>
+ #include <xen/device_tree.h>
++#include <xen/init.h>
+ #include <asm/current.h>
+ #endif
+ 
+@@ -34,6 +35,22 @@ extern void init_secondary(void);
+ extern void smp_init_cpus(void);
+ extern void smp_clear_cpu_maps (void);
+ extern int smp_get_max_cpus (void);
++
++#define cpu_physical_id(cpu) cpu_logical_map(cpu)
++
++static inline int __init get_logical_cpu_from_hw_id(unsigned int hwid)
++{
++    unsigned int i;
++
++    for ( i = 0; i < nr_cpu_ids; i++ )
++    {
++        if ( cpu_physical_id(i) == hwid )
++            return i;
++    }
++
++    return -1;
++}
++
+ #endif
+ 
+ /*
+-- 
+2.25.1
+

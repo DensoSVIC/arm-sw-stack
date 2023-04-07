@@ -1,0 +1,168 @@
+From a54332efded323c9d845041c2fdbfd18e23e08df Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Thu, 28 Jul 2022 04:54:34 +0000
+Subject: [PATCH] xen/arm: mpam: Merge supported features into mpam_class
+
+Once we have probed all the resources, we can walk the tree and
+produced overall values by merging the bitmaps. This eliminates
+features that are only supported by some MSCs that make up a
+component or class. If bitmap properties are mismatched within a
+component we cannot support the mismatched feature.
+
+Do this in the `mpam_enable()` function after all MSC devices have
+been probed.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-5049
+Change-Id: If2c94c862f60e232d04aadaf53900fcc5478787f
+---
+ xen/arch/arm/mpam.c        | 98 ++++++++++++++++++++++++++++++++++++++
+ xen/include/asm-arm/mpam.h |  8 ++++
+ 2 files changed, 106 insertions(+)
+
+diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
+index 12ac187499..1a02ca92a9 100644
+--- a/xen/arch/arm/mpam.c
++++ b/xen/arch/arm/mpam.c
+@@ -995,6 +995,102 @@ static void __init mpam_cpu_online(unsigned int cpu)
+     spin_unlock(&mpam_list_lock);
+ }
+ 
++/*
++ * If a resource doesn't match class feature/configuration, do the right thing.
++ * For 'num' properties we can just take the minimum.
++ * For properties where the mismatched unused bits would make a difference, we
++ * nobble the class feature, as we can't configure all the resources.
++ * e.g. The L3 cache is composed of two resources with 13 and 17 portion
++ * bitmaps respectively.
++ */
++static void __init
++__resource_props_mismatch(struct mpam_msc_ris *ris, struct mpam_class *class)
++{
++    struct mpam_props *cprops = &class->props;
++    struct mpam_props *rprops = &ris->props;
++
++    /* we are modifying class here which is in global list mpam_classes */
++    BUG_ON(!spin_is_locked(&mpam_list_lock));
++
++    /* Clear missing features */
++    cprops->features &= rprops->features;
++
++    /* Clear incompatible features */
++    if ( cprops->cpbm_wd != rprops->cpbm_wd )
++        mpam_clear_feature(mpam_feat_cpor_part, &cprops->features);
++    if ( cprops->mbw_pbm_bits != rprops->mbw_pbm_bits )
++        mpam_clear_feature(mpam_feat_mbw_part, &cprops->features);
++
++    /* bwa_wd is a count of bits, fewer bits means less precision */
++    if ( cprops->bwa_wd != rprops->bwa_wd )
++        cprops->bwa_wd = min(cprops->bwa_wd, rprops->bwa_wd);
++
++    /* For num properties, take the minimum */
++    if ( cprops->num_csu_mon != rprops->num_csu_mon )
++        cprops->num_csu_mon = min(cprops->num_csu_mon, rprops->num_csu_mon);
++    if ( cprops->num_mbwu_mon != rprops->num_mbwu_mon )
++        cprops->num_mbwu_mon = min(cprops->num_mbwu_mon, rprops->num_mbwu_mon);
++
++    if ( cprops->intpri_wd != rprops->intpri_wd )
++        cprops->intpri_wd = min(cprops->intpri_wd, rprops->intpri_wd);
++    if ( cprops->dspri_wd != rprops->dspri_wd )
++        cprops->dspri_wd = min(cprops->dspri_wd, rprops->dspri_wd);
++
++    /* {int,ds}pri may not have different 0-low behaviour */
++    if ( mpam_has_feature(mpam_feat_intpri_part_0_low, cprops) !=
++         mpam_has_feature(mpam_feat_intpri_part_0_low, rprops) )
++        mpam_clear_feature(mpam_feat_intpri_part, &cprops->features);
++    if ( mpam_has_feature(mpam_feat_dspri_part_0_low, cprops) !=
++         mpam_has_feature(mpam_feat_dspri_part_0_low, rprops) )
++        mpam_clear_feature(mpam_feat_dspri_part, &cprops->features);
++}
++
++/*
++ * Copy the first component's first resources's properties and features to the
++ * class. __resource_props_mismatch() will remove conflicts.
++ * It is not possible to have a class with no components, or a component with
++ * no resources.
++ */
++static void __init mpam_enable_init_class_features(struct mpam_class *class)
++{
++    struct mpam_msc_ris *ris;
++    struct mpam_component *comp;
++
++    comp = list_first_entry_or_null(&class->components,
++                                    struct mpam_component, class_list);
++    if ( WARN_ON(!comp) )
++        return;
++
++    ris = list_first_entry_or_null(&comp->ris,
++                                   struct mpam_msc_ris, comp_list);
++    if ( WARN_ON(!ris) )
++        return;
++
++    class->props = ris->props;
++}
++
++/* Merge all the common resource features into class. */
++static void __init mpam_enable_merge_features(void)
++{
++    struct mpam_msc_ris *ris;
++    struct mpam_class *class;
++    struct mpam_component *comp;
++
++    list_for_each_entry(class, &mpam_classes, classes_list)
++    {
++        mpam_enable_init_class_features(class);
++
++        list_for_each_entry(comp, &class->components, class_list)
++        {
++            list_for_each_entry(ris, &comp->ris, comp_list)
++            {
++                __resource_props_mismatch(ris, class);
++                class->nrdy_us = max(class->nrdy_us, ris->msc->nrdy_us);
++            }
++        }
++    }
++}
++
+ /* Enable MPAM once all devices have been probed. */
+ static int __init mpam_enable(void)
+ {
+@@ -1020,6 +1116,8 @@ static int __init mpam_enable(void)
+         return -ENODEV;
+     }
+ 
++    mpam_enable_merge_features();
++
+     /* With all MSCs probed, now we can set the global variable to true. */
+     mpam_enabled = true;
+ 
+diff --git a/xen/include/asm-arm/mpam.h b/xen/include/asm-arm/mpam.h
+index 9c765f6068..681070eeed 100644
+--- a/xen/include/asm-arm/mpam.h
++++ b/xen/include/asm-arm/mpam.h
+@@ -321,6 +321,12 @@ static inline void mpam_set_feature(enum mpam_device_features feat,
+     props->features |= (1 << feat);
+ }
+ 
++static inline void mpam_clear_feature(enum mpam_device_features feat,
++                                      mpam_features_t *supported)
++{
++    *supported &= ~(1 << feat);
++}
++
+ struct msc_feature_page
+ {
+     /* Physical addr defined in firmware. */
+@@ -359,6 +365,8 @@ struct mpam_class
+     /* mpam_components in this class */
+     struct list_head components;
+     cpumask_t affinity;
++    struct mpam_props props;
++    uint32_t nrdy_us;
+     uint8_t level;
+     enum mpam_class_types type;
+     /* member of mpam_classes */
+-- 
+2.25.1
+

@@ -1,0 +1,205 @@
+From 59d09692aed34956803fca29347e71f0473f5424 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Wed, 27 Jul 2022 04:09:43 +0000
+Subject: [PATCH] xen/arm: mpam: Reset MSC and RIS controls during CPU
+ online
+
+When a CPU comes online, any partid available in the system should
+have its configuration reset. This can avoid mistakenly writting
+an incorrect value to the MSC, leading to a fresh MSC misconfigured.
+
+To reset, write the maximum values for all discovered controls, so
+that the MPAM will not affect the original system. Since each CPU
+will call the same `mpam_cpu_online()` function, adding some flags
+in `struct mpam_msc` and `struct mpam_msc_ris` to make sure that
+if an RIS is already reset and has not been touched since it was
+brought online (by other CPUs which have CPU affinity of the MSC
+but came earlier), it does not need to be reset again.
+
+Note that, the MPAM test on real hardware has shown that the actual
+cache that can be assigned to a specific PARTID follows the formula:
+cache = CMAX% * CPOR. As we don't really supports CMAX, currently
+set it to its maximum value so that the cache portion bitmask (CPOR)
+partitioning scheme can work properly, also it is observed on hardware
+that if CPOR is the only cache partitioning scheme supported, cache
+storage monitor only works if the CMAX is set to the maximum value.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-5049
+Change-Id: I4dd637621cd05447f56881b84febe5a2668747f1
+---
+ xen/arch/arm/mpam.c        | 134 ++++++++++++++++++++++++++++++++++++-
+ xen/include/asm-arm/mpam.h |   2 +
+ 2 files changed, 134 insertions(+), 2 deletions(-)
+
+diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
+index e8646eb2a4..ff445a7165 100644
+--- a/xen/arch/arm/mpam.c
++++ b/xen/arch/arm/mpam.c
+@@ -857,10 +857,140 @@ static int __init mpam_msc_hw_probe(struct mpam_msc *msc)
+     return 0;
+ }
+ 
++static void mpam_reset_msc_bitmap(struct mpam_msc *msc,
++                                  uint16_t reg, uint16_t wd)
++{
++    uint32_t bm = ~0;
++    uint16_t i;
++
++    BUG_ON(!spin_is_locked(&msc->hw_lock));
++
++    /* write all but the last full-32bit-word */
++    for (i = 0; i < wd / 32; i++, reg += sizeof(bm))
++        mpam_write_reg(msc, reg, bm);
++
++    /* and the last partial 32bit word */
++    bm = GENMASK(wd % 32, 0);
++    if ( bm )
++        mpam_write_reg(msc, reg, bm);
++}
++
++static void mpam_reprogram_ris_partid(struct mpam_msc_ris *ris, uint16_t partid)
++{
++    unsigned long flags;
++    struct mpam_msc *msc = ris->msc;
++    struct mpam_props *rprops = &ris->props;
++    uint32_t pri_val = 0;
++    uint16_t cmax = GENMASK(15, 0);
++    uint16_t dspri = GENMASK(rprops->dspri_wd, 0);
++    uint16_t intpri = GENMASK(rprops->intpri_wd, 0);
++    uint16_t bwa_fract = GENMASK(15, rprops->bwa_wd);
++
++    BUG_ON(!spin_is_locked(&msc->lock));
++
++    /* don't migrate to another CPU */
++    spin_lock_irqsave(&msc->hw_lock, flags);
++    __mpam_part_sel(ris->ris_idx, partid, msc);
++
++    if( mpam_has_feature(mpam_feat_partid_nrw, rprops) )
++        mpam_write_reg(msc, MPAMCFG_INTPARTID,
++                       (MPAMCFG_PART_SEL_INTERNAL | partid));
++
++    if ( mpam_has_feature(mpam_feat_cpor_part, rprops) )
++        mpam_reset_msc_bitmap(msc, MPAMCFG_CPBM, rprops->cpbm_wd);
++
++    if ( mpam_has_feature(mpam_feat_mbw_part, rprops) )
++        mpam_reset_msc_bitmap(msc, MPAMCFG_MBW_PBM, rprops->mbw_pbm_bits);
++
++    if ( mpam_has_feature(mpam_feat_mbw_min, rprops) )
++        mpam_write_reg(msc, MPAMCFG_MBW_MIN, 0);
++
++    if ( mpam_has_feature(mpam_feat_mbw_max, rprops) )
++        mpam_write_reg(msc, MPAMCFG_MBW_MAX, bwa_fract);
++
++    if ( mpam_has_feature(mpam_feat_mbw_prop, rprops) )
++        mpam_write_reg(msc, MPAMCFG_MBW_PROP, bwa_fract);
++
++    if ( mpam_has_feature(mpam_feat_ccap_part, rprops) )
++        mpam_write_reg(msc, MPAMCFG_CMAX, cmax);
++
++    if ( mpam_has_feature(mpam_feat_intpri_part, rprops) ||
++         mpam_has_feature(mpam_feat_dspri_part, rprops) )
++    {
++        /* aces high? */
++        if ( !mpam_has_feature(mpam_feat_intpri_part_0_low, rprops) )
++            intpri = 0;
++        if ( !mpam_has_feature(mpam_feat_dspri_part_0_low, rprops) )
++            dspri = 0;
++
++        if ( mpam_has_feature(mpam_feat_intpri_part, rprops) )
++            pri_val |= FIELD_PREP(MPAMCFG_PRI_INTPRI, intpri);
++        if ( mpam_has_feature(mpam_feat_dspri_part, rprops) )
++            pri_val |= FIELD_PREP(MPAMCFG_PRI_DSPRI, dspri);
++
++        mpam_write_reg(msc, MPAMCFG_PRI, pri_val);
++    }
++
++    spin_unlock_irqrestore(&msc->hw_lock, flags);
++}
++
++static void __init mpam_reprogram_ris(struct mpam_msc_ris *ris)
++{
++    uint16_t partid, partid_max;
++
++    if ( ris->in_reset_state )
++        return;
++
++    partid_max = ACCESS_ONCE(mpam_partid_max);
++
++    for ( partid = 0; partid < partid_max; partid++ )
++        mpam_reprogram_ris_partid(ris, partid);
++}
++
++static void __init mpam_reset_ris(struct mpam_msc_ris *ris)
++{
++    struct mpam_msc *msc = ris->msc;
++
++    BUG_ON(!spin_is_locked(&msc->lock));
++
++    if ( ris->in_reset_state )
++        return;
++
++    mpam_reprogram_ris(ris);
++}
++
++static void __init mpam_reprogram_msc(struct mpam_msc *msc)
++{
++    struct mpam_msc_ris *ris;
++
++    BUG_ON(!spin_is_locked(&msc->lock));
++
++    list_for_each_entry(ris, &msc->ris, msc_list)
++    {
++        mpam_reset_ris(ris);
++        ris->in_reset_state = true;
++    }
++}
++
+ static void __init mpam_cpu_online(unsigned int cpu)
+ {
+-    /* Currently make this function dummy as here we need to reprogram RIS. */
+-    return;
++    struct mpam_msc *msc;
++
++    spin_lock(&mpam_list_lock);
++    list_for_each_entry(msc, &mpam_all_msc, glbl_list)
++    {
++        if ( !cpumask_test_cpu(cpu, &msc->accessibility) )
++            continue;
++
++        spin_lock(&msc->lock);
++        if ( atomic_read(&msc->online_refs) == 0 )
++        {
++            mpam_reprogram_msc(msc);
++            atomic_inc(&msc->online_refs);
++        }
++        spin_unlock(&msc->lock);
++    }
++    spin_unlock(&mpam_list_lock);
+ }
+ 
+ static int __init mpam_msc_probe(void)
+diff --git a/xen/include/asm-arm/mpam.h b/xen/include/asm-arm/mpam.h
+index 1ae5cbecc8..d4454005b3 100644
+--- a/xen/include/asm-arm/mpam.h
++++ b/xen/include/asm-arm/mpam.h
+@@ -336,6 +336,7 @@ struct mpam_msc
+     /* member of mpam_all_msc. */
+     struct list_head glbl_list;
+     cpumask_t accessibility;
++    atomic_t online_refs;
+     spinlock_t lock;
+     bool probed;
+     uint32_t nrdy_us;
+@@ -381,6 +382,7 @@ struct mpam_msc_ris
+     uint8_t ris_idx;
+     uint64_t idr;
+     struct mpam_props props;
++    bool in_reset_state;
+     cpumask_t affinity;
+     /* member of mpam_component:ris */
+     struct list_head comp_list;
+-- 
+2.25.1
+

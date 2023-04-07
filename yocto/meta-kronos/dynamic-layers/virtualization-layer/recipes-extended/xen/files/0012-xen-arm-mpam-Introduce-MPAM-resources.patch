@@ -1,0 +1,344 @@
+From da31e9b1afef7d3d099c43670ce3007cf776e311 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Sat, 23 Jul 2022 09:58:32 +0000
+Subject: [PATCH] xen/arm: mpam: Introduce MPAM resources
+
+An MSC is a container of resources. MPAM provides a Resource Instance
+Selection (RIS) mechanism for supporting MSCs that are able to control
+multiple resources. The resources controlled by an MSC can be
+identified by their RIS index.
+
+Although RIS is not always available across different MPAM versions,
+from software implemetation perspective, we can treat the MSC that
+only control a single resource as if there is only one RIS inside
+the MSC. So that the software framework can be used without change
+across different MPAM versions.
+
+To properly configure different types of MPAM resources, this commit
+abstracts the resource concept in MPAM to two kinds of grouping,
+namely `mpam_class` and `mpam_component`. An MPAM class is the set of
+components of the same type. An MPAM component is a group of RIS that
+control the same thing. For example, the set of RIS that make up the
+L3 cache are a component. These are sometimes termed slices. They
+should be configured as if they were one MSC. The SoC probably has
+more than one L3 cache, each attached to a distinct set of CPUs. All
+the L3 components are grouped as a class.
+
+This commit adds support for creating and destroying these structures.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-5049
+Change-Id: I42f771efa799e9bb0a9df7981dd2c13ea8521802
+---
+ xen/arch/arm/mpam.c        | 209 +++++++++++++++++++++++++++++++++++++
+ xen/include/asm-arm/mpam.h |  45 ++++++++
+ 2 files changed, 254 insertions(+)
+
+diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
+index 63c1b36668..46be9611cc 100644
+--- a/xen/arch/arm/mpam.c
++++ b/xen/arch/arm/mpam.c
+@@ -32,6 +32,13 @@
+  */
+ static DEFINE_SPINLOCK(mpam_list_lock);
+ static LIST_HEAD(mpam_all_msc);
++/*
++ * When creating an MSC, struct mpam_msc is added to the all mpam_all_msc list,
++ * then linked via struct mpam_ris to a component and a class.
++ * The same MSC may exist under different class->component paths, but the RIS
++ * index will be unique.
++ */
++static LIST_HEAD(mpam_classes);
+ 
+ static unsigned int mpam_fw_num_msc;
+ /*
+@@ -146,6 +153,207 @@ static int __init get_cpumask_from_cache(const struct dt_device_node *cache,
+     return get_cpumask_from_cache_id(cache->phandle, cache_level, affinity);
+ }
+ 
++static struct mpam_class *
++__init mpam_class_alloc(uint8_t level_idx, enum mpam_class_types type)
++{
++    struct mpam_class *class;
++
++    BUG_ON(!spin_is_locked(&mpam_list_lock));
++
++    class = xzalloc(struct mpam_class);
++    if ( !class )
++        return ERR_PTR(-ENOMEM);
++
++    INIT_LIST_HEAD(&class->components);
++    /* affinity is updated when ris are added */
++    class->level = level_idx;
++    class->type = type;
++    INIT_LIST_HEAD(&class->classes_list);
++
++    list_add(&class->classes_list, &mpam_classes);
++
++    return class;
++}
++
++static struct mpam_class *
++mpam_class_get(uint8_t level_idx, enum mpam_class_types type, bool alloc)
++{
++    bool found = false;
++    struct mpam_class *class;
++
++    BUG_ON(!spin_is_locked(&mpam_list_lock));
++
++    list_for_each_entry(class, &mpam_classes, classes_list)
++    {
++        if ( class->type == type && class->level == level_idx )
++        {
++            found = true;
++            break;
++        }
++    }
++
++    if ( found )
++        return class;
++
++    if ( !alloc )
++        return ERR_PTR(-ENOENT);
++
++    return mpam_class_alloc(level_idx, type);
++}
++
++static void __init mpam_class_destroy(struct mpam_class *class)
++{
++    BUG_ON(!spin_is_locked(&mpam_list_lock));
++
++    list_del(&class->classes_list);
++    xfree(class);
++}
++
++static struct mpam_component *
++__init mpam_component_alloc(struct mpam_class *class, int id)
++{
++    struct mpam_component *comp;
++
++    BUG_ON(!spin_is_locked(&mpam_list_lock));
++
++    comp = xzalloc(struct mpam_component);
++    if ( !comp )
++        return ERR_PTR(-ENOMEM);
++
++    comp->comp_id = id;
++    INIT_LIST_HEAD(&comp->ris);
++    /* affinity is updated when ris are added */
++    INIT_LIST_HEAD(&comp->class_list);
++    comp->class = class;
++
++    list_add(&comp->class_list, &class->components);
++
++    return comp;
++}
++
++static struct mpam_component *
++__init mpam_component_get(struct mpam_class *class, int id, bool alloc)
++{
++    struct mpam_component *comp;
++
++    BUG_ON(!spin_is_locked(&mpam_list_lock));
++
++    list_for_each_entry(comp, &class->components, class_list)
++    {
++        if ( comp->comp_id == id )
++            return comp;
++    }
++
++    if ( !alloc )
++        return ERR_PTR(-ENOENT);
++
++    return mpam_component_alloc(class, id);
++}
++
++static int __init
++mpam_ris_get_affinity(struct mpam_msc *msc, cpumask_t *affinity,
++                      enum mpam_class_types type, struct mpam_class *class,
++                      struct mpam_component *comp)
++{
++    int err;
++
++    switch ( type )
++    {
++    case MPAM_CLASS_CACHE:
++        err = get_cpumask_from_cache_id(comp->comp_id, class->level, affinity);
++        if ( err )
++        {
++            printk(XENLOG_ERR
++                   "MPAM: MSC:%d, component:%d, failed to get cache cpumask\n",
++                   msc->identifier, comp->comp_id);
++            return err;
++        }
++
++        if ( cpumask_empty(affinity) )
++            printk(XENLOG_ERR
++                   "MPAM: MSC:%d, component:%d, no CPU associated with cache\n",
++                   msc->identifier, comp->comp_id);
++        break;
++    case MPAM_CLASS_MEMORY:
++        /*
++         * TODO:
++         * For memory bandwidth, The affinity is determined by the NUMA setup.
++         */
++        break;
++    case MPAM_CLASS_UNKNOWN:
++        return 0;
++    }
++
++    cpumask_and(affinity, affinity, &msc->accessibility);
++
++    return 0;
++}
++
++int __init mpam_ris_create(struct mpam_msc *msc, uint8_t ris_idx,
++                           enum mpam_class_types type,
++                           uint8_t class_id, int component_id)
++{
++    struct mpam_msc_ris *ris;
++    struct mpam_class *class;
++    struct mpam_component *comp;
++
++    spin_lock(&mpam_list_lock);
++
++    if ( test_and_set_bit(ris_idx, msc->ris_idxs) )
++    {
++        printk(XENLOG_ERR "MPAM: ris_idx %d already in use in msc %d\n",
++               ris_idx, msc->identifier);
++        spin_unlock(&mpam_list_lock);
++        return -EBUSY;
++    }
++
++    ris = xzalloc(struct mpam_msc_ris);
++    if ( !ris )
++    {
++        printk(XENLOG_ERR "MPAM: Out of memory when allocating RIS\n");
++        spin_unlock(&mpam_list_lock);
++        return -ENOMEM;
++    }
++
++    class = mpam_class_get(class_id, type, true);
++    if ( IS_ERR(class) )
++    {
++        printk(XENLOG_ERR "MPAM: Cannot get class %d\n", class_id);
++        xfree(ris);
++        spin_unlock(&mpam_list_lock);
++        return PTR_ERR(class);
++    }
++
++    comp = mpam_component_get(class, component_id, true);
++    if ( IS_ERR(comp) )
++    {
++        if ( list_empty(&class->components) )
++            mpam_class_destroy(class);
++
++        printk(XENLOG_ERR "MPAM: Cannot get component %d\n", component_id);
++        xfree(ris);
++        spin_unlock(&mpam_list_lock);
++        return PTR_ERR(comp);
++    }
++
++    ris->ris_idx = ris_idx;
++    mpam_ris_get_affinity(msc, &ris->affinity, type, class, comp);
++    INIT_LIST_HEAD(&ris->comp_list);
++    INIT_LIST_HEAD(&ris->msc_list);
++    ris->msc = msc;
++    ris->comp = comp;
++
++    cpumask_or(&comp->affinity, &comp->affinity, &ris->affinity);
++    cpumask_or(&class->affinity, &class->affinity, &ris->affinity);
++
++    list_add(&ris->comp_list, &comp->ris);
++    list_add(&ris->msc_list, &msc->ris);
++
++    spin_unlock(&mpam_list_lock);
++
++    return 0;
++}
++
+ static int __init mpam_fw_init_msc(void)
+ {
+     void __iomem *io;
+@@ -235,6 +443,7 @@ static int __init mpam_fw_init_msc(void)
+ 
+         spin_lock_init(&msc->lock);
+         spin_lock_init(&msc->hw_lock);
++        INIT_LIST_HEAD(&msc->ris);
+ 
+         /*
+          * In principle, the access to the mpam_all_msc list should always with
+diff --git a/xen/include/asm-arm/mpam.h b/xen/include/asm-arm/mpam.h
+index cb836c1faf..ff94fb53ed 100644
+--- a/xen/include/asm-arm/mpam.h
++++ b/xen/include/asm-arm/mpam.h
+@@ -14,6 +14,12 @@
+ #define MPAMIDR_PMG_MAX        GENMASK(40, 32)
+ #define MPAMIDR_PARTID_MAX     GENMASK(15, 0)
+ 
++enum mpam_class_types {
++    MPAM_CLASS_CACHE,       /* Caches, e.g. L2 and L3 */
++    MPAM_CLASS_MEMORY,      /* Main memory */
++    MPAM_CLASS_UNKNOWN,     /* Everything else, e.g. SMMU */
++};
++
+ struct msc_feature_page
+ {
+     /* Physical addr defined in firmware. */
+@@ -31,6 +37,9 @@ struct mpam_msc
+     cpumask_t accessibility;
+     spinlock_t lock;
+     uint32_t nrdy_us;
++    unsigned long ris_idxs[128 / BITS_PER_LONG];
++    /* mpam_msc_ris of this msc. */
++    struct list_head ris;
+     /*
+      * hw_lock protects access to the MSC hardware registers.
+      * Take msc->lock first.
+@@ -39,6 +48,42 @@ struct mpam_msc
+     struct msc_feature_page feature_page;
+ };
+ 
++struct mpam_class
++{
++    /* mpam_components in this class */
++    struct list_head components;
++    cpumask_t affinity;
++    uint8_t level;
++    enum mpam_class_types type;
++    /* member of mpam_classes */
++    struct list_head classes_list;
++};
++
++struct mpam_component
++{
++    uint32_t comp_id;
++    /* mpam_msc_ris in this component */
++    struct list_head ris;
++    cpumask_t affinity;
++    /* member of mpam_class:components */
++    struct list_head class_list;
++    /* parent */
++    struct mpam_class *class;
++};
++
++struct mpam_msc_ris
++{
++    uint8_t ris_idx;
++    cpumask_t affinity;
++    /* member of mpam_component:ris */
++    struct list_head comp_list;
++    /* member of mpam_msc:ris */
++    struct list_head msc_list;
++    /* parents */
++    struct mpam_msc *msc;
++    struct mpam_component *comp;
++};
++
+ extern void mpam_presmp_setup(void);
+ 
+ #endif /* __ARM_MPAM_H__ */
+-- 
+2.25.1
+

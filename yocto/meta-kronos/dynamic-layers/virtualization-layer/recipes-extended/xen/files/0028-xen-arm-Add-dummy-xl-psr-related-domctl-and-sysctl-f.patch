@@ -1,0 +1,100 @@
+From 774a02892174d4d0c83b74e27e62270ef58bfd63 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Wed, 8 Jun 2022 09:30:34 +0000
+Subject: [PATCH] xen/arm: Add dummy xl-psr related domctl and sysctl for
+ Arm
+
+xl-psr provides a set of domctl and sysctl ops and commands that
+can be reused by MPAM to get the MPAM hardware information, configure
+a domain and read cache/membw monitor values. Therefore, this commit
+implements the ops needed for now, namely XEN_DOMCTL_psr_cmt_op,
+XEN_DOMCTL_psr_alloc, XEN_SYSCTL_psr_cmt_op and XEN_SYSCTL_psr_alloc,
+as dummy domctl and sysctl to provide basic framework for xl-psr on
+Arm. Following commits will fullfill these ops by calling related MPAM
+helpers in these ops.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-3763
+Change-Id: Id7c223471d7c11661bb363c74a3ef5215dd9545b
+---
+ xen/arch/arm/arm64/domctl.c | 13 +++++++++++++
+ xen/arch/arm/sysctl.c       | 24 +++++++++++++++++++++++-
+ 2 files changed, 36 insertions(+), 1 deletion(-)
+
+diff --git a/xen/arch/arm/arm64/domctl.c b/xen/arch/arm/arm64/domctl.c
+index 0de89b42c4..04e12dcc7d 100644
+--- a/xen/arch/arm/arm64/domctl.c
++++ b/xen/arch/arm/arm64/domctl.c
+@@ -11,6 +11,7 @@
+ #include <xen/hypercall.h>
+ #include <public/domctl.h>
+ #include <asm/cpufeature.h>
++#include <asm/mpam.h>
+ 
+ static long switch_mode(struct domain *d, enum domain_type type)
+ {
+@@ -51,6 +52,18 @@ long subarch_do_domctl(struct xen_domctl *domctl, struct domain *d,
+         }
+         break;
+ 
++#ifdef CONFIG_MPAM
++    case XEN_DOMCTL_psr_cmt_op:
++        if ( !cpu_has_mpam )
++            return -EOPNOTSUPP;
++        return 0;
++
++    case XEN_DOMCTL_psr_alloc:
++        if ( !cpu_has_mpam )
++            return -EOPNOTSUPP;
++        return 0;
++#endif
++
+     default:
+         return -ENOSYS;
+     }
+diff --git a/xen/arch/arm/sysctl.c b/xen/arch/arm/sysctl.c
+index f87944e847..f903a55808 100644
+--- a/xen/arch/arm/sysctl.c
++++ b/xen/arch/arm/sysctl.c
+@@ -11,6 +11,7 @@
+ #include <xen/errno.h>
+ #include <xen/hypercall.h>
+ #include <public/sysctl.h>
++#include <asm/mpam.h>
+ 
+ void arch_do_physinfo(struct xen_sysctl_physinfo *pi)
+ {
+@@ -20,7 +21,28 @@ void arch_do_physinfo(struct xen_sysctl_physinfo *pi)
+ long arch_do_sysctl(struct xen_sysctl *sysctl,
+                     XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
+ {
+-    return -ENOSYS;
++    long ret = 0;
++
++    switch ( sysctl->cmd )
++    {
++#ifdef CONFIG_MPAM
++    case XEN_SYSCTL_psr_cmt_op:
++        if ( !cpu_has_mpam )
++            return -EOPNOTSUPP;
++        break;
++
++    case XEN_SYSCTL_psr_alloc:
++        if ( !cpu_has_mpam )
++            return -EOPNOTSUPP;
++        break;
++#endif
++
++    default:
++        ret = -ENOSYS;
++        break;
++    }
++
++    return ret;
+ }
+ 
+ /*
+-- 
+2.25.1
+

@@ -1,0 +1,315 @@
+From 4fb02cdcfff24a343672e0f3988e1e5f9c8ec3a7 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Mon, 21 Feb 2022 02:05:55 +0000
+Subject: [PATCH] xen/arm: Apply MPAM config to Dom0
+
+To make it easy to handle MPAM configuration of domains, this commit
+firstly introduces `struct mpam_domain` to `struct arch_domain`, which
+combines the PARTID and its MPAM config.
+
+Dom0 MPAM config parsed from the Xen cmdline is applied at the boot
+time. This commit applies the MPAM config to Dom0 at the boot time by
+introducing an interface `mpam_update_domain()` to call
+`mpam_update_resources()` to apply the control of MPAM resources.
+This function is supposed to be called on all online CPUs because of
+the MPAM MSC CPU affinity.
+
+Also, since MPAM normally has architecture maximum width of each
+hardware feature and the user configuration cannot exceed this value,
+this commit also introduces a helper function `mpam_get_hwinfo()` to
+query the architecture maximum width of MPAM class type. This maximum
+width is used to clamp the configuration value applied to each domain.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-3395
+Change-Id: I55b9c8de7759efef170f8c897c9636483ef315ad
+---
+ xen/arch/arm/domain_build.c  |  11 +++
+ xen/arch/arm/mpam.c          | 133 ++++++++++++++++++++++++++++++++++-
+ xen/include/asm-arm/domain.h |   6 ++
+ xen/include/asm-arm/mpam.h   |  18 +++--
+ 4 files changed, 160 insertions(+), 8 deletions(-)
+
+diff --git a/xen/arch/arm/domain_build.c b/xen/arch/arm/domain_build.c
+index d02bacbcd1..274ff53154 100644
+--- a/xen/arch/arm/domain_build.c
++++ b/xen/arch/arm/domain_build.c
+@@ -20,6 +20,7 @@
+ #include <acpi/actables.h>
+ #include <asm/device.h>
+ #include <asm/kernel.h>
++#include <asm/mpam.h>
+ #include <asm/setup.h>
+ #include <asm/tee/tee.h>
+ #include <asm/platform.h>
+@@ -2912,6 +2913,11 @@ static int __init construct_domain(struct domain *d, struct kernel_info *kinfo)
+ 
+     domain_update_node_affinity(d);
+ 
++#ifdef CONFIG_MPAM
++    if ( mpam_enabled )
++        mpam_update_domain(d);
++#endif
++
+     v->is_initialised = 1;
+     clear_bit(_VPF_down, &v->pause_flags);
+ 
+@@ -3048,6 +3054,11 @@ static int __init construct_dom0(struct domain *d)
+         dom0_mem = MB(512);
+     }
+ 
++#ifdef CONFIG_MPAM
++    d->arch.mpam.cfg.l3_cpbm = dom0_mpam_config.l3_cpbm ?
++                               dom0_mpam_config.l3_cpbm : 0;
++#endif
++
+     iommu_hwdom_init(d);
+ 
+     d->max_pages = dom0_mem >> PAGE_SHIFT;
+diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
+index 32ae2249a5..f14b79d216 100644
+--- a/xen/arch/arm/mpam.c
++++ b/xen/arch/arm/mpam.c
+@@ -30,6 +30,7 @@
+ #include <asm/smp.h>
+ 
+ struct mpam_resource_config dom0_mpam_config;
++bool __read_mostly mpam_enabled = false;
+ /*
+  * mpam_list_lock protects the global lists when writing.
+  * Once the MPAM is enabled these lists are read-only.
+@@ -54,8 +55,6 @@ static unsigned int mpam_fw_num_msc;
+ static uint16_t mpam_partid_max;
+ static uint8_t mpam_pmg_max;
+ 
+-static bool __read_mostly mpam_enabled = false;
+-
+ static int __init parse_dom0_mpam_cmdline(const char *s)
+ {
+     char *token, *cmdline = (char *)s;
+@@ -1226,6 +1225,70 @@ static int __init mpam_enable(void)
+     return 0;
+ }
+ 
++static void mpam_apply_config(struct mpam_component *comp, uint16_t partid,
++                              struct mpam_config *cfg)
++{
++    struct mpam_msc_ris *ris;
++
++    list_for_each_entry(ris, &comp->ris, comp_list)
++    {
++        if ( !cpumask_test_cpu(smp_processor_id(), &ris->affinity) )
++            continue;
++
++        spin_lock(&ris->msc->lock);
++        if ( memcmp(&comp->cfg[partid], cfg, sizeof(*cfg)) )
++            mpam_reprogram_ris_partid(ris, partid, cfg);
++        spin_unlock(&ris->msc->lock);
++    }
++
++    memcpy(&comp->cfg[partid], cfg, sizeof(*cfg));
++}
++
++static void mpam_update_class(struct mpam_class *class, uint16_t partid,
++                              struct mpam_config *mpam_cfg)
++{
++    struct mpam_component *comp;
++
++    list_for_each_entry(comp, &class->components, class_list)
++    {
++        if ( !cpumask_test_cpu(smp_processor_id(), &comp->affinity) )
++            continue;
++
++        mpam_apply_config(comp, partid, mpam_cfg);
++    }
++}
++
++/* This is supposed to be IPI heavy as it should be called on all cpus.. */
++static void mpam_update_resources(void *data)
++{
++    struct mpam_class *class;
++    struct mpam_domain *domain = (struct mpam_domain *)data;
++
++    if ( domain->partid > ACCESS_ONCE(mpam_partid_max) )
++    {
++        printk(XENLOG_ERR
++               "MPAM: PARTID %d exceeds max PARTID supported (%d) in system\n",
++               domain->partid, ACCESS_ONCE(mpam_partid_max));
++        return;
++    }
++
++    list_for_each_entry(class, &mpam_classes, classes_list)
++    {
++        if ( !cpumask_test_cpu(smp_processor_id(), &class->affinity) )
++            continue;
++
++        if ( domain->cfg.l3_cpbm &&
++             class->type == MPAM_CLASS_CACHE && class->level == 3 )
++        {
++            struct mpam_config mpam_cfg = {};
++
++            mpam_set_feature(mpam_feat_cpor_part, &mpam_cfg);
++            mpam_cfg.cpbm = domain->cfg.l3_cpbm;
++            mpam_update_class(class, domain->partid, &mpam_cfg);
++        }
++    }
++}
++
+ static int __init mpam_msc_probe(void)
+ {
+     unsigned int num_msc = 0;
+@@ -1257,6 +1320,66 @@ static void __init mpam_load_supported_partid_pmg(void)
+     ACCESS_ONCE(mpam_pmg_max) = FIELD_GET(MPAMIDR_PMG_MAX, sys_mpam_idr);
+ }
+ 
++/*
++ * Get MPAM hwinfo based on the input resource type.
++ * Currently assume MPAM hwinfo is the same across different clusters.
++ */
++static int mpam_get_hwinfo(enum mpam_class_types type, uint32_t data[],
++                           unsigned int array_len)
++{
++    struct mpam_class *class;
++
++    ASSERT(array_len == MPAM_INFO_ARRAY_SIZE);
++
++    list_for_each_entry(class, &mpam_classes, classes_list)
++    {
++        if ( !cpumask_test_cpu(smp_processor_id(), &class->affinity) )
++            continue;
++
++        if ( class->type != type )
++            continue;
++
++        switch (type)
++        {
++        case MPAM_CLASS_CACHE:
++            data[MPAM_INFO_IDX_CPBM_LEN] = class->props.cpbm_wd;
++            return 0;
++
++        default:
++            printk(XENLOG_ERR "MPAM: Unsupported resource type\n");
++            return -EINVAL;
++        }
++    }
++
++    return -ENOENT;
++}
++
++/* TODO: Support other types of resource, e.g. SMMU. */
++static void mpam_set_domain_resources(struct domain *d)
++{
++    uint32_t data[MPAM_INFO_ARRAY_SIZE] = { };
++    unsigned int cpbm_lim = 0;
++
++    if ( d->arch.mpam.cfg.l3_cpbm )
++    {
++        if ( mpam_get_hwinfo(MPAM_CLASS_CACHE, data, ARRAY_SIZE(data)) )
++        {
++            printk(XENLOG_ERR "MPAM: L3 CPBM not supported for dom %pd\n", d);
++            return;
++        }
++
++        cpbm_lim = (1 << data[MPAM_INFO_IDX_CPBM_LEN]) - 1;
++
++        /* Clamp the cpbm to avoid exceeding the max supported value */
++        d->arch.mpam.cfg.l3_cpbm = (d->arch.mpam.cfg.l3_cpbm > cpbm_lim) ?
++                                   cpbm_lim :
++                                   d->arch.mpam.cfg.l3_cpbm;
++    }
++
++    mpam_update_resources(&d->arch.mpam);
++    smp_call_function(mpam_update_resources, &d->arch.mpam, 1);
++}
++
+ void __init mpam_presmp_setup(void)
+ {
+     int rc = 0;
+@@ -1314,6 +1437,12 @@ int __init mpam_discovery_cpu_online(unsigned int cpu)
+     return 0;
+ }
+ 
++void mpam_update_domain(struct domain *d)
++{
++    if ( d->arch.mpam.cfg.l3_cpbm )
++        mpam_set_domain_resources(d);
++}
++
+ /*
+  * Local variables:
+  * mode: C
+diff --git a/xen/include/asm-arm/domain.h b/xen/include/asm-arm/domain.h
+index 7f8ddd3f5c..267e531af9 100644
+--- a/xen/include/asm-arm/domain.h
++++ b/xen/include/asm-arm/domain.h
+@@ -7,6 +7,7 @@
+ #include <asm/p2m.h>
+ #include <asm/vfp.h>
+ #include <asm/mmio.h>
++#include <asm/mpam.h>
+ #include <asm/gic.h>
+ #include <asm/vgic.h>
+ #include <asm/vpl011.h>
+@@ -90,6 +91,11 @@ struct arch_domain
+ #ifdef CONFIG_TEE
+     void *tee;
+ #endif
++
++#ifdef CONFIG_MPAM
++    struct mpam_domain mpam;
++#endif
++
+ }  __cacheline_aligned;
+ 
+ struct arch_vcpu
+diff --git a/xen/include/asm-arm/mpam.h b/xen/include/asm-arm/mpam.h
+index 651a7f3032..5e89442512 100644
+--- a/xen/include/asm-arm/mpam.h
++++ b/xen/include/asm-arm/mpam.h
+@@ -266,6 +266,10 @@ enum mpam_class_types {
+     MPAM_CLASS_UNKNOWN,     /* Everything else, e.g. SMMU */
+ };
+ 
++/* Used by mpam_get_hwinfo() */
++#define MPAM_INFO_IDX_CPBM_LEN        0
++#define MPAM_INFO_ARRAY_SIZE          1
++
+ /*
+  * When we compact the supported features, we don't care what they are.
+  * Storing them as a bitmap makes life easy.
+@@ -318,12 +322,7 @@ struct mpam_props
+ };
+ 
+ #define mpam_has_feature(_feat, x) ((1 << (_feat)) & (x)->features)
+-
+-static inline void mpam_set_feature(enum mpam_device_features feat,
+-                                    struct mpam_props *props)
+-{
+-    props->features |= (1 << feat);
+-}
++#define mpam_set_feature(_feat, x) ((x)->features |= (1 << (_feat)))
+ 
+ static inline void mpam_clear_feature(enum mpam_device_features feat,
+                                       mpam_features_t *supported)
+@@ -411,10 +410,17 @@ struct mpam_resource_config {
+     uint32_t l3_cpbm;
+ };
+ 
++struct mpam_domain {
++    uint16_t partid;
++    struct mpam_resource_config cfg;
++};
++
+ extern struct mpam_resource_config dom0_mpam_config;
++extern bool mpam_enabled;
+ 
+ extern void mpam_postsmp_setup(void);
+ extern void mpam_presmp_setup(void);
++extern void mpam_update_domain(struct domain *d);
+ extern int mpam_discovery_cpu_online(unsigned int cpu);
+ 
+ #endif /* __ARM_MPAM_H__ */
+-- 
+2.25.1
+

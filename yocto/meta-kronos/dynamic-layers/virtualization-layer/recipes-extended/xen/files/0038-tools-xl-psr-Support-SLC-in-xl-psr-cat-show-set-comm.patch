@@ -1,0 +1,152 @@
+From 17253c660d4b59f0df589c016ad0750da7314b85 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Sun, 9 Oct 2022 07:14:45 +0000
+Subject: [PATCH] tools/xl-psr: Support SLC in `xl psr-cat-{show,set}`
+ command
+
+Users can leverage the `xl psr-cat-{show,set}` command to get/set the
+configuration of resources that are used by PSR/MPAM to control.
+Currently, this command only supports the L2, L3 and memory bandwidth.
+
+Extend the functionality of `xl psr-cat-{show,set}` to the detection
+of system level cache (SLC) on Arm if SLC is available and controlled
+by MPAM, and use level 0 in the command to represent the SLC. If the
+input level is 0, then `xl psr-cat-{show,set}` will take the advantage
+of domctl subops added by the previous patch.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-5244
+Change-Id: Icd3985e8a4c697a84571fbff5c78c8a62919a895
+---
+ tools/include/xenctrl.h          |  1 +
+ tools/libs/ctrl/xc_psr.c         |  6 ++++++
+ tools/libs/light/libxl_psr.c     |  1 +
+ tools/libs/light/libxl_types.idl |  1 +
+ tools/xl/xl_psr.c                | 21 ++++++++++++++++++---
+ 5 files changed, 27 insertions(+), 3 deletions(-)
+
+diff --git a/tools/include/xenctrl.h b/tools/include/xenctrl.h
+index 389f3da6b1..bc0d45845c 100644
+--- a/tools/include/xenctrl.h
++++ b/tools/include/xenctrl.h
+@@ -2480,6 +2480,7 @@ enum xc_psr_type {
+     XC_PSR_CAT_L3_CBM_DATA = 3,
+     XC_PSR_CAT_L2_CBM      = 4,
+     XC_PSR_MBA_THRTL       = 5,
++    XC_PSR_CAT_SLC_CBM     = 6,
+ };
+ typedef enum xc_psr_type xc_psr_type;
+ 
+diff --git a/tools/libs/ctrl/xc_psr.c b/tools/libs/ctrl/xc_psr.c
+index 0e834fbb5d..805c6e4a74 100644
+--- a/tools/libs/ctrl/xc_psr.c
++++ b/tools/libs/ctrl/xc_psr.c
+@@ -296,6 +296,9 @@ int xc_psr_set_domain_data(xc_interface *xch, uint32_t domid,
+     case XC_PSR_MBA_THRTL:
+         cmd = XEN_DOMCTL_PSR_SET_MBA_THRTL;
+         break;
++    case XC_PSR_CAT_SLC_CBM:
++        cmd = XEN_DOMCTL_PSR_SET_SLC_CBM;
++        break;
+     default:
+         errno = EINVAL;
+         return -1;
+@@ -335,6 +338,9 @@ int xc_psr_get_domain_data(xc_interface *xch, uint32_t domid,
+     case XC_PSR_MBA_THRTL:
+         cmd = XEN_DOMCTL_PSR_GET_MBA_THRTL;
+         break;
++    case XC_PSR_CAT_SLC_CBM:
++        cmd = XEN_DOMCTL_PSR_GET_SLC_CBM;
++        break;
+     default:
+         errno = EINVAL;
+         return -1;
+diff --git a/tools/libs/light/libxl_psr.c b/tools/libs/light/libxl_psr.c
+index 4a4a67c715..29c0b90e60 100644
+--- a/tools/libs/light/libxl_psr.c
++++ b/tools/libs/light/libxl_psr.c
+@@ -86,6 +86,7 @@ static void libxl__psr_alloc_log_err_msg(libxl__gc *gc,
+                                       "CDP",
+         [LIBXL_PSR_CBM_TYPE_L2_CBM] = "L2 CAT",
+         [LIBXL_PSR_CBM_TYPE_MBA_THRTL] = "MBA",
++        [LIBXL_PSR_CBM_TYPE_SLC_CBM] = "SLC CAT",
+     };
+     char *msg;
+ 
+diff --git a/tools/libs/light/libxl_types.idl b/tools/libs/light/libxl_types.idl
+index 2a42da2f7d..e9c6b9234f 100644
+--- a/tools/libs/light/libxl_types.idl
++++ b/tools/libs/light/libxl_types.idl
+@@ -1212,6 +1212,7 @@ libxl_psr_cbm_type = Enumeration("psr_cbm_type", [
+     (3, "L3_CBM_DATA"),
+     (4, "L2_CBM"),
+     (5, "MBA_THRTL"),
++    (6, "SLC_CBM"),
+     ])
+ 
+ libxl_psr_cat_info = Struct("psr_cat_info", [
+diff --git a/tools/xl/xl_psr.c b/tools/xl/xl_psr.c
+index 4b7cd69f91..b8b1df8a8a 100644
+--- a/tools/xl/xl_psr.c
++++ b/tools/xl/xl_psr.c
+@@ -424,6 +424,11 @@ static void psr_print_one_domain_val(uint32_t domid,
+                                           LIBXL_PSR_CBM_TYPE_L2_CBM);
+             break;
+ 
++        case 0:
++            psr_print_one_domain_val_type(domid, info,
++                                          LIBXL_PSR_CBM_TYPE_SLC_CBM);
++            break;
++
+         default:
+             printf("Input lvl %d is wrong!", lvl);
+         }
+@@ -474,9 +479,9 @@ static int psr_print_socket(uint32_t domid,
+     case LIBXL_PSR_FEAT_TYPE_CAT:
+     {
+         int rc;
+-        uint32_t l3_cache_size;
++        uint32_t l3_cache_size, slc_size;
+ 
+-        /* So far, CMT only supports L3 cache. */
++        /* So far, CMT only supports L3 cache and SLC (Arm only). */
+         if (lvl == 3) {
+             rc = libxl_psr_cmt_get_l3_cache_size(ctx, info->id, &l3_cache_size);
+             if (rc) {
+@@ -485,6 +490,14 @@ static int psr_print_socket(uint32_t domid,
+                 return -1;
+             }
+             printf("%-16s: %uKB\n", "L3 Cache", l3_cache_size);
++        } else if (lvl == 0) {
++            rc = libxl_psr_cmt_get_slc_size(ctx, info->id, &slc_size);
++            if (rc) {
++                fprintf(stderr, "Failed to get slc size for socket:%d\n",
++                        info->id);
++                return -1;
++            }
++            printf("%-16s: %uKB\n", "SLC", slc_size);
+         }
+ 
+         printf("%-16s: %#llx\n", "Default "CAPACITY_BITMASK_NAME,
+@@ -522,7 +535,7 @@ static int psr_val_show(uint32_t domid,
+ 
+     switch (type) {
+     case LIBXL_PSR_FEAT_TYPE_CAT:
+-        if (lvl != 2 && lvl != 3) {
++        if (lvl != 2 && lvl != 3 && lvl != 0) {
+             fprintf(stderr, "Input lvl %d is wrong\n", lvl);
+             return EXIT_FAILURE;
+         }
+@@ -712,6 +725,8 @@ int main_psr_cat_cbm_set(int argc, char **argv)
+ 
+     if (lvl == 2)
+         type = LIBXL_PSR_CBM_TYPE_L2_CBM;
++    else if (lvl == 0)
++        type = LIBXL_PSR_CBM_TYPE_SLC_CBM;
+     else if (lvl == 3) {
+         if (opt_data && opt_code) {
+             fprintf(stderr, "Cannot handle -c and -d at the same time\n");
+-- 
+2.25.1
+

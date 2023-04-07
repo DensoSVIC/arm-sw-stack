@@ -1,0 +1,57 @@
+From 2603f9d7f647136281ce231aff59f5f46771eafe Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Mon, 10 Apr 2023 10:27:52 +0800
+Subject: [PATCH] xen/arm: Allow MPAM v1.1 in MSC hardware probing
+ process
+
+According to MPAM specification (ARM DDI 0598C.a), there are different
+versions of MPAM to be probed, and different versions of MPAM can
+be identified by the MPAMF_AIDR register from the combination of
+fields {ArchMajorRev, ArchMinorRev}.
+
+Since hardware with MPAM v1.1 is available, allow such hardware to use
+the MPAM driver during the hardware probing process.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-6012
+Change-Id: I2117bc62dcd8680cd31b4b3aed86a84da37bbb2b
+---
+ xen/arch/arm/mpam.c        | 5 +++--
+ xen/include/asm-arm/mpam.h | 3 ++-
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
+index 4671c063d6..2bb40931bc 100644
+--- a/xen/arch/arm/mpam.c
++++ b/xen/arch/arm/mpam.c
+@@ -882,9 +882,10 @@ static int __init mpam_msc_hw_probe(struct mpam_msc *msc)
+     BUG_ON(!spin_is_locked(&msc->lock));
+ 
+     spin_lock_irqsave(&msc->hw_lock, flags);
+-    if ( mpam_read_reg(msc, MPAMF_AIDR) != MPAM_ARCHITECTURE_V1 )
++    if ( mpam_read_reg(msc, MPAMF_AIDR) != MPAM_ARCHITECTURE_V1_0 &&
++         mpam_read_reg(msc, MPAMF_AIDR) != MPAM_ARCHITECTURE_V1_1 )
+     {
+-        printk("MPAM: MSC%d does not match MPAM architecture v1.0\n",
++        printk("MPAM: MSC%d does not match MPAM architecture v1.0 nor v1.1\n",
+                msc->identifier);
+         spin_unlock_irqrestore(&msc->hw_lock, flags);
+         return -EIO;
+diff --git a/xen/include/asm-arm/mpam.h b/xen/include/asm-arm/mpam.h
+index a1f6b34491..fa3ec2a696 100644
+--- a/xen/include/asm-arm/mpam.h
++++ b/xen/include/asm-arm/mpam.h
+@@ -15,7 +15,8 @@
+  * Arm Architecture Reference Manual Supplement - Memory System Resource
+  * Partitioning and Monitoring (MPAM), for Armv8-A. DDI 0598A.a
+  */
+-#define MPAM_ARCHITECTURE_V1    0x10
++#define MPAM_ARCHITECTURE_V1_0    0x10
++#define MPAM_ARCHITECTURE_V1_1    0x11
+ 
+ /* Memory mapped control pages: */
+ /* ID Register offsets in the memory mapped page */
+-- 
+2.25.1
+

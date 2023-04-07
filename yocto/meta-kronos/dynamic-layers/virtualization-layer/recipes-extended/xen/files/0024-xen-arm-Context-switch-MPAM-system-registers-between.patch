@@ -1,0 +1,132 @@
+From 98c4da1bbcbcda6bf8576c62c4dafcb63b13acbc Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Tue, 1 Mar 2022 07:37:32 +0000
+Subject: [PATCH] xen/arm: Context switch MPAM system registers between
+ vCPUs
+
+According to MPAM specification, software assigns VMs and applications
+to a partition. The hypervisor can assign VMs to partitions. A memory
+system partition is associated with a software environment on a PE by
+loading an MPAMn_ELx register with PARTID_I and PARTID_D. When Xen
+needs to partition the resource of a specific VM, it needs to limit
+the VM both in EL1 and EL0.
+
+Hence, this commit firstly adds the MPAM0_EL1 and MPAM1_EL1 registers
+to struct arch_vcpu and then adds code related context switching these
+registers between vCPUs.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-3395
+Change-Id: I06e62f3726608e54afeb63f26f7b67c87d005236
+---
+ xen/arch/arm/domain.c        | 11 +++++++++++
+ xen/arch/arm/mpam.c          | 19 +++++++++++++++++++
+ xen/include/asm-arm/domain.h |  4 ++++
+ xen/include/asm-arm/mpam.h   |  2 ++
+ 4 files changed, 36 insertions(+)
+
+diff --git a/xen/arch/arm/domain.c b/xen/arch/arm/domain.c
+index 96e1b23550..0ceb6e3439 100644
+--- a/xen/arch/arm/domain.c
++++ b/xen/arch/arm/domain.c
+@@ -30,6 +30,7 @@
+ #include <asm/gic.h>
+ #include <asm/guest_atomics.h>
+ #include <asm/irq.h>
++#include <asm/mpam.h>
+ #include <asm/p2m.h>
+ #include <asm/platform.h>
+ #include <asm/procinfo.h>
+@@ -171,6 +172,10 @@ static void ctxt_switch_from(struct vcpu *p)
+     /* VGIC */
+     gic_save_state(p);
+ 
++#ifdef CONFIG_MPAM
++    mpam_save_state(p);
++#endif
++
+     isb();
+ }
+ 
+@@ -279,6 +284,12 @@ static void ctxt_switch_to(struct vcpu *n)
+     virt_timer_restore(n);
+ 
+     WRITE_SYSREG(n->arch.mdcr_el2, MDCR_EL2);
++
++#ifdef CONFIG_MPAM
++    mpam_restore_state(n);
++#endif
++
++    isb();
+ }
+ 
+ /* Update per-VCPU guest runstate shared memory area (if registered). */
+diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
+index f14b79d216..23997385f4 100644
+--- a/xen/arch/arm/mpam.c
++++ b/xen/arch/arm/mpam.c
+@@ -23,6 +23,7 @@
+ #include <xen/device_tree.h>
+ #include <xen/err.h>
+ #include <xen/param.h>
++#include <xen/sched.h>
+ #include <xen/string.h>
+ #include <xen/vmap.h>
+ #include <asm/io.h>
+@@ -1437,6 +1438,24 @@ int __init mpam_discovery_cpu_online(unsigned int cpu)
+     return 0;
+ }
+ 
++void mpam_save_state(struct vcpu *n)
++{
++    if ( !mpam_enabled )
++        return;
++
++    n->arch.mpam0_el1 = READ_SYSREG(MPAM0_EL1);
++    n->arch.mpam1_el1 = READ_SYSREG(MPAM1_EL1);
++}
++
++void mpam_restore_state(struct vcpu *n)
++{
++    if ( !mpam_enabled )
++        return;
++
++    WRITE_SYSREG(n->arch.mpam0_el1, MPAM0_EL1);
++    WRITE_SYSREG(n->arch.mpam1_el1, MPAM1_EL1);
++}
++
+ void mpam_update_domain(struct domain *d)
+ {
+     if ( d->arch.mpam.cfg.l3_cpbm )
+diff --git a/xen/include/asm-arm/domain.h b/xen/include/asm-arm/domain.h
+index 267e531af9..84c9812ba8 100644
+--- a/xen/include/asm-arm/domain.h
++++ b/xen/include/asm-arm/domain.h
+@@ -212,6 +212,10 @@ struct arch_vcpu
+      */
+     bool need_flush_to_ram;
+ 
++#ifdef CONFIG_MPAM
++    uint64_t mpam0_el1;
++    uint64_t mpam1_el1;
++#endif
+ }  __cacheline_aligned;
+ 
+ void vcpu_show_execution_state(struct vcpu *);
+diff --git a/xen/include/asm-arm/mpam.h b/xen/include/asm-arm/mpam.h
+index 5e89442512..0d8973acbf 100644
+--- a/xen/include/asm-arm/mpam.h
++++ b/xen/include/asm-arm/mpam.h
+@@ -420,6 +420,8 @@ extern bool mpam_enabled;
+ 
+ extern void mpam_postsmp_setup(void);
+ extern void mpam_presmp_setup(void);
++extern void mpam_restore_state(struct vcpu *n);
++extern void mpam_save_state(struct vcpu *n);
+ extern void mpam_update_domain(struct domain *d);
+ extern int mpam_discovery_cpu_online(unsigned int cpu);
+ 
+-- 
+2.25.1
+

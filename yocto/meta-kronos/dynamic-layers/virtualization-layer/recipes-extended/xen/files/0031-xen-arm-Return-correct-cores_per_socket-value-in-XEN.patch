@@ -1,0 +1,39 @@
+From 0bb80e66a21262df8fa286cc353c442f2221c3d9 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Thu, 23 Jun 2022 09:52:24 +0000
+Subject: [PATCH] xen/arm: Return correct cores_per_socket value in
+ XEN_SYSCTL_physinfo
+
+In the common sysctl command XEN_SYSCTL_physinfo, the cores_per_socket
+is calculated based on the cpu_core_mask of CPU0. Currently on Arm
+this is a fixed value 1 (can be checked via xl info), which is not
+correct. This is because during the Arm cpu online process,
+set_cpu_sibling_map() only sets the per cpu cpu_core_mask for itself.
+
+Considering Arm does not support NUMA and CPU hotplug for now, this
+commit adds each cpu to the cpu_core_mask of CPU0 to make sure the
+correct cores_per_socket can be returned from XEN_SYSCTL_physinfo.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Change-Id: I35db58d7ad1d8f6e24658f50353f7dd4056beda8
+---
+ xen/arch/arm/smpboot.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/xen/arch/arm/smpboot.c b/xen/arch/arm/smpboot.c
+index fdd39c563a..3e6c8e2aab 100644
+--- a/xen/arch/arm/smpboot.c
++++ b/xen/arch/arm/smpboot.c
+@@ -89,6 +89,8 @@ static void setup_cpu_sibling_map(int cpu)
+     /* A CPU is a sibling with itself and is always on its own core. */
+     cpumask_set_cpu(cpu, per_cpu(cpu_sibling_mask, cpu));
+     cpumask_set_cpu(cpu, per_cpu(cpu_core_mask, cpu));
++
++    cpumask_set_cpu(cpu, per_cpu(cpu_core_mask, 0));
+ }
+ 
+ static void remove_cpu_sibling_map(int cpu)
+-- 
+2.25.1
+
