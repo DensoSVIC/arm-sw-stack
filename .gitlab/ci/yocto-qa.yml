@@ -20,6 +20,8 @@ check-layers:
               $KAS_WORK_DIR/layers/meta-openembedded/meta-oe
               $KAS_WORK_DIR/layers/meta-openembedded/meta-python
               $KAS_WORK_DIR/layers/meta-zephyr/meta-zephyr-core
+              $KAS_WORK_DIR/layers/meta-security/meta-parsec
+              $KAS_WORK_DIR/layers/meta-clang
             --additional-layers
               $KAS_WORK_DIR/layers/meta-openembedded/meta-filesystems
               $KAS_WORK_DIR/layers/meta-openembedded/meta-networking

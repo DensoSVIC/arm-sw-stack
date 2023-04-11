@@ -24,6 +24,7 @@ FEATURE_PACKAGES_COMMON = " \
     packagegroup-core-boot \
     packagegroup-core-ssh-openssh \
     packagegroup-machine-base \
+    packagegroup-security-parsec \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 
