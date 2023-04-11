@@ -30,7 +30,8 @@
     - KASFILE_CI=yocto/kas/ci.yml
     # Set the url and refspec for the specific repos
     - |
-      if ! [ -z "${REPOS_META_ARM_URL}" ] && ! [ -z "${REPOS_META_ARM_REFSPEC}" ]; then
+      if ! [ -z "${REPOS_META_ARM_URL}" ] &&
+         ! [ -z "${REPOS_META_ARM_REFSPEC}" ]; then
       # Must be aligned with above '|'
       cat << EOF >> $KASFILE_CI
       repos:
@@ -41,11 +42,13 @@
       fi
     # Set the SRCREV for the specific recipes
     - |
-      if ! [ -z "${COMPONENT_NAME}" ] && ! [ -z "${COMPONENT_SRCREV}" ]; then
+      if ! [ -z "${COMPONENT_NAME}" ] && ! [ -z "${COMPONENT_SRCREV}" ] &&
+         ! [ -z "${COMPONENT_SRC_URI}" ]; then
       # Must be aligned with above '|'
       cat << EOF >> $KASFILE_CI;
       local_conf_header:
         ${COMPONENT_NAME}: |
+          SRC_URI:pn-${COMPONENT_NAME} = "${COMPONENT_SRC_URI}"
           SRCREV:pn-${COMPONENT_NAME} = "${COMPONENT_SRCREV}"
       EOF
       fi
