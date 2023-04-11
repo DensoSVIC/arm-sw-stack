@@ -1,7 +1,7 @@
 From 0b96975d488f2bcaba178967ab387141a8a72ae3 Mon Sep 17 00:00:00 2001
 From: Peter Hoyes <Peter.Hoyes@arm.com>
 Date: Fri, 23 Sep 2022 12:30:30 +0100
-Subject: [PATCH 1/2] tools/xendomains: Restrict domid pattern in LIST_GREP
+Subject: [PATCH] tools/xendomains: Restrict domid pattern in LIST_GREP
 
 The xendomains script uses the output of `xl list -l` to collect the
 id and name of each domain, which is used in the shutdown logic, amongst

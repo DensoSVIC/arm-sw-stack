@@ -1,7 +1,7 @@
 From 4d19cec3d39211860ff7cc38eac0e55d400ca83b Mon Sep 17 00:00:00 2001
 From: Peter Hoyes <Peter.Hoyes@arm.com>
 Date: Tue, 13 Sep 2022 17:02:45 +0100
-Subject: [PATCH 2/2] tools/xendomains: Only save/restore/migrate if supported
+Subject: [PATCH] tools/xendomains: Only save/restore/migrate if supported
  by xenlight
 
 Saving, restoring and migrating domains are not currently supported on
