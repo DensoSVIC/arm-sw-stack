@@ -14,8 +14,8 @@ boot_process
 bootable
 bootloader
 c
-cpus
 cpu_hotplug
+cpus
 customizable
 defconfig
 dependencies
