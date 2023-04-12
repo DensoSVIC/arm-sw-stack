@@ -10,7 +10,13 @@ require 'embed-a-dangerfiles'
 # Uncomment the following line to get debug output
 # @verbose = true
 
-Embed_A::Dangerfiles.for_project(self, &:import_defaults)
+Embed_A::Dangerfiles.for_project(self) do |dangerfiles|
+  # Import all plugins from the gem
+  dangerfiles.import_plugins
+
+  # Import all rules except a subset of rules
+  dangerfiles.import_dangerfiles(except: %w[changelog])
+end
 
 # Warn if the MR changes the Dangerfile
 if git.modified_files.include? "Dangerfile"
