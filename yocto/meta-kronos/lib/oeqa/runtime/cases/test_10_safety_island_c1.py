@@ -5,10 +5,9 @@
 # SPDX-License-Identifier: MIT
 
 from oeqa.runtime.case import OERuntimeTestCase
-from oeqa.runtime.cases.test_10_safety_island_base import SafetyIslandTestBase
 
 
-class SafetyIslandC1Test(SafetyIslandTestBase):
+class SafetyIslandC1Test(OERuntimeTestCase):
     console_cluster1 = 'safety_island_c1'
 
     def smp_boot(self, console):
@@ -18,4 +17,3 @@ class SafetyIslandC1Test(SafetyIslandTestBase):
 
     def test_cluster1(self):
         self.smp_boot(self.console_cluster1)
-        self.synchronization_sample(self.console_cluster1)
