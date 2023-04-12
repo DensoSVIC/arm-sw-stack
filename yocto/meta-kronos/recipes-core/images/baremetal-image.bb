@@ -6,16 +6,18 @@
 
 SUMMARY = "Baremetal image"
 DESCRIPTION = "An image recipe, based on core-image"
-COMPATIBLE_MACHINE = "fvp-rd-kronos"
+
+IMAGE_INSTALL = ""
+IMAGE_LINGUAS = ""
 
 inherit core-image
 
-IMAGE_INSTALL = "\
-    packagegroup-core-boot ${CORE_IMAGE_EXTRA_INSTALL} \
-    packagegroup-machine-base \
-    packagegroup-core-ssh-openssh \
-"
-IMAGE_LINGUAS = ""
+IMAGE_OVERHEAD_FACTOR = "1.5"
+
+inherit features_check
+REQUIRED_IMAGE_FEATURES = "baremetal"
+CONFLICT_IMAGE_FEATURES = "virtualization domu"
+COMPATIBLE_MACHINE = "fvp-rd-kronos"
 
 BAREMETAL_IMAGE_NUM_CPUS ?= "4"
 BAREMETAL_IMAGE_MEM_SIZE ?= "2G"
