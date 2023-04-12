@@ -5,3 +5,4 @@
 # SPDX-License-Identifier: MIT
 
 PACKAGECONFIG:fvp-rd-kronos = "MBED-CRYPTO"
+PACKAGECONFIG:generic-arm64 = "MBED-CRYPTO"

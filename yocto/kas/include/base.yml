@@ -8,6 +8,7 @@
 header:
   version: 13
   includes:
+    - yocto/kas/include/cassini.yml
     - repo: meta-arm
       file: kas/fvp-rd-kronos.yml
 
@@ -21,30 +22,16 @@ repos:
       yocto/meta-kronos:
 
   meta-arm:
-    url: https://git.yoctoproject.org/git/meta-arm
-    path: layers/meta-arm
-
-  meta-virtualization:
-    url: https://git.yoctoproject.org/meta-virtualization
-    path: layers/meta-virtualization
     layers:
-      .: excluded
+      meta-arm: included
+      meta-arm-toolchain: included
+      meta-arm-bsp: included
 
   meta-zephyr:
     url: https://git.yoctoproject.org/git/meta-zephyr
     path: layers/meta-zephyr
     layers:
       meta-zephyr-core:
-
-  meta-security:
-    url: https://git.yoctoproject.org/git/meta-security
-    path: layers/meta-security
-    layers:
-      meta-parsec:
-
-  meta-clang:
-    url: https://github.com/kraj/meta-clang
-    path: layers/meta-clang
 
 env:
   TESTIMAGE_AUTO:
@@ -60,3 +47,5 @@ local_conf_header:
       HALT,${DL_DIR},100M,1K \
       HALT,${SSTATE_DIR},100M,1K \
       HALT,/tmp,10M,1K"
+
+distro: cassini

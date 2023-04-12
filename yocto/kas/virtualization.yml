@@ -10,17 +10,6 @@ header:
   includes:
     - yocto/kas/include/base.yml
 
-repos:
-  meta-openembedded:
-    layers:
-      meta-oe: included
-      meta-python: included
-      meta-filesystems: included
-      meta-networking: included
-  meta-virtualization:
-    layers:
-      .: included
-
 env:
   DOMU1_MEMORY_SIZE: ""
   DOMU1_VCPUS: ""
@@ -29,7 +18,7 @@ env:
 
 local_conf_header:
   virtualization: |
-    DISTRO_FEATURES:append = " xen"
+    DISTRO_FEATURES:append = " xen ptest"
     EXTRA_IMAGE_FEATURES:append = " virtualization"
     TMPDIR = "${TOPDIR}/tmp_virtualization"
     DOMU_TMPDIR = "${TOPDIR}/tmp_virtualization_domu"

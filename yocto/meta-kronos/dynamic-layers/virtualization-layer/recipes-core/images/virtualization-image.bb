@@ -27,4 +27,3 @@ IMAGE_EFI_BOOT_FILES:append = " xen-${MACHINE}.efi;xen.efi xen.cfg"
 do_image_wic[depends] += "xen:do_deploy xen-cfg:do_deploy "
 
 EXTRA_IMAGEDEPENDS += "xen xen-cfg"
-
