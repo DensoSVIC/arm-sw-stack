@@ -103,8 +103,10 @@ yocto_doc_version = yocto_version + "/"
 kronos_version = "main"
 kas_version = "3.2"
 trusted_firmware_m_version = "bd8c7c9c40e522d4db10d4b45412f7a56eb5dae7"
+# [inclusivity-exception]
 trusted_firmware_m_base_version = "master branch post v1.7.0"
 scp_firmware_version = "f71f34237365b2c4b54be798aba79b740dcc4020"
+# [inclusivity-exception]
 scp_firmware_base_version = "master branch post v2.11.0"
 trusted_firmware_a_version = "2.8.0"
 uboot_version = "2022.07"
