@@ -1,0 +1,79 @@
+From 9e9f1f94dac81f0dbd3d25b9b5f29f6333a6fdd1 Mon Sep 17 00:00:00 2001
+From: Peter Hoyes <Peter.Hoyes@arm.com>
+Date: Mon, 24 Oct 2022 13:49:51 +0100
+Subject: [PATCH] rpmsg: virtio: Make buffer size configurable
+
+Replace the MAX_RPMSG_BUF_SIZE #define in virtio_rpmsg_bus.c with the
+Kconfig parameter CONFIG_RPMSG_VIRTIO_BUF_SIZE, so that it can be more
+easily customized.
+
+Issue-Id: SCM-5320
+Signed-off-by: Peter Hoyes <Peter.Hoyes@arm.com>
+Upstream-Status: Inappropriate
+  Required to support the rpmsg_net driver, which will not be upstreamed
+---
+ drivers/rpmsg/Kconfig            |  5 +++++
+ drivers/rpmsg/virtio_rpmsg_bus.c | 17 +++++++++--------
+ 2 files changed, 14 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/rpmsg/Kconfig b/drivers/rpmsg/Kconfig
+index d3795860f5c0..ad2fa9fd02f6 100644
+--- a/drivers/rpmsg/Kconfig
++++ b/drivers/rpmsg/Kconfig
+@@ -81,4 +81,9 @@ config RPMSG_VIRTIO
+ 	select RPMSG_NS
+ 	select VIRTIO
+ 
++config RPMSG_VIRTIO_MAX_BUF_SIZE
++	int "Virtio RPMSG max buffer size"
++	default 512
++	depends on RPMSG_VIRTIO
++
+ endmenu
+diff --git a/drivers/rpmsg/virtio_rpmsg_bus.c b/drivers/rpmsg/virtio_rpmsg_bus.c
+index 905ac7910c98..6bed42bc5550 100644
+--- a/drivers/rpmsg/virtio_rpmsg_bus.c
++++ b/drivers/rpmsg/virtio_rpmsg_bus.c
+@@ -110,14 +110,16 @@ struct virtio_rpmsg_channel {
+ 	container_of(_rpdev, struct virtio_rpmsg_channel, rpdev)
+ 
+ /*
+- * We're allocating buffers of 512 bytes each for communications. The
+- * number of buffers will be computed from the number of buffers supported
+- * by the vring, upto a maximum of 512 buffers (256 in each direction).
++ * We're allocating buffers of CONFIG_RPMSG_VIRTIO_MAX_BUF_SIZE bytes each for
++ * communications. The number of buffers will be computed from the number of
++ * buffers supported by the vring, upto a maximum of 512 buffers (256 in each
++ * direction).
+  *
+- * Each buffer will have 16 bytes for the msg header and 496 bytes for
+- * the payload.
++ * Each buffer will have 16 bytes for the msg header and the remaining bytes
++ * for the payload.
+  *
+- * This will utilize a maximum total space of 256KB for the buffers.
++ * The default values will utilize a maximum total space of 256KB for the
++ * buffers.
+  *
+  * We might also want to add support for user-provided buffers in time.
+  * This will allow bigger buffer size flexibility, and can also be used
+@@ -128,7 +130,6 @@ struct virtio_rpmsg_channel {
+  * processor.
+  */
+ #define MAX_RPMSG_NUM_BUFS	(512)
+-#define MAX_RPMSG_BUF_SIZE	(512)
+ 
+ /*
+  * Local addresses are dynamically allocated on-demand.
+@@ -907,7 +908,7 @@ static int rpmsg_probe(struct virtio_device *vdev)
+ 	else
+ 		vrp->num_bufs = MAX_RPMSG_NUM_BUFS;
+ 
+-	vrp->buf_size = MAX_RPMSG_BUF_SIZE;
++	vrp->buf_size = CONFIG_RPMSG_VIRTIO_MAX_BUF_SIZE;
+ 
+ 	total_buf_space = vrp->num_bufs * vrp->buf_size;
+ 
+-- 
+2.25.1
+

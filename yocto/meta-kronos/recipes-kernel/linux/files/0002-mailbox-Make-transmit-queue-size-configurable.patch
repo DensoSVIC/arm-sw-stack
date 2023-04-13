@@ -1,0 +1,70 @@
+From 8bab5647827710b20254b25984b4ca282c4eddd2 Mon Sep 17 00:00:00 2001
+From: Yanqin Wei <Yanqin.Wei@arm.com>
+Date: Tue, 15 Nov 2022 13:23:09 +0800
+Subject: [PATCH] mailbox: Make transmit queue size configurable
+
+The FVP_RD_N2_Automotive platform has performance problems under
+Primary Compute and Safety Island communication stress test. The
+queue size of the mailbox is the bottleneck. This commit uses
+Kconfig symbol CONFIG_MAILBOX_TX_QUEUE_LEN to define the size of
+mailbox transmit queue because greater queue size is required on
+FVP platform. The log for the queue is changed to debug level to
+mitigate performance problems when the system is overloaded.
+
+Issue-Id: SCM-5481
+Signed-off-by: Yanqin Wei <Yanqin.Wei@arm.com>
+Upstream-Status: Inappropriate
+  Require a big size of Mailbox Queue, which will not be upstreamed
+---
+ drivers/mailbox/Kconfig            | 7 +++++++
+ drivers/mailbox/mailbox.c          | 2 +-
+ include/linux/mailbox_controller.h | 2 +-
+ 3 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/mailbox/Kconfig b/drivers/mailbox/Kconfig
+index 05d6fae800e3..de25f26781e2 100644
+--- a/drivers/mailbox/Kconfig
++++ b/drivers/mailbox/Kconfig
+@@ -8,6 +8,13 @@ menuconfig MAILBOX
+ 
+ if MAILBOX
+ 
++config MAILBOX_TX_QUEUE_LEN
++	int "Mailbox default transmit queue size"
++	default 20
++	help
++	  The length of circular buffer for queuing messages from a
++	  client.
++
+ config APPLE_MAILBOX
+ 	tristate "Apple Mailbox driver"
+ 	depends on ARCH_APPLE || (ARM64 && COMPILE_TEST)
+diff --git a/drivers/mailbox/mailbox.c b/drivers/mailbox/mailbox.c
+index 4229b9b5da98..f6648dfe0bba 100644
+--- a/drivers/mailbox/mailbox.c
++++ b/drivers/mailbox/mailbox.c
+@@ -262,7 +262,7 @@ int mbox_send_message(struct mbox_chan *chan, void *mssg)
+ 
+ 	t = add_to_rbuf(chan, mssg);
+ 	if (t < 0) {
+-		dev_err(chan->mbox->dev, "Try increasing MBOX_TX_QUEUE_LEN\n");
++		dev_dbg(chan->mbox->dev, "Try increasing MBOX_TX_QUEUE_LEN\n");
+ 		return t;
+ 	}
+ 
+diff --git a/include/linux/mailbox_controller.h b/include/linux/mailbox_controller.h
+index 6fee33cb52f5..8b689fb299fe 100644
+--- a/include/linux/mailbox_controller.h
++++ b/include/linux/mailbox_controller.h
+@@ -100,7 +100,7 @@ struct mbox_controller {
+  * REVISIT: If too many platforms see the "Try increasing MBOX_TX_QUEUE_LEN"
+  * print, it needs to be taken from config option or somesuch.
+  */
+-#define MBOX_TX_QUEUE_LEN	20
++#define MBOX_TX_QUEUE_LEN	CONFIG_MAILBOX_TX_QUEUE_LEN
+ 
+ /**
+  * struct mbox_chan - s/w representation of a communication chan
+-- 
+2.25.1
+

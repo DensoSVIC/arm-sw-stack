@@ -21,10 +21,12 @@ IMAGE_FEATURES_CONFLICTS_domu = "baremetal virtualization"
 
 
 FEATURE_PACKAGES_COMMON = " \
+    arm-si-rproc-mod \
     packagegroup-core-boot \
     packagegroup-core-ssh-openssh \
     packagegroup-machine-base \
     packagegroup-security-parsec \
+    rpmsg-net-mod \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 

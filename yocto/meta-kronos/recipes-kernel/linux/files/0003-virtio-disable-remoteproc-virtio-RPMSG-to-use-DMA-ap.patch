@@ -1,0 +1,57 @@
+From be0b2eb05dc0e2248e26189122424f8adcf5d682 Mon Sep 17 00:00:00 2001
+From: Wei Chen <wei.chen@arm.com>
+Date: Fri, 25 Nov 2022 10:23:13 +0800
+Subject: [PATCH] virtio: disable remoteproc virtio RPMSG to use DMA api in
+ Xen guest
+
+In order to bypass some virtio devices and IOMMU issues on QEMU
+platforms, the previous code force Xen to enable DMA api for vring.
+But on Xen platforms, this will cause some problems when we assgin
+non-IOMMU protected remoteproc virtio rpmsg device to guests. For
+example, vring has been forced to use DMA api, but in Xen guest,
+without IOMMU, the device's DMA ops is NULL. This will force the
+DMA buffer to use DMA direct mapping by mistake. But when we access
+this translated address, we will encounter:
+[0.xx] Unable to handle kernel paging request at virtual address ffff0008f0003000
+
+If we for remoteproc virtio rpmsg deviice to use Xen swiotlb_dma_ops,
+as this device is using hign memory as DMA buffers (address > 4G), it
+will also encounter DMA addr overflow by using DMA incorrectly:
+[0.xx] remoteproc0#vdev0buffer: DMA addr 0x0000000a00003000+512 overflow (mask ffffffff, bus limit 0).
+
+So in this patch, if we find remoteproc virtio device is using in
+Xen guest, we will not force it to use DMA api.
+
+Issue-Id: SCM-5186
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+Signed-off-by: Yanqin Wei <Yanqin.Wei@arm.com>
+Upstream-Status: Inappropriate
+  Community has no plan to support non-iommu device passthrough in DomU.
+---
+ drivers/virtio/virtio_ring.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
+index 643ca779fcc6..480e3a719643 100644
+--- a/drivers/virtio/virtio_ring.c
++++ b/drivers/virtio/virtio_ring.c
+@@ -4,6 +4,7 @@
+  *  Copyright 2007 Rusty Russell IBM Corporation
+  */
+ #include <linux/virtio.h>
++#include <linux/virtio_ids.h>
+ #include <linux/virtio_ring.h>
+ #include <linux/virtio_config.h>
+ #include <linux/device.h>
+@@ -257,7 +258,7 @@ static bool vring_use_dma_api(struct virtio_device *vdev)
+ 	 * the DMA API if we're a Xen guest, which at least allows
+ 	 * all of the sensible Xen configurations to work correctly.
+ 	 */
+-	if (xen_domain())
++	if (xen_domain() && vdev->id.device != VIRTIO_ID_RPMSG)
+ 		return true;
+ 
+ 	return false;
+-- 
+2.17.1
+
