@@ -79,3 +79,12 @@ plugins:
       - "/config/qa-checks/dictionary.txt"
       - "/license.rst"
       - "coffeelint.json"
+  inclusivity:
+    enabled: true
+    exclude_patterns:
+      - GITIGNORE_CONTENTS
+      - "*.git"
+      - "*.gitignore"
+      - "*.pyc"
+      - "*.png"
+      - "*.patch"
