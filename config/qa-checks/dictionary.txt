@@ -16,11 +16,13 @@ bootloader
 c
 cpu_hotplug
 cpus
+ctrl
 customizable
 defconfig
 dependencies
 do_testimage
 el3
+esc
 filesystem
 fip
 functionalities
@@ -67,6 +69,7 @@ stack's
 sudo
 systemreadytm
 tb_fw_config
+telnet
 test_00_lcp.py
 test_00_rss.py
 test_00_scp.py

@@ -110,6 +110,7 @@ trusted_firmware_a_version = "2.8.0"
 uboot_version = "2022.07"
 linux_version = "5.19"
 linux_version_patch = "17"
+xen_version = "4.16"
 
 rst_prolog = f"""
 .. |kas version| replace:: 3.2
@@ -138,6 +139,7 @@ rst_prolog = f"""
 .. _U-Boot repository: https://source.denx.de/u-boot/u-boot/-/tree/v{uboot_version}
 .. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fbase
 .. _Device Tree specification: https://www.devicetree.org/
+.. _xl documentation: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.1.html
 """  # noqa: E501
 
 # URL to use for references to repository paths

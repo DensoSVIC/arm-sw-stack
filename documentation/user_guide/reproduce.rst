@@ -115,6 +115,20 @@ Validation tests can be run on the baremetal images.
 See :ref:`reproduce_run-time_integration_tests` for more details on running
 run-time validation tests.
 
+Virtualization Architecture
+===========================
+
+To build a Virtualization image:
+
+  .. code-block:: console
+
+    kas build --update kronos/yocto/kas/virtualization.yml
+
+As with the baremetal guidance above, the Reference Stack virtualization
+image can also run validation tests.
+See :ref:`reproduce_run-time_integration_tests` for more details on running
+run-time validation tests.
+
 ***
 Run
 ***
@@ -143,6 +157,29 @@ To start the FVP and connect to the Primary Compute terminal (running Linux):
     kronos/yocto/kas/baremetal.yml
 
 The user should wait for the system to boot and for the Linux prompt to appear.
+
+Virtualization Architecture
+===========================
+
+To start the FVP and connect to the Primary Compute terminal (running Linux):
+
+  .. code-block:: console
+
+    kas shell -c="../layers/meta-arm/scripts/runfvp --verbose --console" \
+    kronos/yocto/kas/virtualization.yml
+
+The user should wait for the system to boot and for the Linux prompt to appear.
+On a virtualization image, this will access Dom0. Use the ``xl`` tool to log
+in to the DomU1:
+
+  .. code-block:: console
+
+    xl console domu1
+
+This command will provide a console on the DomU1. To exit, one can enter
+``Ctrl+]`` (to access the FVP telnet shell), followed by typing ``send esc``
+into the telnet shell and pressing ``Enter``. See the `xl documentation`_ for
+further details.
 
 .. _reproduce_run-time_integration_tests:
 
@@ -188,6 +225,66 @@ The following validation tests can be performed on the Reference Stack:
         2022-12-07 09:12:04 - INFO     - SUMMARY:
         2022-12-07 09:12:04 - INFO     - baremetal-image () - Ran 10 tests in 271.671s
         2022-12-07 09:12:04 - INFO     - baremetal-image - OK - All required tests passed (successes=10, skipped=0, failures=0, errors=0)
+
+    * Virtualization Architecture Stack:
+
+      .. code-block:: console
+
+        TESTIMAGE_AUTO=1 kas build kronos/yocto/kas/virtualization.yml
+
+      The previous test takes around 20 minutes to complete.
+
+      A similar output should be printed out:
+
+      .. code-block:: console
+
+        NOTE: Executing Tasks
+        2023-04-12 09:09:10 - INFO     - Creating terminal default on terminal_ns_uart0
+        2023-04-12 09:09:18 - INFO     - Creating terminal tf-a on terminal_sec_uart
+        2023-04-12 09:09:19 - INFO     - Creating terminal scp on terminal_uart_scp
+        2023-04-12 09:09:19 - INFO     - Creating terminal lcp on terminal_uart_lcp
+        2023-04-12 09:09:19 - INFO     - Creating terminal rss on terminal_rss_uart
+        2023-04-12 09:09:19 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+        2023-04-12 09:09:19 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+        2023-04-12 09:09:19 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+        2023-04-12 09:09:19 - INFO     - default: Waiting for login prompt
+        2023-04-12 09:19:19 - INFO     - Bitbake still alive (no events for 600s). Active tasks:
+        2023-04-12 09:19:19 - INFO     - /builds/engineering/ais/kronos/kronos/work/build/../../yocto/meta-kronos/dynamic-layers/virtualization-layer/recipes-core/images/virtualization-image.bb:do_testimage
+        2023-04-12 09:21:55 - INFO     - 'rtc' not tested in DomU
+        2023-04-12 09:21:55 - INFO     - 'virtiorng' not tested in DomU
+        2023-04-12 09:21:55 - INFO     - 'watchdog' not tested in DomU
+        2023-04-12 09:22:13 - INFO     - 'rtc' not tested in DomU
+        2023-04-12 09:22:13 - INFO     - 'virtiorng' not tested in DomU
+        2023-04-12 09:22:13 - INFO     - 'watchdog' not tested in DomU
+        2023-04-12 09:32:11 - INFO     - RESULTS:
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (0.86s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_10_safety_island_c0.SafetyIslandC0Test.test_cluster0: PASSED (0.00s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_10_safety_island_c1.SafetyIslandC1Test.test_cluster1: PASSED (0.00s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_10_safety_island_c2.SafetyIslandC2Test.test_cluster2: PASSED (0.00s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_cpu_hotplug: PASSED (17.78s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_networking: PASSED (2.02s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_cpu_hotplug: PASSED (3.49s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_networking: PASSED (3.41s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.PtestRunnerDom0Test.test_ptestrunner: PASSED (502.28s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (729.36s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_20_bsp.BspTest.test_cpu_hotplug: PASSED (26.93s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_20_bsp.BspTest.test_networking: PASSED (20.97s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_20_bsp.BspTest.test_rtc: PASSED (11.08s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_20_bsp.BspTest.test_virtiorng: PASSED (12.24s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_20_bsp.BspTest.test_watchdog: PASSED (6.87s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_rtc: SKIPPED (0.00s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_virtiorng: SKIPPED (0.00s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_watchdog: SKIPPED (0.00s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_rtc: SKIPPED (0.00s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_virtiorng: SKIPPED (0.00s)
+        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_watchdog: SKIPPED (0.00s)
+        2023-04-12 09:32:11 - INFO     - SUMMARY:
+        2023-04-12 09:32:11 - INFO     - virtualization-image () - Ran 25 tests in 1358.820s
+        2023-04-12 09:32:11 - INFO     - virtualization-image - OK - All required tests passed (successes=19, skipped=6, failures=0, errors=0)
 
   Please refer to :ref:`validation` for an explanation on how the validation
   tests are set up and how they work in the Reference Stack.
