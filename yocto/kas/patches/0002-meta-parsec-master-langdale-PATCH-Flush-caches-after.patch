@@ -1,0 +1,32 @@
+From cd18861b346a6f46a8b017b7a67a76392e838707 Mon Sep 17 00:00:00 2001
+From: Anton Antonov <anton.antonov@arm.com>
+Date: Thu, 13 Apr 2023 19:33:55 +0100
+Subject: [PATCH] [meta-parsec][master,langdale][PATCH] Flush caches after OEQA
+ tests
+
+Make sure that all changes a saved after running the tests.
+
+Upstream-Status: Backport [https://git.yoctoproject.org/meta-security/commit/?id=53c5cc794f44df96c47c614d736c8ccd4f25139f]
+Signed-off-by: Anton Antonov <anton.antonov@arm.com>
+---
+ meta-parsec/lib/oeqa/runtime/cases/parsec.py | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/meta-parsec/lib/oeqa/runtime/cases/parsec.py b/meta-parsec/lib/oeqa/runtime/cases/parsec.py
+index 6be84ba..9df5bec 100644
+--- a/meta-parsec/lib/oeqa/runtime/cases/parsec.py
++++ b/meta-parsec/lib/oeqa/runtime/cases/parsec.py
+@@ -24,6 +24,10 @@ class ParsecTest(OERuntimeTestCase):
+             self.parsec_status='pgrep -l parsec'
+             self.parsec_reload='/etc/init.d/parsec reload'
+ 
++    def tearDown(self):
++        self.target.run('sync')
++        super(ParsecTest, self).tearDown()
++
+     def copy_subconfig(self, cfg, provider):
+         """ Copy a provider configuration to target and append it to Parsec config """
+ 
+-- 
+2.25.1
+
