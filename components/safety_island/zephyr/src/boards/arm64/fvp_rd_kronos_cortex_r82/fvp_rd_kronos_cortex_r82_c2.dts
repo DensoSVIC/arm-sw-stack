@@ -10,6 +10,7 @@
 #include <mem.h>
 #include <arm64/armv8-r.dtsi>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
+#include "fvp_rd_kronos_cortex_r82_device_mem.dtsi"
 
 / {
 	#address-cells = <2>;
@@ -97,13 +98,6 @@
 		sram0: memory@160000000 {
 			compatible = "mmio-sram";
 			reg = <0x1 0x60000000 DT_SIZE_M(8)>;
-		};
-
-		device_region_0: memory@28000000 {
-			compatible = "zephyr,memory-region", "mmio-sram";
-			reg = <0x0 0x28000000 DT_SIZE_M(384)>;
-			zephyr,memory-region = "DEVICE_REGION_1";
-			zephyr,memory-region-mpu = "IO";
 		};
 	};
 };
