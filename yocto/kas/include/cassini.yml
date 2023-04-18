@@ -15,7 +15,7 @@ repos:
   meta-cassini:
     url: https://gitlab.com/Linaro/cassini/meta-cassini
     path: layers/meta-cassini
-    refspec: langdale-dev
+    refspec: main
     layers:
       meta-cassini-distro:
       meta-cassini-bsp: excluded

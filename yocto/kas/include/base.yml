@@ -14,7 +14,7 @@ header:
 
 defaults:
   repos:
-    refspec: langdale
+    refspec: mickledore
 
 repos:
   kronos:
