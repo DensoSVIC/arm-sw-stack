@@ -71,7 +71,18 @@ ZEPHYR_APP_SAFETY_ISLAND_CL0:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL1:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:hipc-validation = "zperf"
 
-TEST_SUITES_EXTRA ?= ""
+TEST_SUITES_EXTRA ?= " \
+    test_10_safety_island_c0 \
+    test_10_safety_island_c1 \
+    test_10_safety_island_c2 \
+    "
+
+TEST_SUITES_EXTRA:hipc-validation = " test_30_hipc"
+
+TEST_SUITES_EXTRA:hipc-validation:virtualization = " \
+    test_30_hipc_virtualization \
+    "
+
 TEST_SUITES_EXTRA:virtualization:append = " \
     test_40_virtualization \
     "
