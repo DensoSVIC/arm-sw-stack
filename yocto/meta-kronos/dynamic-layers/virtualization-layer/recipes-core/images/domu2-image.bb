@@ -19,3 +19,11 @@ python() {
 DOMU_HOSTNAME = "domu2"
 
 require domu-image.inc
+
+update_si_ip_addr() {
+    sed -i -r 's/192.168.0.2$/192.168.0.3/g' ${IMAGE_ROOTFS}/etc/network/interfaces.d/0002-safety-island-c0
+    sed -i -r 's/192.168.1.2$/192.168.1.3/g' ${IMAGE_ROOTFS}/etc/network/interfaces.d/0002-safety-island-c1
+    sed -i -r 's/192.168.2.2$/192.168.2.3/g' ${IMAGE_ROOTFS}/etc/network/interfaces.d/0002-safety-island-c2
+}
+
+ROOTFS_POSTPROCESS_COMMAND += "update_si_ip_addr;"

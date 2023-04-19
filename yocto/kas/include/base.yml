@@ -37,6 +37,8 @@ env:
   TESTIMAGE_AUTO:
 
 local_conf_header:
+  kronos-extra-features: |
+    EXTRA_IMAGE_FEATURES:append = " hipc-validation"
   diskmon: |
     BB_DISKMON_DIRS = "\
       STOPTASKS,${TMPDIR},1G,100K \

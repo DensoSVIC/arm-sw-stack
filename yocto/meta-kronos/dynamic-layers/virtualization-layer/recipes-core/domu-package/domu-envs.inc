@@ -27,14 +27,14 @@ DOMU_INSTANCES ?= "2"
 DOMU_ENV_PATH = "${WORKDIR}/envs"
 
 # Set extra configuration via DOMU${IDX}_EXTRA.
-DOMU1_BRIDGES ?= "vif = ['script=vif-bridge,bridge=brext0,vifname=domu1.ext0']"
+DOMU1_BRIDGES ?= "vif = ['script=vif-bridge,bridge=brext0,vifname=domu1.ext0', 'script=vif-bridge,bridge=brsi0,vifname=domu1.ethsi0', 'script=vif-bridge,bridge=brsi1,vifname=domu1.ethsi1', 'script=vif-bridge,bridge=brsi2,vifname=domu1.ethsi2']"
 DOMU1_NUMBER_OF_CPUS ?= "2"
 # Refer to https://xenbits.xen.org/docs/4.17-testing/man/xl.cfg.5.html#CPU-Allocation
 # about how to set the CPULIST.
 DOMU1_VCPU_PIN ?= "cpus = [\"1-2\"]"
 DOMU1_EXTRA ?= "${DOMU1_BRIDGES}\\n${DOMU1_VCPU_PIN}"
 
-DOMU2_BRIDGES ?= "vif = ['script=vif-bridge,bridge=brext0,vifname=domu2.ext0']"
+DOMU2_BRIDGES ?= "vif = ['script=vif-bridge,bridge=brext0,vifname=domu2.ext0', 'script=vif-bridge,bridge=brsi0,vifname=domu2.ethsi0', 'script=vif-bridge,bridge=brsi1,vifname=domu2.ethsi1', 'script=vif-bridge,bridge=brsi2,vifname=domu2.ethsi2']"
 DOMU2_NUMBER_OF_CPUS ?= "1"
 DOMU2_VCPU_PIN ?= "cpus = [\"3\"]"
 DOMU2_EXTRA ?= "${DOMU2_BRIDGES}\\n${DOMU2_VCPU_PIN}"
