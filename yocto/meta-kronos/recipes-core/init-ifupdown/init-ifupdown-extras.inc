@@ -8,6 +8,9 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI += "\
     file://interfaces.d/0001-external \
+    file://interfaces.d/0002-safety-island-c0 \
+    file://interfaces.d/0002-safety-island-c1 \
+    file://interfaces.d/0002-safety-island-c2 \
     "
 
 install_interfaces() {

@@ -13,7 +13,7 @@ header:
 local_conf_header:
   baremetal: |
     TMPDIR = "${TOPDIR}/tmp_baremetal"
-    EXTRA_IMAGE_FEATURES:append = " baremetal"
+    EXTRA_IMAGE_FEATURES:append = " baremetal hipc-validation"
 
 target:
   - baremetal-image

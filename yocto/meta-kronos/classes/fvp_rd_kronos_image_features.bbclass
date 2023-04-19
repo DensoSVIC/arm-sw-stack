@@ -4,11 +4,19 @@
 #
 # SPDX-License-Identifier: MIT
 
+# Add an override so that variables can have a value set only if 'feature' is
+# enabled in EXTRA_IMAGE_FEATURES:
+# VAR is "val" only if 'hipc-validation' is in EXTRA_IMAGE_FEATURES
+# e.g. VAR:hipc-validation = "val"
+OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
+                    'hipc-validation', ':hipc-validation', '', d)}"
+
 # This bbclass handles, via the EXTRA_IMAGE_FEATURES variable, the following
 # features that will be used to select packages to be installed on rootfs,
 # Safety Island image and integration testing.
 IMAGE_FEATURES[validitems] += " \
     baremetal \
+    hipc-validation \
     virtualization \
     domu \
     "
@@ -52,6 +60,10 @@ FEATURE_PACKAGES_domu = " \
     "
 
 require ${@bb.utils.contains('MACHINE', 'fvp-rd-kronos', 'conf/machine/include/fvp-rd-kronos-extras.inc', '', d)}
+
+ZEPHYR_APP_SAFETY_ISLAND_CL0:hipc-validation = "zperf"
+ZEPHYR_APP_SAFETY_ISLAND_CL1:hipc-validation = "zperf"
+ZEPHYR_APP_SAFETY_ISLAND_CL2:hipc-validation = "zperf"
 
 def add_extra_test_suites(d):
     test_suites = ""
