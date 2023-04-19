@@ -11,6 +11,9 @@
 OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
                     'hipc-validation', ':hipc-validation', '', d)}"
 
+OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
+                    'virtualization', ':virtualization', '', d)}"
+
 # This bbclass handles, via the EXTRA_IMAGE_FEATURES variable, the following
 # features that will be used to select packages to be installed on rootfs,
 # Safety Island image and integration testing.
@@ -59,22 +62,22 @@ FEATURE_PACKAGES_domu = " \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 
+FEATURE_PACKAGES_hipc-validation = "iperf"
+FEATURE_PACKAGES_hipc-validation:virtualization = ""
+
 require ${@bb.utils.contains('MACHINE', 'fvp-rd-kronos', 'conf/machine/include/fvp-rd-kronos-extras.inc', '', d)}
 
 ZEPHYR_APP_SAFETY_ISLAND_CL0:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL1:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:hipc-validation = "zperf"
 
-def add_extra_test_suites(d):
-    test_suites = ""
-    extra_img_feat = (d.getVar('EXTRA_IMAGE_FEATURES') or "")
-    for feature in extra_img_feat.split():
-        if feature == 'virtualization':
-            test_suites += ' test_40_virtualization'
+TEST_SUITES_EXTRA ?= ""
+TEST_SUITES_EXTRA:virtualization:append = " \
+    test_40_virtualization \
+    "
 
-    return test_suites
-
-TEST_SUITES:append = " test_10_linuxlogin \
-    ${@add_extra_test_suites(d)} \
+TEST_SUITES:append = " \
+    test_10_linuxlogin \
     test_40_parsec \
+    ${TEST_SUITES_EXTRA} \
 "

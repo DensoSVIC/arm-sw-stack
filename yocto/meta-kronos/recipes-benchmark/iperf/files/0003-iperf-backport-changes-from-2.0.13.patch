@@ -1,0 +1,125 @@
+From 27785933e48acebfec588fd0392bcf929e522480 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Tom=C3=A1s=20Gonz=C3=A1lez?=
+ <tomasagustin.gonzalezorlando@arm.com>
+Date: Tue, 1 Nov 2022 13:32:17 +0000
+Subject: [PATCH] iperf: backport changes from 2.0.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Backport changes from version 2.0.13 so that printf's are called
+with the correct "%s" identifier.
+
+Upstream-Status: Backport
+Signed-off-by: Tomás González <tomasagustin.gonzalezorlando@arm.com>
+---
+ compat/Thread.c     |  4 ++--
+ src/ReportDefault.c | 10 +++++-----
+ src/Reporter.c      |  2 +-
+ src/Settings.cpp    |  6 +++---
+ 4 files changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/compat/Thread.c b/compat/Thread.c
+index e0fe4f8..c44a1a2 100644
+--- a/compat/Thread.c
++++ b/compat/Thread.c
+@@ -380,8 +380,8 @@ void thread_unregister_nonterm( void ) {
+ int thread_release_nonterm( int interrupt ) {
+     Condition_Lock( thread_sNum_cond );
+     thread_sNum -= nonterminating_num;
+-    if ( thread_sNum > 1 && nonterminating_num > 0 && interrupt != 0 ) {
+-        fprintf( stderr, wait_server_threads );
++    if ( thread_sNum > 1 && nonterminating_num > 0 && interrupt != 0) {
++        fprintf( stderr, "%s", wait_server_threads );
+     }
+     nonterminating_num = 0;
+     Condition_Signal( &thread_sNum_cond );
+diff --git a/src/ReportDefault.c b/src/ReportDefault.c
+index ab3418d..3b17829 100644
+--- a/src/ReportDefault.c
++++ b/src/ReportDefault.c
+@@ -78,7 +78,7 @@ void reporter_printstats( Transfer_Info *stats ) {
+     if ( stats->mUDP != (char)kMode_Server ) {
+         // TCP Reporting
+         if( !header_printed ) {
+-            printf( report_bw_header);
++            printf(  "%s", report_bw_header);
+             header_printed = 1;
+         }
+         printf( report_bw_format, stats->transferID, 
+@@ -87,7 +87,7 @@ void reporter_printstats( Transfer_Info *stats ) {
+     } else {
+         // UDP Reporting
+         if( !header_printed ) {
+-            printf( report_bw_jitter_loss_header);
++            printf( "%s", report_bw_jitter_loss_header);
+             header_printed = 1;
+         }
+         printf( report_bw_jitter_loss_format, stats->transferID, 
+@@ -159,7 +159,7 @@ void reporter_reportsettings( ReporterData *data ) {
+                   (data->mThreadMode == kMode_Listener ? 0 : 1) );
+     win_requested = data->mTCPWin;
+ 
+-    printf( separator_line );
++    printf( "%s", separator_line );
+     if ( data->mThreadMode == kMode_Listener ) {
+         printf( server_port,
+                 (isUDP( data ) ? "UDP" : "TCP"), 
+@@ -198,7 +198,7 @@ void reporter_reportsettings( ReporterData *data ) {
+         printf( warn_window_requested, buffer );
+     }
+     printf( "\n" );
+-    printf( separator_line );
++    printf( "%s", separator_line );
+ }
+ 
+ /*
+@@ -286,7 +286,7 @@ void reporter_reportMSS( int inMSS, thread_Settings *inSettings ) {
+         } else if ( checkMSS_MTU( inMSS, 576 ) ) {
+             net = "minimum";
+             mtu = 576;
+-            printf( warn_no_pathmtu );
++            printf( "%s", warn_no_pathmtu );
+         } else {
+             mtu = inMSS + 40;
+             net = "unknown interface";
+diff --git a/src/Reporter.c b/src/Reporter.c
+index 7d9263b..5652c7b 100644
+--- a/src/Reporter.c
++++ b/src/Reporter.c
+@@ -896,7 +896,7 @@ void PrintMSS( ReporterData *stats ) {
+         } else if ( checkMSS_MTU( inMSS, 576 ) ) {
+             net = "minimum";
+             mtu = 576;
+-            printf( warn_no_pathmtu );
++            printf( "%s", warn_no_pathmtu );
+         } else {
+             mtu = inMSS + 40;
+             net = "unknown interface";
+diff --git a/src/Settings.cpp b/src/Settings.cpp
+index 6a5f092..0c3f367 100644
+--- a/src/Settings.cpp
++++ b/src/Settings.cpp
+@@ -375,8 +375,8 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
+             break;
+ 
+         case 'h': // print help and exit
+-            fprintf(stderr, usage_long1);
+-            fprintf(stderr, usage_long2);
++	    fprintf(stderr, "%s", usage_long1);
++            fprintf(stderr, "%s", usage_long2);
+             exit(1);
+             break;
+ 
+@@ -482,7 +482,7 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
+             break;
+ 
+         case 'v': // print version and exit
+-            fprintf( stderr, version );
++	    fprintf( stderr, "%s", version );
+             exit(1);
+             break;
+ 
+-- 
+2.25.1
+
