@@ -87,6 +87,16 @@
 			compatible = "mmio-sram";
 			reg = <0x1 0x40000000 DT_SIZE_M(4)>;
 		};
+
+		mhuv3_00: mhuv3@2ab20000 {
+			compatible = "arm,mhuv3";
+			reg = <0x0 0x2ab20000 0x1000>,
+			      <0x0 0x2ab30000 0x1000>;
+			reg-names = "tx", "rx";
+			interrupts = <GIC_SPI 44 0 IRQ_TYPE_LEVEL>;
+			interrupt-names = "rx";
+			status = "disabled";
+		};
 	};
 };
 

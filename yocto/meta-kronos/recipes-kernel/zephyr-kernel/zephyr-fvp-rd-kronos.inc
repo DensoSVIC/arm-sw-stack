@@ -4,9 +4,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-ZEPHYR_APP ??= "helloworld"
-require recipes-kernel/zephyr-kernel/zephyr-${ZEPHYR_APP}.bb
-
 FILESEXTRAPATHS:prepend := "\
 ${THISDIR}/files:\
 ${KRONOS_REPO_DIRECTORY}/components/safety_island/zephyr:\
@@ -17,6 +14,13 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0002-soc-fvp_aemv8r-add-mpu-region-from-device-tree.patch;patchdir=zephyr \
     file://zephyr/0003-soc-include-fvp_aemv8r-Define-device-memory-as-devic.patch;patchdir=zephyr \
     file://zephyr/0004-soc-fvp_aemv8r-Flash-mpu-region-can-t-be-set-in-case.patch;patchdir=zephyr \
+    file://zephyr/0005-net-zperf-add-configurable-for-the-zperf-sessions-nu.patch;patchdir=zephyr \
+    file://zephyr/0006-net-zperf-unify-get_session-among-TCP-and-UDP.patch;patchdir=zephyr \
+    file://zephyr/0007-net-zperf-fix-typo-in-error-messages.patch;patchdir=zephyr \
+    file://zephyr/0008-net-zperf-improve-code-quality-for-tcp_received-func.patch;patchdir=zephyr \
+    file://zephyr/0009-net-zperf-Reduce-the-scope-of-input-address-variable.patch;patchdir=zephyr \
+    file://zephyr/0010-net-zperf-allow-TCP-receiver-to-handle-multiple-conn.patch;patchdir=zephyr \
+    file://zephyr/0011-net-ip-Kconfig-for-TCP-packet-allocation-timeout.patch;patchdir=zephyr \
     "
 SRC_URI += "${SRC_URI_ZEPHYR_EXTRA_PATCHES}"
 

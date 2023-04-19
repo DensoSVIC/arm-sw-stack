@@ -1,0 +1,26 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Virtual ethernet over rpmsg configuration options
+
+menuconfig VETH_RPMSG
+	bool "veth over rpmsg endpoint"
+	default n
+
+config VETH_MAC_ADDR
+string "MAC address for the interface"
+	help
+	  Specify a MAC address for the Veth interface in the form of
+	  six hex 8-bit chars separated by colons (e.g.:
+	  11:22:33:44:55:66).  The default is an empty string, which
+	  means the code will make 00:00:00:00:00:01.
+
+config VETH_NS_NAME
+string "Name advertised through nameservice"
+	default "rpmsg-netdev"
+	help
+	  Specify a name, advertised through the nameservice, that uniquely
+	  identifies this endpoint.

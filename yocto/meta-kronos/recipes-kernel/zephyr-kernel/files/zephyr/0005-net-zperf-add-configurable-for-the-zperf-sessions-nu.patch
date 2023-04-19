@@ -1,0 +1,49 @@
+From 1bcfecd0dc968b7821d0ef2951991ba835edc72c Mon Sep 17 00:00:00 2001
+From: Luca Fancellu <luca.fancellu@arm.com>
+Date: Tue, 10 Jan 2023 11:04:00 +0000
+Subject: [PATCH] net: zperf: add configurable for the zperf sessions
+ number
+
+Currently the maximum number of zperf sessions handled is hardcoded
+to 4, create a Kconfig parameter, with default value 4, to make the
+maximum number of sessions configurable.
+
+Issue-Id: SCM-5823
+Signed-off-by: Luca Fancellu <luca.fancellu@arm.com>
+Upstream-Status: Backport [main:1a12a070eb21a157ee032bed7418f1b25abf17ba]
+---
+ subsys/net/lib/zperf/Kconfig         | 6 ++++++
+ subsys/net/lib/zperf/zperf_session.c | 2 +-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/subsys/net/lib/zperf/Kconfig b/subsys/net/lib/zperf/Kconfig
+index 499e012137ff..2cb366303003 100644
+--- a/subsys/net/lib/zperf/Kconfig
++++ b/subsys/net/lib/zperf/Kconfig
+@@ -22,4 +22,10 @@ config NET_ZPERF_MAX_PACKET_SIZE
+ 	help
+ 	  Upper size limit for packets sent by zperf.
+ 
++config NET_ZPERF_MAX_SESSIONS
++	int "Maximum number of zperf sessions"
++	default 4
++	help
++	  Upper size limit for connections handled by zperf.
++
+ endif
+diff --git a/subsys/net/lib/zperf/zperf_session.c b/subsys/net/lib/zperf/zperf_session.c
+index 19e866d0a592..bb195d7eb1b9 100644
+--- a/subsys/net/lib/zperf/zperf_session.c
++++ b/subsys/net/lib/zperf/zperf_session.c
+@@ -14,7 +14,7 @@ LOG_MODULE_DECLARE(net_zperf, CONFIG_NET_ZPERF_LOG_LEVEL);
+ 
+ #include "zperf_session.h"
+ 
+-#define SESSION_MAX 4
++#define SESSION_MAX CONFIG_NET_ZPERF_MAX_SESSIONS
+ 
+ static struct session sessions[SESSION_PROTO_END][SESSION_MAX];
+ 
+-- 
+2.25.1
+

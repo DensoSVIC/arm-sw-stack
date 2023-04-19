@@ -1,12 +1,8 @@
+#
 # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: Apache-2.0
----
-name: safety_island
-build:
-  cmake: .
-  kconfig: Kconfig
-  settings:
-    board_root: .
-    dts_root: .
+
+zephyr_library()
+zephyr_library_sources_ifdef(CONFIG_IPM_MHUV3 ipm_mhuv3.c)

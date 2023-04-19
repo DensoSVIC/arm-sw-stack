@@ -1,0 +1,39 @@
+/*
+ * SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ * affiliates <open-source-office@arm.com></text>
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	chosen {
+		zephyr,rpmsg_rsc_table = &rsc_table;
+		zephyr,rpmsg_shm = &shared_data;
+		zephyr,rpmsg_ipm_dev = &mhuv3_00;
+	};
+
+	soc {
+		shared_ram: memory@1d000000 {
+                        compatible = "zephyr,memory-region", "mmio-sram";
+                        reg = <0x0 0x1d000000 DT_SIZE_M(40)>;
+                        zephyr,memory-region = "SHRAM";
+                        zephyr,memory-region-mpu = "RAM_NOCACHE";
+                };
+
+                shared_data: buffers_mem@1d001000 {
+                        compatible = "mmio-ipc-sram";
+                        reg = <0x0 0x1d001000 DT_SIZE_M(32)>;
+                        busaddr_delta_l = <0x68000000>;
+                        busaddr_delta_h = <0x80>;
+                };
+
+                rsc_table: rsc_table_mem@1d000000 {
+                        compatible = "mmio-dram";
+                        reg = <0x0 0x1d000000 DT_SIZE_K(4)>;
+                };
+	};
+};
+
+&mhuv3_00 {
+	status = "okay";
+};
