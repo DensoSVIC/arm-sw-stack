@@ -32,5 +32,7 @@ and a high level overview of their purpose/functionality as a group:
     - :ref:`design_components_trusted-firmware-a_downstream_changes` for TF-A
   * - :ref:`design_components_u-boot`
     - :ref:`design_components_u-boot_downstream_changes` for U-Boot
+  * - :ref:`design_components_xen`
+    - :ref:`design_components_xen_downstream_changes` for Xen
   * - :ref:`design_components_linux`
     - :ref:`design_components_linux_downstream_changes` for Linux

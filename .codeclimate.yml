@@ -35,6 +35,7 @@ plugins:
       - ".gitlab/"
       - "/documentation/*.py"
       - "/documentation/_static/"
+      - "/documentation/images/"
       - "/documentation/license_link.rst"
       - "/documentation/requirements.txt"
       - "/layers/"

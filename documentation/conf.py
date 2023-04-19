@@ -123,6 +123,7 @@ rst_prolog = f"""
 .. |SCP-Firmware base version| replace:: {scp_firmware_base_version}
 .. |Trusted Firmware-A version| replace:: {trusted_firmware_a_version}
 .. |U-Boot version| replace:: {uboot_version}
+.. |Xen version| replace:: {xen_version}
 .. |Linux version| replace:: {linux_version}.{linux_version_patch}
 .. |Arm SystemReadyTM| replace:: Arm SystemReady\\ :sup:`TM`
 .. |kronos remote| replace:: https://git.gitlab.arm.com/automotive-and-industrial/kronos/kronos.git
@@ -139,9 +140,11 @@ rst_prolog = f"""
 .. _SCP-Firmware repository: https://github.com/ARM-software/SCP-firmware/tree/{scp_firmware_version}
 .. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/tree/?h=v{trusted_firmware_a_version}
 .. _U-Boot repository: https://source.denx.de/u-boot/u-boot/-/tree/v{uboot_version}
+.. _Xen repository: https://xenbits.xen.org/gitweb/?p=xen.git;a=tree;h=refs/heads/stable-{xen_version}
 .. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fbase
 .. _Device Tree specification: https://www.devicetree.org/
 .. _xl documentation: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.1.html
+.. _Arm Memory Partitioning and Monitoring: https://developer.arm.com/documentation/ddi0598/latest
 """  # noqa: E501
 
 # URL to use for references to repository paths
