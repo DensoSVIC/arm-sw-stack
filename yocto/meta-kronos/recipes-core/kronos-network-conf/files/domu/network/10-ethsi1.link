@@ -4,6 +4,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-# External network interface
-auto eth0
-iface eth0 inet dhcp
+[Match]
+Path=xen-vif-2
+
+[Link]
+Name=ethsi1

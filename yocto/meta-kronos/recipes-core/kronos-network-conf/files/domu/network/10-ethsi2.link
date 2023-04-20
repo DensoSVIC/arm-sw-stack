@@ -4,8 +4,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-# The loopback interface
-auto lo
-iface lo inet loopback
+[Match]
+Path=xen-vif-3
 
-source-directory /etc/network/interfaces.d
+[Link]
+Name=ethsi2

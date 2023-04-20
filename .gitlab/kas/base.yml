@@ -52,8 +52,6 @@ local_conf_header:
     CASSINI_GENERIC_ARM64_FILESYSTEM = "0"
     DISTRO_FEATURES:remove = "k3s"
     KERNEL_CLASSES:remove = "k3s_kernelcfg_check"
-    INIT_MANAGER:fvp-rd-kronos = "sysvinit"
-    INIT_MANAGER:generic-arm64 = "sysvinit"
   kronos-extra-features: |
     EXTRA_IMAGE_FEATURES:append = " actuation"
   diskmon: |

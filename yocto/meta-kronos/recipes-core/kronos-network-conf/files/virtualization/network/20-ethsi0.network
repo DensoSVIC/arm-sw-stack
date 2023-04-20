@@ -4,6 +4,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-# Interface for communication with the Safety Island Cluster 1
-auto ethsi1
-iface ethsi1 inet manual
+[Match]
+Name=ethsi0
+
+[Network]
+Bridge=brsi0

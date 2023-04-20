@@ -14,6 +14,7 @@ AEMV
 aidr
 ALIGNER
 ALIGNERR
+allarch
 ALLOC
 alsa
 ANEG
@@ -318,6 +319,7 @@ netdev
 NETIF
 netif
 NETPORT
+networkd
 noanonpython
 NOCACHE
 nocpuid
@@ -492,6 +494,7 @@ uboot
 uefi
 uintptr
 unixadmin
+unmanaged
 upscaling
 upstreamed
 upto

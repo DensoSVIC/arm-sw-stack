@@ -50,6 +50,7 @@ IMAGE_FEATURES_CONFLICTS_si0-ethernet0 = "hipc-validation actuation"
 
 FEATURE_PACKAGES_COMMON = " \
     arm-si-rproc-mod \
+    kronos-network-conf \
     packagegroup-core-boot \
     packagegroup-core-ssh-openssh \
     packagegroup-machine-base \
@@ -73,6 +74,7 @@ FEATURE_PACKAGES_virtualization = " \
     "
 
 FEATURE_PACKAGES_domu = " \
+    kronos-network-conf \
     packagegroup-core-boot \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "

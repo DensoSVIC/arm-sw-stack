@@ -4,6 +4,10 @@
 #
 # SPDX-License-Identifier: MIT
 
-# Interface for communication with the Safety Island Cluster 2
-auto ethsi2
-iface ethsi2 inet manual
+# Prevent systemd-networkd from managing the Xen vif interfaces
+
+[Match]
+Driver=vif
+
+[Link]
+Unmanaged=yes

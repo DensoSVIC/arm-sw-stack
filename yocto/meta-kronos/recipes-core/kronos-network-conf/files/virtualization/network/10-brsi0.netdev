@@ -4,8 +4,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-# Interface for communication with the Safety Island Cluster 1
-auto ethsi1
-iface ethsi1 inet static
-    address 192.168.1.2
-    netmask 255.255.255.0
+[NetDev]
+Name=brsi0
+Kind=bridge
