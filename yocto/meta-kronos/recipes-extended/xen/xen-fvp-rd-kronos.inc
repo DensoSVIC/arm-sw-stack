@@ -8,8 +8,7 @@
 # fvp-rd-kronos MACHINE
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI += "\
-    file://0001-tools-xendomains-Restrict-domid-pattern-in-LIST_GREP.patch \
-    file://0002-tools-xendomains-Only-save-restore-migrate-if-suppor.patch \
+    file://0001-tools-xendomains-Only-save-restore-migrate-if-suppor.patch \
     file://0003-arm-cpufeature-discover-CPU-support-for-MPAM.patch \
     file://0004-xen-arm-Set-default-value-of-MPAM-system-registers.patch \
     file://0005-xen-arm-Introduce-a-Kconfig-to-enable-MPAM.patch \
