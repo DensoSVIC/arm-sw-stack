@@ -1,0 +1,158 @@
+From e41a251fb9e2932faa416dd3df2ea134f1dd367b Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Mon, 1 Aug 2022 07:24:00 +0000
+Subject: [PATCH] xen/arm: Parse cache information from device tree at
+ boot time
+
+xl-psr has a command "xl psr-hwinfo" which basically prints the
+hardware info related to PSR (for Intel) or MPAM (for Arm) of the
+platform. One of the entries is the cache information.
+
+Hence, this commit introduces helpers to probe and parse cache
+information (level and size) from the device tree. These helpers
+are called at the boot time. The parsed information is stored to
+a newly introduced `size` field in `struct mpam_class` for future
+query.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-2794
+Change-Id: I1f8dac7236ccdd1a95e9df78ac8e08ffb59a9657
+---
+ xen/arch/arm/include/asm/mpam.h |  2 +
+ xen/arch/arm/mpam.c             | 90 +++++++++++++++++++++++++++++++++
+ 2 files changed, 92 insertions(+)
+
+diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
+index 0cc51458cb..d1434202d4 100644
+--- a/xen/arch/arm/include/asm/mpam.h
++++ b/xen/arch/arm/include/asm/mpam.h
+@@ -376,6 +376,8 @@ struct mpam_class
+     struct mpam_props props;
+     uint32_t nrdy_us;
+     uint8_t level;
++    /* Size in Bytes. */
++    uint32_t size;
+     enum mpam_class_types type;
+     /* member of mpam_classes */
+     struct list_head classes_list;
+diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
+index 268de15860..b210842736 100644
+--- a/xen/arch/arm/mpam.c
++++ b/xen/arch/arm/mpam.c
+@@ -56,6 +56,27 @@ static unsigned int mpam_fw_num_msc;
+ static uint16_t mpam_partid_max;
+ static uint8_t mpam_pmg_max;
+ 
++static void __init read_cache_size_from_registers(void *arg)
++{
++    struct mpam_class *cache = arg;
++    uint64_t regval = (cache->level - 1) << 1;
++    uint64_t ccsidr = 0;
++    unsigned int numsets = 0, associativity = 0, linesize = 0;
++
++    /* Select the cache_level cache in CSSELR_EL1, bits [3:1] */
++    WRITE_SYSREG(regval, CSSELR_EL1);
++
++    ccsidr = READ_SYSREG(CCSIDR_EL1);
++    /* (Log2(Number of bytes in cache line)) - 4 */
++    linesize = FIELD_GET(GENMASK(2, 0), ccsidr);
++    /* (Associativity of cache) - 1 */
++    associativity = FIELD_GET(GENMASK(12, 3), ccsidr);
++    /* (Number of sets in cache) - 1 */
++    numsets = FIELD_GET(GENMASK(27, 13), ccsidr);
++
++    cache->size += (numsets + 1) * (associativity + 1) * (1 << (linesize + 4));
++}
++
+ static int __init parse_dom0_mpam_cmdline(const char *s)
+ {
+     char *token, *cmdline = (char *)s;
+@@ -1332,6 +1353,69 @@ static void __init mpam_load_supported_partid_pmg(void)
+     ACCESS_ONCE(mpam_pmg_max) = FIELD_GET(MPAMIDR_PMG_MAX, sys_mpam_idr);
+ }
+ 
++static int __init mpam_probe_cache_info(void)
++{
++    const struct dt_device_node *node;
++    int rc;
++
++    dt_for_each_device_node( dt_host, node )
++    {
++        cpumask_t cpus;
++        unsigned int cpu;
++        uint32_t cache_size = 0, cache_level = 0;
++        struct mpam_class *cache;
++
++        if ( !dt_device_is_compatible(node, "cache") )
++            continue;
++
++        rc = dt_property_read_u32(node, "cache-level", &cache_level);
++        if ( !rc )
++        {
++            printk(XENLOG_ERR "MPAM: No cache-level property in %s\n",
++                   dt_node_full_name(node));
++            return -ENOENT;
++        }
++
++        rc = get_cpumask_from_cache(node, &cpus);
++        if ( rc )
++            return rc;
++
++        spin_lock(&mpam_list_lock);
++        cache = mpam_class_get(cache_level, MPAM_CLASS_CACHE, false);
++        if ( IS_ERR(cache) )
++        {
++            spin_unlock(&mpam_list_lock);
++            continue;
++        }
++
++        rc = dt_property_read_u32(node, "cache-size", &cache_size);
++        /*
++         * No cache-size specified in device tree, try to read cache
++         * information from cache registers.
++         */
++        if ( !rc )
++        {
++            /* Current CPU has affinity to access this cache */
++            if ( cpumask_test_cpu(smp_processor_id(), &cpus) )
++                read_cache_size_from_registers(cache);
++            /* Current CPU does not have affinity to access this cache */
++            else
++            {
++                cpu = cpumask_any(&cpus);
++                ASSERT(cpu_online(cpu));
++                on_selected_cpus(cpumask_of(cpu),
++                                 read_cache_size_from_registers, cache, 1);
++            }
++        }
++        /* If cache-size specified in device tree, directly get it there. */
++        else
++            ACCESS_ONCE(cache->size) = cache->size + cache_size;
++        spin_unlock(&mpam_list_lock);
++    }
++
++    return 0;
++}
++
+ /*
+  * Get MPAM hwinfo based on the input resource type.
+  * Currently assume MPAM hwinfo is the same across different clusters.
+@@ -1413,8 +1497,14 @@ void __init mpam_presmp_setup(void)
+ 
+ void __init mpam_postsmp_setup(void)
+ {
++    int rc;
++
+     if ( mpam_enable() )
+         printk(XENLOG_ERR "MPAM: Unable to enable MPAM\n");
++
++    rc = mpam_probe_cache_info();
++    if ( rc )
++        printk(XENLOG_ERR "MPAM: Cannot read system cache info, err: %d\n", rc);
+ }
+ 
+ int __init mpam_discovery_cpu_online(unsigned int cpu)
+-- 
+2.25.1
+

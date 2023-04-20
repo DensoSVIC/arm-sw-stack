@@ -1,0 +1,241 @@
+From d31778148da2b0cfbcefa71617fb23a2888062b9 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Fri, 19 Aug 2022 04:01:43 +0000
+Subject: [PATCH] docs: device-tree: Add MPAM device tree binding
+
+This commit imports the draft MPAM device tree binding from Linux
+kernel. It contains the definition of MPAM MSC node and possible
+RIS subnode.
+
+The binding is designed around the assumption that an MSC will be a
+sub-block of something else such as a memory controller, cache
+controller, or IOMMU. However, it's certainly possible a design does
+not have that association or has a mixture of both, so the example
+illustrates how we can support that with RIS child nodes.
+
+The Linux draft MPAM device tree binding can be found in [1]:
+41cbf7e597fb dt-bindings: arm: Add MPAM MSC binding
+
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/morse/linux.git/log/?h=mpam/snapshot/v5.18
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-5079
+Change-Id: Ifbe8f9d1d29e941a7742a55e8c13fe6de3729260
+---
+ docs/misc/arm/device-tree/mpam.txt | 203 +++++++++++++++++++++++++++++
+ 1 file changed, 203 insertions(+)
+ create mode 100644 docs/misc/arm/device-tree/mpam.txt
+
+diff --git a/docs/misc/arm/device-tree/mpam.txt b/docs/misc/arm/device-tree/mpam.txt
+new file mode 100644
+index 0000000000..35d82d0a0f
+--- /dev/null
++++ b/docs/misc/arm/device-tree/mpam.txt
+@@ -0,0 +1,203 @@
++MPAM
++====
++
++Memory Partitioning And Monitoring (MPAM) is an optional architecture extension
++after Armv8.4. It describes an interface to control cache and memory bandwidth.
++Firmware such as device tree should contain hardware information of MPAM devices
++supported in the system and inform software about the information.
++
++A Memory-System Component (MSC) is a function, unit, or design block in a memory
++system that can have partitionable resources. MSCs consist of all units that
++handle load or store requests issued by any MPAM Requester. From a software
++viewpoint, an MSC is a container of resources.
++
++MPAM provides a Resource Instance Selection (RIS) mechanism for supporting MSCs
++that are able to control multiple resources. The resources controlled by an MSC
++can be identified by their RIS index.
++
++The MPAM device tree binding is designed around the assumption that an MSC will
++be a sub-block of something else such as a memory controller, cache controller,
++or IOMMU. However, it is certainly possible a design does not have that
++association or has a mixture of both, so the example illustrates how we can
++support that with RIS child nodes.
++
++Each MSC node contains the following properties:
++
++- compatible (mandatory)
++
++    Must always include the compatiblity string: "arm,mpam-msc".
++
++- reg (mandatory)
++
++    Must be a memory region for the MPAM feature page, which contains registers
++    as defined in the MPAM specification, it can't be empty.
++
++- arm,not-ready-us (optional)
++
++    The maximum time in microseconds for monitoring data to be accurate after a
++    settings change. For more information, see the Not-Ready (NRDY) bit
++    description in the MPAM specification.
++
++- interrupts (optional)
++
++    An array of maximum 2 elements used for error and overflow interrupts.
++    Should work with the "interrupt-names" property.
++
++- interrupt-names (optional)
++
++    An array of string that can be "error" or "overflow".
++
++Each MSC node may contains an RIS subnode. These nodes are required for each RIS
++implementing known MPAM controls. Each RIS subnode must follow "#address-cells"
++equals to 1 and "#size-cells" equals to 0.
++
++Each RIS subnode contains the following properties:
++
++- compatible (mandatory)
++
++    Must always include the compatiblity string of either "arm,mpam-cache" for
++    cache control or "arm,mpam-memory" for memory bandwidth control.
++
++- reg (mandatory)
++
++    Identifier of the RIS, must between 0x1 and 0xf.
++
++- arm,mpam-device (optional)
++
++    By default, the MPAM enabled device associated with a RIS is the MSC's
++    parent node. It is possible for each RIS to be associated with different
++    devices in which case 'arm,mpam-device' should be used.
++
++- cpus (optional)
++
++    Phandle(s) to the CPU node(s) this RIS belongs to. By default, the parent
++    device's affinity is used.
++
++Examples
++========
++
++/ {
++...
++    cpus {
++        cpu@0 {
++            next-level-cache = <&L2_0>;
++        };
++        cpu@100 {
++            next-level-cache = <&L2_1>;
++        };
++    };
++
++    L2_0: cache-controller-0 {
++        compatible = "cache";
++        cache-level = <2>;
++        cache-unified;
++        next-level-cache = <&L3>;
++
++    };
++
++    L2_1: cache-controller-1 {
++        compatible = "cache";
++        cache-level = <2>;
++        cache-unified;
++        next-level-cache = <&L3>;
++
++    };
++
++    L3: cache-controller@30000000 {
++        compatible = "arm,dsu-l3-cache", "cache";
++        cache-level = <3>;
++        cache-unified;
++
++        ranges = <0x0 0x30000000 0x800000>;
++        #address-cells = <1>;
++        #size-cells = <1>;
++
++        msc@10000 {
++            compatible = "arm,mpam-msc";
++
++            /* CPU affinity implied by parent cache node's  */
++            reg = <0x10000 0x2000>;
++            interrupts = <1>, <2>;
++            interrupt-names = "error", "overflow";
++            arm,not-ready-us = <1>;
++        };
++    };
++
++    mem: memory-controller@20000 {
++        compatible = "foo,a-memory-controller";
++        reg = <0x20000 0x1000>;
++
++        #address-cells = <1>;
++        #size-cells = <1>;
++        ranges;
++
++        msc@21000 {
++            compatible = "arm,mpam-msc";
++            reg = <0x21000 0x1000>;
++            interrupts = <3>;
++            interrupt-names = "error";
++            arm,not-ready-us = <1>;
++            numa-node-id = <1>;
++        };
++    };
++
++    iommu@40000 {
++        reg = <0x40000 0x1000>;
++
++        ranges;
++        #address-cells = <1>;
++        #size-cells = <1>;
++
++        msc@41000 {
++            compatible = "arm,mpam-msc";
++            reg = <0 0x1000>;
++            interrupts = <5>, <6>;
++            interrupt-names = "error", "overflow";
++            arm,not-ready-us = <1>;
++
++            #address-cells = <1>;
++            #size-cells = <0>;
++
++            ris@2 {
++                compatible = "arm,mpam-cache";
++                reg = <0>;
++            };
++        };
++    };
++
++    msc@80000 {
++        compatible = "foo,a-standalone-msc";
++        reg = <0x80000 0x1000>;
++
++        clocks = <&clks 123>;
++
++        ranges;
++        #address-cells = <1>;
++        #size-cells = <1>;
++
++        msc@10000 {
++            compatible = "arm,mpam-msc";
++
++            reg = <0x10000 0x2000>;
++            interrupts = <7>;
++            interrupt-names = "overflow";
++            arm,not-ready-us = <1>;
++
++            #address-cells = <1>;
++            #size-cells = <0>;
++
++            ris@0 {
++                compatible = "arm,mpam-cache";
++                reg = <0>;
++                arm,mpam-device = <&L2_0>;
++            };
++
++            ris@1 {
++                compatible = "arm,mpam-memory";
++                reg = <1>;
++                arm,mpam-device = <&mem>;
++            };
++        };
++    };
++...
++};
+-- 
+2.25.1
+

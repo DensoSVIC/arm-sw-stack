@@ -1,0 +1,94 @@
+From b95e1b440d18d66b6f8eb816326780b5adbc4428 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Mon, 25 Jul 2022 02:00:54 +0000
+Subject: [PATCH] xen/arm,sysregs: Initialize maximum PARTID and PMG from
+ MPAMIDR_EL1
+
+The system register MPAMIDR_EL1 indicates the presence and maximum
+PARTID and PMG values supported in the hardware implementation. It also
+indicates whether the implementation supports MPAM virtualization.
+
+This commit:
+- Adds helper functions to read the maximum PARTID and PMG values
+supported by the system.
+- Initializes the related global variables to track these values at the
+boot time.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-3395
+Change-Id: I7081a344260d659b08d431d49c4aba8a79a8b815
+---
+ xen/arch/arm/include/asm/mpam.h |  4 ++++
+ xen/arch/arm/mpam.c             | 19 +++++++++++++++++++
+ 2 files changed, 23 insertions(+)
+
+diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
+index c74e73ac8b..cb836c1faf 100644
+--- a/xen/arch/arm/include/asm/mpam.h
++++ b/xen/arch/arm/include/asm/mpam.h
+@@ -10,6 +10,10 @@
+ #include <xen/spinlock.h>
+ #include <asm/cpufeature.h>
+ 
++/* Field descriptions for MPAM system registers: */
++#define MPAMIDR_PMG_MAX        GENMASK(40, 32)
++#define MPAMIDR_PARTID_MAX     GENMASK(15, 0)
++
+ struct msc_feature_page
+ {
+     /* Physical addr defined in firmware. */
+diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
+index 361a7207f7..297177d38f 100644
+--- a/xen/arch/arm/mpam.c
++++ b/xen/arch/arm/mpam.c
+@@ -23,6 +23,7 @@
+ #include <xen/device_tree.h>
+ #include <xen/err.h>
+ #include <xen/vmap.h>
++#include <asm/io.h>
+ #include <asm/mpam.h>
+ 
+ /*
+@@ -33,6 +34,14 @@ static DEFINE_SPINLOCK(mpam_list_lock);
+ static LIST_HEAD(mpam_all_msc);
+ 
+ static unsigned int mpam_fw_num_msc;
++/*
++ * The smallest common values for any CPU or MSC in the system.
++ * Generating traffic outside this range will result in screaming interrupts.
++ * Note that these global variables are read/written at the CPU online stage,
++ * accessing them should use ACCESS_ONCE.
++ */
++static uint16_t mpam_partid_max;
++static uint8_t mpam_pmg_max;
+ 
+ static struct dt_device_node *
+ __init dt_find_next_cache_node(const struct dt_device_node *np)
+@@ -288,6 +297,14 @@ static int __init mpam_msc_probe(void)
+     return rc;
+ }
+ 
++static void __init mpam_load_supported_partid_pmg(void)
++{
++    uint64_t sys_mpam_idr = READ_SYSREG(MPAMIDR_EL1);
++
++    ACCESS_ONCE(mpam_partid_max) = FIELD_GET(MPAMIDR_PARTID_MAX, sys_mpam_idr);
++    ACCESS_ONCE(mpam_pmg_max) = FIELD_GET(MPAMIDR_PMG_MAX, sys_mpam_idr);
++}
++
+ void __init mpam_presmp_setup(void)
+ {
+     int rc = 0;
+@@ -300,6 +317,8 @@ void __init mpam_presmp_setup(void)
+                __func__, rc);
+         return;
+     }
++
++    mpam_load_supported_partid_pmg();
+ }
+ 
+ /*
+-- 
+2.25.1
+

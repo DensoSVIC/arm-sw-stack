@@ -1,0 +1,135 @@
+From 77a595ea2c7b978923866d78b88e45d476333254 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Wed, 10 Aug 2022 06:38:36 +0000
+Subject: [PATCH] xen/arm: Set default value of MPAM system registers
+
+Some MPAM system registers, for example MPAMn_ELx and MPAMHCR_EL2
+reset to an architecturally unknown value. Hence this commit sets
+the default value of these registers in head.S cpu_init before
+the MMU is enabled.
+
+Note that if Xen is booted at the highest implemented exception level,
+which means there is no EL3, this default value setting will clear the
+MPAMEN bit (bit 63) in MPAMn_ELx registers, disabling MPAM. But normally
+EL3 is available and in this case the trusted-firmware-a at EL3 will set
+the MPAMEN bit. The MPAMEN bit (bit 63) is then RO/WI to EL2.
+
+For the default values, the MPAM0_EL1 and MPAM1_EL1 registers are
+set to the default partitions/PMG, i.e. zero, to make sure the MPAM
+labels for memory requests when executing at EL0 and EL1 are in the
+default partition in the beginning.
+
+Currently, the MPAM virtualization is out of scope, so the MPAM2_EL2
+is also set to the default partitions/PMG, but with TRAPMPAM0EL1 and
+TRAPMPAM1EL1 set to make sure only Xen can control MPAM0_EL1 and
+MPAM1_EL1. The do_trap_guest_sync default behavior will inject undef
+abort to guest once guest kernel tries to access MPAMx_EL1 with this
+setup. If MPAM has the MPAMHCR_EL2 register, the TRAP_MPAMIDR_EL1
+field is cleared and the virtual PARTID mapping is disabled.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-5079
+Change-Id: I91c861f72f26974d12ded24d249466512d9f4411
+---
+ xen/arch/arm/arm64/head.S                | 32 ++++++++++++++++++++++++
+ xen/arch/arm/include/asm/arm64/sysregs.h | 16 ++++++++++++
+ xen/arch/arm/include/asm/processor.h     |  5 ++++
+ 3 files changed, 53 insertions(+)
+
+diff --git a/xen/arch/arm/arm64/head.S b/xen/arch/arm/arm64/head.S
+index ad014716db..9046974594 100644
+--- a/xen/arch/arm/arm64/head.S
++++ b/xen/arch/arm/arm64/head.S
+@@ -490,6 +490,38 @@ cpu_init:
+          * than SP_EL0.
+          */
+         msr spsel, #1
++
++#ifdef CONFIG_MPAM
++        mrs   x1, ID_AA64PFR0_EL1
++        ubfx  x0, x1, #ID_AA64PFR0_MPAM_SHIFT, #4
++        /* Skip if there is no MPAM support */
++        cbz   x0, 1f
++
++        /* Use the default partition 0 */
++        msr   MPAM0_EL1, xzr
++        msr   MPAM1_EL1, xzr
++
++        /*
++         * Currently the MPAM virtualization is out of scope.
++         * Set MPAM2_EL2_TRAPMPAM0EL1 and MPAM2_EL2_TRAPMPAM1EL1
++         * to only let EL2 to control MPAMx_EL1 registers.
++         * The do_trap_guest_sync default behavior will inject undef
++         * abort to guest once guest kernel tries to access MPAMx_EL1.
++         */
++        ldr   x0, =(MPAM2_EL2_TRAPMPAM0EL1|MPAM2_EL2_TRAPMPAM1EL1)
++        msr   MPAM2_EL2, x0
++
++        mrs   x0, MPAMIDR_EL1
++        /* Skip if no MPAMHCR reg */
++        tbz   x0, #MPAMIDR_EL1_HAS_HCR, 1f
++        /*
++         * Currently the MPAM virtualization is out of scope.
++         * Clear TRAP_MPAMIDR_EL1 to EL2,
++         * and disable the virtual PARTID mapping.
++         */
++        msr   MPAMHCR_EL2, xzr
++1:
++#endif
+         ret
+ ENDPROC(cpu_init)
+ 
+diff --git a/xen/arch/arm/include/asm/arm64/sysregs.h b/xen/arch/arm/include/asm/arm64/sysregs.h
+index 54670084c3..df340be7db 100644
+--- a/xen/arch/arm/include/asm/arm64/sysregs.h
++++ b/xen/arch/arm/include/asm/arm64/sysregs.h
+@@ -63,6 +63,9 @@
+  *
+  * Values picked from linux kernel
+  */
++#ifndef ID_AA64PFR0_EL1
++#define ID_AA64PFR0_EL1             S3_0_C0_C4_0
++#endif
+ #ifndef ID_AA64MMFR2_EL1
+ #define ID_AA64MMFR2_EL1            S3_0_C0_C7_2
+ #endif
+@@ -88,6 +91,19 @@
+ #define ID_AA64ISAR2_EL1            S3_0_C0_C6_2
+ #endif
+ 
++/*
++ * MPAM System registers.
++ * Definition from ARM ARM Supplement: Memory System Resource Partitioning and
++ * Monitoring (MPAM), for A-profile architecture (DDI 0598C.a).
++ */
++#ifdef CONFIG_MPAM
++#define MPAMIDR_EL1                 S3_0_C10_C4_4
++#define MPAMHCR_EL2                 S3_4_C10_C4_0
++#define MPAM0_EL1                   S3_0_C10_C5_1
++#define MPAM1_EL1                   S3_0_C10_C5_0
++#define MPAM2_EL2                   S3_4_C10_C5_0
++#endif
++
+ /* ID registers (imported from arm64/include/asm/sysreg.h in Linux) */
+ 
+ /* id_aa64isar0 */
+diff --git a/xen/arch/arm/include/asm/processor.h b/xen/arch/arm/include/asm/processor.h
+index 1dd81d7d52..a1983abe7a 100644
+--- a/xen/arch/arm/include/asm/processor.h
++++ b/xen/arch/arm/include/asm/processor.h
+@@ -545,6 +545,11 @@ extern register_t __cpu_logical_map[];
+ #define VECTOR64_FIQ_OFFSET        0x100
+ #define VECTOR64_ERROR_OFFSET      0x180
+ 
++#ifdef CONFIG_MPAM
++#define MPAM2_EL2_TRAPMPAM0EL1     (_AC(0x1,UL)<<49)
++#define MPAM2_EL2_TRAPMPAM1EL1     (_AC(0x1,UL)<<48)
++#define MPAMIDR_EL1_HAS_HCR        17
++#endif
+ 
+ #if defined(CONFIG_ARM_32)
+ # include <asm/arm32/processor.h>
+-- 
+2.25.1
+

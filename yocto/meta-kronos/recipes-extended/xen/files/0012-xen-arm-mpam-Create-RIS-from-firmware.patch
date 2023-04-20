@@ -1,0 +1,167 @@
+From 558c60f2d5450a4e1f05647fcbe2758882e0d7a7 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Mon, 25 Jul 2022 07:18:55 +0000
+Subject: [PATCH] xen/arm: mpam: Create RIS from firmware
+
+To fit the same MPAM code across different MPAM versions, we can treat
+the MSC that only control a single resource as if there is only one RIS
+inside the MSC. The MPAM device tree binding is designed around the
+assumption that an MSC will be a subnode of something else such as a
+memory controller, cache or IOMMU. However, it is certainly possible
+that a design does not have that association or has a mixture of both,
+so the binding provides a standalone format of MSC, where RIS nodes are
+subnodes of a standalone MSC.
+
+Based on that, this commit adds the logic of creating RIS when parsing
+the device tree:
+
+(1) If an MSC is a subnode of other nodes, the RIS of the MSC is created
+based on the parent node of the MSC. There will be only one RIS created.
+
+(2) If an MSC is a standalone MSC, the RIS of the MSC is based on the
+RIS child node of the MSC, where the `reg` property describes the RIS
+index, and the `arm,mpam-device` describes the phandle of the node that
+this RIS controls.
+
+Add this logic to `mpam_fw_init_msc()` so that we won't bother to
+re-walk the device tree again.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-5049
+Change-Id: I40a16766091854cc6da76e42255633ec2b25a077
+---
+ xen/arch/arm/mpam.c | 103 ++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 100 insertions(+), 3 deletions(-)
+
+diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
+index 01cae779ab..9a60fec952 100644
+--- a/xen/arch/arm/mpam.c
++++ b/xen/arch/arm/mpam.c
+@@ -300,9 +300,9 @@ mpam_ris_get_affinity(struct mpam_msc *msc, cpumask_t *affinity,
+     return 0;
+ }
+ 
+-int __init mpam_ris_create(struct mpam_msc *msc, uint8_t ris_idx,
+-                           enum mpam_class_types type,
+-                           uint8_t class_id, int component_id)
++static int __init mpam_ris_create(struct mpam_msc *msc, uint8_t ris_idx,
++                                  enum mpam_class_types type,
++                                  uint8_t class_id, int component_id)
+ {
+     struct mpam_msc_ris *ris;
+     struct mpam_class *class;
+@@ -365,6 +365,95 @@ int __init mpam_ris_create(struct mpam_msc *msc, uint8_t ris_idx,
+     return 0;
+ }
+ 
++static int __init
++mpam_dt_parse_cache_resource(struct mpam_msc *msc,
++                             const struct dt_device_node *node,
++                             uint32_t ris_idx)
++{
++    int rc = 0;
++    uint32_t cache_phandle, cache_level;
++    struct dt_device_node *cache_node;
++
++    if ( dt_device_is_compatible(node, "arm,mpam-cache") )
++    {
++        rc = dt_property_read_u32(node, "arm,mpam-device", &cache_phandle);
++        if ( !rc )
++        {
++            printk(XENLOG_ERR "MPAM: No arm,mpam-device property in node %s\n",
++                   dt_node_full_name(node));
++            return -EINVAL;
++        }
++
++        cache_node = dt_find_node_by_phandle(cache_phandle);
++        if ( !cache_node )
++        {
++            printk(XENLOG_ERR
++                   "MPAM: arm,mpam-device does not point to a valid phandle in node %s\n",
++                   dt_node_full_name(node));
++            return -EINVAL;
++        }
++    }
++    else if ( dt_device_is_compatible(node->parent, "cache") )
++        cache_node = node->parent;
++    else
++    {
++        printk(XENLOG_ERR "MPAM: %s is not related to cache\n",
++               dt_node_full_name(node));
++        return -EINVAL;
++    }
++
++    rc = dt_property_read_u32(cache_node, "cache-level", &cache_level);
++    if ( !rc )
++    {
++        printk(XENLOG_ERR
++               "MPAM: Failed to read cache-level from cache node %s\n",
++               dt_node_full_name(cache_node));
++        return -ENOENT;
++    }
++
++    return mpam_ris_create(msc, ris_idx, MPAM_CLASS_CACHE, cache_level,
++                           cache_node->phandle);
++}
++
++static int __init mpam_dt_parse_resources(struct mpam_msc *msc,
++                                          const struct dt_device_node *msc_node)
++{
++    int rc = 0, num_ris = 0;
++    const struct dt_device_node *ris_node;
++    uint32_t ris_idx;
++
++    dt_for_each_child_node(msc_node, ris_node)
++    {
++        rc = dt_property_read_u32(ris_node, "reg", &ris_idx);
++        if ( !rc )
++        {
++            printk(XENLOG_ERR "MPAM: Failed to read reg prop in node %s\n",
++                   dt_node_full_name(ris_node));
++            return -EINVAL;
++        }
++
++        /* According to MPAM dts binding, maximum value of reg in RIS is 0xf. */
++        BUG_ON(ris_idx > 0xfU);
++
++        num_ris++;
++        rc = mpam_dt_parse_cache_resource(msc, ris_node, ris_idx);
++        if ( rc )
++        {
++            printk(XENLOG_ERR "MPAM: Failed to parse ris node %s for cache\n",
++                   dt_node_full_name(ris_node));
++            return rc;
++        }
++        /* TODO: Add mpam_dt_parse_memory_resource to parse memory-related DT */
++    }
++
++    /* No RIS subnode inside MSC node, treat the MSC as it only has 1 RIS. */
++    if ( num_ris == 0 )
++        /* TODO: Add mpam_dt_parse_memory_resource to parse memory-related DT */
++        rc = mpam_dt_parse_cache_resource(msc, msc_node, 0);
++
++    return rc;
++}
++
+ static int __init mpam_fw_init_msc(void)
+ {
+     void __iomem *io;
+@@ -456,6 +545,14 @@ static int __init mpam_fw_init_msc(void)
+         spin_lock_init(&msc->hw_lock);
+         INIT_LIST_HEAD(&msc->ris);
+ 
++        if ( mpam_dt_parse_resources(msc, node) )
++        {
++            printk(XENLOG_ERR
++                   "MPAM: Failed to create resources of msc node %s\n",
++                   dt_node_full_name(node));
++            return -EINVAL;
++        }
++
+         /*
+          * In principle, the access to the mpam_all_msc list should always with
+          * mpam_list_lock taken, although in this stage we are supposed to have
+-- 
+2.25.1
+

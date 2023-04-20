@@ -1,0 +1,70 @@
+From 8cfa1f124e5964322869246b5466a34c2e0cd135 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Tue, 2 Nov 2021 07:49:19 +0000
+Subject: [PATCH] arm/cpufeature: discover CPU support for MPAM
+
+Armv8.4 adds support for 'Memory Partitioning And Monitoring' (MPAM)
+which describes an interface to control cache and memory bandwidth.
+
+MPAM has two fields named `MPAM` and `MPAM_frac` in the ID registers
+`ID_AA64PFR0_EL1` and `ID_AA64PFR1_EL1`. The combination of these two
+fields describes (1) If MPAM is supported by CPU; (2) Which version of
+MPAM is supported.
+
+This commit checks the CPU support for MPAM in a helper function
+`mpam_cpus_have_feature()`, and this helper only returns false if both
+`MPAM` and `MPAM_frac` are 0, meaning that the MPAM is not supported.
+This helper function will be used to determine whether we need to init
+the MPAM in Xen.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-3394
+Change-Id: I11750b2e74da2895753186b84b40ee1634d8ea05
+---
+ xen/arch/arm/include/asm/cpufeature.h | 3 +++
+ xen/arch/arm/setup.c                  | 5 +++--
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/xen/arch/arm/include/asm/cpufeature.h b/xen/arch/arm/include/asm/cpufeature.h
+index c86a2e7f29..f7159e177d 100644
+--- a/xen/arch/arm/include/asm/cpufeature.h
++++ b/xen/arch/arm/include/asm/cpufeature.h
+@@ -19,6 +19,8 @@
+ #define cpu_has_fp        (boot_cpu_feature64(fp) < 8)
+ #define cpu_has_simd      (boot_cpu_feature64(simd) < 8)
+ #define cpu_has_gicv3     (boot_cpu_feature64(gic) >= 1)
++#define cpu_has_mpam      (!((boot_cpu_feature64(mpam) == 0) && \
++                             (boot_cpu_feature64(mpam_frac) == 0)))
+ #endif
+ 
+ #define cpu_feature32(c, feat)         ((c)->pfr32.feat)
+@@ -44,6 +46,7 @@
+  */
+ #define cpu_has_pmu       ((boot_dbg_feature32(perfmon) >= 1) && \
+                            (boot_dbg_feature32(perfmon) < 15))
++#define cpu_has_mpam      (0)
+ #else
+ #define cpu_has_gentimer  (1)
+ #define cpu_has_pmu       ((boot_dbg_feature64(pmu_ver) >= 1) && \
+diff --git a/xen/arch/arm/setup.c b/xen/arch/arm/setup.c
+index 4395640019..b0c784703a 100644
+--- a/xen/arch/arm/setup.c
++++ b/xen/arch/arm/setup.c
+@@ -144,10 +144,11 @@ static void __init processor_id(void)
+            cpu_has_el2_32 ? "64+32" : cpu_has_el2_64 ? "64" : "No",
+            cpu_has_el1_32 ? "64+32" : cpu_has_el1_64 ? "64" : "No",
+            cpu_has_el0_32 ? "64+32" : cpu_has_el0_64 ? "64" : "No");
+-    printk("    Extensions:%s%s%s\n",
++    printk("    Extensions:%s%s%s%s\n",
+            cpu_has_fp ? " FloatingPoint" : "",
+            cpu_has_simd ? " AdvancedSIMD" : "",
+-           cpu_has_gicv3 ? " GICv3-SysReg" : "");
++           cpu_has_gicv3 ? " GICv3-SysReg" : "",
++           cpu_has_mpam ? " MPAM" : "");
+ 
+     /* Warn user if we find unknown floating-point features */
+     if ( cpu_has_fp && (boot_cpu_feature64(fp) >= 2) )
+-- 
+2.25.1
+

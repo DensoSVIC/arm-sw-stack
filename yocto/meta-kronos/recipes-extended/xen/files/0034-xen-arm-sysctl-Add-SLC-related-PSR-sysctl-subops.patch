@@ -1,0 +1,87 @@
+From ff8e0e3dcee7f251ecffdab6064422b86c158898 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Sun, 9 Oct 2022 02:24:42 +0000
+Subject: [PATCH] xen/arm,sysctl: Add SLC-related PSR sysctl subops
+
+Users need to get the system level information for SLC through the
+xl-psr interfaces. Introduce sysctl subops
+`XEN_SYSCTL_PSR_CMT_get_slc_size` and `XEN_SYSCTL_PSR_get_slc_info`
+for this purpose. The two newly introduced sysctl subops will
+call related MPAM helpers with type MPAM_CLASS_SLC to fetch the
+information accordingly.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-5244
+Change-Id: I6c4998531efa5dd9f256be983fa7d889ed1b71c8
+---
+ xen/arch/arm/sysctl.c       | 25 +++++++++++++++++++++++++
+ xen/include/public/sysctl.h |  2 ++
+ 2 files changed, 27 insertions(+)
+
+diff --git a/xen/arch/arm/sysctl.c b/xen/arch/arm/sysctl.c
+index 7daa439818..165f1cef74 100644
+--- a/xen/arch/arm/sysctl.c
++++ b/xen/arch/arm/sysctl.c
+@@ -49,6 +49,16 @@ long arch_do_sysctl(struct xen_sysctl *sysctl,
+ 
+             break;
+         }
++        case XEN_SYSCTL_PSR_CMT_get_slc_size:
++        {
++            unsigned int slc_size = 0;
++
++            mpam_get_cache_size(MPAM_CLASS_SLC, 0, &slc_size);
++            /* in KB unit */
++            sysctl->u.psr_cmt_op.u.data = (slc_size ? slc_size / 1024 : 0);
++
++            break;
++        }
+         default:
+             sysctl->u.psr_cmt_op.u.data = 0;
+             ret = -EOPNOTSUPP;
+@@ -81,6 +91,21 @@ long arch_do_sysctl(struct xen_sysctl *sysctl,
+             if ( __copy_field_to_guest(u_sysctl, sysctl, u.psr_alloc) )
+                 ret = -EFAULT;
+             break;
++
++        case XEN_SYSCTL_PSR_get_slc_info:
++            ret = mpam_get_hwinfo(MPAM_CLASS_SLC, data, ARRAY_SIZE(data));
++            if( ret )
++                break;
++
++            sysctl->u.psr_alloc.u.cat_info.cos_max =
++                mpam_get_system_max_partid();
++            sysctl->u.psr_alloc.u.cat_info.cbm_len =
++                data[MPAM_INFO_IDX_CPBM_LEN];
++
++            if ( __copy_field_to_guest(u_sysctl, sysctl, u.psr_alloc) )
++                ret = -EFAULT;
++            break;
++
+         default:
+             ret = -EOPNOTSUPP;
+             break;
+diff --git a/xen/include/public/sysctl.h b/xen/include/public/sysctl.h
+index 001a4de273..c863adc42c 100644
+--- a/xen/include/public/sysctl.h
++++ b/xen/include/public/sysctl.h
+@@ -704,6 +704,7 @@ struct xen_sysctl_coverage_op {
+ #define XEN_SYSCTL_PSR_CMT_get_l3_cache_size         2
+ #define XEN_SYSCTL_PSR_CMT_enabled                   3
+ #define XEN_SYSCTL_PSR_CMT_get_l3_event_mask         4
++#define XEN_SYSCTL_PSR_CMT_get_slc_size              5
+ struct xen_sysctl_psr_cmt_op {
+     uint32_t cmd;       /* IN: XEN_SYSCTL_PSR_CMT_* */
+     uint32_t flags;     /* padding variable, may be extended for future use */
+@@ -741,6 +742,7 @@ struct xen_sysctl_pcitopoinfo {
+ #define XEN_SYSCTL_PSR_get_l3_info               0
+ #define XEN_SYSCTL_PSR_get_l2_info               1
+ #define XEN_SYSCTL_PSR_get_mba_info              2
++#define XEN_SYSCTL_PSR_get_slc_info              3
+ struct xen_sysctl_psr_alloc {
+     uint32_t cmd;       /* IN: XEN_SYSCTL_PSR_* */
+     uint32_t target;    /* IN */
+-- 
+2.25.1
+

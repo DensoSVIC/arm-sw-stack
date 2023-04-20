@@ -1,0 +1,61 @@
+From df4fea1ad16eff468ad78c3ecc26ce5c9fcc609a Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Mon, 25 Jul 2022 01:35:58 +0000
+Subject: [PATCH] xen/drivers,arm: Move macros FIELD_PREP and FIELD_GET
+ to io.h
+
+Before this change, macros `FIELD_PREP` and `FIELD_GET` is private
+in the smmuv3 driver, i.e. `xen/drivers/passthrough/arm/smmu-v3.h`,
+however, these two macros are useful when doing MMIO register
+read/write. To avoid reinventing the wheel across different drivers,
+this commit moves these two macros to the Arm io.h so that other
+headers can include these macros easily.
+
+No functional changes intended.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-5049
+Change-Id: If8c70e430cca285e6fd3ec1fcfa55f84af620db0
+---
+ xen/arch/arm/include/asm/io.h         | 6 ++++++
+ xen/drivers/passthrough/arm/smmu-v3.h | 6 ------
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/xen/arch/arm/include/asm/io.h b/xen/arch/arm/include/asm/io.h
+index e426804424..f0018cfe2a 100644
+--- a/xen/arch/arm/include/asm/io.h
++++ b/xen/arch/arm/include/asm/io.h
+@@ -9,6 +9,12 @@
+ # error "unknown ARM variant"
+ #endif
+ 
++#define FIELD_PREP(_mask, _val)         \
++    (((typeof(_mask))(_val) << (ffs64(_mask) - 1)) & (_mask))
++
++#define FIELD_GET(_mask, _reg)          \
++    ((typeof(_mask))(((_reg) & (_mask)) >> (ffs64(_mask) - 1)))
++
+ #endif
+ /*
+  * Local variables:
+diff --git a/xen/drivers/passthrough/arm/smmu-v3.h b/xen/drivers/passthrough/arm/smmu-v3.h
+index b381ad3738..5a55cf7d57 100644
+--- a/xen/drivers/passthrough/arm/smmu-v3.h
++++ b/xen/drivers/passthrough/arm/smmu-v3.h
+@@ -369,12 +369,6 @@
+ #define ARM_SMMU_CMDQ_SYNC_TIMEOUT_US	1000000 /* 1s! */
+ #define ARM_SMMU_CMDQ_SYNC_SPIN_COUNT	10
+ 
+-#define FIELD_PREP(_mask, _val)			\
+-	(((typeof(_mask))(_val) << (ffs64(_mask) - 1)) & (_mask))
+-
+-#define FIELD_GET(_mask, _reg)			\
+-	((typeof(_mask))(((_reg) & (_mask)) >> (ffs64(_mask) - 1)))
+-
+ /* Linux compatibility functions. */
+ typedef paddr_t		dma_addr_t;
+ typedef paddr_t		phys_addr_t;
+-- 
+2.25.1
+

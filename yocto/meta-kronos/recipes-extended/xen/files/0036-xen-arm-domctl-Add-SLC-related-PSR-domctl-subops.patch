@@ -1,0 +1,56 @@
+From c6e65130db34b46078f7cc9747fa1fdd1ff26018 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Sun, 9 Oct 2022 07:44:22 +0000
+Subject: [PATCH] xen/arm,domctl: Add SLC-related PSR domctl subops
+
+Users need to get set the domain level configuration for SLC through
+the xl-psr interfaces. Introduce domctl subops
+`XEN_DOMCTL_PSR_SET_SLC_CBM` and `XEN_DOMCTL_PSR_GET_SLC_CBM` for
+that. The two newly introduced domctl subops will call related MPAM
+helpers with the cache portion bitmap (CPBM) data for SLC to set/get
+configurations accordingly.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-5244
+Change-Id: Ica93021e0464f399b5b804b19e194fdcf492f04e
+---
+ xen/arch/arm/arm64/domctl.c | 8 ++++++++
+ xen/include/public/domctl.h | 2 ++
+ 2 files changed, 10 insertions(+)
+
+diff --git a/xen/arch/arm/arm64/domctl.c b/xen/arch/arm/arm64/domctl.c
+index 3a6f869ab0..692c75bc6f 100644
+--- a/xen/arch/arm/arm64/domctl.c
++++ b/xen/arch/arm/arm64/domctl.c
+@@ -72,6 +72,14 @@ long subarch_do_domctl(struct xen_domctl *domctl, struct domain *d,
+                 if ( __copy_to_guest(u_domctl, domctl, 1) )
+                     return -EFAULT;
+                 return 0;
++            case XEN_DOMCTL_PSR_SET_SLC_CBM:
++                d->arch.mpam.cfg.slc_cpbm = domctl->u.psr_alloc.data;
++                return mpam_set_domain_resources(d);
++            case XEN_DOMCTL_PSR_GET_SLC_CBM:
++                domctl->u.psr_alloc.data = d->arch.mpam.cfg.slc_cpbm;
++                if ( __copy_to_guest(u_domctl, domctl, 1) )
++                    return -EFAULT;
++                return 0;
+             default:
+                 return -EOPNOTSUPP;
+         }
+diff --git a/xen/include/public/domctl.h b/xen/include/public/domctl.h
+index 51be28c3de..c40a3f5d27 100644
+--- a/xen/include/public/domctl.h
++++ b/xen/include/public/domctl.h
+@@ -1132,6 +1132,8 @@ struct xen_domctl_psr_alloc {
+ #define XEN_DOMCTL_PSR_GET_L2_CBM     7
+ #define XEN_DOMCTL_PSR_SET_MBA_THRTL  8
+ #define XEN_DOMCTL_PSR_GET_MBA_THRTL  9
++#define XEN_DOMCTL_PSR_SET_SLC_CBM    10
++#define XEN_DOMCTL_PSR_GET_SLC_CBM    11
+     uint32_t cmd;       /* IN: XEN_DOMCTL_PSR_* */
+     uint32_t target;    /* IN */
+     uint64_t data;      /* IN/OUT */
+-- 
+2.25.1
+

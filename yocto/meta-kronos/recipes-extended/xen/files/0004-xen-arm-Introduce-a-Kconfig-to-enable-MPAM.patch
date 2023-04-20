@@ -1,0 +1,56 @@
+From 3b340a92b8031c0b2f3f6dff272da60316b53fd6 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Thu, 21 Jul 2022 04:56:22 +0000
+Subject: [PATCH] xen/arm: Introduce a Kconfig to enable MPAM
+
+This commit introduces a Kconfig `CONFIG_MPAM` for users to enable
+MPAM if needed. Currently, this Kconfig depends on `CONFIG_ARM64`
+since all currently-known models that have MPAM extension are 64bits.
+
+The default value of `CONFIG_MPAM` is set to n.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-5049
+Change-Id: Ib6dde4e3767367a4d98d23a72c00552db645eeae
+---
+ xen/arch/arm/Kconfig  | 10 ++++++++++
+ xen/arch/arm/Makefile |  1 +
+ 2 files changed, 11 insertions(+)
+
+diff --git a/xen/arch/arm/Kconfig b/xen/arch/arm/Kconfig
+index 52a05f704d..c1b452d8cd 100644
+--- a/xen/arch/arm/Kconfig
++++ b/xen/arch/arm/Kconfig
+@@ -131,6 +131,16 @@ config ARM64_BTI
+ 	  Branch Target Identification support.
+ 	  This feature is not supported in Xen.
+ 
++config MPAM
++	bool "MPAM (Memory System Resource Partitioning and Monitoring) Support (UNSUPPORTED)" if UNSUPPORTED
++	def_bool n
++	depends on ARM_64
++	help
++	  This option enables the Xen support for Arm Memory System Resource
++	  Partitioning and Monitoring (MPAM), which is an optional architecture
++	  feature on post Armv8.4 system that describes an interface to control
++	  cache and memory bandwidth.
++
+ config TEE
+ 	bool "Enable TEE mediators support (UNSUPPORTED)" if UNSUPPORTED
+ 	default n
+diff --git a/xen/arch/arm/Makefile b/xen/arch/arm/Makefile
+index 4d076b278b..1076e6b670 100644
+--- a/xen/arch/arm/Makefile
++++ b/xen/arch/arm/Makefile
+@@ -38,6 +38,7 @@ obj-$(CONFIG_LIVEPATCH) += livepatch.o
+ obj-y += mem_access.o
+ obj-y += mm.o
+ obj-y += monitor.o
++obj-$(CONFIG_MPAM) += mpam.o
+ obj-y += p2m.o
+ obj-y += percpu.o
+ obj-y += platform.o
+-- 
+2.25.1
+

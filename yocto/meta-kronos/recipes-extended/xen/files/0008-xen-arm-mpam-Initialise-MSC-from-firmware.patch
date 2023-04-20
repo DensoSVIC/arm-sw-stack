@@ -1,0 +1,342 @@
+From d4b9fd589a82ecae90777ac0cb0845b8d86066ae Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Thu, 21 Jul 2022 08:49:59 +0000
+Subject: [PATCH] xen/arm: mpam: Initialise MSC from firmware
+
+Xen needs to parse and initialise the MSC if Xen successfully detects
+MSC from firmware. To implement that, this commit:
+
+- Introduces a `struct mpam_msc` to describe the MSC device and this
+  structure stores information about the MSC device. Since there might
+  be multiple MSCs in a system and we need a method to find a specifc
+  MSC later in the MPAM enabling time, the `struct mpam_msc` is linked
+  as a global list.
+
+- Introduces a function `mpam_fw_init_msc()` to walk through the device
+  tree, initialise related `struct mpam_msc` based on each device tree
+  MSC node, and link these initialised structure to the global list.
+
+- Introduces some helpers to get CPU affinity from the implied CPU
+  affinity of the device tree cache node. The returned CPU affinity
+  is used to determine CPU affinity of the MSC.
+
+Note that, users may limit the activated pCPUs on the system by the
+"maxcpus" Xen cmdline parameter. For example the system have 16 pCPUs
+but user specifies maxcpus to 4. So pretend that the pCPUs that beyond
+nr_cpu_ids (pCPU 4-15) do not exist when parsing the device tree cpu
+nodes.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-5049
+Change-Id: Iab83e3596cb1e83abe7b97582799902ffb6b3eca
+---
+ xen/arch/arm/include/asm/mpam.h |  27 ++++
+ xen/arch/arm/mpam.c             | 233 +++++++++++++++++++++++++++++++-
+ 2 files changed, 259 insertions(+), 1 deletion(-)
+
+diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
+index 1a5f8b20fa..c74e73ac8b 100644
+--- a/xen/arch/arm/include/asm/mpam.h
++++ b/xen/arch/arm/include/asm/mpam.h
+@@ -6,8 +6,35 @@
+ #ifndef __ARM_MPAM_H__
+ #define __ARM_MPAM_H__
+ 
++#include <xen/cpumask.h>
++#include <xen/spinlock.h>
+ #include <asm/cpufeature.h>
+ 
++struct msc_feature_page
++{
++    /* Physical addr defined in firmware. */
++    paddr_t paddr_base;
++    size_t mmio_size;
++    /* ioremapped addr for Xen accessing MMIO registers of this MSC. */
++    void __iomem *mapped_hwpage;
++};
++
++struct mpam_msc
++{
++    uint32_t identifier;
++    /* member of mpam_all_msc. */
++    struct list_head glbl_list;
++    cpumask_t accessibility;
++    spinlock_t lock;
++    uint32_t nrdy_us;
++    /*
++     * hw_lock protects access to the MSC hardware registers.
++     * Take msc->lock first.
++     */
++    spinlock_t hw_lock;
++    struct msc_feature_page feature_page;
++};
++
+ extern void mpam_presmp_setup(void);
+ 
+ #endif /* __ARM_MPAM_H__ */
+diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
+index 3df0f59997..361a7207f7 100644
+--- a/xen/arch/arm/mpam.c
++++ b/xen/arch/arm/mpam.c
+@@ -19,10 +19,238 @@
+  * along with this program. If not, see <http://www.gnu.org/licenses/>.
+  */
+ 
++#include <xen/acpi.h>
+ #include <xen/device_tree.h>
+ #include <xen/err.h>
++#include <xen/vmap.h>
+ #include <asm/mpam.h>
+ 
++/*
++ * mpam_list_lock protects the global lists when writing.
++ * Once the MPAM is enabled these lists are read-only.
++ */
++static DEFINE_SPINLOCK(mpam_list_lock);
++static LIST_HEAD(mpam_all_msc);
++
++static unsigned int mpam_fw_num_msc;
++
++static struct dt_device_node *
++__init dt_find_next_cache_node(const struct dt_device_node *np)
++{
++    int rc;
++    uint32_t next_cache_phandle;
++    struct dt_device_node *next_cache_node;
++
++    rc = dt_property_read_u32(np, "next-level-cache", &next_cache_phandle);
++    if ( !rc )
++        return NULL;
++
++    next_cache_node = dt_find_node_by_phandle(next_cache_phandle);
++    if ( next_cache_node )
++        return next_cache_node;
++
++    return NULL;
++}
++
++/* TODO: Currently this function is for device tree only, add ACPI in future. */
++static int __init get_cpumask_from_cache_id(uint32_t cache_id,
++                                            uint32_t cache_level,
++                                            cpumask_t *affinity)
++{
++    struct dt_device_node *cpus = dt_find_node_by_path("/cpus");
++    struct dt_device_node *np;
++    struct dt_device_node *iter;
++    uint32_t iter_level, reg_len;
++    const __be32 *prop;
++    unsigned int cpu_reg, nr_parsed_cpu = 0;
++    int rc, cpu_logic_num;
++
++    if ( !cpus )
++    {
++        printk(XENLOG_ERR "MPAM: Failed to find /cpus in the device tree\n");
++        return -ENOENT;
++    }
++
++    dt_for_each_child_node( cpus, np )
++    {
++        if ( !dt_device_type_is_equal(np, "cpu") )
++            continue;
++
++        /*
++         * Users may limit the activated pCPUs on the system by the "maxcpus"
++         * Xen cmdline parameter. For example the system have 16 pCPUs but user
++         * specifies maxcpus to 4. So pretend that the pCPUs that beyond
++         * nr_cpu_ids (pCPU 4-15) do not exist.
++         */
++        if ( nr_parsed_cpu >= nr_cpu_ids )
++            break;
++
++        prop = dt_get_property(np, "reg", &reg_len);
++        if ( !prop )
++        {
++            printk(XENLOG_ERR
++                   "MPAM: Failed to get reg property in cpu node %s\n",
++                   dt_node_full_name(np));
++            return -ENOENT;
++        }
++
++        if ( reg_len < dt_cells_to_size(dt_n_addr_cells(np)) )
++        {
++            printk(XENLOG_WARNING "MPAM: Node %s reg property too short\n",
++                   dt_node_full_name(np));
++            return -EINVAL;
++        }
++
++        cpu_reg = dt_read_number(prop, dt_n_addr_cells(np));
++        cpu_logic_num = get_logical_cpu_from_hw_id(cpu_reg);
++        if ( cpu_logic_num < 0 )
++        {
++            printk(XENLOG_ERR
++                   "MPAM: Failed to get cpu logic id from %s, hwid:%x\n",
++                   dt_node_full_name(np), cpu_reg);
++            return -EINVAL;
++        }
++
++        /* np should not be modified during the iteration. */
++        iter = np;
++        while ( (iter = dt_find_next_cache_node(iter)) )
++        {
++            rc = dt_property_read_u32(iter, "cache-level", &iter_level);
++
++            if ( !rc || ( iter_level != cache_level ) )
++                continue;
++            /* Found the cache node that we are interested in. */
++            if ( iter->phandle == cache_id )
++                cpumask_set_cpu(cpu_logic_num, affinity);
++        }
++
++        nr_parsed_cpu++;
++    }
++
++    return 0;
++}
++
++static int __init get_cpumask_from_cache(const struct dt_device_node *cache,
++                                         cpumask_t *affinity)
++{
++    int rc;
++    uint32_t cache_level;
++
++    rc = dt_property_read_u32(cache, "cache-level", &cache_level);
++    if ( !rc )
++    {
++        printk(XENLOG_ERR
++               "MPAM: Failed to read cache-level from cache node %s\n",
++               dt_node_full_name(cache));
++        return -ENOENT;
++    }
++
++    return get_cpumask_from_cache_id(cache->phandle, cache_level, affinity);
++}
++
++static int __init mpam_fw_init_msc(void)
++{
++    void __iomem *io;
++    const struct dt_device_node *node;
++    struct mpam_msc *msc;
++    int rc = 0;
++
++    spin_lock_init(&mpam_list_lock);
++
++    if ( !acpi_disabled )
++    {
++        printk(XENLOG_ERR
++               "MPAM: Parsing MPAM info from ACPI is not supported\n");
++        return -EOPNOTSUPP;
++    }
++
++    dt_for_each_device_node( dt_host, node )
++    {
++        const __be32 *prop;
++        const struct dt_device_node *parent_node;
++        uint32_t reg_len;
++        paddr_t size, msc_paddr;
++
++        if ( !dt_device_is_compatible(node, "arm,mpam-msc") )
++            continue;
++
++        msc = xzalloc(struct mpam_msc);
++        if ( !msc )
++        {
++            printk(XENLOG_ERR "MPAM: Out of memory when allocating MSC\n");
++            return -ENOMEM;
++        }
++
++        INIT_LIST_HEAD(&msc->glbl_list);
++        msc->identifier = mpam_fw_num_msc++;
++
++        prop = dt_get_property(node, "reg", &reg_len);
++        if ( !prop )
++        {
++            printk(XENLOG_ERR
++                   "MPAM: Failed to get reg property in msc node %s\n",
++                   dt_node_full_name(node));
++            xfree(msc);
++            return -ENOENT;
++        }
++
++        dt_get_range(&prop, node, &msc_paddr, &size);
++        msc->feature_page.paddr_base = msc_paddr;
++        msc->feature_page.mmio_size = size;
++        io = ioremap_nocache(msc_paddr, size);
++        if ( IS_ERR(io) )
++        {
++            printk(XENLOG_ERR "MPAM: Failed to map MSC paddr %#"PRIx64"\n",
++                   msc_paddr);
++            xfree(msc);
++            return PTR_ERR(io);
++        }
++        msc->feature_page.mapped_hwpage = io;
++
++        rc = dt_property_read_u32(node, "arm,not-ready-us", &msc->nrdy_us);
++        if ( !rc )
++        {
++            printk(XENLOG_WARNING
++                   "MPAM: No arm,not-ready-us property in %s, this will prevent CSU monitors being usable\n",
++                   dt_node_full_name(node));
++            msc->nrdy_us = 0;
++        }
++
++        parent_node = dt_get_parent(node);
++        if ( !parent_node )
++        {
++            printk(XENLOG_ERR
++                   "MPAM: Failed to get parent node of msc node %s\n",
++                   dt_node_full_name(node));
++            iounmap(io);
++            xfree(msc);
++            return -ENOENT;
++        }
++
++        if ( dt_device_is_compatible(parent_node, "cache") )
++            get_cpumask_from_cache(parent_node, &msc->accessibility);
++        /*
++         * TODO: If parent node of MSC is memory controller, the MSC CPU
++         * affinity is implied by this MSC node's NUMA node id.
++         */
++        /* TODO: Handle standalone MSC node case (parent node of MSC is root).*/
++
++        spin_lock_init(&msc->lock);
++        spin_lock_init(&msc->hw_lock);
++
++        /*
++         * In principle, the access to the mpam_all_msc list should always with
++         * mpam_list_lock taken, although in this stage we are supposed to have
++         * CPU0 only.
++         */
++        spin_lock(&mpam_list_lock);
++        list_add(&msc->glbl_list, &mpam_all_msc);
++        spin_unlock(&mpam_list_lock);
++    }
++
++    return 0;
++}
++
+ static int __init mpam_dt_count_msc(void)
+ {
+     int count = 0;
+@@ -40,6 +268,7 @@ static int __init mpam_dt_count_msc(void)
+ static int __init mpam_msc_probe(void)
+ {
+     unsigned int num_msc = 0;
++    int rc = 0;
+ 
+     if ( !cpu_has_mpam )
+     {
+@@ -54,7 +283,9 @@ static int __init mpam_msc_probe(void)
+     if ( !num_msc )
+         return -EINVAL;
+ 
+-    return 0;
++    rc = mpam_fw_init_msc();
++
++    return rc;
+ }
+ 
+ void __init mpam_presmp_setup(void)
+-- 
+2.25.1
+

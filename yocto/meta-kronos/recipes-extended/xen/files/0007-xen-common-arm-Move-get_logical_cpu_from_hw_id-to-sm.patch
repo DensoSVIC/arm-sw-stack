@@ -1,0 +1,82 @@
+From 6b19de5c5dd4cbc0066ba423a7fb7e3f8694f113 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Fri, 22 Jul 2022 13:06:30 +0000
+Subject: [PATCH] xen/common,arm: Move get_logical_cpu_from_hw_id() to
+ smp.h
+
+Previously, function `get_logical_cpu_from_hw_id()` is private in
+`xen/common/boot_cpupools.c`. File `xen/common/boot_cpupools.c` is
+hightly dependent on device tree, which currently is only used by
+Arm. Having said that, this commit moves `get_logical_cpu_from_hw_id()`
+to `arm/include/asm/smp.h`, thus enabling others to use this function.
+
+No functional change intended.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-5049
+Change-Id: Ifda272cf1adf5a0f72a2db12841f2f6bf1ebedb5
+---
+ xen/arch/arm/include/asm/smp.h  | 14 ++++++++++++++
+ xen/common/sched/boot-cpupool.c | 13 -------------
+ 2 files changed, 14 insertions(+), 13 deletions(-)
+
+diff --git a/xen/arch/arm/include/asm/smp.h b/xen/arch/arm/include/asm/smp.h
+index 8133d5c295..92bd2b747d 100644
+--- a/xen/arch/arm/include/asm/smp.h
++++ b/xen/arch/arm/include/asm/smp.h
+@@ -4,6 +4,7 @@
+ #ifndef __ASSEMBLY__
+ #include <xen/cpumask.h>
+ #include <xen/device_tree.h>
++#include <xen/init.h>
+ #include <asm/current.h>
+ #endif
+ 
+@@ -37,6 +38,19 @@ extern unsigned int smp_get_max_cpus(void);
+ 
+ #define cpu_physical_id(cpu) cpu_logical_map(cpu)
+ 
++static inline int __init get_logical_cpu_from_hw_id(unsigned int hwid)
++{
++    unsigned int i;
++
++    for ( i = 0; i < nr_cpu_ids; i++ )
++    {
++        if ( cpu_physical_id(i) == hwid )
++            return i;
++    }
++
++    return -1;
++}
++
+ #endif
+ 
+ /*
+diff --git a/xen/common/sched/boot-cpupool.c b/xen/common/sched/boot-cpupool.c
+index 5955e6f9a9..a98680fbb4 100644
+--- a/xen/common/sched/boot-cpupool.c
++++ b/xen/common/sched/boot-cpupool.c
+@@ -25,19 +25,6 @@ static unsigned int __initdata next_pool_id;
+ #define BTCPUPOOLS_DT_WRONG_NODE      (-3)
+ #define BTCPUPOOLS_DT_CORRUPTED_NODE  (-4)
+ 
+-static int __init get_logical_cpu_from_hw_id(unsigned int hwid)
+-{
+-    unsigned int i;
+-
+-    for ( i = 0; i < nr_cpu_ids; i++ )
+-    {
+-        if ( cpu_physical_id(i) == hwid )
+-            return i;
+-    }
+-
+-    return -1;
+-}
+-
+ static int __init
+ get_logical_cpu_from_cpu_node(const struct dt_device_node *cpu_node)
+ {
+-- 
+2.25.1
+

@@ -1,0 +1,326 @@
+From bc6b562952c5dccd9137d7e130e7e7dfe6b687e7 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Mon, 25 Jul 2022 02:53:08 +0000
+Subject: [PATCH] xen/arm: mpam: Probe the MSC hardware at CPU online
+ stage
+
+Because the MMIO registers of an MSC and its RIS can only by accessed
+from the CPUs in the MSC's cpu-affinity set, the full initialization of
+MSC and RIS requires work on one of those CPUs which have cpu-affinity.
+
+This commit does this work on the boot CPU and the `start_secondary()`
+(which happens on the secondary CPUs) at the boot time, by walking all
+the MSCs, initialising those MSCs' information that cannot be directly
+got from the firmware through the MSC MMIO registers, then marking them
+as probed.
+
+Since each MSC may have its own maximum PARTID and PMG, before MPAM can
+be used, we need to probe each RIS on each MSC, to find the system-wide
+smallest value that can be used. While doing this, RIS entries that
+firmware didn't describe are created under MPAM_CLASS_UNKNOWN.
+
+The initialization of hardware will only happen before MPAM is enabled.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-3395
+Change-Id: I1a4f497bebe1d79041b040e12a77c5076b97b460
+---
+ xen/arch/arm/include/asm/mpam.h |   5 +
+ xen/arch/arm/mpam.c             | 200 ++++++++++++++++++++++++++++++++
+ xen/arch/arm/smpboot.c          |   8 ++
+ 3 files changed, 213 insertions(+)
+
+diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
+index 9351855b6a..8ce38d2358 100644
+--- a/xen/arch/arm/include/asm/mpam.h
++++ b/xen/arch/arm/include/asm/mpam.h
+@@ -282,8 +282,12 @@ struct mpam_msc
+     struct list_head glbl_list;
+     cpumask_t accessibility;
+     spinlock_t lock;
++    bool probed;
+     uint32_t nrdy_us;
++    uint16_t partid_max;
++    uint8_t pmg_max;
+     unsigned long ris_idxs[128 / BITS_PER_LONG];
++    uint32_t ris_max;
+     /* mpam_msc_ris of this msc. */
+     struct list_head ris;
+     /*
+@@ -331,6 +335,7 @@ struct mpam_msc_ris
+ };
+ 
+ extern void mpam_presmp_setup(void);
++extern int mpam_discovery_cpu_online(unsigned int cpu);
+ 
+ #endif /* __ARM_MPAM_H__ */
+ 
+diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
+index 9a60fec952..7102e2bc06 100644
+--- a/xen/arch/arm/mpam.c
++++ b/xen/arch/arm/mpam.c
+@@ -25,6 +25,7 @@
+ #include <xen/vmap.h>
+ #include <asm/io.h>
+ #include <asm/mpam.h>
++#include <asm/smp.h>
+ 
+ /*
+  * mpam_list_lock protects the global lists when writing.
+@@ -261,6 +262,58 @@ __init mpam_component_get(struct mpam_class *class, int id, bool alloc)
+     return mpam_component_alloc(class, id);
+ }
+ 
++static int mpam_read_reg(struct mpam_msc *msc, uint16_t reg)
++{
++    int val;
++
++    /*
++     * Disable local IRQ here in case of this function is interrupted before
++     * the actual reading of MPAM register and then returned to a different
++     * CPU which does not have the accessibility to the MSC being read.
++     */
++    local_irq_disable();
++
++    if ( reg > msc->feature_page.mmio_size )
++        panic(XENLOG_ERR
++              "MPAM: reg offset %x is larger than MMIO region size %lx\n",
++              reg, msc->feature_page.mmio_size);
++
++    if ( !cpumask_test_cpu(smp_processor_id(), &msc->accessibility) )
++        panic(XENLOG_ERR "MPAM: MSC %d cannot be accessed by CPU %d\n",
++              msc->identifier, smp_processor_id());
++
++    val = readl_relaxed(msc->feature_page.mapped_hwpage + reg);
++
++    smp_mb();
++    local_irq_enable();
++
++    return val;
++}
++
++static void mpam_write_reg(struct mpam_msc *msc, uint16_t reg, uint32_t val)
++{
++    /*
++     * Disable local IRQ here in case of this function is interrupted before
++     * the actual writing of MPAM register and then returned to a different
++     * CPU which does not have the accessibility to the MSC being written.
++     */
++    local_irq_disable();
++
++    if ( reg > msc->feature_page.mmio_size )
++        panic(XENLOG_ERR
++              "MPAM: reg offset %x is larger than MMIO region size %lx\n",
++              reg, msc->feature_page.mmio_size);
++
++    if ( !cpumask_test_cpu(smp_processor_id(), &msc->accessibility) )
++        panic(XENLOG_ERR "MPAM: MSC %d cannot be accessed by CPU %d\n",
++              msc->identifier, smp_processor_id());
++
++    writel_relaxed(val, msc->feature_page.mapped_hwpage + reg);
++
++    smp_mb();
++    local_irq_enable();
++}
++
+ static int __init
+ mpam_ris_get_affinity(struct mpam_msc *msc, cpumask_t *affinity,
+                       enum mpam_class_types type, struct mpam_class *class,
+@@ -365,6 +418,33 @@ static int __init mpam_ris_create(struct mpam_msc *msc, uint8_t ris_idx,
+     return 0;
+ }
+ 
++static struct mpam_msc_ris *
++__init mpam_get_or_create_ris(struct mpam_msc *msc, uint8_t ris_idx)
++{
++    int err;
++    struct mpam_msc_ris *ris, *found = ERR_PTR(-ENOENT);
++
++    BUG_ON(!spin_is_locked(&mpam_list_lock));
++
++    if ( !test_bit(ris_idx, msc->ris_idxs) )
++    {
++        err = mpam_ris_create(msc, ris_idx, MPAM_CLASS_UNKNOWN, 0, 0);
++        if ( err )
++            return ERR_PTR(err);
++    }
++
++    list_for_each_entry(ris, &msc->ris, msc_list)
++    {
++        if ( ris->ris_idx == ris_idx )
++        {
++            found = ris;
++            break;
++        }
++    }
++
++    return found;
++}
++
+ static int __init
+ mpam_dt_parse_cache_resource(struct mpam_msc *msc,
+                              const struct dt_device_node *node,
+@@ -580,6 +660,91 @@ static int __init mpam_dt_count_msc(void)
+     return count;
+ }
+ 
++static uint64_t __init mpam_msc_read_idr(struct mpam_msc *msc)
++{
++    uint64_t idr_high = 0, idr_low;
++
++    BUG_ON(!spin_is_locked(&msc->hw_lock));
++
++    idr_low = mpam_read_reg(msc, MPAMF_IDR);
++    if ( FIELD_GET(MPAMF_IDR_HAS_EXT, idr_low) )
++        idr_high = mpam_read_reg(msc, MPAMF_IDR + 4);
++
++    return (idr_high << 32) | idr_low;
++}
++
++static void __mpam_part_sel(uint8_t ris_idx, uint16_t partid,
++                            struct mpam_msc *msc)
++{
++    uint32_t partsel;
++
++    BUG_ON(!spin_is_locked(&msc->hw_lock));
++
++    partsel = FIELD_PREP(MPAMCFG_PART_SEL_RIS, ris_idx) |
++              FIELD_PREP(MPAMCFG_PART_SEL_PARTID_SEL, partid);
++    mpam_write_reg(msc, MPAMCFG_PART_SEL, partsel);
++}
++
++static int __init mpam_msc_hw_probe(struct mpam_msc *msc)
++{
++    uint64_t idr;
++    uint16_t partid_max;
++    uint8_t ris_idx, pmg_max;
++    unsigned long flags;
++    struct mpam_msc_ris *ris;
++
++    BUG_ON(!spin_is_locked(&msc->lock));
++
++    spin_lock_irqsave(&msc->hw_lock, flags);
++    if ( mpam_read_reg(msc, MPAMF_AIDR) != MPAM_ARCHITECTURE_V1 )
++    {
++        printk("MPAM: MSC%d does not match MPAM architecture v1.0\n",
++               msc->identifier);
++        spin_unlock_irqrestore(&msc->hw_lock, flags);
++        return -EIO;
++    }
++
++    idr = mpam_msc_read_idr(msc);
++    spin_unlock_irqrestore(&msc->hw_lock, flags);
++
++    msc->ris_max = FIELD_GET(MPAMF_IDR_RIS_MAX, idr);
++
++    /* Use these values so partid/pmg always starts with a valid value */
++    msc->partid_max = FIELD_GET(MPAMF_IDR_PARTID_MAX, idr);
++    msc->pmg_max = FIELD_GET(MPAMF_IDR_PMG_MAX, idr);
++
++    for ( ris_idx = 0; ris_idx <= msc->ris_max; ris_idx++ )
++    {
++        spin_lock_irqsave(&msc->hw_lock, flags);
++        __mpam_part_sel(ris_idx, 0, msc);
++        idr = mpam_msc_read_idr(msc);
++        spin_unlock_irqrestore(&msc->hw_lock, flags);
++
++        partid_max = FIELD_GET(MPAMF_IDR_PARTID_MAX, idr);
++        pmg_max = FIELD_GET(MPAMF_IDR_PMG_MAX, idr);
++        msc->partid_max = min(msc->partid_max, partid_max);
++        msc->pmg_max = min(msc->pmg_max, pmg_max);
++
++        ris = mpam_get_or_create_ris(msc, ris_idx);
++        if ( IS_ERR(ris) )
++            return PTR_ERR(ris);
++    }
++
++    ACCESS_ONCE(mpam_partid_max) = min(ACCESS_ONCE(mpam_partid_max),
++                                       msc->partid_max);
++    ACCESS_ONCE(mpam_pmg_max) = min(ACCESS_ONCE(mpam_pmg_max), msc->pmg_max);
++
++    msc->probed = true;
++
++    return 0;
++}
++
++static void __init mpam_cpu_online(unsigned int cpu)
++{
++    /* Currently make this function dummy as here we need to reprogram RIS. */
++    return;
++}
++
+ static int __init mpam_msc_probe(void)
+ {
+     unsigned int num_msc = 0;
+@@ -625,6 +790,41 @@ void __init mpam_presmp_setup(void)
+     }
+ 
+     mpam_load_supported_partid_pmg();
++    if ( mpam_discovery_cpu_online(0) )
++        printk(XENLOG_ERR
++               "MPAM: Error in probing MPAM hardware when CPU0 is online\n");
++}
++
++int __init mpam_discovery_cpu_online(unsigned int cpu)
++{
++    int err = 0;
++    struct mpam_msc *msc;
++
++    spin_lock(&mpam_list_lock);
++    list_for_each_entry(msc, &mpam_all_msc, glbl_list)
++    {
++        if ( !cpumask_test_cpu(cpu, &msc->accessibility) )
++            continue;
++
++        spin_lock(&msc->lock);
++        if ( !msc->probed )
++            err = mpam_msc_hw_probe(msc);
++        spin_unlock(&msc->lock);
++
++        if ( err )
++        {
++            printk(XENLOG_ERR "MPAM: MPAM broken!\n");
++            break;
++        }
++    }
++    spin_unlock(&mpam_list_lock);
++
++    if ( err < 0 )
++        return err;
++
++    mpam_cpu_online(cpu);
++
++    return 0;
+ }
+ 
+ /*
+diff --git a/xen/arch/arm/smpboot.c b/xen/arch/arm/smpboot.c
+index f7bda3a18b..b3fc0b8a4b 100644
+--- a/xen/arch/arm/smpboot.c
++++ b/xen/arch/arm/smpboot.c
+@@ -36,6 +36,7 @@
+ #include <asm/procinfo.h>
+ #include <asm/psci.h>
+ #include <asm/acpi.h>
++#include <asm/mpam.h>
+ 
+ cpumask_t cpu_online_map;
+ cpumask_t cpu_present_map;
+@@ -372,6 +373,13 @@ void start_secondary(void)
+ 
+     gic_init_secondary_cpu();
+ 
++#ifdef CONFIG_MPAM
++    if ( mpam_discovery_cpu_online(smp_processor_id()) )
++        printk(XENLOG_ERR
++               "MPAM: Error in probing MPAM hardware when CPU%u is online\n",
++               smp_processor_id());
++#endif
++
+     set_current(idle_vcpu[cpuid]);
+ 
+     /* Run local notifiers */
+-- 
+2.25.1
+
