@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MIT
 
 ZEPHYR_INHERIT_CLASSES:append = " zephyr-machine-extras"
-PREFERRED_VERSION_zephyr-kernel = "3.3.0"
 ZEPHYR_TOOLCHAIN_VARIANT = "zephyr"
 
 SAFETY_ISLAND_C0_RECIPE ??= "zephyr-app-si-cl0"
