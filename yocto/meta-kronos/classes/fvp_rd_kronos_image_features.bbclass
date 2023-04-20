@@ -25,6 +25,7 @@ FEATURE_PACKAGES_COMMON = " \
     packagegroup-core-ssh-openssh \
     packagegroup-machine-base \
     packagegroup-security-parsec \
+    docker-ce \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 
@@ -42,6 +43,7 @@ FEATURE_PACKAGES_virtualization = " \
 
 FEATURE_PACKAGES_domu = " \
     packagegroup-core-boot \
+    docker-ce \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 
