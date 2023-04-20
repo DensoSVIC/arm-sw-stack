@@ -112,7 +112,7 @@ trusted_firmware_a_version = "2.8.0"
 uboot_version = "2022.07"
 linux_version = "6.1"
 linux_version_patch = "25"
-xen_version = "4.16"
+xen_version = "4.17"
 
 rst_prolog = f"""
 .. |kas version| replace:: 3.2
