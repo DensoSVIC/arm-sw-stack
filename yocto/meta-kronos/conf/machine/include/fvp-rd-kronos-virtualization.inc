@@ -16,7 +16,7 @@ PACKAGECONFIG:remove:pn-xen = "sdl"
 PACKAGECONFIG:remove:pn-xen-tools = "sdl"
 
 # Remove unneeded items from qemu PACKAGECONFIG
-PACKAGECONFIG:remove:pn-qemu = "sdl alsa virglrenderer epoxy kvm pie slirp"
+PACKAGECONFIG:remove:pn-qemu = "sdl alsa virglrenderer epoxy kvm slirp"
 
 # Xen uses console hvc0
 SERIAL_CONSOLES = "115200;hvc0"
