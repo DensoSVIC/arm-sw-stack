@@ -8,10 +8,14 @@ check-layers:
   extends: .kas_build_kronos
   script:
     - echo "Validate layer $LAYER is Yocto Project compatible"
+    # There is bug in Python 3.9.2 which is causing yocto-check-layer to fail
+    # https://github.com/python/cpython/issues/88600
+    # The LD_PRELOAD can be removed when Kas moves to a newer version of Python
     - kas shell --update --force-checkout
         yocto/kas/virtualization.yml:yocto/kas/ci.yml
         --command
-          "yocto-check-layer-wrapper
+          "LD_PRELOAD=/lib/aarch64-linux-gnu/libgcc_s.so.1
+            yocto-check-layer-wrapper
             $CI_PROJECT_DIR/yocto/$LAYER
             --dependency
               $KAS_WORK_DIR/layers/meta-arm/meta-arm
