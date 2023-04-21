@@ -832,3 +832,4 @@ module_platform_driver(arm_si_rproc_driver);
 MODULE_AUTHOR("Rahul Singh <rahul.singh@arm.com>");
 MODULE_DESCRIPTION("ARM Safety Island remote processor driver");
 MODULE_LICENSE("GPL");
+MODULE_SOFTDEP("pre: arm_mhuv2");
