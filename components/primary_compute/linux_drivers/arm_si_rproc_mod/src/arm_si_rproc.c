@@ -495,9 +495,10 @@ static int arm_si_rproc_request_mbox(struct rproc *rproc)
 
 		chan = mbox_request_channel_byname(cl, name);
 		if (IS_ERR(chan)) {
+			ret = PTR_ERR(chan);
 			chan = NULL;
-			ret = PTR_ERR(ch);
-			dev_err(dev, "Cannot get %s mbox\n", name);
+			dev_err(dev, "Cannot get %s mbox, error (%d)\n", name,
+				ret);
 			goto err_mbox_chan;
 		}
 		ch->mbox[i].chan = chan;
