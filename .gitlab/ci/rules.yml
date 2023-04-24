@@ -27,10 +27,7 @@
   - ".gitlab/Dockerfiles/**/*"
   - ".gitlab/ci/docker-image-builds.yml"
   - ".gitlab/ci/kronos-build.yml"
-  - ".gitlab/ci/kronos-image-builds.yml"
   - ".gitlab/ci/rules.yml"
-  - ".gitlab/ci/templates/image_build.yml.j2"
-  - ".gitlab/ci/trigger-image-builds.yml"
   - ".gitlab/ci/yocto-qa.yml"
   - ".gitlab/scripts/**/*"
 

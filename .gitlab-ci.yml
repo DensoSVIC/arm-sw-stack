@@ -34,11 +34,12 @@ include:
     file:
       - gitlab-ci/common_gitlab-ci.yml
       - gitlab-ci/docker-image-base_gitlab-ci.yml
-      - gitlab-ci/child-pipeline_gitlab-ci.yml
       - gitlab-ci/danger-review_gitlab-ci.yml
       - gitlab-ci/static-analysis_gitlab-ci.yml
+      - gitlab-ci/yocto-build-base_gitlab-ci.yml
+      - gitlab-ci/kas-build-base_gitlab-ci.yml
   - local: '.gitlab/ci/rules.yml'
   - local: '.gitlab/ci/docker-image-builds.yml'
-  - local: '.gitlab/ci/kronos-image-builds.yml'
-  - local: '.gitlab/ci/trigger-image-builds.yml'
   - local: '.gitlab/ci/docs-build.yml'
+  - local: '.gitlab/ci/kronos-build.yml'
+  - local: '.gitlab/ci/yocto-qa.yml'
