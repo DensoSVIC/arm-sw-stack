@@ -25,11 +25,13 @@ FEATURE_PACKAGES_COMMON = " \
     packagegroup-core-ssh-openssh \
     packagegroup-machine-base \
     packagegroup-security-parsec \
-    docker-ce \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 
-FEATURE_PACKAGES_baremetal = "${FEATURE_PACKAGES_COMMON}"
+FEATURE_PACKAGES_baremetal = " \
+    ${FEATURE_PACKAGES_COMMON} \
+    docker-ce \
+    "
 
 FEATURE_PACKAGES_virtualization = " \
     ${FEATURE_PACKAGES_COMMON} \
