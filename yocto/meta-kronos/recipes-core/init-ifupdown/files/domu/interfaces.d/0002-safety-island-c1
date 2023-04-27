@@ -1,0 +1,13 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: MIT
+
+# Interface for communication with the Safety Island Cluster 1
+auto ethsi1
+iface ethsi1 inet static
+    address 192.168.1.2
+    netmask 255.255.255.0
+    pre-up ip link set eth2 name ethsi1
+    post-down ip link set ethsi1 name eth2

@@ -22,4 +22,4 @@ FVP_CONFIG[css.sysctrl.si.hostbridge0.userNetworking] ?= "1"
 FVP_CONFIG[css.sysctrl.si.hostbridge0.userNetPorts] ?= \
         "${FVP_SI0_ETHERNET0_HOST_NETPORT}=172.20.51.1:5001"
 
-require ${@bb.utils.contains('EXTRA_IMAGE_FEATURES', 'virtualization', "${KRONOS_VIRTUALIZATION_DYNAMIC_DIR}/conf/machine/include/fvp-rd-kronos-xen.inc", '', d)}
+require ${@bb.utils.contains('EXTRA_IMAGE_FEATURES', 'virtualization', "conf/machine/include/fvp-rd-kronos-virtualization.inc", '', d)}

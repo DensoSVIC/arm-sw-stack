@@ -7,13 +7,18 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI += "\
-    file://interfaces.d/0001-external \
-    file://interfaces.d/0002-safety-island-c0 \
-    file://interfaces.d/0002-safety-island-c1 \
-    file://interfaces.d/0002-safety-island-c2 \
+    ${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
+                         'baremetal', \
+                         'file://baremetal/interfaces.d/', '', d)} \
+    ${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
+                         'virtualization', \
+                         'file://virtualization/interfaces.d/', '', d)} \
+    ${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
+                         'domu', \
+                         'file://domu/interfaces.d/', '', d)} \
     "
 
 install_interfaces() {
-    cp -rf ${WORKDIR}/interfaces.d ${D}${sysconfdir}/network/
+    cp -rf ${WORKDIR}/*/interfaces.d ${D}${sysconfdir}/network/
 }
 do_install[postfuncs] += "install_interfaces"

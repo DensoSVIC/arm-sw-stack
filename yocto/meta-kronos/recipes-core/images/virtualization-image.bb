@@ -20,8 +20,7 @@ REQUIRED_IMAGE_FEATURES = "virtualization"
 CONFLICT_IMAGE_FEATURES = "baremetal domu"
 COMPATIBLE_MACHINE = "fvp-rd-kronos"
 
-GRUB_CFG_FILE = \
-"${KRONOS_VIRTUALIZATION_DYNAMIC_DIR}/wic/virtualization-grub.cfg"
+GRUB_CFG_FILE = "virtualization-grub.cfg"
 
 IMAGE_EFI_BOOT_FILES:append = " xen-${MACHINE}.efi;xen.efi xen.cfg"
 do_image_wic[depends] += "xen:do_deploy xen-cfg:do_deploy "
