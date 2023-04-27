@@ -20,4 +20,7 @@ env:
   SRC_URI_TRUSTED_FIRMWARE_A:
   SRC_URI_TRUSTED_FIRMWARE_M:
   SRC_URI_TRUSTED_FIRMWARE_M_TESTS:
-  TESTIMAGE_AUTO: "1"
+
+local_conf_header:
+  ci: |
+    TESTIMAGE_AUTO = "${@ '1' if d.getVar('BUILD_ARCH') == 'x86_64' else ''}"
