@@ -60,7 +60,5 @@ def add_extra_test_suites(d):
 
 TEST_SUITES:append = " test_10_linuxlogin \
     ${@add_extra_test_suites(d)} \
-    ping \
-    ssh \
-    parsec \
+    test_40_parsec \
 "
