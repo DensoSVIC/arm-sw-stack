@@ -113,6 +113,7 @@ uboot_version = "2022.07"
 linux_version = "6.1"
 linux_version_patch = "25"
 xen_version = "4.17"
+zephyr_version = "3.3.0"
 
 rst_prolog = f"""
 .. |kas version| replace:: {kas_version}
@@ -128,6 +129,7 @@ rst_prolog = f"""
 .. |Arm SystemReadyTM| replace:: Arm SystemReady\\ :sup:`TM`
 .. |kronos remote| replace:: https://git.gitlab.arm.com/automotive-and-industrial/kronos/kronos.git
 .. |kronos version| replace:: {kronos_version}
+.. |Zephyr version| replace:: {zephyr_version}
 
 .. _kas build tool: https://kas.readthedocs.io/en/{kas_version}/userguide.html
 .. _how to install the essential packages: https://docs.yoctoproject.org/{yocto_doc_version}singleindex.html#required-packages-for-the-build-host
@@ -145,6 +147,8 @@ rst_prolog = f"""
 .. _Device Tree specification: https://www.devicetree.org/
 .. _xl documentation: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.1.html
 .. _Arm Memory Partitioning and Monitoring: https://developer.arm.com/documentation/ddi0598/latest
+.. _Zephyr : https://docs.zephyrproject.org/latest/
+.. _zperf sample : https://docs.zephyrproject.org/3.2.0/connectivity/networking/api/zperf.html
 """  # noqa: E501
 
 # URL to use for references to repository paths

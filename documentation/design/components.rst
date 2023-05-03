@@ -228,10 +228,95 @@ to:
 Linux Kernel
 ============
 
+Remoteproc
+----------
+
+In Linux, a remoteproc driver for the Safety Island is added to the Linux
+kernel. It is used to support RPMsg communication between the Armv9.0-A
+cores and the Safety Island. More details on the communication can be
+found in the :ref:`HIPC <design/hipc:Heterogeneous Inter-processor Communication (HIPC)>` section.
+
+Virtual Network over RPMsg
+--------------------------
+
+In order to allow applications to access the remote processor using network
+sockets, a virtual network device over RPMsg is introduced. The ``rpmsg_net``
+kernel module is added for creating a virtual network device and converting
+RPMsg data to network data.
+
 .. _design_components_linux_downstream_changes:
 
 Downstream Changes
 ------------------
+
+The arm_si_rproc and rpmsg_net drivers can be found at
+:kronos-repo:`components/primary_compute/linux_drivers`.
+
+*************
+Safety Island
+*************
+
+.. _design_components_zephyr:
+
+Zephyr
+======
+
+`Zephyr`_ is an open source real-time operating system based on a small
+footprint kernel designed for use on resource-constrained and embedded systems.
+
+The Reference Stack uses Zephyr |zephyr version| as a baseline and introduces a
+new board ``fvp_rd_kronos_safety_island`` for the Kronos FVP. It reuses the
+``fvp_aemv8r`` SoC support and adds a pair of patches for MPU device region
+configuration.
+
+The Zephyr image for this board is running on the Safety Island clusters.
+In order to enable communication with Armv9-A cores, a set of drivers
+are added into Zephyr by means of an out-of-tree module. More details on the
+communication can be found in the :ref:`HIPC <design/hipc:Heterogeneous Inter-processor Communication (HIPC)>` section.
+
+MHUv3
+-----
+
+The Arm Message Handling Unit Version 3 (MHUv3) is a mailbox controller for
+inter-processor communication. In the Kronos FVP, there are MHUv3 devices
+on-chip for signaling between Armv9-A and Safety Island clusters, using the
+doorbell protocol. A driver is added into the Zephyr inter-processor mailbox
+framework to support this device.
+
+Virtual Network over RPMsg
+--------------------------
+
+A ``veth_rpmsg`` driver is added for network socket based communication between
+Armv9-A and Safety Island clusters. It implements an RPMsg backend by the OpenAMP
+library and an adaptation layer for converting RPMsg data to network data.
+
+Zperf sample
+------------
+
+The `zperf sample`_ can be used to stress test inter-processor communication
+over a virtual network on the Kronos FVP. The board overlay dts and
+configuration file are added to this sample. This sample needs to be used
+together with iperf on the Armv9-A side for network performance testing.
+
+.. _design_components_zephyr_downstream_changes:
+
+Downstream Changes
+------------------
+
+The board support for ``fvp_rd_kronos_safety_island`` is located at
+:kronos-repo:`components/safety_island/zephyr/src/boards/arm64/fvp_rd_kronos_safety_island`.
+
+The out-of-tree driver for virtual network over RPMsg is located at
+:kronos-repo:`components/safety_island/zephyr/src/drivers/ethernet`.
+
+The out-of-tree driver for MHUv3 device is located at
+:kronos-repo:`components/safety_island/zephyr/src/drivers/ipm`.
+
+The MPU region configuration patch is located at
+:kronos-repo:`yocto/meta-kronos/recipes-kernel/zephyr-kernel/files/zephyr`.
+
+The zperf and networking related patch is located at
+:kronos-repo:`yocto/meta-kronos/recipes-kernel/zephyr-kernel/files/zephyr`.
 
 **********
 References

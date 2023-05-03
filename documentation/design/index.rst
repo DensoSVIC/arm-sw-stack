@@ -14,5 +14,6 @@ Solution Design
    :caption: Contents
 
    boot_process
+   hipc
    components
    validation

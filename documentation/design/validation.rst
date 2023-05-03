@@ -68,6 +68,32 @@ for debugging.
        The test waits for the Primary Compute to log that it is entering the
        normal world as defined in the RSS boot process.
 
+    * HIPC
+       The scripts that implement the tests are
+       :kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_hipc.py` and
+       :kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_hipc_virtualization.py`.
+       The tests below are run for each Safety Island cluster for baremetal and
+       virtualization architectures. For the virtualization architecture tests
+       are run for each Xen guests created.
+
+       * test_ping_cluster
+          The test pings the Safety Island from the Primary Compute and vice
+          versa and checks that an answer is received (this test depends on
+          **test_linux_login**).
+
+       * test_hipc_cluster
+          The test verifies Heterogeneous InterProcessor Communication (HIPC)
+          between the Safety Island (using ``zperf``) and the Primary Compute
+          (using ``iperf``).
+          The tested configurations are:
+
+             * The Safety Island as an iperf server (UDP/TCP) and the Primary
+               Compute as a client (UDP/TCP).
+             * The Safety Island as an iperf client (UDP/TCP) and the Primary
+               Compute as a server (UDP/TCP).
+
+          This test depends on **test_ping_cluster**.
+
 .. _design_bsp_tests:
 
 BSP Tests
