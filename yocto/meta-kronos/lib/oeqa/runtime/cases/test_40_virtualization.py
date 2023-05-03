@@ -10,6 +10,7 @@ from oeqa.core.decorator.depends import OETestDepends
 from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.runtime.decorator.package import OEHasPackage
 from oeqa.runtime.cases.test_20_bsp import BspTest
+from oeqa.runtime.cases.test_40_parsec import ParsecTest
 from oeqa.utils.xen_utils import XenUtils
 
 
@@ -101,6 +102,14 @@ class BspTestDomU1(DomU1Test, DomUBspTestOverrides, BspTest):
 
 
 class BspTestDomU2(DomU2Test, DomUBspTestOverrides, BspTest):
+    pass
+
+
+class ParsecDomU1Test(DomU1Test, ParsecTest):
+    pass
+
+
+class ParsecDomU2Test(DomU2Test, ParsecTest):
     pass
 
 

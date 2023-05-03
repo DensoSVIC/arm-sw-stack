@@ -54,7 +54,7 @@ def add_extra_test_suites(d):
     extra_img_feat = (d.getVar('EXTRA_IMAGE_FEATURES') or "")
     for feature in extra_img_feat.split():
         if feature == 'virtualization':
-            test_suites += ' test_40_virtualization test_40_parsec_domu'
+            test_suites += ' test_40_virtualization'
 
     return test_suites
 
