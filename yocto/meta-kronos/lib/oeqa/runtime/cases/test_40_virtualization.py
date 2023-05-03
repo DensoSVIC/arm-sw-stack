@@ -13,10 +13,23 @@ from oeqa.runtime.cases.test_20_bsp import BspTest
 from oeqa.utils.xen_utils import XenUtils
 
 
-class BspTestDomU1(BspTest):
-    domu_hostname = r'domu1'
+class DomUTest(OERuntimeTestCase):
+    domu_hostname = None
 
-    def run_cmd(self, cmd):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.linux_console = cls.tc.target.DEFAULT_CONSOLE
+        # Use negative lookahead to match Dom0 prompt, so match every prompt
+        # that is not of this guest
+        cls.dom0_prompt = \
+            rf'root@(?!{cls.domu_hostname})fvp-rd-kronos:~#'
+        cls.linux_prompt = rf'root@{cls.domu_hostname}:~#'
+        cls.console = cls.tc.target._get_terminal(cls.linux_console)
+        XenUtils.enter_guest_from_dom0(cls.console, cls.dom0_prompt,
+                                       cls.linux_prompt, cls.domu_hostname)
+
+    def run_cmd(self, cmd, timeout=200):
         # Get the output of the command
         cmd_echo = re.compile(re.escape(cmd))
         self.target.sendline(self.linux_console, cmd)
@@ -33,7 +46,7 @@ class BspTestDomU1(BspTest):
             self.fail(f"Unable to check echo for command:\n'{cmd}'"
                       f"\nCommand line content: '{check_line}'")
 
-        self.target.expect(self.linux_console, self.linux_prompt, timeout=200)
+        self.target.expect(self.linux_console, self.linux_prompt, timeout=timeout)
         output = self.target.before(self.linux_console)
         output = output.decode("utf-8", errors="replace").strip()
 
@@ -47,44 +60,17 @@ class BspTestDomU1(BspTest):
         return int(status), output
 
     @classmethod
-    def setUpClass(cls):
-        super(BspTestDomU1, cls).setUpClass()
-        cls.linux_console = cls.tc.target.DEFAULT_CONSOLE
-        # Use negative lookahead to match Dom0 prompt, so match every prompt
-        # that is not of this guest
-        cls.dom0_prompt = \
-            rf'root@(?!{cls.domu_hostname})fvp-rd-kronos:~#'
-        cls.linux_prompt = rf'root@{cls.domu_hostname}:~#'
-        cls.console = cls.tc.target._get_terminal(cls.linux_console)
-        XenUtils.enter_guest_from_dom0(cls.console, cls.dom0_prompt,
-                                       cls.linux_prompt, cls.domu_hostname)
-
-    @classmethod
     def tearDownClass(cls):
         XenUtils.exit_guest_to_dom0(cls.console, cls.dom0_prompt,
                                     cls.linux_prompt, cls.domu_hostname)
-        super(BspTestDomU1, cls).tearDownClass()
-
-    @skipIfNotInDataVar('TEST_BSP_DEVICES', 'rtc',
-                        'rtc device not included in BSP tests')
-    @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
-    def test_rtc(self):
-        self.skipTest("'rtc' not tested in DomU")
-
-    @skipIfNotInDataVar('TEST_BSP_DEVICES', 'watchdog',
-                        'watchdog device not included in BSP tests')
-    @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
-    def test_watchdog(self):
-        self.skipTest("'watchdog' not tested in DomU")
-
-    @skipIfNotInDataVar('TEST_BSP_DEVICES', 'virtiorng',
-                        'virtiorng device not included in BSP tests')
-    @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
-    def test_virtiorng(self):
-        self.skipTest("'virtiorng' not tested in DomU")
+        super().tearDownClass()
 
 
-class BspTestDomU2(BspTestDomU1):
+class DomU1Test(DomUTest):
+    domu_hostname = r'domu1'
+
+
+class DomU2Test(DomUTest):
     domu_hostname = r'domu2'
 
     @classmethod
@@ -93,23 +79,29 @@ class BspTestDomU2(BspTestDomU1):
             import unittest
             raise unittest.SkipTest("BspTestDomU2 skipped because DomU2 is"
                                     " not generated in this build")
-        super(BspTestDomU2, cls).setUpClass()
+        super().setUpClass()
 
-    @classmethod
-    def tearDownClass(cls):
-        super(BspTestDomU2, cls).tearDownClass()
 
-    @skipIfNotInDataVar('TEST_BSP_DEVICES', 'networking',
-                        'networking device not included in BSP tests')
+class DomUBspTestOverrides:
     @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
-    def test_networking(self):
-        super().test_networking()
+    def test_rtc(self):
+        self.skipTest("'rtc' not tested in DomU")
 
-    @skipIfNotInDataVar('TEST_BSP_DEVICES', 'cpu_hotplug',
-                        'smp device not included in BSP tests')
     @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
-    def test_cpu_hotplug(self):
-        super().test_cpu_hotplug()
+    def test_watchdog(self):
+        self.skipTest("'watchdog' not tested in DomU")
+
+    @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
+    def test_virtiorng(self):
+        self.skipTest("'virtiorng' not tested in DomU")
+
+
+class BspTestDomU1(DomU1Test, DomUBspTestOverrides, BspTest):
+    pass
+
+
+class BspTestDomU2(DomU2Test, DomUBspTestOverrides, BspTest):
+    pass
 
 
 class PtestRunnerDom0Test(OERuntimeTestCase):
