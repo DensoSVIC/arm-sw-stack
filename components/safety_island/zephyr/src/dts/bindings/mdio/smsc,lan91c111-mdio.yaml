@@ -1,11 +1,11 @@
-#
 # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: Apache-2.0
+---
+description: SMSC (now Microchip) LAN91C111 MDIO Driver node
 
-menu "Drivers"
-rsource "ethernet/Kconfig.smsc91x"
-rsource "ethernet/Kconfig.veth_rpmsg"
-rsource "ipm/Kconfig"
-endmenu
+compatible: "smsc,lan91c111-mdio"
+
+include:
+  - name: mdio-controller.yaml

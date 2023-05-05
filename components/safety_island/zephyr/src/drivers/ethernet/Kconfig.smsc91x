@@ -4,8 +4,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-menu "Drivers"
-rsource "ethernet/Kconfig.smsc91x"
-rsource "ethernet/Kconfig.veth_rpmsg"
-rsource "ipm/Kconfig"
-endmenu
+config ETH_SMSC91X
+	bool "SMSC91x Ethernet driver"
+	default y
+	depends on DT_HAS_SMSC_LAN91C111_ENABLED
+	help
+	  Enable driver for SMSC/LAN91x family of chips.
