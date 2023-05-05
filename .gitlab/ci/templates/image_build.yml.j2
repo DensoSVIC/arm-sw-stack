@@ -24,10 +24,10 @@ Image-Build-{{ CI_JOB_NAME_SLUG }}:
       - $KAS_WORK_DIR/build/conf/*
       # Logs
       - $KAS_WORK_DIR/build/bitbake-cookerdaemon.log
-      - $KAS_WORK_DIR/build/tmp*/log/**/*
-      - $KAS_WORK_DIR/build/tmp*/work/**/pseudo.log
-      - $KAS_WORK_DIR/build/tmp*/work/**/temp/log.*
-      - $KAS_WORK_DIR/build/tmp*/work/**/testimage/*
+      - $KAS_WORK_DIR/build/tmp*/log
+      - $KAS_WORK_DIR/build/tmp*/work/*/*/*/pseudo/pseudo.log
+      - $KAS_WORK_DIR/build/tmp*/work/*/*/*/temp/log.*
+      - $KAS_WORK_DIR/build/tmp*/work/*/*/*/testimage
     reports:
       junit:
         - TEST-autotest-{{ CI_JOB_NAME }}.xml
