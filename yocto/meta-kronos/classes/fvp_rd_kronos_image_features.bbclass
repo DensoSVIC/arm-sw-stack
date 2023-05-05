@@ -89,6 +89,12 @@ TEST_SUITES_EXTRA:hipc-validation:virtualization = " \
     test_30_hipc_virtualization \
     "
 
+TEST_SUITES_EXTRA:si0-ethernet0 = " \
+    test_30_si0_ethernet0 \
+    test_10_safety_island_c1 \
+    test_10_safety_island_c2 \
+    "
+
 TEST_SUITES_EXTRA:virtualization:append = " \
     test_40_virtualization \
     "
@@ -98,6 +104,15 @@ TEST_SUITES:append = " \
     test_40_parsec \
     ${TEST_SUITES_EXTRA} \
 "
+
+TEST_SUITES:remove:si0-ethernet0 = "\
+    test_00_lcp \
+    test_00_trusted_firmware_a \
+    test_10_linuxboot \
+    test_20_bsp \
+    test_10_linuxlogin \
+    test_40_parsec \
+    "
 
 EXTRA_TESTIMAGE_RDEPENDS ?= ""
 EXTRA_TESTIMAGE_RDEPENDS:si0-ethernet0 = "iperf-native:do_populate_sysroot"
