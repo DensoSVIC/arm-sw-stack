@@ -4,7 +4,11 @@
 #
 # SPDX-License-Identifier: MIT
 
-OVERLAY_BASENAME ?= "${ZEPHYR_SAFETY_ISLAND_MODULE}/overlays/hipc/${ZEPHYR_BOARD}"
+OVERLAY_DIR ?= "hipc"
+OVERLAY_DIR:si0-ethernet0 = "ethernet0"
+
+OVERLAY_BASENAME ?= \
+    "${ZEPHYR_SAFETY_ISLAND_MODULE}/overlays/${OVERLAY_DIR}/${ZEPHYR_BOARD}"
 
 python __anonymous() {
     ovrl_basename = d.getVar('OVERLAY_BASENAME')

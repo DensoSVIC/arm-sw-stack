@@ -14,6 +14,9 @@ OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
 OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
                     'virtualization', ':virtualization', '', d)}"
 
+OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
+                    'si0-ethernet0', ':si0-ethernet0', '', d)}"
+
 # This bbclass handles, via the EXTRA_IMAGE_FEATURES variable, the following
 # features that will be used to select packages to be installed on rootfs,
 # Safety Island image and integration testing.
@@ -22,6 +25,7 @@ IMAGE_FEATURES[validitems] += " \
     hipc-validation \
     virtualization \
     domu \
+    si0-ethernet0 \
     "
 
 DOMU_INSTANCES ?= "2"
@@ -29,7 +33,8 @@ DOMU_INSTANCES ?= "2"
 IMAGE_FEATURES_CONFLICTS_baremetal = "virtualization domu"
 IMAGE_FEATURES_CONFLICTS_virtualization = "baremetal domu"
 IMAGE_FEATURES_CONFLICTS_domu = "baremetal virtualization"
-
+IMAGE_FEATURES_CONFLICTS_hipc-validation = "si0-ethernet0"
+IMAGE_FEATURES_CONFLICTS_si0-ethernet0 = "hipc-validation"
 
 FEATURE_PACKAGES_COMMON = " \
     arm-si-rproc-mod \
@@ -68,6 +73,7 @@ FEATURE_PACKAGES_hipc-validation:virtualization = ""
 require ${@bb.utils.contains('MACHINE', 'fvp-rd-kronos', 'conf/machine/include/fvp-rd-kronos-extras.inc', '', d)}
 
 ZEPHYR_APP_SAFETY_ISLAND_CL0:hipc-validation = "zperf"
+ZEPHYR_APP_SAFETY_ISLAND_CL0:si0-ethernet0 = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL1:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:hipc-validation = "zperf"
 
@@ -92,3 +98,8 @@ TEST_SUITES:append = " \
     test_40_parsec \
     ${TEST_SUITES_EXTRA} \
 "
+
+EXTRA_TESTIMAGE_RDEPENDS ?= ""
+EXTRA_TESTIMAGE_RDEPENDS:si0-ethernet0 = "iperf-native:do_populate_sysroot"
+
+do_testimage[rdepends] += "${EXTRA_TESTIMAGE_RDEPENDS}"

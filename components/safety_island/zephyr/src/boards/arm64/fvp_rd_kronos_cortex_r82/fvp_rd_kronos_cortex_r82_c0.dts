@@ -91,6 +91,26 @@
 			interrupt-names = "rx";
 			status = "disabled";
 		};
+
+		eth: ethernet@8100000 {
+			interrupt-parent = <&gic>;
+			compatible = "smsc,lan91c111";
+			reg = <0x0 0x8100000 0x100000>;
+			interrupts = <GIC_SPI 105 0 IRQ_TYPE_LEVEL>;
+			status = "disabled";
+
+			phy: phy {
+				compatible = "ethernet-phy";
+				status = "disabled";
+				address = <0>;
+				mdio = <&mdio>;
+			};
+
+			mdio: mdio {
+				compatible = "smsc,lan91c111-mdio";
+				status = "disabled";
+			};
+		};
 	};
 };
 

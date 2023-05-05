@@ -21,6 +21,7 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0009-net-zperf-Reduce-the-scope-of-input-address-variable.patch;patchdir=zephyr \
     file://zephyr/0010-net-zperf-allow-TCP-receiver-to-handle-multiple-conn.patch;patchdir=zephyr \
     file://zephyr/0011-net-ip-Kconfig-for-TCP-packet-allocation-timeout.patch;patchdir=zephyr \
+    file://zephyr/0012-drivers-phy_mii-Remove-the-unneeded-header-file.patch;patchdir=zephyr \
     "
 SRC_URI += "${SRC_URI_ZEPHYR_EXTRA_PATCHES}"
 

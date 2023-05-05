@@ -1,0 +1,14 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: MIT
+
+---
+header:
+  version: 13
+
+local_conf_header:
+  si0-ethernet0: |
+    EXTRA_IMAGE_FEATURES:append = " si0-ethernet0"
+    EXTRA_IMAGE_FEATURES:remove = "hipc-validation"

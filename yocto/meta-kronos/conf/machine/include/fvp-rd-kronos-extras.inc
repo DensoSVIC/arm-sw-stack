@@ -16,4 +16,10 @@ SAFETY_ISLAND_C0_IMAGE ??= "${SAFETY_ISLAND_C0_RECIPE}"
 SAFETY_ISLAND_C1_IMAGE ??= "${SAFETY_ISLAND_C1_RECIPE}"
 SAFETY_ISLAND_C2_IMAGE ??= "${SAFETY_ISLAND_C2_RECIPE}"
 
+FVP_SI0_ETHERNET0_HOST_NETPORT ?= "6001"
+FVP_CONFIG[css.sysctrl.si.ethernet0.enabled] ?= "1"
+FVP_CONFIG[css.sysctrl.si.hostbridge0.userNetworking] ?= "1"
+FVP_CONFIG[css.sysctrl.si.hostbridge0.userNetPorts] ?= \
+        "${FVP_SI0_ETHERNET0_HOST_NETPORT}=172.20.51.1:5001"
+
 require ${@bb.utils.contains('EXTRA_IMAGE_FEATURES', 'virtualization', "${KRONOS_VIRTUALIZATION_DYNAMIC_DIR}/conf/machine/include/fvp-rd-kronos-xen.inc", '', d)}
