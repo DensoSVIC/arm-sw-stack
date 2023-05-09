@@ -25,10 +25,14 @@ def repo_shortname(url):
 
 
 repositories = (
-    "https://git.yoctoproject.org/git/poky",
     "https://git.openembedded.org/meta-openembedded",
+    "https://git.yoctoproject.org/git/meta-arm",
+    "https://git.yoctoproject.org/git/meta-security",
     "https://git.yoctoproject.org/git/meta-virtualization",
-    "https://git.yoctoproject.org/git/meta-arm"
+    "https://git.yoctoproject.org/git/meta-zephyr",
+    "https://git.yoctoproject.org/git/poky",
+    "https://github.com/kraj/meta-clang",
+    "https://gitlab.com/Linaro/cassini/meta-cassini"
 )
 
 
