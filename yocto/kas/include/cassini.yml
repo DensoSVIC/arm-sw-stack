@@ -20,6 +20,11 @@ repos:
       meta-cassini-distro:
       meta-cassini-bsp: excluded
 
+  meta-security:
+    # Pin meta-security to a commit before the broken:
+    # "ffd9eb5 meta-parsec/layer.conf: Insert addpylib declaration"
+    refspec: d10f6f9ae37b79a987ffa4ace980b6dfab158729
+
 local_conf_header:
   cassini: |
     CASSINI_GENERIC_ARM64_FILESYSTEM = "0"
