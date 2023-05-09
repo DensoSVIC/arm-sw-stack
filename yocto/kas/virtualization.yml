@@ -20,6 +20,7 @@ local_conf_header:
   virtualization: |
     DISTRO_FEATURES:append = " xen ptest"
     EXTRA_IMAGE_FEATURES:append = " virtualization"
+    PTEST_ENABLED:pn-elfutils = "0"
     TMPDIR = "${TOPDIR}/tmp_virtualization"
     DOMU_TMPDIR = "${TOPDIR}/tmp_virtualization_domu"
     DOMU_MACHINE = "generic-arm64"
