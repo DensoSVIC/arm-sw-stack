@@ -14,17 +14,20 @@ check-layers:
           "yocto-check-layer-wrapper
             $CI_PROJECT_DIR/yocto/$LAYER
             --dependency
-              $KAS_WORK_DIR/layers/meta-*
-              $KAS_WORK_DIR/layers/poky/meta
-              $KAS_WORK_DIR/layers/poky/meta-poky
-              $KAS_WORK_DIR/layers/meta-openembedded/meta-oe
-              $KAS_WORK_DIR/layers/meta-openembedded/meta-python
-              $KAS_WORK_DIR/layers/meta-zephyr/meta-zephyr-core
-              $KAS_WORK_DIR/layers/meta-security/meta-parsec
+              $KAS_WORK_DIR/layers/meta-arm/meta-arm
+              $KAS_WORK_DIR/layers/meta-arm/meta-arm-bsp
+              $KAS_WORK_DIR/layers/meta-arm/meta-arm-toolchain
+              $KAS_WORK_DIR/layers/meta-cassini/meta-cassini-distro
               $KAS_WORK_DIR/layers/meta-clang
-            --additional-layers
               $KAS_WORK_DIR/layers/meta-openembedded/meta-filesystems
               $KAS_WORK_DIR/layers/meta-openembedded/meta-networking
+              $KAS_WORK_DIR/layers/meta-openembedded/meta-oe
+              $KAS_WORK_DIR/layers/meta-openembedded/meta-python
+              $KAS_WORK_DIR/layers/meta-security/meta-parsec
+              $KAS_WORK_DIR/layers/meta-virtualization
+              $KAS_WORK_DIR/layers/meta-zephyr/meta-zephyr-core
+              $KAS_WORK_DIR/layers/poky/meta
+              $KAS_WORK_DIR/layers/poky/meta-poky
             --no-auto-dependency"
   parallel:
     matrix:
