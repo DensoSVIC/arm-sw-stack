@@ -22,6 +22,7 @@ repos:
       yocto/meta-kronos:
 
   meta-arm:
+    path: layers/meta-arm
     layers:
       meta-arm: included
       meta-arm-toolchain: included
