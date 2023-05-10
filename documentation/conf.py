@@ -98,7 +98,7 @@ copybutton_copy_empty_lines = False
 copybutton_line_continuation_character = "\\"
 
 # Common variables for rst_prolog
-yocto_version = "langdale"
+yocto_version = "mickledore"
 yocto_doc_version = yocto_version + "/"
 kronos_version = "main"
 kas_version = "3.2"
@@ -110,8 +110,8 @@ scp_firmware_version = "f71f34237365b2c4b54be798aba79b740dcc4020"
 scp_firmware_base_version = "master branch post v2.11.0"
 trusted_firmware_a_version = "2.8.0"
 uboot_version = "2022.07"
-linux_version = "5.19"
-linux_version_patch = "17"
+linux_version = "6.1"
+linux_version_patch = "25"
 xen_version = "4.16"
 
 rst_prolog = f"""

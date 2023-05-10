@@ -1,4 +1,4 @@
-From 036769d56df274a7c6b6841035892a4f870159fa Mon Sep 17 00:00:00 2001
+From f6c15cfc6fe1b48dd424f9233d8633cac84cbfc5 Mon Sep 17 00:00:00 2001
 From: Luca Fancellu <luca.fancellu@arm.com>
 Date: Fri, 3 Mar 2023 14:23:31 +0000
 Subject: [PATCH] mailbox: Patch MHUv2 driver to make it work with MHUv3
@@ -11,7 +11,7 @@ Upstream-Status: Inappropriate
  1 file changed, 14 insertions(+), 23 deletions(-)
 
 diff --git a/drivers/mailbox/arm_mhuv2.c b/drivers/mailbox/arm_mhuv2.c
-index a47aef8df52f..dd84bc493b44 100644
+index c6d4957c4da8..bfc160763940 100644
 --- a/drivers/mailbox/arm_mhuv2.c
 +++ b/drivers/mailbox/arm_mhuv2.c
 @@ -545,7 +545,7 @@ static irqreturn_t mhuv2_sender_interrupt(int irq, void *data)
@@ -109,8 +109,8 @@ index a47aef8df52f..dd84bc493b44 100644
  
 -	reg = devm_of_iomap(dev, dev->of_node, 0, NULL);
 +	reg = devm_of_iomap(dev, dev->of_node, 0, &tmp_size);
- 	if (!reg)
- 		return -ENOMEM;
+ 	if (IS_ERR(reg))
+ 		return PTR_ERR(reg);
 +	iidr = readl_relaxed(reg + 0xFC8);
 +	aidr = readl_relaxed(reg + 0xFCC);
  
