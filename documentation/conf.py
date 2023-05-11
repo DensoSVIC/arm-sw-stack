@@ -101,7 +101,7 @@ copybutton_line_continuation_character = "\\"
 yocto_version = "mickledore"
 yocto_doc_version = yocto_version + "/"
 kronos_version = "main"
-kas_version = "3.2"
+kas_version = "3.2.3"
 trusted_firmware_m_version = "bd8c7c9c40e522d4db10d4b45412f7a56eb5dae7"
 # [inclusivity-exception]
 trusted_firmware_m_base_version = "master branch post v1.7.0"
@@ -115,7 +115,7 @@ linux_version_patch = "25"
 xen_version = "4.17"
 
 rst_prolog = f"""
-.. |kas version| replace:: 3.2
+.. |kas version| replace:: {kas_version}
 .. |Arm| replace:: Arm\\ :sup:`®`
 .. |Trusted Firmware-M version| replace:: {trusted_firmware_m_version}
 .. |Trusted Firmware-M base version| replace:: {trusted_firmware_m_base_version}
