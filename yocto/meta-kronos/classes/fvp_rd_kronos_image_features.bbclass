@@ -15,6 +15,9 @@ OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
                     'virtualization', ':virtualization', '', d)}"
 
 OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
+                    'actuation', ':actuation', '', d)}"
+
+OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
                     'si0-ethernet0', ':si0-ethernet0', '', d)}"
 
 # This bbclass handles, via the EXTRA_IMAGE_FEATURES variable, the following
@@ -25,6 +28,7 @@ IMAGE_FEATURES[validitems] += " \
     hipc-validation \
     virtualization \
     domu \
+    actuation \
     si0-ethernet0 \
     "
 
@@ -33,8 +37,9 @@ DOMU_INSTANCES ?= "2"
 IMAGE_FEATURES_CONFLICTS_baremetal = "virtualization domu"
 IMAGE_FEATURES_CONFLICTS_virtualization = "baremetal domu"
 IMAGE_FEATURES_CONFLICTS_domu = "baremetal virtualization"
-IMAGE_FEATURES_CONFLICTS_hipc-validation = "si0-ethernet0"
-IMAGE_FEATURES_CONFLICTS_si0-ethernet0 = "hipc-validation"
+IMAGE_FEATURES_CONFLICTS_hipc-validation = "si0-ethernet0 actuation"
+IMAGE_FEATURES_CONFLICTS_actuation = "si0-ethernet0 hipc-validation"
+IMAGE_FEATURES_CONFLICTS_si0-ethernet0 = "hipc-validation actuation"
 
 FEATURE_PACKAGES_COMMON = " \
     arm-si-rproc-mod \
@@ -66,6 +71,9 @@ FEATURE_PACKAGES_domu = " \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 
+FEATURE_PACKAGES_actuation = "actuation-player"
+FEATURE_PACKAGES_actuation:virtualization = ""
+
 FEATURE_PACKAGES_hipc-validation = "iperf"
 FEATURE_PACKAGES_hipc-validation:virtualization = ""
 
@@ -73,6 +81,7 @@ require ${@bb.utils.contains('MACHINE', 'fvp-rd-kronos', 'conf/machine/include/f
 
 ZEPHYR_APP_SAFETY_ISLAND_CL0:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL0:si0-ethernet0 = "zperf"
+ZEPHYR_APP_SAFETY_ISLAND_CL0:actuation = "actuation"
 ZEPHYR_APP_SAFETY_ISLAND_CL1:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:hipc-validation = "zperf"
 
@@ -83,6 +92,11 @@ TEST_SUITES_EXTRA ?= " \
     "
 
 TEST_SUITES_EXTRA:hipc-validation = " test_30_hipc"
+
+TEST_SUITES_EXTRA:actuation = " \
+    test_10_safety_island_c1 \
+    test_10_safety_island_c2 \
+    "
 
 TEST_SUITES_EXTRA:hipc-validation:virtualization = " \
     test_30_hipc_virtualization \

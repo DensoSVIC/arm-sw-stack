@@ -27,3 +27,5 @@ update_si_ip_addr() {
 }
 
 ROOTFS_POSTPROCESS_COMMAND += "update_si_ip_addr;"
+
+FEATURE_PACKAGES_actuation = ""
