@@ -52,6 +52,7 @@ kronos
 lcp
 license.rst
 license_link
+licensees
 linux
 lts
 maxdepth
