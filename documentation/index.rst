@@ -18,3 +18,4 @@ Contents
    user_guide/index
    design/index
    license_link
+   changelog

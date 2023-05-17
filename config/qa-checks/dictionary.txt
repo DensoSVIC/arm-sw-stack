@@ -18,6 +18,7 @@ bootable
 bootloader
 c
 chainloader
+changelog
 cpu_hotplug
 cpus
 ctrl
