@@ -3,6 +3,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-config BOARD_FVP_RD_KRONOS_CORTEX_R82
-	bool "CORTEX_R82 clusters of FVP RD-Kronos simulation board"
+config BOARD_FVP_RD_KRONOS_SAFETY_ISLAND
+	bool "Safety Island clusters of FVP RD-Kronos simulation board"
 	depends on SOC_FVP_AEMV8R_AARCH64

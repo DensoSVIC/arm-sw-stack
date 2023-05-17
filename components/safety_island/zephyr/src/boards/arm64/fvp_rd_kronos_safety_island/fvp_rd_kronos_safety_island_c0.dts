@@ -10,12 +10,12 @@
 #include <mem.h>
 #include <arm64/armv8-r.dtsi>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
-#include "fvp_rd_kronos_cortex_r82_device_mem.dtsi"
+#include "fvp_rd_kronos_safety_island_device_mem.dtsi"
 
 / {
 	#address-cells = <2>;
 	#size-cells = <1>;
-	model = "FVP RD-Kronos Cortex R82 Cluster 0";
+	model = "FVP RD-Kronos Safety Island Cluster 0";
 
 	chosen {
 		zephyr,sram = &sram0;
@@ -29,26 +29,8 @@
 
 		cpu@0 {
 			device_type = "cpu";
-			compatible = "arm,cortex-r82";
+			compatible = "arm,safety-island";
 			reg = <0>;
-		};
-
-		cpu@1 {
-			device_type = "cpu";
-			compatible = "arm,cortex-r82";
-			reg = <0x0100>;
-		};
-
-		cpu@2 {
-			device_type = "cpu";
-			compatible = "arm,cortex-r82";
-			reg = <0x0200>;
-		};
-
-		cpu@3 {
-			device_type = "cpu";
-			compatible = "arm,cortex-r82";
-			reg = <0x0300>;
 		};
 
 	};
@@ -77,37 +59,57 @@
 		#size-cells = <1>;
 		interrupt-parent = <&gic>;
 
-		gic: interrupt-controller@30400000 {
+		gic: interrupt-controller@30000000 {
 			compatible = "arm,gic";
-			reg = <0x0 0x30400000 0x10000>,
-			      <0x0 0x30480000 0x100000>;
+			reg = <0x0 0x30000000 0x10000>,
+			      <0x0 0x30080000 0x20000>;
 			interrupt-controller;
 			#interrupt-cells = <4>;
 			status = "okay";
 		};
 
-		uart0: uart@2a420000 {
+		uart0: uart@2a400000 {
 			compatible = "arm,pl011";
-			reg = <0x0 0x2a420000 0x10000>;
+			reg = <0x0 0x2a400000 0x10000>;
 			status = "disabled";
-			interrupts = <GIC_SPI 6 0 IRQ_TYPE_LEVEL>;
+			interrupts = <GIC_SPI 8 0 IRQ_TYPE_LEVEL>;
 			interrupt-names = "irq_0";
 			clocks = <&uartclk>;
 		};
 
-		sram0: memory@160000000 {
+		sram0: memory@120000000 {
 			compatible = "mmio-sram";
-			reg = <0x1 0x60000000 DT_SIZE_M(8)>;
+			reg = <0x1 0x20000000 DT_SIZE_M(2)>;
 		};
 
-		mhuv3_00: mhuv3@2ad20000 {
+		mhuv3_00: mhuv3@2a920000 {
 			compatible = "arm,mhuv3";
-			reg = <0x0 0x2ad20000 0x1000>,
-			      <0x0 0x2ad30000 0x1000>;
+			reg = <0x0 0x2a920000 0x1000>,
+			      <0x0 0x2a930000 0x1000>;
 			reg-names = "tx", "rx";
-			interrupts = <GIC_SPI 20 0 IRQ_TYPE_LEVEL>;
+			interrupts = <GIC_SPI 60 0 IRQ_TYPE_LEVEL>;
 			interrupt-names = "rx";
 			status = "disabled";
+		};
+
+		eth: ethernet@8100000 {
+			interrupt-parent = <&gic>;
+			compatible = "smsc,lan91c111";
+			reg = <0x0 0x8100000 0x100000>;
+			interrupts = <GIC_SPI 105 0 IRQ_TYPE_LEVEL>;
+			status = "disabled";
+
+			phy: phy {
+				compatible = "ethernet-phy";
+				status = "disabled";
+				address = <0>;
+				mdio = <&mdio>;
+			};
+
+			mdio: mdio {
+				compatible = "smsc,lan91c111-mdio";
+				status = "disabled";
+			};
 		};
 	};
 };

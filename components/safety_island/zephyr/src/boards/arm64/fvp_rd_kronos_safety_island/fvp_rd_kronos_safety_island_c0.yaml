@@ -3,11 +3,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 ---
-identifier: fvp_rd_kronos_cortex_r82_c1
-name: FVP Emulation FVP RD-Kronos Cortex R82 cluster 1
+identifier: fvp_rd_kronos_safety_island_c0
+name: FVP Emulation FVP RD-Kronos Safety Island cluster 0
 arch: arm64
 type: sim
 toolchain:
   - zephyr
   - cross-compile
-ram: 4096
+ram: 2048

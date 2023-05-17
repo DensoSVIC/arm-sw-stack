@@ -12,5 +12,5 @@ class SafetyIslandC0Test(OERuntimeTestCase):
 
     def test_cluster0(self):
         self.target.expect(self.console,
-                           'Hello World! fvp_rd_kronos_cortex_r82',
+                           'Hello World! fvp_rd_kronos_safety_island',
                            timeout=120)

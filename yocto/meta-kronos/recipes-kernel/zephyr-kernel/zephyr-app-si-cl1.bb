@@ -8,9 +8,9 @@ LICENSE = "MIT"
 
 SUMMARY = "zephyr sample application for si_cl1"
 DESCRIPTION = "A recipe can set the zephyr sample application on \
-fvp_rd_kronos_cortex_r82_c1"
+fvp_rd_kronos_safety_island_c1"
 
-ZEPHYR_BOARD = "fvp_rd_kronos_cortex_r82_c1"
+ZEPHYR_BOARD = "fvp_rd_kronos_safety_island_c1"
 ZEPHYR_APP_SAFETY_ISLAND_CL1 ??= "helloworld"
 ZEPHYR_APP = "${ZEPHYR_APP_SAFETY_ISLAND_CL1}"
 

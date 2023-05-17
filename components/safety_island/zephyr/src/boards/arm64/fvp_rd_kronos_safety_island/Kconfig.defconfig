@@ -3,15 +3,15 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-if BOARD_FVP_RD_KRONOS_CORTEX_R82
+if BOARD_FVP_RD_KRONOS_SAFETY_ISLAND
 
 config BUILD_OUTPUT_BIN
 	default y
 
 config BOARD
-	default "fvp_rd_kronos_cortex_r82"
+	default "fvp_rd_kronos_safety_island"
 
 config NUM_IRQS
 	default 256
 
-endif # BOARD_FVP_RD_KRONOS_CORTEX_R82
+endif # BOARD_FVP_RD_KRONOS_SAFETY_ISLAND
