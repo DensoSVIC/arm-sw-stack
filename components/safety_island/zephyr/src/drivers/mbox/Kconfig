@@ -4,19 +4,19 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-if IPM
+if MBOX
 
-config IPM_MHUV3
-	bool "ARM MHUV3 IPM driver"
+config MBOX_MHUV3
+	bool "ARM MHUV3 MBOX driver"
 	help
-	  Driver for arm MHUv3 (Message Handling Unit v3)
+	  Driver for Arm MHUv3 (Message Handling Unit v3)
 
-config IPM_MHUV3_MAX_LOGICAL_CH_NUM
+config MBOX_MHUV3_MAX_LOGICAL_CH_NUM
 	int "The maximum number of MHUv3's logical channel"
 	default 32
-	depends on IPM_MHUV3
+	depends on MBOX_MHUV3
 	help
 	  This option specifies the maximum number of logical
 	  channels. The default value is 32.
 
-endif #IPM
+endif #MBOX

@@ -7,5 +7,5 @@
 menu "Drivers"
 rsource "ethernet/Kconfig.smsc91x"
 rsource "ethernet/Kconfig.veth_rpmsg"
-rsource "ipm/Kconfig"
+rsource "mbox/Kconfig"
 endmenu

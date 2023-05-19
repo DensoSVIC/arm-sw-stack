@@ -88,11 +88,17 @@
 			reg = <0x1 0x40000000 DT_SIZE_M(4)>;
 		};
 
-		mhuv3_00: mhuv3@2ab20000 {
-			compatible = "arm,mhuv3";
-			reg = <0x0 0x2ab20000 0x1000>,
-			      <0x0 0x2ab30000 0x1000>;
-			reg-names = "tx", "rx";
+		pc_cl1_mbox_tx: mhuv3@2ab20000 {
+			compatible = "arm,mhuv3-tx";
+			#mbox-cells = <1>;
+			reg = <0x0 0x2ab20000 0x1000>;
+			status = "disabled";
+		};
+
+		pc_cl1_mbox_rx: mhuv3@2ab30000 {
+			compatible = "arm,mhuv3-rx";
+			#mbox-cells = <1>;
+			reg = <0x0 0x2ab30000 0x1000>;
 			interrupts = <GIC_SPI 44 0 IRQ_TYPE_LEVEL>;
 			interrupt-names = "rx";
 			status = "disabled";

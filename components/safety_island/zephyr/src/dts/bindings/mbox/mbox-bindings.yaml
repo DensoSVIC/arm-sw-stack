@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+description: Mbox Bindings
+
+compatible: "pc-mbox-rpmsg-binding"
+
+include: base.yaml
+
+properties:
+  mboxes:
+    description: phandle to the MBOX controller (TX and RX are required)
+    required: true
+
+  mbox-names:
+    description: MBOX channel names (must be called "tx" and "rx")
+    required: true

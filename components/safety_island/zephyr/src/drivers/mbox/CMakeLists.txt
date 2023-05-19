@@ -5,4 +5,4 @@
 # SPDX-License-Identifier: Apache-2.0
 
 zephyr_library()
-zephyr_library_sources_ifdef(CONFIG_IPM_MHUV3 ipm_mhuv3.c)
+zephyr_library_sources_ifdef(CONFIG_MBOX_MHUV3 mbox_mhuv3.c)

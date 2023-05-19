@@ -5,13 +5,34 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef IPM_MHUV3_H
-#define IPM_MHUV3_H
+#ifndef MBOX_MHUV3_H
+#define MBOX_MHUV3_H
 
 #include <stdint.h>
-#include <zephyr/drivers/ipm.h>
-/* Maximum number of channel windows */
-#define IPM_MHUV3_MAX_DATA_SIZE	4
+#include <zephyr/drivers/mbox.h>
+
+#define INVALID_CH_INDEX	(0xFFFFFFFF)
+
+/* Device structure operation */
+#define MHUV3_DEV_CFG(dev) \
+	((const struct mbox_mhuv3_config * const)(dev)->config)
+
+#define MHUV3_DEV_DATA(dev) \
+	((struct mbox_mhuv3_data *)(dev)->data)
+
+/* Rx reg operation */
+#define MHUV3_MBX_CTRL(dev) \
+	((struct mhuv3_mbx_ctrl_reg *)((MHUV3_DEV_CFG(dev))->base))
+
+#define MHUV3_MDBCW(dev) \
+	((struct mhuv3_mdbcw_reg *)((MHUV3_DEV_CFG(dev))->base + 0x1000))
+
+/* Tx reg operation */
+#define MHUV3_PBX_CTRL(dev) \
+	((struct mhuv3_pbx_ctrl_reg *)((MHUV3_DEV_CFG(dev))->base))
+
+#define MHUV3_PDBCW(dev) \
+	((struct mhuv3_pdbcw_reg *)((MHUV3_DEV_CFG(dev))->base + 0x1000))
 
 /* MHUv3 Mailbox regs pages, Mailbox is the receiver */
 struct mhuv3_mbx_ctrl_reg {
@@ -106,51 +127,15 @@ struct mhuv3_pdbcw_reg {
 	volatile uint32_t pdbcw_ctrl;
 } __packed;
 
-/* Rx reg operation */
-#define MHUV3_MBX_CTRL(dev)	\
-		((struct mhuv3_mbx_ctrl_reg *)((MHUV3_DEV_CFG(dev))->rx_base))
-
-#define MHUV3_MDBCW(dev)	\
-		((struct mhuv3_mdbcw_reg *)((MHUV3_DEV_CFG(dev))->rx_base + 0x1000))
-
-/* Tx reg operation */
-#define MHUV3_PBX_CTRL(dev)	\
-		((struct mhuv3_pbx_ctrl_reg *)((MHUV3_DEV_CFG(dev))->tx_base))
-
-#define MHUV3_PDBCW(dev)	\
-		((struct mhuv3_pdbcw_reg *)((MHUV3_DEV_CFG(dev))->tx_base + 0x1000))
-
-typedef int (*mhuv3_send_t)(const struct device *d, uint32_t id, const void *data, int size);
-typedef void (*mhuv3_recv_t)(const struct device *d, uint32_t id);
-
-struct chan_info {
-	mhuv3_send_t send;
-	mhuv3_recv_t recv;
+struct mbox_mhuv3_data {
+	mbox_callback_t cb[CONFIG_MBOX_MHUV3_MAX_LOGICAL_CH_NUM];
+	void *user_data[CONFIG_MBOX_MHUV3_MAX_LOGICAL_CH_NUM];
+	uint32_t num_ch;
 };
 
-struct ipm_mhuv3_device_data {
-	ipm_callback_t callback;
-	void *user_data;
-	/* logic channel info */
-	struct chan_info rx_ch_array[CONFIG_IPM_MHUV3_MAX_LOGICAL_CH_NUM];
-	struct chan_info tx_ch_array[CONFIG_IPM_MHUV3_MAX_LOGICAL_CH_NUM];
-	/* logic channel num */
-	uint32_t rx_num_ch;
-	uint32_t tx_num_ch;
+struct mbox_mhuv3_config {
+	volatile uint8_t *base;
+	void (*rx_irq_config)(const struct device *d);
 };
 
-struct ipm_mhuv3_device_config {
-	volatile uint8_t *rx_base;
-	volatile uint8_t *tx_base;
-	void (*rx_irq_config_func)(const struct device *d);
-};
-
-/* Device structure operation */
-#define MHUV3_DEV_CFG(dev)	\
-		((const struct ipm_mhuv3_device_config * const)(dev)->config)
-#define MHUV3_DEV_DATA(dev)	\
-		((struct ipm_mhuv3_device_data *)(dev)->data)
-
-#define INVALID_CH_INDEX	(0xFFFFFFFF)
-
-#endif /* IPM_MHUV3_H */
+#endif /* MBOX_MHUV3_H */

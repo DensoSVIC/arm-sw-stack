@@ -5,4 +5,4 @@
 # SPDX-License-Identifier: Apache-2.0
 
 add_subdirectory(ethernet)
-add_subdirectory(ipm)
+add_subdirectory(mbox)

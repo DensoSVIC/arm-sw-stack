@@ -7,12 +7,13 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
+#include <zephyr/devicetree.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <zephyr/drivers/ipm.h>
+#include <zephyr/drivers/mbox.h>
 #include <zephyr/net/ethernet.h>
 #include <zephyr/net/net_if.h>
 
@@ -24,22 +25,32 @@
 
 LOG_MODULE_REGISTER(veth_rpmsg, LOG_LEVEL_INF);
 
-#if !DT_HAS_CHOSEN(zephyr_rpmsg_shm) || !DT_HAS_CHOSEN(zephyr_rpmsg_rsc_table) \
-	|| !DT_HAS_CHOSEN(zephyr_rpmsg_ipm_dev)
-#error "Sample requires definition of shared memory, rsc table and ipm dev"
+#if !DT_HAS_CHOSEN(zephyr_rpmsg_shm) || !DT_HAS_CHOSEN(zephyr_rpmsg_rsc_table)\
+	|| !DT_HAS_CHOSEN(zephyr_rpmsg_mbox_dev)
+#error "Sample requires definition of shared memory, rsc table and mbox dev"
 #endif
 
-#define IPM_DEV_NAME    DT_NODE_FULL_NAME(DT_CHOSEN(zephyr_rpmsg_ipm_dev))
+#define MBOX_DEV_NODE   DT_NODELABEL(pc_mbox_rpmsg_binding)
 #define RSC_TABLE_NODE  DT_CHOSEN(zephyr_rpmsg_rsc_table)
 #define SHM_NODE        DT_CHOSEN(zephyr_rpmsg_shm)
 #define VETH_RPMSG_DEVICE_NAME "veth_rpmsg"
 #define VETH_RPMSG_MEM_REGION_NUM 2
-#define RPMSG_DETACH_MBX_ID 2
-#define RPMSG_ATTACH_MBX_ID 3
-#define RPMSG_ACK_MBX_ID    2
+
+#define RPMSG_DETACH_CH_ID  2
+#define RPMSG_ATTACH_CH_ID  3
+#define RPMSG_ACK_MBX_ID    6
+#define RPMSG_MBX_MAX       7
+#define RPMSG_MBX_TX_ID     1
+#define RPMSG_MAX_EVENTS_VQ 2
 
 #define MAC_LENGTH 6
 const static uint8_t default_mac[MAC_LENGTH] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+
+struct veth_rpmsg_mbox {
+	struct mbox_channel channel;
+	int (*mbox_cb)(const struct device *dev, uint32_t channel,
+		       void *user_data, struct mbox_msg *msg);
+};
 
 struct veth_rpmsg_ctx {
 	struct k_work notify_work;
@@ -54,7 +65,7 @@ struct veth_rpmsg_ctx {
 
 	struct metal_device shm_device;
 
-	struct device *ipm_handle;
+	struct veth_rpmsg_mbox mbox[RPMSG_MBX_MAX];
 
 	unsigned int rpmsg_state;
 	const struct veth_rpmsg_conf *cfg;
@@ -92,11 +103,14 @@ static struct veth_rpmsg_ctx veth_rpmsg_contex;
 
 bool rpmsg_ready = false;
 
-static int mailbox_notify(void *priv, uint32_t id)
+static int mailbox_notify(void *priv, uint32_t vqid)
 {
 	struct veth_rpmsg_ctx *ctx = priv;
+	unsigned int i = vqid * RPMSG_MAX_EVENTS_VQ + RPMSG_MBX_TX_ID;
 
-	return ipm_send(ctx->ipm_handle, 0, id, NULL, 0);
+	__ASSERT_NO_MSG(i < RPMSG_MBX_MAX);
+
+	return mbox_send(&ctx->mbox[i].channel, NULL);
 }
 
 static struct net_if *get_iface(struct veth_rpmsg_ctx *ctx, uint16_t vlan_tag)
@@ -134,7 +148,7 @@ static int rpmsg_recv_callback(struct rpmsg_endpoint *ept, void *data,
 
 		pkt = net_pkt_rx_alloc_with_buffer(iface, len, AF_UNSPEC, 0,
 						   K_FOREVER);
-		if (pkt == NULL) {
+		if (!pkt) {
 			LOG_ERR("Failed to allocate packet.\n");
 			return -1;
 		}
@@ -254,37 +268,37 @@ failed:
 }
 
 static void
-platform_ipm_callback(const struct device *dev, void *context, uint32_t id, volatile void *data)
+platform_mbox_callback(const struct device *dev, uint32_t id,
+		       void *context, struct mbox_msg *msg)
 {
 	int ret;
 	struct veth_rpmsg_ctx *ctx = context;
 
 	switch (ctx->rpmsg_state) {
 	case RPMSG_ATTACH:
-		if (id == RPMSG_DETACH_MBX_ID || id == RPMSG_ATTACH_MBX_ID) {
+		if (id == RPMSG_DETACH_CH_ID || id == RPMSG_ATTACH_CH_ID) {
 			veth_rpmsg_destroy_vdev(ctx);
 			ctx->rpmsg_state = RPMSG_DETACH;
 			rpmsg_ready = false;
-			if (id == RPMSG_ATTACH_MBX_ID)
-			    ipm_send(ctx->ipm_handle, 0,
-				     RPMSG_ACK_MBX_ID, NULL, 0);
+			if (id == RPMSG_ATTACH_CH_ID)
+				mbox_send(&ctx->mbox[RPMSG_ACK_MBX_ID].channel,
+					  NULL);
 			LOG_INF("RPMSG Endpoint: DETACHED\n");
-			break;
 		} else {
 			(void)k_work_submit(&ctx->notify_work);
 		}
 		break;
 	case RPMSG_DETACH:
-		if (id == RPMSG_ATTACH_MBX_ID) {
-		    ipm_send(ctx->ipm_handle, 0, RPMSG_ACK_MBX_ID, NULL, 0);
+		if (id == RPMSG_ATTACH_CH_ID) {
+			mbox_send(&ctx->mbox[RPMSG_ACK_MBX_ID].channel, NULL);
 		} else {
-		    ret = veth_rpmsg_setup_vdev(ctx);
-		    if (ret) {
-			LOG_ERR("Failed to create rpmsg virtio device.\n");
-		    } else {
-			ctx->rpmsg_state = RPMSG_ATTACH;
-			LOG_INF("RPMSG Endpoint: ATTACHED\n");
-		    }
+			ret = veth_rpmsg_setup_vdev(ctx);
+			if (ret) {
+				LOG_ERR("Failed to create rpmsg virtio device.\n");
+			} else {
+				ctx->rpmsg_state = RPMSG_ATTACH;
+				LOG_INF("RPMSG Endpoint: ATTACHED\n");
+			}
 		}
 		break;
 	default:
@@ -317,6 +331,65 @@ void load_rsc_table(struct fw_resource_table *rsc_tab_addr, int rsc_tab_size)
 	}
 
 	memcpy(rsc_tab_addr, src_rsc_tab_addr, src_rsc_tab_size);
+}
+
+const struct veth_rpmsg_mbox veth_rpmsg_mbox[RPMSG_MBX_MAX] = {
+	{
+	    .channel = MBOX_DT_CHANNEL_GET(MBOX_DEV_NODE, vq0_rx),
+	    .mbox_cb = platform_mbox_callback,
+	},
+	{
+	    .channel = MBOX_DT_CHANNEL_GET(MBOX_DEV_NODE, vq0_tx),
+	},
+	{
+	    .channel = MBOX_DT_CHANNEL_GET(MBOX_DEV_NODE, vq1_rx),
+	    .mbox_cb = platform_mbox_callback,
+	},
+	{
+	    .channel = MBOX_DT_CHANNEL_GET(MBOX_DEV_NODE, vq1_tx),
+	},
+	{
+	    .channel = MBOX_DT_CHANNEL_GET(MBOX_DEV_NODE, detach),
+	    .mbox_cb = platform_mbox_callback,
+	},
+	{
+	    .channel = MBOX_DT_CHANNEL_GET(MBOX_DEV_NODE, attach),
+	    .mbox_cb = platform_mbox_callback,
+	},
+	{
+	    .channel = MBOX_DT_CHANNEL_GET(MBOX_DEV_NODE, ack),
+	}
+};
+
+static int veth_rpmsg_mbox_init(struct veth_rpmsg_ctx *ctx)
+{
+	struct veth_rpmsg_mbox *mbox;
+	uint32_t i;
+	int ret;
+
+	/* Initialise mailbox structure table */
+	memcpy(ctx->mbox, veth_rpmsg_mbox, sizeof(veth_rpmsg_mbox));
+
+	for (i = 0; i < RPMSG_MBX_MAX; i++) {
+		mbox = &ctx->mbox[i];
+
+		ret = mbox_set_enabled(&mbox->channel, 1);
+		if (ret) {
+			LOG_ERR("Failed to enable rx mbox device.\n");
+			return ret;
+		}
+
+		if (mbox->mbox_cb) {
+			ret = mbox_register_callback(&mbox->channel,
+						     mbox->mbox_cb, ctx);
+			if (ret) {
+				LOG_ERR("Failed to register mbox callback.\n");
+				return ret;
+			}
+		}
+	}
+
+	return 0;
 }
 
 int veth_rpmsg_platform_init(struct veth_rpmsg_conf *cfg, struct veth_rpmsg_ctx *ctx)
@@ -371,16 +444,13 @@ int veth_rpmsg_platform_init(struct veth_rpmsg_conf *cfg, struct veth_rpmsg_ctx 
 		return -1;
 	}
 
-	/* setup IPM */
-	ctx->ipm_handle = device_get_binding(IPM_DEV_NAME);
-	if (!ctx->ipm_handle) {
-		LOG_ERR("Failed to find ipm device\n");
-		return -1;
-	}
-
 	k_work_init(&ctx->notify_work, notify_handler);
 
-	ipm_register_callback(ctx->ipm_handle, platform_ipm_callback, ctx);
+	ret = veth_rpmsg_mbox_init(ctx);
+	if (ret) {
+		LOG_ERR("Failed to init mbox\n");
+		return -1;
+	}
 
 	return 0;
 }
@@ -447,7 +517,7 @@ int veth_rpmsg_send(const struct device *dev, struct net_pkt *pkt)
 	}
 
 	if (!rpmsg_ready)
-	    return 0;
+		return 0;
 
 	ret = rpmsg_send(&ctx->sc_ept, frame_buf, packet_length);
 	if (ret < 0) {
@@ -460,15 +530,8 @@ int veth_rpmsg_send(const struct device *dev, struct net_pkt *pkt)
 
 static int veth_rpmsg_start(const struct device *dev)
 {
-	int ret = 0;
 	struct veth_rpmsg_ctx *ctx = dev->data;
 	const struct veth_rpmsg_conf *cfg = dev->config;
-
-	ret = ipm_set_enabled(ctx->ipm_handle, 1);
-	if (ret) {
-		LOG_ERR("Failed to enable ipm device.\n");
-		return -1;
-	}
 
 	ctx->rpmsg_state = RPMSG_DETACH;
 	ctx->sc_ept.priv = ctx;

@@ -5,19 +5,13 @@
 ---
 description: ARM MHUv3 (Message Handling Unit v3)
 
-compatible: "arm,mhuv3"
+compatible: "arm,mhuv3-tx"
 
-include: base.yaml
+include: [base.yaml, mailbox-controller.yaml]
 
 properties:
   reg:
     required: true
 
-  reg-names:
-    required: true
-
-  interrupts:
-    required: true
-
-  interrupt-names:
-    required: true
+mbox-cells:
+  - channel

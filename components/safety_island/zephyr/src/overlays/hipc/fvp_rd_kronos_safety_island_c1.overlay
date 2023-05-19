@@ -9,7 +9,7 @@
 	chosen {
 		zephyr,rpmsg_rsc_table = &rsc_table;
 		zephyr,rpmsg_shm = &shared_data;
-		zephyr,rpmsg_ipm_dev = &mhuv3_00;
+		zephyr,rpmsg_mbox_dev = &pc_mbox_rpmsg_binding;
 	};
 
 	soc {
@@ -31,9 +31,25 @@
                         compatible = "mmio-dram";
                         reg = <0x0 0x1a800000 DT_SIZE_K(4)>;
                 };
+
+		pc_mbox_rpmsg_binding: binding {
+			compatible = "pc-mbox-rpmsg-binding";
+			mboxes = <&pc_cl1_mbox_tx 0>, <&pc_cl1_mbox_tx 1>,
+				 <&pc_cl1_mbox_rx 0>, <&pc_cl1_mbox_rx 1>,
+				 <&pc_cl1_mbox_rx 2>, <&pc_cl1_mbox_rx 3>,
+				 <&pc_cl1_mbox_tx 2>;
+
+			mbox-names = "vq0_tx", "vq1_tx", "vq0_rx",
+				     "vq1_rx", "detach", "attach",
+				     "ack";
+		};
 	};
 };
 
-&mhuv3_00 {
+&pc_cl1_mbox_rx {
+	status = "okay";
+};
+
+&pc_cl1_mbox_tx {
 	status = "okay";
 };
