@@ -15,17 +15,9 @@ execute this Reference Stack.
 Introduction
 ************
 
-This Reference Stack uses the `kas build tool`_ to configure and customize the
-different use cases via a set of configuration files.
-
-The :kronos-repo:`yocto/kas` directory contains the kas configuration files to support
-building and customizing the Reference Stack images. These kas configuration
-files contain preset settings for the following use cases:
-
-  * ``baremetal.yml`` to prepare an image for the baremetal architecture.
-
-These kas configuration files can be further used to build custom Reference
-Stack images.
+This Reference Stack uses the `kas menu tool`_ to configure and customize the
+different use cases via a set of configuration options provided in the
+configuration menu.
 
 .. note::
   All command examples on this page can be copied by clicking the copy button.
@@ -88,28 +80,35 @@ via:
 Build
 *****
 
-The provided kas configuration files can be used to build an image for
+The provided kas configuration menu can be used to build an image for
 different system architectures, and to apply different sets of customizable
 parameters. Therefore, the following build guidance is provided as a set of
 alternatives to target each of the main supported use cases.
 
-.. note::
-  To build and run any image for the Kronos FVP the user has to accept its
-  EULA_, which can be done by executing the following command in the build
-  environment:
+To run the configuration menu:
 
   .. code-block:: console
 
-    export ARM_FVP_EULA_ACCEPT=True
+    kas menu kronos/Kconfig
+
+|
+
+.. image:: ../images/kronos_reference_stack_build_config.png
+   :align: center
+
+|
+
+.. note::
+  To build and run any image for the Kronos FVP the user has to accept its
+  EULA_, which can be done by selecting the corresponding configuration
+  option in the build setup.
+ 
 
 Baremetal Architecture
 ======================
 
-To build a baremetal image:
-
-  .. code-block:: console
-
-    kas build --update kronos/yocto/kas/baremetal.yml
+To build a baremetal image choose ``Baremetal`` from
+the ``Reference Stack Architecture`` menu, then choose ``Save & Build``.
 
 Validation tests can be run on the baremetal images.
 See :ref:`reproduce_run-time_integration_tests` for more details on running
@@ -118,16 +117,26 @@ run-time validation tests.
 Virtualization Architecture
 ===========================
 
-To build a Virtualization image:
-
-  .. code-block:: console
-
-    kas build --update kronos/yocto/kas/virtualization.yml
+To build a virtualization image choose ``Virtualization`` from
+the ``Reference Stack Architecture`` menu, then choose ``Save & Build``.
 
 As with the baremetal guidance above, the Reference Stack virtualization
 image can also run validation tests.
 See :ref:`reproduce_run-time_integration_tests` for more details on running
 run-time validation tests.
+
+Arm SystemReady Firmware Architecture
+=====================================
+
+To build an Arm SystemReady Firmware image choose ``Arm SystemReady Firmware``
+from the ``Reference Stack Architecture`` menu, then choose ``Save & Build``.
+
+
+Arm SystemReady IR ACS
+======================
+
+To build an Arm SystemReady IR ACS image choose ``Arm SystemReady IR ACS``
+from the ``Reference Stack Architecture`` menu, then choose ``Save & Build``.
 
 ***
 Run
@@ -135,7 +144,8 @@ Run
 
 This section describes how to run the Reference Stack on its FVP and connect to
 the Primary Compute to manually execute commands and in this way try out its
-different functionalities. This can be done for the Baremetal Architecture.
+different functionalities. This can be done for the Baremetal and
+Virtualization Architectures.
 
 .. note::
   FVPs, and Fast Models in general, are functionally accurate, meaning that they
@@ -153,8 +163,7 @@ To start the FVP and connect to the Primary Compute terminal (running Linux):
 
   .. code-block:: console
 
-    kas shell -c="../layers/meta-arm/scripts/runfvp --verbose --console" \
-    kronos/yocto/kas/baremetal.yml
+    kas shell -c "../layers/meta-arm/scripts/runfvp --verbose --console"
 
 The user should wait for the system to boot and for the Linux prompt to appear.
 
@@ -165,8 +174,7 @@ To start the FVP and connect to the Primary Compute terminal (running Linux):
 
   .. code-block:: console
 
-    kas shell -c="../layers/meta-arm/scripts/runfvp --verbose --console" \
-    kronos/yocto/kas/virtualization.yml
+    kas shell -c "../layers/meta-arm/scripts/runfvp --verbose --console"
 
 The user should wait for the system to boot and for the Linux prompt to appear.
 On a virtualization image, this will access Dom0. Use the ``xl`` tool to log
@@ -187,15 +195,14 @@ further details.
 Validation
 **********
 
+To enable the validation tests, choose ``Run the tests automatically``
+from the ``Runtime Validation Setup`` menu, then choose ``Save & Build``.
+
 The following validation tests can be performed on the Reference Stack:
 
   * System Integration Tests:
 
     * Baremetal Architecture Stack:
-
-      .. code-block:: console
-
-        TESTIMAGE_AUTO=1 kas build kronos/yocto/kas/baremetal.yml
 
       The previous test takes around 10 minutes to complete.
 
@@ -227,10 +234,6 @@ The following validation tests can be performed on the Reference Stack:
         2022-12-07 09:12:04 - INFO     - baremetal-image - OK - All required tests passed (successes=10, skipped=0, failures=0, errors=0)
 
     * Virtualization Architecture Stack:
-
-      .. code-block:: console
-
-        TESTIMAGE_AUTO=1 kas build kronos/yocto/kas/virtualization.yml
 
       The previous test takes around 20 minutes to complete.
 

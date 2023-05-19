@@ -3,6 +3,7 @@
 200gib
 aarch64
 abstracting
+acs
 analyze.py
 apis
 architectures
@@ -56,6 +57,7 @@ endpoints
 esc
 ethsi
 ethsi0
+eula
 filesystem
 fip
 functionalities
@@ -89,6 +91,7 @@ iperf
 ipm
 kconfig
 kronos
+kronos_reference_stack_build_config.png
 lcp
 license.rst
 license_link
@@ -121,6 +124,7 @@ rdkronos.dts
 recipes-bsp
 remoteproc
 repository's
+reproducerst
 requirements.txt
 reuses
 rpmsg

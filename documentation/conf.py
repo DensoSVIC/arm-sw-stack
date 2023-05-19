@@ -131,7 +131,7 @@ rst_prolog = f"""
 .. |kronos version| replace:: {kronos_version}
 .. |Zephyr version| replace:: {zephyr_version}
 
-.. _kas build tool: https://kas.readthedocs.io/en/{kas_version}/userguide.html
+.. _kas menu tool: https://kas.readthedocs.io/en/{kas_version}/userguide.html#module-kas.plugins.menu
 .. _how to install the essential packages: https://docs.yoctoproject.org/{yocto_doc_version}singleindex.html#required-packages-for-the-build-host
 .. _kas Dependencies & installation: https://kas.readthedocs.io/en/{kas_version}/userguide.html#dependencies-installation
 .. _EULA: https://developer.arm.com/downloads/-/arm-ecosystem-fvps/eula
