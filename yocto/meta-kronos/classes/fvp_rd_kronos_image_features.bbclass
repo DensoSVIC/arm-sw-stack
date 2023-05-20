@@ -63,7 +63,6 @@ FEATURE_PACKAGES_virtualization = " \
 
 FEATURE_PACKAGES_domu = " \
     packagegroup-core-boot \
-    docker-ce \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 
