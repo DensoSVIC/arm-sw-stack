@@ -143,3 +143,19 @@ different machines/configurations by modifying the ``TEST_SUITES`` variable.
 For example, the file
 :meta-arm-repo:`meta-arm-bsp/conf/machine/fvp-rd-kronos.conf` adds the
 ``test_10_linuxboot`` test to the ``TEST_SUITES`` variable.
+
+.. _validation_actuation_demo:
+
+Integration Tests validating the Actuation Demo
+===============================================
+
+An integration test ``test_player_to_analyzer_test_recording`` has been added to
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_actuation.py`,
+which does a full Player to Packet Analyzer functionality test.
+
+The ``test_player_to_analyzer_test_recording`` invokes the Actuation Player that
+plays a recorded driving scenario which triggers the Actuation Service to
+generate Control Commands to be forwarded to the host via BSD socket. These
+Control Commands are then captured by the Packet Analyzer which validates them
+against a recorded Control Commands list that is stored in the form of a
+csv file.

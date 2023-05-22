@@ -102,7 +102,7 @@ To run the configuration menu:
   To build and run any image for the Kronos FVP the user has to accept its
   EULA_, which can be done by selecting the corresponding configuration
   option in the build setup.
- 
+
 
 Baremetal Architecture
 ======================
@@ -114,6 +114,9 @@ Validation tests can be run on the baremetal images.
 See :ref:`reproduce_run-time_integration_tests` for more details on running
 run-time validation tests.
 
+.. note::
+  The Safety Island Actuation Demo is built as part of the default deployment.
+
 Virtualization Architecture
 ===========================
 
@@ -124,6 +127,9 @@ As with the baremetal guidance above, the Reference Stack virtualization
 image can also run validation tests.
 See :ref:`reproduce_run-time_integration_tests` for more details on running
 run-time validation tests.
+
+.. note::
+  The Safety Island Actuation Demo is built as part of the default deployment.
 
 Arm SystemReady Firmware Architecture
 =====================================
@@ -188,6 +194,90 @@ This command will provide a console on the DomU1. To exit, one can enter
 ``Ctrl+]`` (to access the FVP telnet shell), followed by typing ``send esc``
 into the telnet shell and pressing ``Enter``. See the `xl documentation`_ for
 further details.
+
+*************************
+Reproducing the Use-Cases
+*************************
+
+These instructions can be run on both Baremetal and Virtualization and an
+assumption has been made that the FVP has been launched as indicated above.
+
+To reproduce the Safety Island Actuation Demo listed in
+:ref:`design_applications_actuation`, follow the steps listed below.
+
+.. note::
+  When running the ``runfvp`` command, the Safety Island (SI) Cluster 0
+  terminal running the Actuation Service is available via the window titled
+  **"FVP terminal_uart_si_cluster0"**.
+
+1. Run the ``ping`` command from the Primary Compute (running Linux) to verify
+   that it can communicate with the Safety Island (running Zephyr):
+
+   .. code-block:: shell
+
+      # On the Primary Compute terminal
+      ping 192.168.0.1 -c 10
+
+   The output should look like the following line, repeated 10 times:
+
+   .. code-block:: shell
+
+      64 bytes from 192.168.0.1 seq=0 ttl=64 time=0.151 ms
+
+
+2. From a different terminal on the build host, start the Packet Analyzer on
+   the host where the FVP is running:
+
+   .. code-block:: shell
+
+      # For x86 host
+      cd ~/kronos/build/tmp_baremetal/sysroots-components/x86_64/packet-analyzer-native/usr/bin/actuation_packet_analyzer
+      # For arm64 host
+      # cd ~/kronos/build/tmp_baremetal/sysroots-components/aarch64/packet-analyzer-native/usr/bin/actuation_packet_analyzer
+      # Start the Packet Analyzer
+      python3 packet_analyzer/start_analyzer.py -L debug -a localhost -c ./data/test_data -L
+
+   A message similar to the following should appear on the SI Cluster 0
+
+   .. code-block:: shell
+
+      Actuation Service initialized.
+      Accepted tcp connection from the Packet Analyzer: <11>
+
+3. Start the Player on the Primary Compute which replays a recording of a
+   driving scenario:
+
+   .. code-block:: shell
+
+      actuation_player -p /usr/share/actuation_player/test_data/
+
+   A message similar to the following should appear on the SI Cluster 0
+
+   .. code-block:: shell
+
+    220739105230: -0.2914 (m/s^2) | -0.0040 (rad)
+    220739105230: -0.2914 (m/s^2) | -0.0040 (rad)
+    Thread get_analyzer_handle performing a blocking accept
+
+
+   A message similar to the following should appear on the host terminal where
+   the Packet Analzer is running
+
+   .. code-block:: shell
+
+    INFO : analyzer_client.py/_connect_to: Starting analyze, use Ctrl-C to stop the process.
+    INFO : analyzer_client.py/_connect_to: Attempting a connect to (localhost : 49152)
+    INFO : analyzer_client.py/_connect_to: Succefully connected to (localhost : 49152)
+    INFO : analyzer_client.py/run_analyze_on_chain: (1) Analyzer synced with packet chain
+    INFO : analyzer_client.py/run_analyze_on_chain: All expected control packets received
+    INFO : analyzer_client.py/_log_jitter: Observed Frequency = 11.26529179, Avg Jitter = 0.00000000, Std Deviation:0.00000000
+    INFO : analyzer_client.py/run_analyze_on_chain: End of cycle: AnalyzerResult.SUCCESS
+
+    INFO : analyzer_client.py/_tear_conn: Received fin ack from Actuation Service
+
+
+    Chain ID   Result
+    0          AnalyzerResult.SUCCESS
 
 .. _reproduce_run-time_integration_tests:
 

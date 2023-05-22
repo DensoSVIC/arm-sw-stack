@@ -4,17 +4,13 @@
  #
  # SPDX-License-Identifier: MIT
 
-###############
-Solution Design
-###############
+############
+Applications
+############
 
 .. toctree::
    :titlesonly:
    :maxdepth: 1
    :caption: Contents
 
-   boot_process
-   hipc
-   components
-   applications/index
-   validation
+   actuation
