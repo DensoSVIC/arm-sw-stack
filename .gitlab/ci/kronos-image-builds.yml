@@ -18,3 +18,8 @@ virtualization:
   extends: .generator-kronos
   rules:
     - !reference [".build-image:rules", rules]
+
+baremetal/si0-ethernet0:
+  extends: .generator-kronos
+  rules:
+    - !reference [".build-image:rules", rules]

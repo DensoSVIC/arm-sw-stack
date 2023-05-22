@@ -12,6 +12,8 @@ merge_jobs:
       optional: true
     - job: virtualization
       optional: true
+    - job: baremetal/si0-ethernet0
+      optional: true
   before_script:
     - |
       cat << EOF > ${CI_JOB_FILE}
