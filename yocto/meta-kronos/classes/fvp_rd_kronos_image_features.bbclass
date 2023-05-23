@@ -53,7 +53,6 @@ FEATURE_PACKAGES_COMMON = " \
 
 FEATURE_PACKAGES_baremetal = " \
     ${FEATURE_PACKAGES_COMMON} \
-    docker-ce \
     "
 
 FEATURE_PACKAGES_virtualization = " \
