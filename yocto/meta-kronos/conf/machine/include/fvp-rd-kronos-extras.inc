@@ -21,4 +21,6 @@ FVP_CONFIG[css.sysctrl.si.hostbridge0.userNetworking] ?= "1"
 FVP_CONFIG[css.sysctrl.si.hostbridge0.userNetPorts] ?= \
         "${FVP_SI0_ETHERNET0_HOST_NETPORT}=172.20.51.1:5001"
 
+TEST_FVP_LINUX_BOOT_TIMEOUT = "${@30*60}"
+
 require ${@bb.utils.contains('EXTRA_IMAGE_FEATURES', 'virtualization', "conf/machine/include/fvp-rd-kronos-virtualization.inc", '', d)}

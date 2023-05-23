@@ -24,5 +24,3 @@ SERIAL_CONSOLES = "115200;hvc0"
 # Set WKS_FILE for Xen. Xen will use ${GRUB_CFG_FILE} as configfile
 WKS_FILE = "fvp-rd-kronos-xen-efi-disk.wks.in"
 
-# Set up the tests
-TEST_FVP_LINUX_BOOT_TIMEOUT = "${@40*60}"
