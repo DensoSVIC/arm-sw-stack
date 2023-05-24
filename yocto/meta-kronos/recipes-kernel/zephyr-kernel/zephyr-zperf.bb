@@ -12,5 +12,3 @@ DESCRIPTION = "A Zephyr application to test the network stack"
 require recipes-kernel/zephyr-kernel/zephyr-sample.inc
 
 ZEPHYR_SRC_DIR = "${ZEPHYR_BASE}/samples/net/zperf"
-
-EXTRA_OECMAKE += "-DCONFIG_INIT_STACKS=n"
