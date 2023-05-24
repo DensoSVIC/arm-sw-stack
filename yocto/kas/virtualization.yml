@@ -3,12 +3,13 @@
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
+# Note: File needs to be kept in sync with the other copy in .gitlab/kas
 
 ---
 header:
   version: 13
   includes:
-    - yocto/kas/base.yml
+    - kronos/yocto/kas/base.yml
 
 env:
   DOMU1_MEMORY_SIZE: ""

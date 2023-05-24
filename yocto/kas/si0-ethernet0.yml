@@ -3,6 +3,7 @@
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
+# Note: File needs to be kept in sync with the other copy in .gitlab/kas
 
 ---
 header:

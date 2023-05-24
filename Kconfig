@@ -1,0 +1,84 @@
+# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: MIT
+
+mainmenu "Kronos Reference Stack Build Config"
+
+#############################
+# User-facing configuration #
+#############################
+comment "End-User License Agreement"
+
+config ARM_FVP_EULA_ACCEPT_CHOICE
+    bool "Accept the END USER LICENSE AGREEMENT FOR ARM SOFTWARE DEVELOPMENT TOOLS"
+    default n
+    help
+      Please refer to "https://developer.arm.com/downloads/-/arm-ecosystem-fvps/eula"
+
+comment "Target Build Setup"
+
+choice
+    prompt "Reference Stack Architecture"
+    default ARCHITECTURE_BAREMETAL
+
+config ARCHITECTURE_SYSTEMREADY_FIRMWARE
+    bool "Arm SystemReady Firmware"
+
+config ARCHITECTURE_SYSTEMREADY_IR_ACS
+    bool "Arm SystemReady IR ACS"
+
+config ARCHITECTURE_BAREMETAL
+    bool "Baremetal"
+
+config ARCHITECTURE_VIRTUALIZATION
+    bool "Virtualization"
+
+endchoice
+
+choice
+    prompt "Extra Image Features"
+    depends on !ARCHITECTURE_SYSTEMREADY_FIRMWARE
+    depends on !ARCHITECTURE_SYSTEMREADY_IR_ACS
+    default EXTRA_IMAGE_FEATURES_HIPC
+
+config EXTRA_IMAGE_FEATURES_HIPC
+    bool "HIPC Validation"
+
+config EXTRA_IMAGE_FEATURES_ACTUATION
+    bool "Actuation Demo"
+
+endchoice
+
+comment "Runtime Validation Setup"
+
+config RUN_TESTS
+    bool "Run the tests automatically"
+    default n
+
+##############
+# Set up Kas #
+##############
+
+config KAS_INCLUDE_ARCHITECTURE
+    string
+    default "kronos/yocto/kas/virtualization.yml" if ARCHITECTURE_VIRTUALIZATION
+    default "kronos/yocto/kas/baremetal.yml" if ARCHITECTURE_BAREMETAL
+    default "kronos/yocto/kas/arm-systemready-firmware.yml" if ARCHITECTURE_SYSTEMREADY_FIRMWARE
+    default "kronos/yocto/kas/arm-systemready-ir-acs.yml" if ARCHITECTURE_SYSTEMREADY_IR_ACS
+
+config KAS_INCLUDE_APPLICATION
+    string
+    default "kronos/yocto/kas/actuation.yml" if EXTRA_IMAGE_FEATURES_ACTUATION
+
+if RUN_TESTS
+    config TESTIMAGE_AUTO
+        string
+        default "1" if RUN_TESTS
+endif
+
+if ARM_FVP_EULA_ACCEPT_CHOICE
+    config ARM_FVP_EULA_ACCEPT
+        string
+        default "1" if ARM_FVP_EULA_ACCEPT_CHOICE
+endif

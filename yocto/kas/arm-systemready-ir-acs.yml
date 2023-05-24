@@ -1,20 +1,18 @@
-#
 # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
-# Note: File needs to be kept in sync with the other copy in .gitlab/kas
 
 ---
 header:
   version: 13
   includes:
     - kronos/yocto/kas/base.yml
+    - repo: meta-arm
+      file: kas/fvp-rd-kronos.yml
+    - repo: meta-arm
+      file: kas/arm-systemready-ir-acs.yml
 
 local_conf_header:
-  baremetal: |
-    TMPDIR = "${TOPDIR}/tmp_baremetal"
-    EXTRA_IMAGE_FEATURES:append = " baremetal"
-
-target:
-  - baremetal-image
+  arm-systemready-ir-acs: |
+    TMPDIR = "${TOPDIR}/tmp_systemready"
