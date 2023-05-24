@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 ---
 
-# Modify the yocto/kas base build with specific settings
+# Modify the .gitlab/kas base build with specific settings
 .yocto_base:
   variables:
     CACHE_DIR: /sstate-cache
@@ -28,7 +28,7 @@
   variables:
     IMAGE_DIR: $CACHE_DIR/$PROJECT_VERSION/images
   before_script:
-    - KASFILE_CI=yocto/kas/ci.yml
+    - KASFILE_CI=.gitlab/kas/ci.yml
     # Set the url and refspec for the specific repos
     - |
       if ! [ -z "${REPOS_META_ARM_URL}" ] &&
@@ -98,7 +98,7 @@ Disk-Usage:
   script:
     - du -h -s $DL_DIR $SSTATE_DIR $TOOLCHAIN_DIR $KAS_REPO_REF_DIR $IMAGE_DIR
 
-# Suppress the use of the yocto/kas helper jobs as they
+# Suppress the use of the .gitlab/kas helper jobs as they
 # should only be run in the child pipeline
 Prune-Cache:
   rules:

@@ -12,7 +12,7 @@ check-layers:
     # https://github.com/python/cpython/issues/88600
     # The LD_PRELOAD can be removed when Kas moves to a newer version of Python
     - kas shell --update --force-checkout
-        yocto/kas/virtualization.yml:yocto/kas/ci.yml
+        .gitlab/kas/virtualization.yml:.gitlab/kas/ci.yml
         --command
           "LD_PRELOAD=/lib/aarch64-linux-gnu/libgcc_s.so.1
             yocto-check-layer-wrapper

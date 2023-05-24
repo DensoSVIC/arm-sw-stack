@@ -67,6 +67,7 @@ fvp_rd_kronos-poky-linux
 fvp_rd_kronos_safety_island
 fvps
 fw_config
+gitlab
 grub2
 hipc
 hipc_baremetal_design.svg
@@ -131,6 +132,7 @@ runtime
 safety_island
 safety_island.py
 scp
+si0-ethernet0
 skb
 spdx-filecopyrighttext
 spdx-license-identifier

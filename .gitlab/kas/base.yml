@@ -1,0 +1,70 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: MIT
+# Note: File needs to be kept in sync with the other copy in yocto/kas
+
+---
+header:
+  version: 13
+  includes:
+    - repo: meta-cassini
+      file: meta-cassini-config/kas/cassini.yml
+    - repo: meta-arm
+      file: kas/fvp-rd-kronos.yml
+
+defaults:
+  repos:
+    refspec: mickledore
+
+repos:
+  meta-cassini:
+    url: https://gitlab.com/Linaro/cassini/meta-cassini
+    path: layers/meta-cassini
+    refspec: main
+    layers:
+      meta-cassini-distro:
+      meta-cassini-bsp: excluded
+
+  kronos:
+    layers:
+      yocto/meta-kronos:
+
+  meta-arm:
+    path: layers/meta-arm
+    layers:
+      meta-arm: included
+      meta-arm-toolchain: included
+      meta-arm-bsp: included
+
+  meta-zephyr:
+    url: https://git.yoctoproject.org/git/meta-zephyr
+    path: layers/meta-zephyr
+    layers:
+      meta-zephyr-core:
+
+env:
+  TESTIMAGE_AUTO:
+
+local_conf_header:
+  cassini: |
+    CASSINI_GENERIC_ARM64_FILESYSTEM = "0"
+    DISTRO_FEATURES:remove = "k3s"
+    KERNEL_CLASSES:remove = "k3s_kernelcfg_check"
+    INIT_MANAGER:fvp-rd-kronos = "sysvinit"
+    INIT_MANAGER:generic-arm64 = "sysvinit"
+  kronos-extra-features: |
+    EXTRA_IMAGE_FEATURES:append = " hipc-validation"
+  diskmon: |
+    BB_DISKMON_DIRS = "\
+      STOPTASKS,${TMPDIR},1G,100K \
+      STOPTASKS,${DL_DIR},1G,100K \
+      STOPTASKS,${SSTATE_DIR},1G,100K \
+      STOPTASKS,/tmp,100M,100K \
+      HALT,${TMPDIR},100M,1K \
+      HALT,${DL_DIR},100M,1K \
+      HALT,${SSTATE_DIR},100M,1K \
+      HALT,/tmp,10M,1K"
+
+distro: cassini
