@@ -8,7 +8,7 @@
 header:
   version: 13
   includes:
-    - yocto/kas/include/base.yml
+    - yocto/kas/base.yml
 
 local_conf_header:
   baremetal: |

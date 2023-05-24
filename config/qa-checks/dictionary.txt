@@ -13,6 +13,7 @@ armv8.4
 armv9
 asynchronism
 b
+baseyml
 baremetal
 baremetal-image
 base_fvp
@@ -27,6 +28,7 @@ bootloader
 brsi0
 bsd
 c
+cassiniyml
 chainloader
 changelog
 cpu_hotplug
