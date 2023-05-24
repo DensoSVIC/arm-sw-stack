@@ -312,11 +312,13 @@ The out-of-tree driver for virtual network over RPMsg is located at
 The out-of-tree driver for MHUv3 device is located at
 :kronos-repo:`components/safety_island/zephyr/src/drivers/ipm`.
 
-The MPU region configuration patch is located at
-:kronos-repo:`yocto/meta-kronos/recipes-kernel/zephyr-kernel/files/zephyr`.
+Additional patches are located at
+:kronos-repo:`yocto/meta-kronos/recipes-kernel/zephyr-kernel/files/zephyr`
+related to:
 
-The zperf and networking related patch is located at
-:kronos-repo:`yocto/meta-kronos/recipes-kernel/zephyr-kernel/files/zephyr`.
+ * MPU region configuration
+ * zperf and networking fixes
+ * A fix for SMP early stack initialization
 
 **********
 References

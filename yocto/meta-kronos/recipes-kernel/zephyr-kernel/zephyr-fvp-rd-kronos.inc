@@ -22,6 +22,7 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0010-net-zperf-allow-TCP-receiver-to-handle-multiple-conn.patch;patchdir=zephyr \
     file://zephyr/0011-net-ip-Kconfig-for-TCP-packet-allocation-timeout.patch;patchdir=zephyr \
     file://zephyr/0012-drivers-phy_mii-Remove-the-unneeded-header-file.patch;patchdir=zephyr \
+    file://zephyr/0013-arch-arm64-Fix-the-STACK_INIT-logic-during-the-reset.patch;patchdir=zephyr \
     "
 SRC_URI += "${SRC_URI_ZEPHYR_EXTRA_PATCHES}"
 
