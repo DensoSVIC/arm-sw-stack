@@ -16,7 +16,7 @@ variables:
 # Include jobs
 include:
   - project: $PIPELINE_TEMPLATE_PROJECT
-    ref: v1.1.2
+    ref: v1.4.2
     file:
       - gitlab-ci/common_gitlab-ci.yml
       - gitlab-ci/danger-review_gitlab-ci.yml

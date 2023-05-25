@@ -16,10 +16,8 @@
   variables:
     KAS_REPO_REF_DIR: $CACHE_DIR/$PROJECT_VERSION/repos
     KUBERNETES_MEMORY_REQUEST: 24Gi
-    # These are needed as GitLab doesn't respect the container
-    # entrypoint by default
-    FF_KUBERNETES_HONOR_ENTRYPOINT: 1
-    FF_USE_LEGACY_KUBERNETES_EXECUTION_STRATEGY: 0
+    USER_ID:
+    GROUP_ID:
 
 # Extend the kas base build to enable to use of repos that are not yet public
 .kas_build_kronos:
@@ -127,54 +125,13 @@ Image-Build-virtualization-hipc-validation:
   variables:
     KAS_CONFIGS: virtualization/hipc-validation
 
-# Delete stored images
-Delete-Images:
-  extends: .kas_build_kronos
-  stage: Setup
-  needs: []
-  allow_failure: true
-  rules:
-    - if: $CI_COMMIT_TAG
-    - when: manual
-  script:
-    - rm -rf $IMAGE_DIR/*
-
-# Report on disk usage including the image directory
-Disk-Usage:
-  extends: .kas_build_kronos
-  needs: []
-  rules:
-    - when: manual
-  script:
-    - du -h -s $DL_DIR $SSTATE_DIR $TOOLCHAIN_DIR $KAS_REPO_REF_DIR $IMAGE_DIR
-
 # Suppress the use of the gitlab/kas helper jobs as they
 # should only be run in the nightly or when triggered manually
 Prune-Cache:
   rules:
     - if: $FREQUENCY == "nightly"
     - when: manual
-  needs: []
 
 Update-Repos:
   variables:
     UPDATE_REPO_SCRIPT: "./.gitlab/scripts/update-repos.py"
-
-Delete-DL-Dir:
-  rules:
-    - if: $CI_COMMIT_TAG
-    - when: manual
-
-Delete-SState:
-  rules:
-    - if: $CI_COMMIT_TAG
-    - when: manual
-
-Delete-Toolchains:
-  rules:
-    - if: $CI_COMMIT_TAG
-    - when: manual
-
-Delete-Repo-Dir:
-  rules:
-    - when: manual
