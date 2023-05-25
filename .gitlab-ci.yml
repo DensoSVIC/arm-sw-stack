@@ -4,28 +4,14 @@
 # SPDX-License-Identifier: MIT
 ---
 variables:
-  BUILD_IMAGE:
-    value: none
-    description: Comma separated list of images to build
-                 (none)
   CI_DEBUG_TRACE:
     value: 'false'
     description: Enable debug information output to the log
                  (true, false)
-  DOCKER_IMAGE_TAG:
-    value: $CI_COMMIT_REF_SLUG
-    description: Name tag used by the Docker image
-  FORCE_TESTS:
-    value: none
-    description: Comma separated list of tests that must be run
-                 (none)
   FREQUENCY:
     value: adhoc
     description: How frequently is this build run
                  (adhoc, nightly, weekly)
-  RELEASE_BRANCH:
-    value: main
-    description: Target release branch
 
 # Include jobs
 include:
