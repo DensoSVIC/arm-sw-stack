@@ -8,6 +8,13 @@
 # enabled in EXTRA_IMAGE_FEATURES:
 # VAR is "val" only if 'hipc-validation' is in EXTRA_IMAGE_FEATURES
 # e.g. VAR:hipc-validation = "val"
+
+OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
+                    'baremetal', ':baremetal', '', d)}"
+
+OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
+                    'domu', ':domu', '', d)}"
+
 OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
                     'hipc-validation', ':hipc-validation', '', d)}"
 
