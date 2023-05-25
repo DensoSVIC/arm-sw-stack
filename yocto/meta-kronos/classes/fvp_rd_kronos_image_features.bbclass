@@ -73,6 +73,8 @@ FEATURE_PACKAGES_domu = " \
 FEATURE_PACKAGES_actuation = "actuation-player"
 FEATURE_PACKAGES_actuation:virtualization = ""
 
+EXTRA_IMAGEDEPENDS:append:actuation = " packet-analyzer-native"
+
 FEATURE_PACKAGES_hipc-validation = "iperf"
 FEATURE_PACKAGES_hipc-validation:virtualization = ""
 
@@ -93,6 +95,7 @@ TEST_SUITES_EXTRA ?= " \
 TEST_SUITES_EXTRA:hipc-validation = " test_30_hipc"
 
 TEST_SUITES_EXTRA:actuation = " \
+    test_30_actuation \
     test_10_safety_island_c1 \
     test_10_safety_island_c2 \
     "
