@@ -40,7 +40,7 @@ choice
     prompt "Extra Image Features"
     depends on !ARCHITECTURE_SYSTEMREADY_FIRMWARE
     depends on !ARCHITECTURE_SYSTEMREADY_IR_ACS
-    default EXTRA_IMAGE_FEATURES_HIPC
+    default EXTRA_IMAGE_FEATURES_ACTUATION
 
 config EXTRA_IMAGE_FEATURES_HIPC
     bool "HIPC Validation"
@@ -69,7 +69,7 @@ config KAS_INCLUDE_ARCHITECTURE
 
 config KAS_INCLUDE_APPLICATION
     string
-    default "kronos/yocto/kas/actuation.yml" if EXTRA_IMAGE_FEATURES_ACTUATION
+    default "kronos/yocto/kas/hipc-validation.yml" if EXTRA_IMAGE_FEATURES_HIPC
 
 if RUN_TESTS
     config TESTIMAGE_AUTO

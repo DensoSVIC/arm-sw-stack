@@ -23,3 +23,13 @@ baremetal/si0-ethernet0:
   extends: .generator-kronos
   rules:
     - !reference [".build-image:rules", rules]
+
+baremetal/hipc-validation:
+  extends: .generator-kronos
+  rules:
+    - !reference [".build-image:rules", rules]
+
+virtualization/hipc-validation:
+  extends: .generator-kronos
+  rules:
+    - !reference [".build-image:rules", rules]

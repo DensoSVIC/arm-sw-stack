@@ -12,4 +12,4 @@ header:
 local_conf_header:
   si0-ethernet0: |
     EXTRA_IMAGE_FEATURES:append = " si0-ethernet0"
-    EXTRA_IMAGE_FEATURES:remove = "hipc-validation"
+    EXTRA_IMAGE_FEATURES:remove = "actuation"

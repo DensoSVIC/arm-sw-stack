@@ -3,12 +3,13 @@
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
+# Note: File needs to be kept in sync with the other copy in .gitlab/kas
 
 ---
 header:
   version: 13
 
 local_conf_header:
-  actuation: |
-    EXTRA_IMAGE_FEATURES:append = " actuation"
-    EXTRA_IMAGE_FEATURES:remove = "hipc-validation"
+  hipc-validation: |
+    EXTRA_IMAGE_FEATURES:append = " hipc-validation"
+    EXTRA_IMAGE_FEATURES:remove = "actuation"

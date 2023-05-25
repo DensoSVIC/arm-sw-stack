@@ -55,7 +55,7 @@ local_conf_header:
     INIT_MANAGER:fvp-rd-kronos = "sysvinit"
     INIT_MANAGER:generic-arm64 = "sysvinit"
   kronos-extra-features: |
-    EXTRA_IMAGE_FEATURES:append = " hipc-validation"
+    EXTRA_IMAGE_FEATURES:append = " actuation"
   diskmon: |
     BB_DISKMON_DIRS = "\
       STOPTASKS,${TMPDIR},1G,100K \
