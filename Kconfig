@@ -51,8 +51,10 @@ config EXTRA_IMAGE_FEATURES_ACTUATION
 endchoice
 
 comment "Runtime Validation Setup"
+    depends on !ARCHITECTURE_SYSTEMREADY_FIRMWARE
 
 config RUN_TESTS
+    depends on !ARCHITECTURE_SYSTEMREADY_FIRMWARE
     bool "Run the tests automatically"
     default n
 
