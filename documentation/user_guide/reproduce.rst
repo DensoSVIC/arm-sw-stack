@@ -131,18 +131,24 @@ run-time validation tests.
 .. note::
   The Safety Island Actuation Demo is built as part of the default deployment.
 
-Arm SystemReady Firmware Architecture
-=====================================
+|Arm SystemReadyTM| Firmware Architecture
+=========================================
 
-To build an Arm SystemReady Firmware image choose ``Arm SystemReady Firmware``
+To build an |Arm SystemReadyTM| Firmware image choose
+``Arm SystemReady Firmware`` from the
+``Reference Stack Architecture`` menu, then choose ``Save & Build``.
+
+
+|Arm SystemReadyTM| IR ACS
+==========================
+
+To build an |Arm SystemReadyTM| IR ACS image choose ``Arm SystemReady IR ACS``
 from the ``Reference Stack Architecture`` menu, then choose ``Save & Build``.
 
-
-Arm SystemReady IR ACS
-======================
-
-To build an Arm SystemReady IR ACS image choose ``Arm SystemReady IR ACS``
-from the ``Reference Stack Architecture`` menu, then choose ``Save & Build``.
+As with the baremetal guidance above, the Reference Stack |Arm SystemReadyTM| IR
+ACS image can also run validation tests.
+See :ref:`reproduce_run-time_integration_tests` for more details on running
+run-time validation tests.
 
 ***
 Run
@@ -378,6 +384,58 @@ The following validation tests can be performed on the Reference Stack:
         2023-04-12 09:32:11 - INFO     - SUMMARY:
         2023-04-12 09:32:11 - INFO     - virtualization-image () - Ran 25 tests in 1358.820s
         2023-04-12 09:32:11 - INFO     - virtualization-image - OK - All required tests passed (successes=19, skipped=6, failures=0, errors=0)
+
+  * |Arm SystemReadyTM| IR ACS:
+
+    The previous test takes around 8 hours to complete.
+
+    A similar output should be printed out:
+
+    .. code-block:: console
+
+      2023-05-16 03:50:16 - INFO     - NOTE: recipe arm-systemready-ir-acs-1.0-r0: task do_testimage: Started
+      2023-05-16 03:50:16 - INFO     - Creating terminal default on terminal_ns_uart0
+      2023-05-16 03:50:25 - INFO     - Creating terminal tf-a on terminal_sec_uart
+      2023-05-16 03:50:25 - INFO     - Creating terminal scp on terminal_uart_scp
+      2023-05-16 03:50:25 - INFO     - Creating terminal lcp on terminal_uart_lcp
+      2023-05-16 03:50:26 - INFO     - Creating terminal rss on terminal_rss_uart
+      2023-05-16 03:50:26 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+      2023-05-16 03:50:26 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+      2023-05-16 03:50:26 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+      2023-05-16 03:55:48 - INFO     - Test Group (PlatformSpecificElements): FAILED
+      2023-05-16 03:56:45 - INFO     - Test Group (RequiredElements): FAILED
+      2023-05-16 03:57:41 - INFO     - Test Group (CheckEvent_Conf): PASSED
+      2023-05-16 03:58:37 - INFO     - Test Group (CheckEvent_Func): PASSED
+      2023-05-16 03:59:34 - INFO     - Test Group (CloseEvent_Func): PASSED
+      2023-05-16 04:00:34 - INFO     - Test Group (CreateEventEx_Conf): PASSED
+      2023-05-16 04:01:30 - INFO     - Test Group (CreateEventEx_Func): PASSED
+      2023-05-16 04:02:29 - INFO     - Test Group (CreateEvent_Conf): PASSED
+      2023-05-16 04:03:26 - INFO     - Test Group (CreateEvent_Func): PASSED
+      2023-05-16 04:04:23 - INFO     - Test Group (RaiseTPL_Func): PASSED
+      2023-05-16 04:05:19 - INFO     - Test Group (RestoreTPL_Func): PASSED
+      2023-05-16 04:06:16 - INFO     - Test Group (SetTimer_Conf): PASSED
+      2023-05-16 04:11:54 - INFO     - Test Group (SetTimer_Func): PASSED
+      2023-05-16 04:12:51 - INFO     - Test Group (SignalEvent_Func): PASSED
+      2023-05-16 04:13:48 - INFO     - Test Group (WaitForEvent_Conf): PASSED
+      2023-05-16 04:14:59 - INFO     - Test Group (WaitForEvent_Func): PASSED
+      2023-05-16 04:15:56 - INFO     - Test Group (AllocatePages_Conf): PASSED
+      2023-05-16 04:18:06 - INFO     - Test Group (AllocatePages_Func): PASSED
+      2023-05-16 04:19:02 - INFO     - Test Group (AllocatePool_Conf): PASSED
+      2023-05-16 04:20:01 - INFO     - Test Group (AllocatePool_Func): PASSED
+      2023-05-16 04:20:57 - INFO     - Test Group (FreePages_Conf): PASSED
+      2023-05-16 04:21:56 - INFO     - Test Group (FreePages_Func): PASSED
+      2023-05-16 04:22:52 - INFO     - Test Group (GetMemoryMap_Conf): PASSED
+      2023-05-16 04:23:48 - INFO     - Test Group (GetMemoryMap_Func): PASSED
+      ...
+      ...
+      2023-05-16 11:18:55 - INFO     - Test Group (virtio_blk virtio1): vda
+      2023-05-16 11:19:09 - INFO     - Linux tests complete
+      2023-05-16 11:19:18 - INFO     - RESULTS:
+      2023-05-16 11:19:18 - INFO     - RESULTS - arm_systemready_ir_acs.SystemReadyACSTest.test_acs: PASSED (26923.49s)
+      2023-05-16 11:19:18 - INFO     - SUMMARY:
+      2023-05-16 11:19:18 - INFO     - arm-systemready-ir-acs () - Ran 1 test in 26923.488s
+      2023-05-16 11:19:18 - INFO     - arm-systemready-ir-acs - OK - All required tests passed (successes=1, skipped=0, failures=0, errors=0)
+      2023-05-16 11:19:20 - INFO     - ACS test suite results are consistent with baseline.
 
   Please refer to :ref:`validation` for an explanation on how the validation
   tests are set up and how they work in the Reference Stack.

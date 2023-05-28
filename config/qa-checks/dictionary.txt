@@ -4,12 +4,14 @@
 aarch64
 abstracting
 acs
+acs_logs_handle
 actuation.svg
 analyze.py
 apis
 architectures
 arm64
 arm_si_rproc
+arm_systemready_ir_acs.py
 armv8-r64
 armv8.4
 armv9
@@ -21,6 +23,7 @@ baremetal
 baremetal-image
 base_fvp
 baseyml
+bitbake
 bl1
 bl2
 bl2_at_el3
@@ -89,6 +92,7 @@ https
 hw_config
 hwclock
 hypervisor
+implementations
 index.html
 interprocessor
 intra-processor
@@ -121,6 +125,7 @@ partitioning
 pc
 pip3
 platform-specific
+postfunc
 prebuilt
 primary_compute
 python3-pip
@@ -128,6 +133,7 @@ r
 rd-fremont
 rd-kronos
 rdkronos.dts
+readme.md
 recipes-bsp
 remoteproc
 repository's
@@ -145,6 +151,7 @@ safety_island.py
 scp
 si0-ethernet0
 skb
+smp
 spdx-filecopyrighttext
 spdx-license-identifier
 sphinx-build

@@ -126,6 +126,29 @@ The BSP Tests consist of a series of device tests that can be found in
    Checks that the watchdog device and its correct driver are available and
    accessible via the filesystem.
 
+|Arm SystemReadyTM| IR ACS Tests
+================================
+
+The |Arm SystemReadyTM| ACS (Architecture Compliance Suite) is a set of tests
+that ensure architectural compliance across different implementations and
+variants of the architecture. The ACS is delivered as a prebuilt release image.
+The image is a bootable live OS image containing a collection of test suites.
+
+The :meta-arm-repo:`meta-arm-systemready/classes/arm-systemready-acs.bbclass`
+class in the meta-arm-systemready Yocto layer contains the common logic to
+deploy the |Arm SystemReadyTM| ACS pre-built image and set up the testimage
+environment. It also contains a testimage "postfunc" called ``acs_logs_handle``
+which which generates report files and analyzes the test results against a
+baseline.
+
+The script
+:meta-arm-repo:`meta-arm-systemready/lib/oeqa/runtime/cases/arm_systemready_ir_acs.py`
+in the meta-arm-systemready Yocto layer monitors the ACS tests output from the
+bitbake testimage task.
+
+See :meta-arm-repo:`meta-arm-systemready/README.md` for more details.
+
+
 Integration Tests Implementation
 ================================
 
