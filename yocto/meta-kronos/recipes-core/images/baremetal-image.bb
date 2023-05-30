@@ -6,6 +6,7 @@
 
 SUMMARY = "Baremetal image"
 DESCRIPTION = "An image recipe, based on core-image"
+LICENSE = "MIT"
 
 IMAGE_INSTALL = ""
 IMAGE_LINGUAS = ""

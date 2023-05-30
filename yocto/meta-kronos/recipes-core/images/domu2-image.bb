@@ -7,6 +7,7 @@
 SUMMARY = "Xen domu2 image"
 DESCRIPTION = "An image recipe, based on core-image, which builds a qcow2 disk\
 image for a DomU without a boot partition"
+LICENSE = "MIT"
 
 python() {
     domu_instances = d.getVar("DOMU_INSTANCES")
@@ -25,6 +26,9 @@ update_si_ip_addr() {
     sed -i -r 's/192.168.1.2$/192.168.1.3/g' ${IMAGE_ROOTFS}/etc/network/interfaces.d/0002-safety-island-c1
     sed -i -r 's/192.168.2.2$/192.168.2.3/g' ${IMAGE_ROOTFS}/etc/network/interfaces.d/0002-safety-island-c2
 }
+
+update_si_ip_addr[doc] = "Sets the IP addresses to communicate \
+with the Safety Island Clusters."
 
 ROOTFS_POSTPROCESS_COMMAND += "update_si_ip_addr;"
 

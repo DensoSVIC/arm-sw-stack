@@ -6,9 +6,7 @@
 #
 
 MACHINE_INIT_IFUPDOWN_REQUIRE ?= ""
-MACHINE_INIT_IFUPDOWN_REQUIRE:fvp-rd-kronos = \
-    "init-ifupdown-extras.inc"
-MACHINE_INIT_IFUPDOWN_REQUIRE:generic-arm64 = \
-    "init-ifupdown-extras.inc"
+MACHINE_INIT_IFUPDOWN_REQUIRE:fvp-rd-kronos = "init-ifupdown-extras.inc"
+MACHINE_INIT_IFUPDOWN_REQUIRE:generic-arm64 = "init-ifupdown-extras.inc"
 
 require ${MACHINE_INIT_IFUPDOWN_REQUIRE}

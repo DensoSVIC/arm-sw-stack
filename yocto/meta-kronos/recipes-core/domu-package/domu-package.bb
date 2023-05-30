@@ -5,31 +5,29 @@
 # SPDX-License-Identifier: MIT
 
 SUMMARY = "Xen DomU package"
-DESCRIPTION = "A recipe to bundle a DomU image and configuration as a package\
+DESCRIPTION = "A recipe to bundle a DomU image and configuration as a package \
 which can be installed in Dom0"
+HOMEPAGE = "https://kronos.docs.arm.com/"
 
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "\
     file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302 \
     "
 
-include domu-envs.inc
+require domu-envs.inc
+
+DEPENDS += "gettext-native"
+SRC_URI = "file://domu-conf.sample"
 
 inherit features_check
 REQUIRED_IMAGE_FEATURES += "virtualization"
-
-DEPENDS += "gettext-native"
 
 do_patch[noexec] = "1"
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 
 DOMU_KERNEL_IMG = "Image-${DOMU_MACHINE}.bin"
-DOMU_DIR = "${datadir}/domus"
 XEN_AUTO_DIR = "${sysconfdir}/xen/auto"
-
-SRC_URI = "file://domu-conf.sample"
-
 
 # Make a copy of kernel image and rootfs for each domus
 DOMU_DIR = "${datadir}/doms"
@@ -75,4 +73,4 @@ do_install[mcdepends] += "mc::domu:domu1-image:do_image_complete"
 do_install[mcdepends] += "${@ 'mc::domu:domu2-image:do_image_complete' if d.getVar('DOMU_INSTANCES') == '2' else '' }"
 do_install[prefuncs] += "gen_domu_env_and_extra_conf"
 
-FILES:${PN} = "${DOMU_DIR} ${XEN_AUTO_DIR}"
+FILES:${PN} += "${DOMU_DIR} ${XEN_AUTO_DIR}"

@@ -89,3 +89,6 @@ python gen_domu_env_and_extra_conf() {
             with open(os.path.join(outdir, link_name) + '.cfg', 'w') as envf:
                 envf.write(value)
 }
+
+gen_domu_env_and_extra_conf[doc] = "Python function that generates DomU \
+environment and extra configurations."

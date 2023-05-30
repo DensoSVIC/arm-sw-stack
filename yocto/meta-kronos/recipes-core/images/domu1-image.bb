@@ -7,6 +7,7 @@
 SUMMARY = "Xen domu1 image"
 DESCRIPTION = "An image recipe, based on core-image, which builds a qcow2 disk\
 image for a DomU without a boot partition"
+LICENSE = "MIT"
 
 DOMU_HOSTNAME = "domu1"
 

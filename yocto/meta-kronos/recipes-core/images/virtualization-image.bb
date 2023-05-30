@@ -7,6 +7,7 @@
 SUMMARY = "Virtualization image"
 DESCRIPTION = "An image recipe, based on core-image, which additionally \
 includes xen and xen-cfg in the boot partition"
+LICENSE = "MIT"
 
 IMAGE_INSTALL = ""
 IMAGE_LINGUAS = ""

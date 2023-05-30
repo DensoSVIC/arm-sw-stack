@@ -24,4 +24,7 @@ update_hostname() {
            ${IMAGE_ROOTFS}/${sysconfdir}/hosts
 }
 
+update_hostname[doc] = "Sets the hostname \
+to ${DOMU_HOSTNAME} instead of ${MACHINE}."
+
 ROOTFS_POSTPROCESS_COMMAND += "update_hostname; "
