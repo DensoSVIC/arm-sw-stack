@@ -68,3 +68,32 @@ plugins:
       - ".rubocop.yml"
       - "/license.rst"
       - "coffeelint.json"
+  oelint-adv:
+    enabled: true
+    suppressions:
+      # Not all suggested variables are applicable to all files.
+      - 'oelint.var.suggestedvar'
+      # 'BBCLASSEXTEND' variable will only be set when required.
+      # Hence, we don't need to set it for all recipes.
+      - 'oelint.var.bbclassextend'
+      # Anonymous python functions are used to perform specific
+      # processing during the parsing process.
+      - 'oelint.task.noanonpython'
+      # Some filenames have - in the version number.
+      - 'oelint.file.underscores'
+      # Codeclimate disables network access which prevents
+      # oelint-adv from pinging the URLs.
+      - 'oelint.vars.homepageping'
+      # In some cases, we want to use the include directive.
+      # But for some reason, the in-line suppression for this
+      # check doesn't work.
+      - 'oelint.file.requireinclude'
+      # Usage of heredocs is very minimal
+      # and does not deserve creating seperate files.
+      - 'oelint.task.heredocs'
+      # The oelint-adv is not able to find .inc files from other layers
+      # and the in-line suppression for this check doesn't work.
+      - 'oelint.file.requirenotfound'
+      # This check is done for all variables,
+      # and suppressing it for each case is not feasible.
+      - 'oelint.vars.multilineident'
