@@ -21,31 +21,20 @@ plugins:
     enabled: true
     exclude_patterns:
       - "/Dangerfile"
-  spellcheck:
+  cspell:
     enabled: true
     exclude_patterns:
       - GITIGNORE_CONTENTS
-      - "*.git"
-      - "*.json"
-      - "*.yaml"
-      - "*.yml"
+      - ".gitignore"
+      - ".gitlab"
       - ".csslintrc"
       - ".eslintignore"
-      - ".gitignore"
-      - ".gitlab/"
-      - "/documentation/*.py"
-      - "/documentation/_static/"
-      - "/documentation/images/"
-      - "/documentation/license_link.rst"
-      - "/documentation/requirements.txt"
-      - "/layers/"
-      - "Dangerfile"
-      - "__pycache__"
-      - "config/"
-      - "license.rst"
-      - "components/"
-      - "yocto/"
-    dict_path: "config/qa-checks/dictionary.txt"
+      - "coffeelint.json"
+      - ".eslintrc.yml"
+      - ".rubocop.yml"
+      - "**.patch"
+      - "**.svg"
+    dict_path: ".dictionary"
   yamllint:
     enabled: true
     exclude_patterns:
@@ -77,15 +66,5 @@ plugins:
       - ".eslintrc.yml"
       - ".gitlab"
       - ".rubocop.yml"
-      - "/config/qa-checks/dictionary.txt"
       - "/license.rst"
       - "coffeelint.json"
-  inclusivity:
-    enabled: true
-    exclude_patterns:
-      - GITIGNORE_CONTENTS
-      - "*.git"
-      - "*.gitignore"
-      - "*.pyc"
-      - "*.png"
-      - "*.patch"
