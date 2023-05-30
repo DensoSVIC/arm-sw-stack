@@ -10,8 +10,8 @@ init the stack from the same address which will break others.
 Fix the issue by setting a correct start address.
 
 Signed-off-by: Jaxson Han <jaxson.han@arm.com>
-Upstream-Status: Submitted
-[https://github.com/zephyrproject-rtos/zephyr/pull/58056]
+Upstream-Status: Backport
+[https://github.com/zephyrproject-rtos/zephyr/pull/58056/commits/e6f6d077a5f83c93e3409d72902ed6b276f5bebc]
 ---
  arch/arm64/core/reset.S | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
