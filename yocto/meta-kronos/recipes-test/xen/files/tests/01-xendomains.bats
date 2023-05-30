@@ -56,21 +56,20 @@ check_domu_cpbm_values() {
 }
 
 @test "Check restarting Xen domains" {
+    # Ensure xendomains has started
+    systemctl is-system-running --wait
+
     check_domu_status 0
 
-    echo "# Stopping Xen domains" >&3
-    # Both Xen and BATS use file descriptor 3, so it is necessary to duplicate
-    # the file handle
-    run /etc/init.d/xendomains stop 3>&-
+    echo "# Stopping Xen domains"
+    systemctl stop xendomains
     echo "${output}"
     [ "$status" -eq 0 ]
 
     check_domu_status 1
 
-    echo "# Restarting Xen domains" >&3
-    run /etc/init.d/xendomains start 3>&-
-    echo "${output}"
-    [ "$status" -eq 0 ]
+    echo "# Restarting Xen domains"
+    systemctl start xendomains
 
     check_domu_status 0
 }

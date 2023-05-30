@@ -16,3 +16,6 @@ class LinuxLoginTest(OERuntimeTestCase):
         # Login
         self.target.sendline(console, 'root')
         self.target.expect(console, r'root@.*:~#', timeout=300)
+
+        # Ensure all services have started
+        self.target.run('systemctl is-system-running --wait', timeout=300)
