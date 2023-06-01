@@ -32,4 +32,4 @@ with the Safety Island Clusters."
 
 ROOTFS_POSTPROCESS_COMMAND += "update_si_ip_addr;"
 
-FEATURE_PACKAGES_actuation = ""
+ACTUATION_PACKAGES = ""

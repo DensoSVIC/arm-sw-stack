@@ -70,7 +70,8 @@ FEATURE_PACKAGES_domu = " \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 
-FEATURE_PACKAGES_actuation = "actuation-player"
+ACTUATION_PACKAGES ?= "actuation-player"
+FEATURE_PACKAGES_actuation = "${ACTUATION_PACKAGES}"
 FEATURE_PACKAGES_actuation:virtualization = ""
 
 EXTRA_IMAGEDEPENDS:append:actuation = " packet-analyzer-native"
