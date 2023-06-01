@@ -7,6 +7,8 @@
 # These patches are applied to both xen and xen-tools on the
 # fvp-rd-kronos MACHINE
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
+
+# /* cSpell:disable */
 SRC_URI += "\
     file://0001-tools-xendomains-Only-save-restore-migrate-if-suppor.patch \
     file://0002-arm-cpufeature-discover-CPU-support-for-MPAM.patch \
@@ -47,4 +49,6 @@ SRC_URI += "\
     file://0037-tools-xl-psr-Support-SLC-in-xl-psr-cat-show-set-comm.patch \
     file://0038-xen-arm-Allow-MPAM-v1.1-in-MSC-hardware-probing-proc.patch \
     "
+# /* cSpell:enable */
+
 SRC_URI:append = " file://rd-kronos.cfg"

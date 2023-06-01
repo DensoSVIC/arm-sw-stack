@@ -9,6 +9,7 @@ ${THISDIR}/files:\
 ${KRONOS_REPO_DIRECTORY}/components/safety_island/zephyr:\
 "
 
+# /* cSpell:disable */
 SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0001-include-arch-add-macro-for-mpu-memory-configuration.patch;patchdir=zephyr \
     file://zephyr/0002-soc-fvp_aemv8r-add-mpu-region-from-device-tree.patch;patchdir=zephyr \
@@ -30,6 +31,8 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0018-arch-arm64-Fix-the-STACK_INIT-logic-during-the-reset.patch;patchdir=zephyr \
     file://zephyr/0019-arch-arm64-Enable-FPU-and-FPU_SHARING-for-v8r-aarch6.patch;patchdir=zephyr \
     "
+# /* cSpell:enable */
+
 SRC_URI += "${SRC_URI_ZEPHYR_EXTRA_PATCHES}"
 
 # Add the safety_island Zephyr module

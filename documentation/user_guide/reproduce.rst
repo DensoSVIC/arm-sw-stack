@@ -267,13 +267,13 @@ To reproduce the Safety Island Actuation Demo listed in
 
 
    A message similar to the following should appear on the host terminal where
-   the Packet Analzer is running
+   the Packet Analyzer is running
 
    .. code-block:: shell
 
     INFO : analyzer_client.py/_connect_to: Starting analyze, use Ctrl-C to stop the process.
     INFO : analyzer_client.py/_connect_to: Attempting a connect to (localhost : 49152)
-    INFO : analyzer_client.py/_connect_to: Succefully connected to (localhost : 49152)
+    INFO : analyzer_client.py/_connect_to: Successfully connected to (localhost : 49152)
     INFO : analyzer_client.py/run_analyze_on_chain: (1) Analyzer synced with packet chain
     INFO : analyzer_client.py/run_analyze_on_chain: All expected control packets received
     INFO : analyzer_client.py/_log_jitter: Observed Frequency = 11.26529179, Avg Jitter = 0.00000000, Std Deviation:0.00000000
