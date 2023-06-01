@@ -1,0 +1,163 @@
+From fe57888fd1678e5699a130c9c56fbb4fe66c7010 Mon Sep 17 00:00:00 2001
+From: Ambroise Vincent <ambroise.vincent@arm.com>
+Date: Thu, 25 May 2023 12:24:03 +0100
+Subject: [PATCH] arch: arm64: Save SIMD registers on interrupts
+
+Introduce an EAGER_FPU_SHARING configuration option, inspired from the
+x86 option of the same name.
+
+Signed-off-by: Ambroise Vincent <ambroise.vincent@arm.com>
+Upstream-Status: Inappropriate
+---
+ arch/arm64/core/CMakeLists.txt    |  3 ++-
+ arch/arm64/core/Kconfig           | 10 +++++++++
+ arch/arm64/core/offsets/offsets.c | 20 +++++++++++++++++
+ arch/arm64/core/vector_table.S    | 11 ++++++++++
+ include/zephyr/arch/arm64/exc.h   | 36 +++++++++++++++++++++++++++++++
+ 5 files changed, 79 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/core/CMakeLists.txt b/arch/arm64/core/CMakeLists.txt
+index 49ce9a8ca7..e3c900d1d4 100644
+--- a/arch/arm64/core/CMakeLists.txt
++++ b/arch/arm64/core/CMakeLists.txt
+@@ -27,7 +27,8 @@ if(${SRAM_LENGTH} GREATER 11 OR ${KERNEL_VM_LENGTH} GREATER 11)
+   zephyr_cc_option(-mcmodel=large)
+ endif()
+ 
+-zephyr_library_sources_ifdef(CONFIG_FPU_SHARING fpu.c fpu.S)
++zephyr_library_sources_ifdef(CONFIG_FPU fpu.S)
++zephyr_library_sources_ifdef(CONFIG_FPU_SHARING fpu.c)
+ zephyr_library_sources_ifdef(CONFIG_ARM_MMU mmu.c mmu.S)
+ zephyr_library_sources_ifdef(CONFIG_ARM_MPU cortex_r/arm_mpu.c)
+ zephyr_library_sources_ifdef(CONFIG_USERSPACE userspace.S)
+diff --git a/arch/arm64/core/Kconfig b/arch/arm64/core/Kconfig
+index 968454634f..ec72bc833f 100644
+--- a/arch/arm64/core/Kconfig
++++ b/arch/arm64/core/Kconfig
+@@ -110,6 +110,16 @@ config WAIT_AT_RESET_VECTOR
+ 	  Spin at reset vector waiting for debugger to attach and resume
+ 	  execution
+ 
++config EAGER_FPU_SHARING
++	bool
++	default n
++	prompt "Eager FPU Sharing"
++	depends on FPU
++	depends on !FPU_SHARING
++	help
++	  This option unconditionally saves/restores the FPU/SIMD register
++	  state on every context switch.
++
+ if CPU_CORTEX_A
+ 
+ config ARMV8_A_NS
+diff --git a/arch/arm64/core/offsets/offsets.c b/arch/arm64/core/offsets/offsets.c
+index aa49d68486..6dfcf58cf1 100644
+--- a/arch/arm64/core/offsets/offsets.c
++++ b/arch/arm64/core/offsets/offsets.c
+@@ -42,6 +42,26 @@ GEN_NAMED_OFFSET_SYM(_callee_saved_t, sp_elx, sp_elx_lr);
+ 
+ GEN_ABSOLUTE_SYM(___callee_saved_t_SIZEOF, sizeof(struct _callee_saved));
+ 
++#if defined(CONFIG_EAGER_FPU_SHARING)
++GEN_NAMED_OFFSET_SYM(_esf_t, fpsr, fpsr_fpcr);
++GEN_NAMED_OFFSET_SYM(_esf_t, q30, q30_q31);
++GEN_NAMED_OFFSET_SYM(_esf_t, q28, q28_q29);
++GEN_NAMED_OFFSET_SYM(_esf_t, q26, q26_q27);
++GEN_NAMED_OFFSET_SYM(_esf_t, q24, q24_q25);
++GEN_NAMED_OFFSET_SYM(_esf_t, q22, q22_q23);
++GEN_NAMED_OFFSET_SYM(_esf_t, q20, q20_q21);
++GEN_NAMED_OFFSET_SYM(_esf_t, q18, q18_q19);
++GEN_NAMED_OFFSET_SYM(_esf_t, q16, q16_q17);
++GEN_NAMED_OFFSET_SYM(_esf_t, q14, q14_q15);
++GEN_NAMED_OFFSET_SYM(_esf_t, q12, q12_q13);
++GEN_NAMED_OFFSET_SYM(_esf_t, q10, q10_q11);
++GEN_NAMED_OFFSET_SYM(_esf_t, q8, q8_q9);
++GEN_NAMED_OFFSET_SYM(_esf_t, q6, q6_q7);
++GEN_NAMED_OFFSET_SYM(_esf_t, q4, q4_q5);
++GEN_NAMED_OFFSET_SYM(_esf_t, q2, q2_q3);
++GEN_NAMED_OFFSET_SYM(_esf_t, q0, q0_q1);
++#endif /* CONFIG_EAGER_FPU_SHARING */
++
+ GEN_NAMED_OFFSET_SYM(_esf_t, spsr, spsr_elr);
+ GEN_NAMED_OFFSET_SYM(_esf_t, x18, x18_lr);
+ GEN_NAMED_OFFSET_SYM(_esf_t, x16, x16_x17);
+diff --git a/arch/arm64/core/vector_table.S b/arch/arm64/core/vector_table.S
+index ffb5a452cd..20d65b4caf 100644
+--- a/arch/arm64/core/vector_table.S
++++ b/arch/arm64/core/vector_table.S
+@@ -58,6 +58,12 @@ _ASM_FILE_PROLOGUE
+ 	add	\xreg0, \xreg0, \xreg1
+ 	msr	tpidrro_el0, \xreg0
+ 
++#if defined(CONFIG_EAGER_FPU_SHARING)
++	add	x0, sp, ___esf_t_q0_q1_OFFSET
++	bl	z_arm64_fpu_save
++	dsb	sy
++#endif
++
+ #ifdef CONFIG_FPU_SHARING
+ 	bl	z_arm64_fpu_enter_exc
+ #endif
+@@ -233,6 +239,11 @@ SECTION_FUNC(TEXT, z_arm64_exit_exc)
+ 	sub	x0, x0, x1
+ 	msr	tpidrro_el0, x0
+ 
++#if defined(CONFIG_EAGER_FPU_SHARING)
++	add	x0, sp, ___esf_t_q0_q1_OFFSET
++	bl	z_arm64_fpu_restore
++#endif
++
+ 	ldp	x0, x1, [sp, ___esf_t_x0_x1_OFFSET]
+ 	ldp	x2, x3, [sp, ___esf_t_x2_x3_OFFSET]
+ 	ldp	x4, x5, [sp, ___esf_t_x4_x5_OFFSET]
+diff --git a/include/zephyr/arch/arm64/exc.h b/include/zephyr/arch/arm64/exc.h
+index 3a23fa8bfd..b1529be6a8 100644
+--- a/include/zephyr/arch/arm64/exc.h
++++ b/include/zephyr/arch/arm64/exc.h
+@@ -47,6 +47,42 @@ struct __esf {
+ 	uint64_t lr;
+ 	uint64_t spsr;
+ 	uint64_t elr;
++#if defined(CONFIG_EAGER_FPU_SHARING)
++	__int128 q0;
++	__int128 q1;
++	__int128 q2;
++	__int128 q3;
++	__int128 q4;
++	__int128 q5;
++	__int128 q6;
++	__int128 q7;
++	__int128 q8;
++	__int128 q9;
++	__int128 q10;
++	__int128 q11;
++	__int128 q12;
++	__int128 q13;
++	__int128 q14;
++	__int128 q15;
++	__int128 q16;
++	__int128 q17;
++	__int128 q18;
++	__int128 q19;
++	__int128 q20;
++	__int128 q21;
++	__int128 q22;
++	__int128 q23;
++	__int128 q24;
++	__int128 q25;
++	__int128 q26;
++	__int128 q27;
++	__int128 q28;
++	__int128 q29;
++	__int128 q30;
++	__int128 q31;
++	uint32_t fpsr;
++	uint32_t fpcr;
++#endif /* CONFIG_EAGER_FPU_SHARING */
+ } __aligned(16);
+ 
+ typedef struct __esf z_arch_esf_t;
+-- 
+2.25.1
+

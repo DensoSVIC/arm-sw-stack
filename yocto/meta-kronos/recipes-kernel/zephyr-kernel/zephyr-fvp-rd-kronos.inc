@@ -30,6 +30,7 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0017-arch-arm64-mpu-Remove-LOG-print-before-mpu-enabled.patch;patchdir=zephyr \
     file://zephyr/0018-arch-arm64-Fix-the-STACK_INIT-logic-during-the-reset.patch;patchdir=zephyr \
     file://zephyr/0019-arch-arm64-Enable-FPU-and-FPU_SHARING-for-v8r-aarch6.patch;patchdir=zephyr \
+    file://zephyr/0020-arch-arm64-Save-SIMD-registers-on-interrupts.patch;patchdir=zephyr \
     "
 # /* cSpell:enable */
 
