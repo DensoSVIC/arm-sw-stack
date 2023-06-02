@@ -81,8 +81,7 @@ if RUN_TESTS
         default "1" if RUN_TESTS
 endif
 
-if ARM_FVP_EULA_ACCEPT_CHOICE
-    config ARM_FVP_EULA_ACCEPT
-        string
-        default "1" if ARM_FVP_EULA_ACCEPT_CHOICE
-endif
+config ARM_FVP_EULA_ACCEPT
+    string
+    default "1" if ARM_FVP_EULA_ACCEPT_CHOICE
+    default "0"
