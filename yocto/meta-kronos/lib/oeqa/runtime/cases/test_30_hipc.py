@@ -36,7 +36,7 @@ class HIPCTestBase(OERuntimeTestCase):
             self.target.expect(cl_console,
                                rf'\d+ bytes from {re.escape(peer_addr)} to '
                                rf'{re.escape(cl_addr)}: icmp_seq=\d+ '
-                               r'ttl=\d+ time=\d+ ms',
+                               r'ttl=\d+ time=.* ms',
                                timeout=150)
         self.target.sendline(cl_console)
         self.target.expect(cl_console, self.si_prompt, timeout=120)
