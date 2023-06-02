@@ -11,7 +11,7 @@ Kconfig parameter to be able to tune this value.
 Issue-Id: SCM-5838
 Signed-off-by: Luca Fancellu <luca.fancellu@arm.com>
 Change-Id: Id490682a8de2b9bb94f310fee9c96e45b135e00d
-Upstream-Status: Inappropriate
+Upstream-Status: Backport [main: e25d484b6f053ef5c744022ca40824f22ba88a90]
 ---
  subsys/net/ip/Kconfig       | 10 ++++++++++
  subsys/net/ip/tcp_private.h |  2 +-
