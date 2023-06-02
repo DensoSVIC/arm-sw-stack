@@ -110,7 +110,7 @@ TEST_SUITES_EXTRA:si0-ethernet0 = " \
     test_10_safety_island_c2 \
     "
 
-TEST_SUITES_EXTRA:virtualization:append = " \
+TEST_SUITES_EXTRA:append:virtualization = " \
     test_40_virtualization \
     "
 
