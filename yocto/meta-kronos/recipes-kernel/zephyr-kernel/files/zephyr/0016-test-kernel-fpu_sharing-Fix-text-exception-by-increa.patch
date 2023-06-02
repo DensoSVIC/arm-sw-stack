@@ -1,0 +1,32 @@
+From 7d174eed41f5e4d5860a9da8dbab12ef0332928f Mon Sep 17 00:00:00 2001
+From: Jaxson Han <jaxson.han@arm.com>
+Date: Fri, 12 May 2023 10:03:52 +0800
+Subject: [PATCH] test: kernel: fpu_sharing: Fix text exception by increasing
+ the stack size
+
+The test case will show an unexpected exception in the idle thread after
+all test cases pass. The issue is caused by the main thread
+stackoverflow.
+
+Increase the main stack configured in this test case to fix the issue.
+
+Signed-off-by: Jaxson Han <jaxson.han@arm.com>
+Upstream-Status: Backport [main: c92233d974fb8b7159e1e28ce10eabfc83832907]
+---
+ tests/kernel/fpu_sharing/generic/prj.conf | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/kernel/fpu_sharing/generic/prj.conf b/tests/kernel/fpu_sharing/generic/prj.conf
+index 3a00fddc8e7e..b48feb6d4133 100644
+--- a/tests/kernel/fpu_sharing/generic/prj.conf
++++ b/tests/kernel/fpu_sharing/generic/prj.conf
+@@ -3,5 +3,5 @@ CONFIG_FPU=y
+ CONFIG_FPU_SHARING=y
+ CONFIG_STDOUT_CONSOLE=y
+ CONFIG_CBPRINTF_FP_SUPPORT=y
+-CONFIG_MAIN_STACK_SIZE=1024
++CONFIG_MAIN_STACK_SIZE=2048
+ CONFIG_ZTEST_NEW_API=y
+-- 
+2.34.1
+

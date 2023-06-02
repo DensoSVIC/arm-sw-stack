@@ -1,0 +1,59 @@
+From c6ccee0a52c39a437604d79f1f62fe69694ca603 Mon Sep 17 00:00:00 2001
+From: Nicolas Pitre <npitre@baylibre.com>
+Date: Wed, 24 May 2023 13:36:51 -0400
+Subject: [PATCH] arm64: prevent possible deadlock on SMP with FPU
+ sharing
+
+Let's consider CPU1 waiting on a spinlock already taken by CPU2.
+
+It is possible for CPU2 to invoke the FPU and trigger an FPU exception
+when the FPU context for CPU2 is not live on that CPU. If the FPU context
+for the thread on CPU2 is still held in CPU1's FPU then an IPI is sent
+to CPU1 asking to flush its FPU to memory.
+
+But if CPU1 is spinning on a lock already taken by CPU2, it won't see
+the pending IPI as IRQs are disabled. CPU2 won't get its FPU state
+restored and won't complete the required work to release the lock.
+
+Let's prevent this deadlock scenario by looking for pending FPU IPI from
+the spinlock loop using the arch_spin_relax() hook.
+
+Signed-off-by: Nicolas Pitre <npitre@baylibre.com>
+Upstream-Status: Backport [main: 42763504a79b02eb35e25827d05bbca5ef97290b]
+---
+ arch/arm64/core/smp.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/arch/arm64/core/smp.c b/arch/arm64/core/smp.c
+index a8686114feeb..088c8ab856c8 100644
+--- a/arch/arm64/core/smp.c
++++ b/arch/arm64/core/smp.c
+@@ -221,6 +221,25 @@ void z_arm64_flush_fpu_ipi(unsigned int cpu)
+ 
+ 	gic_raise_sgi(SGI_FPU_IPI, mpidr, 1 << aff0);
+ }
++
++/*
++ * Make sure there is no pending FPU flush request for this CPU while
++ * waiting for a contended spinlock to become available. This prevents
++ * a deadlock when the lock we need is already taken by another CPU
++ * that also wants its FPU content to be reinstated while such content
++ * is still live in this CPU's FPU.
++ */
++void arch_spin_relax(void)
++{
++	if (arm_gic_irq_is_pending(SGI_FPU_IPI)) {
++		arm_gic_irq_clear_pending(SGI_FPU_IPI);
++		/*
++		 * We may not be in IRQ context here hence cannot use
++		 * z_arm64_flush_local_fpu() directly.
++		 */
++		arch_float_disable(_current_cpu->arch.fpu_owner);
++	}
++}
+ #endif
+ 
+ static int arm64_smp_init(const struct device *dev)
+-- 
+2.34.1
+

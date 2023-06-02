@@ -22,7 +22,13 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0010-net-zperf-allow-TCP-receiver-to-handle-multiple-conn.patch;patchdir=zephyr \
     file://zephyr/0011-net-ip-Kconfig-for-TCP-packet-allocation-timeout.patch;patchdir=zephyr \
     file://zephyr/0012-drivers-phy_mii-Remove-the-unneeded-header-file.patch;patchdir=zephyr \
-    file://zephyr/0013-arch-arm64-Fix-the-STACK_INIT-logic-during-the-reset.patch;patchdir=zephyr \
+    file://zephyr/0013-kernel-allow-for-arch-specific-processing-within-bus.patch;patchdir=zephyr \
+    file://zephyr/0014-drivers-gic-Add-irq-pending-check-and-clear-function.patch;patchdir=zephyr \
+    file://zephyr/0015-arm64-prevent-possible-deadlock-on-SMP-with-FPU-shar.patch;patchdir=zephyr \
+    file://zephyr/0016-test-kernel-fpu_sharing-Fix-text-exception-by-increa.patch;patchdir=zephyr \
+    file://zephyr/0017-arch-arm64-mpu-Remove-LOG-print-before-mpu-enabled.patch;patchdir=zephyr \
+    file://zephyr/0018-arch-arm64-Fix-the-STACK_INIT-logic-during-the-reset.patch;patchdir=zephyr \
+    file://zephyr/0019-arch-arm64-Enable-FPU-and-FPU_SHARING-for-v8r-aarch6.patch;patchdir=zephyr \
     "
 SRC_URI += "${SRC_URI_ZEPHYR_EXTRA_PATCHES}"
 
