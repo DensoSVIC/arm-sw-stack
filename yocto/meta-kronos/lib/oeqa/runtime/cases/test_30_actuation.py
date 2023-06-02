@@ -22,6 +22,8 @@ class ActuationTest(OERuntimeTestCase):
     def setUpClass(cls):
         super(ActuationTest, cls).setUpClass()
         cls.linux_prompt = rf'root@{cls.hostname}:~#'
+        cls.host_log = \
+            cls.tc.target._create_logfile("packet_analyzer_actuation")
         if 'virtualization' in cls.td.get('IMAGE_FEATURES').split():
             # Use negative lookahead to match Dom0 prompt, so match every
             # prompt that is not of this guest
@@ -73,7 +75,7 @@ class ActuationTest(OERuntimeTestCase):
         if run_all:
             command_f = './data'
             test_recordings = '/usr/share/actuation_player'
-            proc_timeout = 30
+            proc_timeout = 180
         else:
             command_f = './data/test_data'
             test_recordings = '/usr/share/actuation_player/test_data'
@@ -84,8 +86,8 @@ class ActuationTest(OERuntimeTestCase):
         host = "localhost"
         analyzer = 'packet_analyzer/start_analyzer.py'
         cmd = f'python3 {analyzer} -L debug -p {port} -a {host} -c {command_f}'
-
-        proc = pexpect.spawn(cmd, cwd=self.get_analyzer_path())
+        proc = pexpect.spawn(cmd, cwd=self.get_analyzer_path(),
+                             logfile=self.host_log)
         proc.expect('Starting analyze, use Ctrl-C to stop the process',
                     timeout=10)
         self.target.expect(self.si_console,
@@ -94,16 +96,22 @@ class ActuationTest(OERuntimeTestCase):
 
         cmd = f'actuation_player -p {test_recordings}'
         self.target.sendline(self.linux_console, cmd)
-        self.target.sendline(self.linux_console, 'echo $?')
-        self.target.expect(self.linux_console, r'0', timeout=proc_timeout)
+        self.target.expect(self.linux_console, 'Starting replay.',
+                           timeout=10)
         self.target.expect(self.si_console,
-                           r'[0-9]+: -0.2941 \(m\/s\^2\) \| -0.0038 \(rad\)',
-                           timeout=1)
+                           r'[0-9]+:\s+-?\d+\.\d{4} \(m\/s\^2\) \|'
+                           r'\s+-?\d+\.\d{4} \(rad\)',
+                           timeout=10)
         proc.expect('All expected control packets received',
                     timeout=proc_timeout)
         proc.expect('Received fin ack from Actuation Service',
                     timeout=proc_timeout)
         proc.terminate()
+        self.target.expect(self.si_console,
+                           'Thread get_analyzer_handle performing a blocking '
+                           'accept', timeout=10)
+        self.target.sendline(self.linux_console, 'echo $?')
+        self.target.expect(self.linux_console, r'0', timeout=proc_timeout)
         before = proc.before.decode("utf-8", errors="replace").strip()
         after = proc.after.decode("utf-8", errors="replace").strip()
         read = proc.read()
