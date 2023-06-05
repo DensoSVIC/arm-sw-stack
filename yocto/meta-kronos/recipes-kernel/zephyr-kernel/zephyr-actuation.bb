@@ -7,6 +7,7 @@
 SUMMARY = "Actuation Service Zephyr application"
 DESCRIPTION = "The Actuation Service demo showcases the Pure Pursuit algorithm \
 from Autoware.Auto running as a Zephyr application."
+HOMEPAGE = "https://safety-island-actuation-demo.docs.arm.com/"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://license.rst;md5=e805dc5353977631b7881c7705a6c04a"
 
@@ -26,11 +27,11 @@ EXTRA_OECMAKE:append = "\
     -DCONTROL_CMDS_FWD=bsd_socket \
 "
 
-SRCREV_actuation = "${SRCREV_ACTUATION}"
 SRC_URI:append = " ${SRC_URI_ACTUATION};${BRANCH_ACTUATION};name=actuation;destsuffix=git/modules/lib/actuation"
-
-SRCREV_cyclonedds = "${SRCREV_CYCLONEDDS}"
 SRC_URI:append = " ${SRC_URI_CYCLONEDDS};name=cyclonedds;destsuffix=git/modules/lib/actuation/cyclonedds"
+
+SRCREV_actuation = "${SRCREV_ACTUATION}"
+SRCREV_cyclonedds = "${SRCREV_CYCLONEDDS}"
 
 ZEPHYR_SRC_DIR = "${S}/modules/lib/actuation/zephyr_app"
 

@@ -13,6 +13,7 @@ ZEPHYR_INC_FILE = "zephyr-${ZEPHYR_APP}.inc"
 # This 'include' directive causes BitBake to parse whatever file you
 # specify, and to insert that file at that location. It does not produce
 # an error when the file cannot be found.
+# nooelint: oelint.file.includenotfound
 include ${ZEPHYR_INC_FILE}
 
 require recipes-kernel/zephyr-kernel/zephyr-${ZEPHYR_APP}.bb

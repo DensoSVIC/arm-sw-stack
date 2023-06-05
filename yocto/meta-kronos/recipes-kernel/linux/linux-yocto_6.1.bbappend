@@ -7,7 +7,6 @@
 # Include machine specific Linux Yocto configurations
 
 MACHINE_LINUX_YOCTO_REQUIRE ?= ""
-MACHINE_LINUX_YOCTO_REQUIRE:fvp-rd-kronos = \
-    "linux-yocto-fvp-rd-kronos.inc"
+MACHINE_LINUX_YOCTO_REQUIRE:fvp-rd-kronos = "linux-yocto-fvp-rd-kronos.inc"
 
 require ${MACHINE_LINUX_YOCTO_REQUIRE}
