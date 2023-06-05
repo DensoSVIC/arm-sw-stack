@@ -19,6 +19,7 @@ Content-Transfer-Encoding: 8bit
 | ^~~~~~~~~~~~~~~~~~
 
 Signed-off-by: Denys Dmytriyenko <***@ti.com>
+Upstream-Status: Inappropriate [not author]
 ---
  include/headers.h | 1 -
  1 file changed, 1 deletion(-)
