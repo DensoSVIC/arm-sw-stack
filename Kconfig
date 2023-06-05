@@ -52,9 +52,11 @@ endchoice
 
 comment "Runtime Validation Setup"
     depends on !ARCHITECTURE_SYSTEMREADY_FIRMWARE
+    depends on !ARCHITECTURE_SYSTEMREADY_IR_ACS
 
 config RUN_TESTS
     depends on !ARCHITECTURE_SYSTEMREADY_FIRMWARE
+    depends on !ARCHITECTURE_SYSTEMREADY_IR_ACS
     bool "Run the tests automatically"
     default n
 
