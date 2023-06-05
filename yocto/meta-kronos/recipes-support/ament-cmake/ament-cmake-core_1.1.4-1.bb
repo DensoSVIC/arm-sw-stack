@@ -11,7 +11,9 @@
 # Changes:
 # 1) Remove ROS dependencies
 # 2) Add BBCLASSEXTEND
+# 3) Fix oelint-adv issues
 #
+SUMMARY = "Ament CMake Core"
 DESCRIPTION = "The core of the ament buildsystem in CMake.      Several subcomponents provide specific funtionalities:     * environment: provide prefix-level setup files     * environment_hooks: provide package-level setup files and environment hooks     * index: store information in an index and retrieve them without crawling     * package_templates: templates from the ament_package Python package     * symlink_install: use symlinks for CMake install commands"
 AUTHOR = "Dirk Thomas <dthomas@osrfoundation.org>"
 HOMEPAGE = "https://wiki.ros.org"
@@ -26,7 +28,7 @@ ROS_BPN = "ament_cmake_core"
 
 ROS_BUILD_DEPENDS = ""
 
-ROS_BUILDTOOL_DEPENDS = " \
+ROS_BUILDTOOL_DEPENDS = "\
     ament-package-native \
     cmake-native \
     python3-catkin-pkg-native \
@@ -34,7 +36,7 @@ ROS_BUILDTOOL_DEPENDS = " \
 
 ROS_EXPORT_DEPENDS = ""
 
-ROS_BUILDTOOL_EXPORT_DEPENDS = " \
+ROS_BUILDTOOL_EXPORT_DEPENDS = "\
     ament-package-native \
     cmake-native \
     python3-catkin-pkg-native \
@@ -48,9 +50,7 @@ ROS_TEST_DEPENDS = ""
 DEPENDS = "${ROS_BUILD_DEPENDS} ${ROS_BUILDTOOL_DEPENDS}"
 # Bitbake doesn't support the "export" concept, so build them as if we needed them to build this package (even though we actually
 # don't) so that they're guaranteed to have been staged should this package appear in another's DEPENDS.
-DEPENDS += "${ROS_EXPORT_DEPENDS} ${ROS_BUILDTOOL_EXPORT_DEPENDS}"
-
-RDEPENDS:${PN} += "${ROS_EXEC_DEPENDS}"
+DEPENDS += "${ROS_BUILDTOOL_EXPORT_DEPENDS} ${ROS_EXPORT_DEPENDS}"
 
 # matches with: https://github.com/ros2-gbp/ament_cmake-release/archive/release/galactic/ament_cmake_core/1.1.4-1.tar.gz
 ROS_BRANCH ?= "branch=release/galactic/ament_cmake_core"
@@ -61,5 +61,7 @@ S = "${WORKDIR}/git"
 ROS_BUILD_TYPE = "ament_cmake"
 
 inherit ros_${ROS_BUILD_TYPE}
+
+RDEPENDS:${PN} += "${ROS_EXEC_DEPENDS}"
 
 BBCLASSEXTEND = "native nativesdk"

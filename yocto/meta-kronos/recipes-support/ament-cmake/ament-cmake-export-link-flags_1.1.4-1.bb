@@ -11,8 +11,10 @@
 # Changes:
 # 1) Remove ROS dependencies
 # 2) Add BBCLASSEXTEND
+# 3) Fix oelint-adv issues
 #
-DESCRIPTION = "The ability to export link flags to downstream packages in the ament buildsystem."
+SUMMARY = "Ament CMake Export Link Flags"
+DESCRIPTION = "The ability to Export link flags to downstream packages in the ament buildsystem."
 AUTHOR = "Dirk Thomas <dthomas@osrfoundation.org>"
 HOMEPAGE = "https://wiki.ros.org"
 SECTION = "devel"
@@ -26,13 +28,13 @@ ROS_BPN = "ament_cmake_export_link_flags"
 
 ROS_BUILD_DEPENDS = ""
 
-ROS_BUILDTOOL_DEPENDS = " \
+ROS_BUILDTOOL_DEPENDS = "\
     ament-cmake-core-native \
 "
 
 ROS_EXPORT_DEPENDS = ""
 
-ROS_BUILDTOOL_EXPORT_DEPENDS = " \
+ROS_BUILDTOOL_EXPORT_DEPENDS = "\
     ament-cmake-core-native \
 "
 
@@ -44,9 +46,7 @@ ROS_TEST_DEPENDS = ""
 DEPENDS = "${ROS_BUILD_DEPENDS} ${ROS_BUILDTOOL_DEPENDS}"
 # Bitbake doesn't support the "export" concept, so build them as if we needed them to build this package (even though we actually
 # don't) so that they're guaranteed to have been staged should this package appear in another's DEPENDS.
-DEPENDS += "${ROS_EXPORT_DEPENDS} ${ROS_BUILDTOOL_EXPORT_DEPENDS}"
-
-RDEPENDS:${PN} += "${ROS_EXEC_DEPENDS}"
+DEPENDS += "${ROS_BUILDTOOL_EXPORT_DEPENDS} ${ROS_EXPORT_DEPENDS}"
 
 # matches with: https://github.com/ros2-gbp/ament_cmake-release/archive/release/galactic/ament_cmake_export_link_flags/1.1.4-1.tar.gz
 ROS_BRANCH ?= "branch=release/galactic/ament_cmake_export_link_flags"
@@ -57,5 +57,7 @@ S = "${WORKDIR}/git"
 ROS_BUILD_TYPE = "ament_cmake"
 
 inherit ros_${ROS_BUILD_TYPE}
+
+RDEPENDS:${PN} += "${ROS_EXEC_DEPENDS}"
 
 BBCLASSEXTEND = "native nativesdk"

@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MIT
 
 MACHINE_LIBEIGEN_REQUIRE ?= ""
-MACHINE_LIBEIGEN_REQUIRE:actuation = \
-    "libeigen_3.3.7.inc"
+MACHINE_LIBEIGEN_REQUIRE:actuation = "libeigen_3.3.7.inc"
 
 require ${MACHINE_LIBEIGEN_REQUIRE}

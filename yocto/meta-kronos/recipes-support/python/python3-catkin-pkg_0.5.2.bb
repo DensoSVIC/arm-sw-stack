@@ -10,7 +10,11 @@
 
 # Changes:
 # 1) Update target version
+# 2) Fix oelint-adv issues
 #
+SUMMARY = "Python3 Catkin Package"
+HOMEPAGE = "http://wiki.ros.org/catkin_pkg"
+
 require python-catkin-pkg.inc
 
 inherit setuptools3
