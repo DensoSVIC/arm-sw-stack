@@ -1,3 +1,5 @@
+# nooelint: oelint.var.mandatoryvar - There is no source file
+# The "source" is in the do_deploy task.
 #
 # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
@@ -6,14 +8,15 @@
 
 SUMMARY = "Xen EFI config file"
 DESCRIPTION = "Deploy a .cfg file that can be used to boot Xen using EFI"
-
-inherit deploy features_check
-REQUIRED_IMAGE_FEATURES += "virtualization"
-
+HOMEPAGE = "https://wiki.xenproject.org/wiki/Xen_EFI"
 LICENSE = "MIT"
+
 LIC_FILES_CHKSUM = "\
     file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302 \
     "
+
+inherit deploy features_check
+REQUIRED_IMAGE_FEATURES += "virtualization"
 
 do_patch[noexec] = "1"
 do_configure[noexec] = "1"
