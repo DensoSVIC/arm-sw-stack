@@ -148,7 +148,7 @@ rst_prolog = f"""
 .. _xl documentation: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.1.html
 .. _Arm Memory Partitioning and Monitoring: https://developer.arm.com/documentation/ddi0598/latest
 .. _Zephyr : https://docs.zephyrproject.org/latest/
-.. _zperf sample : https://docs.zephyrproject.org/3.2.0/connectivity/networking/api/zperf.html
+.. _zperf sample : https://docs.zephyrproject.org/{zephyr_version}/connectivity/networking/api/zperf.html
 .. _Safety Island Actuation Demo: https://safety-island-actuation-demo.docs.arm.com/en/latest/
 """  # noqa: E501
 
