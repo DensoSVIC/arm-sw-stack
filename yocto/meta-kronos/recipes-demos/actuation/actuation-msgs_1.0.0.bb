@@ -6,12 +6,11 @@
 
 SUMMARY = "Actuation Msgs"
 DESCRIPTION = "IDLC messages for the Actuation Service."
+HOMEPAGE = "https://safety-island-actuation-demo.docs.arm.com/"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://license.rst;md5=e805dc5353977631b7881c7705a6c04a"
 
 require actuation-comon.inc
-
-inherit python3native pkgconfig cmake
 
 DEPENDS += "\
     ament-cmake-auto-native \
@@ -21,9 +20,13 @@ DEPENDS += "\
     cyclonedds-native \
 "
 
+PV .= "+git${SRCPV}"
+
 SRC_URI = "${SRC_URI_ACTUATION};${BRANCH_ACTUATION}"
 SRCREV = "${SRCREV_ACTUATION}"
 S = "${WORKDIR}/git"
+
+inherit python3native pkgconfig cmake
 
 OECMAKE_SOURCEPATH = "${S}/actuation_packages/actuation_msgs"
 
@@ -34,7 +37,5 @@ EXTRA_OECMAKE:append = "\
 "
 
 FILES:${PN} += "${datadir}/*"
-
-PV .= "+git${SRCPV}"
 
 BBCLASSEXTEND = "native nativesdk"

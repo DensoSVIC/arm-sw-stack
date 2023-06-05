@@ -12,7 +12,9 @@
 # 1) Remove ROS and iceoryx dependencies
 # 2) Change target version
 # 3) Add extra cmake arguments
+# 4) Fix oelint-adv issues
 #
+SUMMARY = "Cyclone DDS"
 DESCRIPTION = "Eclipse Cyclone DDS is a very performant and robust open-source \
 DDS implementation. Cyclone DDS is developed completely in the open as an \
 Eclipse IoT project."
@@ -29,11 +31,11 @@ DEPENDS = "bison-native cyclonedds-native"
 require cyclonedds_0.10.3.inc
 PV .= "+git${SRCPV}"
 
-inherit pkgconfig cmake
-
 SRC_URI = "${SRC_URI_CYCLONEDDS}"
 SRCREV = "${SRCREV_CYCLONEDDS}"
 S = "${WORKDIR}/git"
+
+inherit pkgconfig cmake
 
 EXTRA_OECMAKE:append = "\
     -DBUILD_EXAMPLES=OFF \
@@ -44,10 +46,10 @@ EXTRA_OECMAKE:append = "\
     -DBUILD_TESTING=OFF \
     -DBUILD_DDSPERF=OFF \
 "
-EXTRA_OECMAKE:class-native:append = "\
+EXTRA_OECMAKE:append:class-native = "\
     -DBUILD_IDLC=ON \
 "
-EXTRA_OECMAKE:class-target:append = "\
+EXTRA_OECMAKE:append:class-target = "\
     -DBUILD_IDLC=OFF \
 "
 
