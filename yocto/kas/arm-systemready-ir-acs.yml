@@ -7,11 +7,15 @@
 header:
   version: 13
   includes:
-    - kronos/yocto/kas/base.yml
     - repo: meta-arm
       file: kas/fvp-rd-kronos.yml
     - repo: meta-arm
       file: kas/arm-systemready-ir-acs.yml
+
+repos:
+  meta-arm:
+    url: https://git.yoctoproject.org/git/meta-arm
+    refspec: mickledore
 
 local_conf_header:
   arm-systemready-ir-acs: |
