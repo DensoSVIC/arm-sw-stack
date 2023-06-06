@@ -147,9 +147,20 @@ rst_prolog = f"""
 .. _Device Tree specification: https://www.devicetree.org/
 .. _xl documentation: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.1.html
 .. _Arm Memory Partitioning and Monitoring: https://developer.arm.com/documentation/ddi0598/latest
-.. _Zephyr : https://docs.zephyrproject.org/latest/
-.. _zperf sample : https://docs.zephyrproject.org/{zephyr_version}/connectivity/networking/api/zperf.html
+.. _Zephyr: https://docs.zephyrproject.org/latest/
+.. _zperf sample: https://docs.zephyrproject.org/{zephyr_version}/connectivity/networking/api/zperf.html
 .. _Safety Island Actuation Demo: https://safety-island-actuation-demo.docs.arm.com/en/latest/
+.. _ACS: https://developer.arm.com/Architectures/Architectural%20Compliance%20Suite
+.. _Arm SystemReady: https://www.arm.com/architecture/system-architectures/systemready-certification-program
+.. _Arm SystemReady program: https://www.arm.com/architecture/system-architectures/systemready-certification-program
+.. _Arm SystemReady IR: https://www.arm.com/architecture/system-architectures/systemready-certification-program/ir
+.. _Base System Architecture (BSA): https://developer.arm.com/documentation/den0094/latest
+.. _Embedded Base Boot Requirements (EBBR): https://developer.arm.com/architectures/platform-design/embedded-systems
+.. _Base Boot Requirements (BBR): https://developer.arm.com/documentation/den0044/latest
+.. _Device Tree specification: https://www.devicetree.org/
+.. _EBBR Specification - UEFI Runtime Services: https://arm-software.github.io/ebbr/index.html#uefi-runtime-services
+.. _EBBR Specification - Required Platform Specific Elements: https://arm-software.github.io/ebbr/index.html#required-platform-specific-elements
+.. _edk2-test-parser: https://gitlab.arm.com/systemready/edk2-test-parser/-/blob/ir1/EBBR.yaml
 """  # noqa: E501
 
 # URL to use for references to repository paths

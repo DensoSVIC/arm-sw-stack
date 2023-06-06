@@ -126,6 +126,8 @@ The BSP Tests consist of a series of device tests that can be found in
    Checks that the watchdog device and its correct driver are available and
    accessible via the filesystem.
 
+.. _validation_systemready_ir_tests:
+
 |Arm SystemReadyTM| IR ACS Tests
 ================================
 

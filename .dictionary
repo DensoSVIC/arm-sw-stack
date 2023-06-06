@@ -50,6 +50,7 @@ brsi
 BTCPUPOOLS
 BUFS
 BUILDIN
+Buildroot
 buildsystem
 BUILDTOOL
 busaddr
@@ -125,6 +126,7 @@ devm
 devs
 diskmon
 distro
+distros
 docutils
 domctl
 domctls
@@ -140,6 +142,7 @@ dtsi
 dunfell
 earlycon
 earlyprintk
+EBBR
 EBUSY
 EFAULT
 eigen
