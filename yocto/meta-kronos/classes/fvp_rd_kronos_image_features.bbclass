@@ -130,6 +130,15 @@ TEST_SUITES:remove:si0-ethernet0 = "\
     test_40_parsec \
     "
 
+TEST_SUITES:remove:hipc-validation = " \
+    test_20_bsp \
+    test_40_parsec \
+    "
+
+TEST_SUITES:remove:hipc-validation:virtualization = " \
+    test_40_virtualization \
+    "
+
 EXTRA_TESTIMAGE_RDEPENDS ?= ""
 EXTRA_TESTIMAGE_RDEPENDS:si0-ethernet0 = "iperf-native:do_populate_sysroot"
 
