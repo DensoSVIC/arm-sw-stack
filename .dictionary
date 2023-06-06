@@ -261,6 +261,7 @@ linuxboot
 linuxlogin
 LIVEPATCH
 livepatch
+LLRAM
 loadpolicy
 luca
 mainmenu
@@ -387,6 +388,7 @@ qcow
 Rahul
 RAMDISK
 ramdisk
+RAMFW
 rbar
 rbuf
 RDEPENDS

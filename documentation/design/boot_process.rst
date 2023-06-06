@@ -8,6 +8,75 @@
 Boot Process
 ############
 
+.. _design_boot_process_rss-oriented_boot_flow:
+
+**********************
+RSS-oriented Boot Flow
+**********************
+
+The :ref:`design_components_rss` is the root of the trust chain. It is the
+first booting element when the system is powered up.
+
+The RSS, implemented in Trusted Firmware-M (TF-M), has 3 boot stages. The
+images for each stage are stored in different media:
+
+* RSS BL1 (corresponds to TF-M BL11) is in ROM
+* RSS BL2 (TF-M BL12) is in OTP
+* RSS BL3 (TF-M BL2) is in NVM flash
+
+The NVM flash contains not only RSS BL3, but also other images that are booted
+by the RSS. The images currently included in the flash are:
+
+* RSS BL3
+* RSS Runtime
+* SCP RAM Firmware (SCP RAMFW)
+* LCP RAM Firmware (LCP RAMFW)
+* Safety Island Cluster 0 (SI CL0)
+* Safety Island Cluster 1 (SI CL1)
+* Safety Island Cluster 2 (SI CL2)
+* Application Processor BL2 (AP BL2)
+
+:ref:`design_components_scp-firmware` has been extended to additionally
+synchronize power control with the loading of images by the RSS.
+
+The following diagram illustrates the boot flow that originates from the RSS.
+
+|
+
+.. image:: ../images/rss_oriented_boot_flow.svg
+   :align: center
+
+|
+
+Major steps of the boot flow:
+
+1. RSS BL1 begins executing in place from ROM when the system is powered up. It:
+
+   * Copies RSS BL2 from OTP to SRAM
+   * Verifies RSS BL2 against the hash stored in OTP
+   * Jumps to RSS BL2, if the hash verification has succeeded
+
+2. RSS BL2:
+
+   * Copies RSS BL3 image from flash into SRAM
+   * Verifies RSS BL3 image using asymmetric cryptography
+   * Jumps to RSS BL3, if the image was successfully verified
+
+3. RSS BL3:
+
+   * Copies SCP RAMFW from flash to SCP SRAM and verifies the image
+   * Resets the SCP
+   * Copies SI CL0 from flash to SI LLRAM and verifies the image
+   * Notifies the SCP to power on the SI CL0
+   * Copies SI CL1 from flash to SI LLRAM and verifies the image
+   * Notifies the SCP to power on the SI CL1
+   * Copies SI CL2 from flash to SI LLRAM and verifies the image
+   * Notifies the SCP to power on the SI CL2
+   * Copies LCP from flash to LCP SRAM and verifies the image
+   * Release the LCP from reset
+   * Copies AP BL2 from flash to AP SRAM and verifies the image
+   * Notifies the SCP to power on the AP
+
 .. _design_boot_process_primary_compute_boot_flow:
 
 *************************
