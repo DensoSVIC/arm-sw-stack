@@ -71,15 +71,12 @@ class ActuationTest(OERuntimeTestCase):
         self.logger.debug(host_output)
         self.assertTrue(r'Start Packet Analyzer module' in host_output)
 
-    def player_to_analyzer(self, run_all=True):
-        if run_all:
-            command_f = './data'
-            test_recordings = '/usr/share/actuation_player'
-            proc_timeout = 180
-        else:
-            command_f = './data/test_data'
-            test_recordings = '/usr/share/actuation_player/test_data'
-            proc_timeout = 120
+    @OETestDepends(['test_30_actuation.ActuationTest.test_ping',
+                    'test_30_actuation.ActuationTest.test_analyzer_help'])
+    def test_player_to_analyzer(self):
+        command_f = './data'
+        test_recordings = '/usr/share/actuation_player'
+        proc_timeout = 500
 
         # localhost:FVP_SI0_ETHERNET0_HOST_NETPORT maps to 172.20.51.1:49152
         port = self.td.get('FVP_ACTUATION_HOST_ANALYZER_PORT')
@@ -126,15 +123,3 @@ class ActuationTest(OERuntimeTestCase):
         self.target.sendline(self.linux_console, 'sleep 5')
         self.target.expect(self.linux_console, self.linux_prompt,
                            timeout=15)
-
-    @OETestDepends(['test_30_actuation.ActuationTest.test_ping',
-                    'test_30_actuation.ActuationTest.test_analyzer_help'])
-    def test_player_to_analyzer_test_recording(self):
-        self.player_to_analyzer(False)
-
-    @OETestDepends(['test_30_actuation.ActuationTest.test_ping',
-                    'test_30_actuation.ActuationTest.test_analyzer_help'])
-    def test_player_to_analyzer_full_recording(self):
-        if int(self.td.get('TEST_PLAYER_FULL_RECORDING', 0)) != 1:
-            self.skipTest("Test skipped as FULL_RECORDING not requested")
-        self.player_to_analyzer(True)

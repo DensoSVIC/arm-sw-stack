@@ -172,13 +172,12 @@ For example, the file
 Integration Tests validating the Actuation Demo
 ===============================================
 
-An integration test ``test_player_to_analyzer_test_recording`` has been added to
-:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_actuation.py`,
-which does a full Player to Packet Analyzer functionality test.
+The ``test_player_to_analyzer`` integration test in
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_actuation.py`
+does a full Player to Packet Analyzer functionality test.
 
-The ``test_player_to_analyzer_test_recording`` invokes the Actuation Player that
-plays a recorded driving scenario which triggers the Actuation Service to
-generate Control Commands to be forwarded to the host via BSD socket. These
-Control Commands are then captured by the Packet Analyzer which validates them
-against a recorded Control Commands list that is stored in the form of a
-csv file.
+This test invokes the Actuation Player that plays a recorded driving scenario
+which triggers the Actuation Service to generate Control Commands to be
+forwarded to the host via BSD socket. These Control Commands are then captured
+by the Packet Analyzer which validates them against a recorded Control Commands
+list that is stored in the form of a CSV file.
