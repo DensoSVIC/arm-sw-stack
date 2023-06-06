@@ -141,6 +141,7 @@ DROS
 drvdata
 dtsi
 dunfell
+DVFS
 earlycon
 earlyprintk
 EBBR
@@ -289,6 +290,7 @@ menuconfig
 menuentry
 mhuv
 mickledore
+microcontrollers
 migr
 miibus
 mkdirhier
@@ -302,6 +304,7 @@ MPAMF
 MPAMHCR
 MPAMIDR
 MPID
+MPMM
 mreq
 MSMON
 MSMONCFG
@@ -350,6 +353,7 @@ partitionable
 patchdir
 pcitopoinfo
 pclk
+PCSA
 pdbcw
 pdev
 phandle

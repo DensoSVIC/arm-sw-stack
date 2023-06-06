@@ -22,8 +22,8 @@ The stack comprises of the following components:
     - |Trusted Firmware-M version| (based on |Trusted Firmware-M base version|)
     - `Trusted Firmware-M repository`_
   * - :ref:`design_components_scp-firmware`
-    - |SCP-Firmware version| (based on |SCP-Firmware base version|)
-    - `SCP-Firmware repository`_
+    - |SCP-firmware version| (based on |SCP-firmware base version|)
+    - `SCP-firmware repository`_
   * - :ref:`design_components_trusted-firmware-a`
     - |Trusted Firmware-A version|
     - `Trusted Firmware-A repository`_
@@ -117,10 +117,64 @@ Patches for the RSS are included at
 SCP-firmware
 ************
 
+The Power Control System Architecture (PCSA) [1]_ describes how systems can be
+built to provide microcontrollers to abstract various power, or other system
+management tasks, away from Application Processors (APs).
+
+According to the PCSA, the System Control Processor (SCP), a dedicated
+processor, is used to abstract power and system management tasks away from
+application processors.
+
+To support a scalable power control solution in systems with very high core
+counts, a Local Power Controller (LCP) is introduced for each application core.
+The LCP is managed by the SCP. The main functionality of the LCP are: Per-core
+Dynamic Voltage Frequency Scaling (DVFS), Thermal management, Max Power
+Mitigation Mechanism (MPMM), Power limit enforcement and Sensor Data Collection.
+
+`SCP-firmware`_ provides a software reference implementation for the System
+Control Processor (SCP) and Local Power Controller (LCP) components.
+
+MHUv3 Communication
+===================
+
+There are MHUv3 devices between the |Cortex|-M core where the RSS runs and the
+|Cortex|-M core where SCP-firmware runs. In the transport layer of MHUv3,
+Doorbell signals are exchanged between the RSS and SCP-firmware.
+
+For RD-Fremont platform, MHUv3 signals are sent:
+
+* From SCP-firmware to the RSS to indicate that SCP-firmware has booted
+  successfully
+* From the RSS to SCP-firmware to indicate the LCP and AP is ready to boot
+
+For RD-Kronos platform, the MHUv3 communication is extended for booting Safety
+Island (SI). The RSS sends a Doorbell signal to SCP-firmware to notify that the
+image of a Safety Island cluster has been loaded to LLRAM and the cluster is
+ready to boot.
+
+The following diagram illustrates the MHUv3 communication sequence between
+the RSS and SCP-firmware.
+
+|
+
+.. image:: ../images/mhuv3_comm_rss_scp.svg
+   :align: center
+
+|
+
 .. _design_components_scp-firmware_downstream_changes:
 
 Downstream Changes
 ==================
+
+Patches for the SCP-firmware are included at
+:meta-arm-repo:`meta-arm-bsp/recipes-bsp/scp-firmware/files/fvp-rd-kronos/` to:
+
+ * Implement the RD-Kronos platform port, based on RD-Fremont.
+ * Communicate with RSS via MHUv3 to conduct the boot flow.
+ * Power on Safety Island.
+ * Reset LCP.
+ * Power on AP.
 
 ***************
 Primary Compute
@@ -386,3 +440,6 @@ related to:
 **********
 References
 **********
+
+.. [1] Power Control System Architecture - DEN0050C (Please contact Arm directly
+       to obtain a copy of this document)

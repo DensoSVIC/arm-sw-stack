@@ -118,10 +118,11 @@ zephyr_version = "3.3.0"
 rst_prolog = f"""
 .. |kas version| replace:: {kas_version}
 .. |Arm| replace:: Arm\\ :sup:`®`
+.. |Cortex| replace:: Arm\\ :sup:`®` Cortex\\ :sup:`®`
 .. |Trusted Firmware-M version| replace:: {trusted_firmware_m_version}
 .. |Trusted Firmware-M base version| replace:: {trusted_firmware_m_base_version}
-.. |SCP-Firmware version| replace:: {scp_firmware_version}
-.. |SCP-Firmware base version| replace:: {scp_firmware_base_version}
+.. |SCP-firmware version| replace:: {scp_firmware_version}
+.. |SCP-firmware base version| replace:: {scp_firmware_base_version}
 .. |Trusted Firmware-A version| replace:: {trusted_firmware_a_version}
 .. |U-Boot version| replace:: {uboot_version}
 .. |Xen version| replace:: {xen_version}
@@ -139,7 +140,7 @@ rst_prolog = f"""
 .. _testimage.bbclass: https://docs.yoctoproject.org/{yocto_doc_version}ref-manual/classes.html#testimage-bbclass
 .. _OEQA FVP: https://git.yoctoproject.org/meta-arm/tree/documentation/oeqa-fvp.md?h={yocto_version}
 .. _Trusted Firmware-M repository: https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git/tree/?h={trusted_firmware_m_version}
-.. _SCP-Firmware repository: https://github.com/ARM-software/SCP-firmware/tree/{scp_firmware_version}
+.. _SCP-firmware repository: https://github.com/ARM-software/SCP-firmware/tree/{scp_firmware_version}
 .. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/tree/?h=v{trusted_firmware_a_version}
 .. _U-Boot repository: https://source.denx.de/u-boot/u-boot/-/tree/v{uboot_version}
 .. _Xen repository: https://xenbits.xen.org/gitweb/?p=xen.git;a=tree;h=refs/heads/stable-{xen_version}
@@ -163,6 +164,7 @@ rst_prolog = f"""
 .. _edk2-test-parser: https://gitlab.arm.com/systemready/edk2-test-parser/-/blob/ir1/EBBR.yaml
 .. _Runtime Security Subsystem: https://tf-m-user-guide.trustedfirmware.org/platform/arm/rss/readme.html
 .. _Arm Confidential Compute Architecture: https://www.arm.com/architecture/security-features/arm-confidential-compute-architecture
+.. _SCP-firmware: https://github.com/ARM-software/SCP-firmware#readme
 """  # noqa: E501
 
 # URL to use for references to repository paths
