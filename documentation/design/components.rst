@@ -43,10 +43,73 @@ The stack comprises of the following components:
 RSS
 ***
 
+The `Runtime Security Subsystem`_ (RSS) is a security subsystem fulfilling the
+requirements of the `Arm Confidential Compute Architecture`_ (CCA). The RSS
+additionally adds an isolated environment to provide platform security services
+that are outside of the scope of the CCA Platform Security Domain.
+
+The RSS serves as the Root of Trust for the system, offering critical platform
+security services and holding and protecting the most sensitive assets in the
+system.
+
+In the current software stack, the RSS offers the Secure Boot service only.
+
+The RSS internally consists of 3 boot loaders and a runtime. The following
+diagram illustrates the high-level software structure of the RSS and some
+relevant external components.
+
+|
+
+.. image:: ../images/rss_software_structure_simplified.svg
+   :align: center
+
+|
+
+Boot Loaders
+============
+
+RSS BL1
+-------
+
+The first stage bootloader (BL1) of the RSS is immutable code located in the RSS
+ROM that executes in place on reset. Its purpose is to load and verify the
+integrity of the second stage bootloader (BL2) image.
+
+RSS BL2
+-------
+
+RSS BL2 is provisioned in the RSS OTP and executed from the RSS SRAM. Its
+purpose is to load, decrypt and authenticate the BL3 image.
+
+RSS BL3
+-------
+
+RSS BL3 is implemented through extensions to the existing MCUBoot bootloader in
+Trusted Firmware-M (TF-M). It loads and authenticates the initial bootloaders
+of the SCP, Safety Island (SI), LCP and Application Processor (AP).
+
+After all the aforementioned PEs begin to boot, BL3 loads and authenticates the
+RSS Runtime and starts it.
+
+Runtime
+=======
+
+The RSS Runtime will provide services of PSA Crypto and Attestation in the form
+of APIs in the future.
+
 .. _design_components_rss_downstream_changes:
 
 Downstream Changes
 ==================
+
+Patches for the RSS are included at
+:meta-arm-repo:`meta-arm-bsp/recipes-bsp/trusted-firmware-m/fvp-rd-kronos/` to:
+
+ * Implement the RD-Kronos platform port, based on RD-Fremont.
+ * Load and boot the SCP.
+ * Load and boot the Safety Island.
+ * Load and boot the LCP.
+ * Load and boot the AP.
 
 .. _design_components_scp-firmware:
 

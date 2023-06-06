@@ -161,6 +161,8 @@ rst_prolog = f"""
 .. _EBBR Specification - UEFI Runtime Services: https://arm-software.github.io/ebbr/index.html#uefi-runtime-services
 .. _EBBR Specification - Required Platform Specific Elements: https://arm-software.github.io/ebbr/index.html#required-platform-specific-elements
 .. _edk2-test-parser: https://gitlab.arm.com/systemready/edk2-test-parser/-/blob/ir1/EBBR.yaml
+.. _Runtime Security Subsystem: https://tf-m-user-guide.trustedfirmware.org/platform/arm/rss/readme.html
+.. _Arm Confidential Compute Architecture: https://www.arm.com/architecture/security-features/arm-confidential-compute-architecture
 """  # noqa: E501
 
 # URL to use for references to repository paths
