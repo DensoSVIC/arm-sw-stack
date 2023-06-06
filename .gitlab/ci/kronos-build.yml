@@ -99,6 +99,8 @@
     - python3 .gitlab/scripts/yoctoqa-to-junit.py
         "${KAS_WORK_DIR}/build/tmp*/log/cooker/*/console-latest.log"
         "TEST-autotest-${CI_JOB_NAME_SLUG}.xml"
+  rules:
+    - !reference [".build-image:rules", rules]
 
 Image-Build-baremetal:
   extends: .kas_image_build_kronos
