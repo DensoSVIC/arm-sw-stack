@@ -42,11 +42,11 @@ choice
     depends on !ARCHITECTURE_SYSTEMREADY_IR_ACS
     default EXTRA_IMAGE_FEATURES_ACTUATION
 
-config EXTRA_IMAGE_FEATURES_HIPC
-    bool "HIPC Validation"
-
 config EXTRA_IMAGE_FEATURES_ACTUATION
     bool "Actuation Demo"
+
+config EXTRA_IMAGE_FEATURES_HIPC
+    bool "HIPC Validation"
 
 endchoice
 
