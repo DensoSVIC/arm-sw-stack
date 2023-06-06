@@ -11,7 +11,7 @@ commit introduces a new `struct mpam_config` for each PARTID to
 track the MPAM configuration for each partid. Also, modify the
 parameter list of `mpam_reprogram_ris_partid()` and change function
 `mpam_has_feature()` to a macro in this commit to keep the
-consistensy with previous commits.
+consistency with previous commits.
 
 Since the system maximum number of PARTID is available after MPAM
 hardware probing, the array of `struct mpam_config` is initialized

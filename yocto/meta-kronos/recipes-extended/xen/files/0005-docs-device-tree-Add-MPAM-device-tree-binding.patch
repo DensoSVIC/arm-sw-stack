@@ -60,7 +60,7 @@ index 0000000000..35d82d0a0f
 +
 +- compatible (mandatory)
 +
-+    Must always include the compatiblity string: "arm,mpam-msc".
++    Must always include the compatibility string: "arm,mpam-msc".
 +
 +- reg (mandatory)
 +
@@ -90,7 +90,7 @@ index 0000000000..35d82d0a0f
 +
 +- compatible (mandatory)
 +
-+    Must always include the compatiblity string of either "arm,mpam-cache" for
++    Must always include the compatibility string of either "arm,mpam-cache" for
 +    cache control or "arm,mpam-memory" for memory bandwidth control.
 +
 +- reg (mandatory)

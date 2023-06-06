@@ -6,7 +6,7 @@ Subject: [PATCH] virtio: disable remoteproc virtio RPMSG to use DMA api in
 
 In order to bypass some virtio devices and IOMMU issues on QEMU
 platforms, the previous code force Xen to enable DMA api for vring.
-But on Xen platforms, this will cause some problems when we assgin
+But on Xen platforms, this will cause some problems when we assign
 non-IOMMU protected remoteproc virtio rpmsg device to guests. For
 example, vring has been forced to use DMA api, but in Xen guest,
 without IOMMU, the device's DMA ops is NULL. This will force the
@@ -14,7 +14,7 @@ DMA buffer to use DMA direct mapping by mistake. But when we access
 this translated address, we will encounter:
 [0.xx] Unable to handle kernel paging request at virtual address ffff0008f0003000
 
-If we for remoteproc virtio rpmsg deviice to use Xen swiotlb_dma_ops,
+If we for remoteproc virtio rpmsg device to use Xen swiotlb_dma_ops,
 as this device is using hign memory as DMA buffers (address > 4G), it
 will also encounter DMA addr overflow by using DMA incorrectly:
 [0.xx] remoteproc0#vdev0buffer: DMA addr 0x0000000a00003000+512 overflow (mask ffffffff, bus limit 0).

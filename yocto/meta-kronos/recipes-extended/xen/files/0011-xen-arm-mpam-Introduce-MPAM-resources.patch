@@ -9,7 +9,7 @@ multiple resources. The resources controlled by an MSC can be
 identified by their RIS index.
 
 Although RIS is not always available across different MPAM versions,
-from software implemetation perspective, we can treat the MSC that
+from software implementation perspective, we can treat the MSC that
 only control a single resource as if there is only one RIS inside
 the MSC. So that the software framework can be used without change
 across different MPAM versions.

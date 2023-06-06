@@ -7,9 +7,9 @@ Subject: [PATCH] xen/arm: mpam: Probe the MPAM hardware features
 MPAM offers a series of hardware features that can be used in
 different scenarios, including:
 - Cache control features such as cache portion partitioning and
-  cache capacity patitioning.
+  cache capacity partitioning.
 - Memory bandwidth control features such as memory bandwidth
-  patitioning and max/min memory bandwidth partitioning.
+  partitioning and max/min memory bandwidth partitioning.
 - Performance monitoring features such as cache/membw monitor.
 etc.
 

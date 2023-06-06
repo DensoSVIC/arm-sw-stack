@@ -7,7 +7,7 @@ Subject: [PATCH] xen/arm: mpam: Add MPAM memory-mapped register
 The MPAM behavior of an MSC is discovered and configured via the
 memory-mapped registers in the MSC. All these memory-mapped registers
 are located on the MPAM feature page for the MSC. Information about
-an MSC's MPAM feature page is provided via the firmware infomation.
+an MSC's MPAM feature page is provided via the firmware information.
 For the device tree case, the `reg` property of the MSC node defines
 the memory region of the MPAM feature page.
 

@@ -6,7 +6,7 @@ Subject: [PATCH] xen/common,arm: Move get_logical_cpu_from_hw_id() to
 
 Previously, function `get_logical_cpu_from_hw_id()` is private in
 `xen/common/boot_cpupools.c`. File `xen/common/boot_cpupools.c` is
-hightly dependent on device tree, which currently is only used by
+highly dependent on device tree, which currently is only used by
 Arm. Having said that, this commit moves `get_logical_cpu_from_hw_id()`
 to `arm/include/asm/smp.h`, thus enabling others to use this function.
 

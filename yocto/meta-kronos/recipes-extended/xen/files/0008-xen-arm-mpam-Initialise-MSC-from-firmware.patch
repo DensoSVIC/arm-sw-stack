@@ -8,7 +8,7 @@ MSC from firmware. To implement that, this commit:
 
 - Introduces a `struct mpam_msc` to describe the MSC device and this
   structure stores information about the MSC device. Since there might
-  be multiple MSCs in a system and we need a method to find a specifc
+  be multiple MSCs in a system and we need a method to find a specific
   MSC later in the MPAM enabling time, the `struct mpam_msc` is linked
   as a global list.
 

@@ -5,7 +5,7 @@ Subject: [PATCH] xen/arm: mpam: Reset MSC and RIS controls during CPU
  online
 
 When a CPU comes online, any partid available in the system should
-have its configuration reset. This can avoid mistakenly writting
+have its configuration reset. This can avoid mistakenly writing
 an incorrect value to the MSC, leading to a fresh MSC misconfigured.
 
 To reset, write the maximum values for all discovered controls, so

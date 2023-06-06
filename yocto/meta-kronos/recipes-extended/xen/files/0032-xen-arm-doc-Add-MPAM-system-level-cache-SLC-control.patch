@@ -9,7 +9,7 @@ or L3 cache which are usually local to the CPU or cluster, the SLC
 is located within the interconnect as HN-F (Fully-coherent home node)
 protocol nodes and available to all CPUs.
 
-Since MPAM can support the portion and patitioning of the SLC, this
+Since MPAM can support the portion and partitioning of the SLC, this
 commit introduces the MPAM SLC portion control support by:
 
 - Introduce a new mpam_class type `MPAM_CLASS_SLC`.
