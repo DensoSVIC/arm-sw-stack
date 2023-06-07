@@ -89,7 +89,7 @@ plugins:
       # check doesn't work.
       - 'oelint.file.requireinclude'
       # Usage of heredocs is very minimal
-      # and does not deserve creating seperate files.
+      # and does not deserve creating separate files.
       - 'oelint.task.heredocs'
       # The oelint-adv is not able to find .inc files from other layers
       # and the in-line suppression for this check doesn't work.

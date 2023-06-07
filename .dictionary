@@ -1,5 +1,5 @@
-# affiliates <open-source-office@arm.com></text>
 # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
 aarch
@@ -168,6 +168,7 @@ EVNT
 extlinks
 Fancellu
 ffch
+fileextrapaths
 FILESEXTRAPATHS
 fprintf
 fstype
@@ -184,8 +185,10 @@ gntdev
 gnueabi
 HARDLIM
 helloworld
+heredocs
 HIGHDMA
 hipc
+homepageping
 hostbridge
 hotplug
 htons
@@ -204,6 +207,7 @@ ifndef
 iidr
 IMAGEDEPENDS
 importlib
+includenotfound
 inclusivity
 inet
 initdata
@@ -246,6 +250,7 @@ libeigen
 libxc
 libxenutil
 libxl
+licenseremotefile
 Linaro
 linuxboot
 linuxlogin
@@ -254,6 +259,7 @@ livepatch
 loadpolicy
 luca
 mainmenu
+mandatoryvar
 maxcpus
 maxdepth
 MAXSIZE
@@ -296,6 +302,7 @@ mreq
 MSMON
 MSMONCFG
 MULCOL
+multilineident
 nameservice
 nativesdk
 netback
@@ -303,12 +310,14 @@ netdev
 NETIF
 netif
 NETPORT
+noanonpython
 NOCACHE
 nocpuid
 noexec
 noncache
 nonterm
 nonterminating
+nooelint
 noreboot
 NOTFOUND
 notifyid
@@ -380,6 +389,8 @@ readreg
 refspec
 remoteproc
 reportsettings
+requireinclude
+requirenotfound
 resm
 rmem
 ROOTFS
@@ -439,6 +450,7 @@ stty
 subcomponents
 subsys
 sufix
+suggestedvar
 swiotlb
 sysconfdir
 sysctls
