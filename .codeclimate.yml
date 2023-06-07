@@ -97,3 +97,5 @@ plugins:
       # This check is done for all variables,
       # and suppressing it for each case is not feasible.
       - 'oelint.vars.multilineident'
+      # This check does not support custom overrides
+      - 'oelint.vars.specific'
