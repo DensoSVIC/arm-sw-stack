@@ -150,6 +150,8 @@ ACS image can also run validation tests.
 See :ref:`reproduce_run-time_integration_tests` for more details on running
 run-time validation tests.
 
+.. _reproduce_run:
+
 ***
 Run
 ***
@@ -201,15 +203,18 @@ This command will provide a console on the DomU1. To exit, one can enter
 into the telnet shell and pressing ``Enter``. See the `xl documentation`_ for
 further details.
 
-*************************
 Reproducing the Use-Cases
-*************************
+=========================
 
-These instructions can be run on both Baremetal and Virtualization and an
-assumption has been made that the FVP has been launched as indicated above.
+Safety Island Actuation Demo
+----------------------------
 
-To reproduce the Safety Island Actuation Demo listed in
-:ref:`design_applications_actuation`, follow the steps listed below.
+Follow the instructions below to reproduce the ``Actuation Demo`` selected as
+``Extra Image Features`` from the :ref:`user_guide_reproduce_build` section.
+The Safety Island Actuation Demo is listed
+in :ref:`design_applications_actuation`. These instructions can be run on both
+Baremetal and Virtualization and an assumption has been made that the FVP has
+been launched as indicated under :ref:`reproduce_run`.
 
 .. note::
   When running the ``runfvp`` command, the Safety Island (SI) Cluster 0
@@ -241,7 +246,7 @@ To reproduce the Safety Island Actuation Demo listed in
       # For arm64 host
       # cd ~/kronos/build/tmp_baremetal/sysroots-components/aarch64/packet-analyzer-native/usr/bin/actuation_packet_analyzer
       # Start the Packet Analyzer
-      python3 packet_analyzer/start_analyzer.py -L debug -a localhost -c ./data/test_data -L
+      python3 packet_analyzer/start_analyzer.py -L debug -a localhost -c ./data -L
 
    A message similar to the following should appear on the SI Cluster 0
 
@@ -255,16 +260,22 @@ To reproduce the Safety Island Actuation Demo listed in
 
    .. code-block:: shell
 
-      actuation_player -p /usr/share/actuation_player/test_data/
+      actuation_player -p /usr/share/actuation_player/
 
    A message similar to the following should appear on the SI Cluster 0
 
    .. code-block:: shell
 
-    220739105230: -0.2914 (m/s^2) | -0.0040 (rad)
-    220739105230: -0.2914 (m/s^2) | -0.0040 (rad)
+    51572682601: -0.0000 (m/s^2) |  0.0000 (rad)^M
+    51597466928: -0.0000 (m/s^2) |  0.0000 (rad)^M
+    51622532911: -0.0000 (m/s^2) |  0.0000 (rad)^M
+    51647642316: -0.0000 (m/s^2) |  0.0000 (rad)^M
+    51672535849: -0.0000 (m/s^2) |  0.0000 (rad)^M
+    51697376579: -0.0000 (m/s^2) |  0.0000 (rad)^M
+    51722500414: -0.0000 (m/s^2) |  0.0000 (rad)^M
+    51747622543: -0.0000 (m/s^2) |  0.0000 (rad)^M
+    51772496466: -0.0000 (m/s^2) |  0.0000 (rad)^M
     Thread get_analyzer_handle performing a blocking accept
-
 
    A message similar to the following should appear on the host terminal where
    the Packet Analyzer is running
@@ -276,20 +287,19 @@ To reproduce the Safety Island Actuation Demo listed in
     INFO : analyzer_client.py/_connect_to: Successfully connected to (localhost : 49152)
     INFO : analyzer_client.py/run_analyze_on_chain: (1) Analyzer synced with packet chain
     INFO : analyzer_client.py/run_analyze_on_chain: All expected control packets received
-    INFO : analyzer_client.py/_log_jitter: Observed Frequency = 11.26529179, Avg Jitter = 0.00000000, Std Deviation:0.00000000
+    INFO : analyzer_client.py/_log_jitter: Observed Frequency = 21.36147200, Avg Jitter = 0.02624593, Std Deviation:0.06096328
     INFO : analyzer_client.py/run_analyze_on_chain: End of cycle: AnalyzerResult.SUCCESS
 
     INFO : analyzer_client.py/_tear_conn: Received fin ack from Actuation Service
-
 
     Chain ID   Result
     0          AnalyzerResult.SUCCESS
 
 .. _reproduce_run-time_integration_tests:
 
-**********
-Validation
-**********
+********************
+Automated Validation
+********************
 
 To enable the validation tests, choose ``Run the tests automatically``
 from the ``Runtime Validation Setup`` menu, then choose ``Save & Build``.
@@ -300,90 +310,173 @@ The following validation tests can be performed on the Reference Stack:
 
     * Baremetal Architecture Stack:
 
-      The previous test takes around 10 minutes to complete.
-
-      A similar output should be printed out:
+      For the ``Actuation Demo`` selected as ``Extra Image Features``, a similar
+      output is printed out. The complete test suit takes around 8 minutes to
+      complete.
 
       .. code-block:: console
 
         NOTE: Executing Tasks
-        2022-12-07 09:05:58 - INFO     - Creating terminal default on terminal_ns_uart_ap
-        2022-12-07 09:05:58 - INFO     - Creating terminal tf-a on terminal_s_uart_ap
-        2022-12-07 09:05:58 - INFO     - Creating terminal scp on terminal_uart_scp
-        2022-12-07 09:05:58 - INFO     - Creating terminal mcp on terminal_uart_mcp
-        2022-12-07 09:05:58 - INFO     - Creating terminal lcp on terminal_uart_lcp
-        2022-12-07 09:05:59 - INFO     - Creating terminal rss on terminal_uart_rss
-        2022-12-07 09:05:59 - INFO     - default: Waiting for login prompt
-        2022-12-07 09:06:07 - INFO     - RESULTS:
-        2022-12-07 09:06:07 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (8.00s)
-        2022-12-07 09:06:07 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
-        2022-12-07 09:06:07 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
-        2022-12-07 09:06:07 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
-        2022-12-07 09:10:02 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (201.16s)
-        2022-12-07 09:10:16 - INFO     - RESULTS - test_20_bsp.BspTest.test_networking: PASSED (13.54s)
-        2022-12-07 09:11:20 - INFO     - RESULTS - test_20_bsp.BspTest.test_rtc: PASSED (4.61s)
-        2022-12-07 09:11:56 - INFO     - RESULTS - test_20_bsp.BspTest.test_cpu_hotplug: PASSED (35.33s)
-        2022-12-07 09:12:01 - INFO     - RESULTS - test_20_bsp.BspTest.test_virtiorng: PASSED (5.58s)
-        2022-12-07 09:12:04 - INFO     - RESULTS - test_20_bsp.BspTest.test_watchdog: PASSED (3.45s)
-        2022-12-07 09:12:04 - INFO     - SUMMARY:
-        2022-12-07 09:12:04 - INFO     - baremetal-image () - Ran 10 tests in 271.671s
-        2022-12-07 09:12:04 - INFO     - baremetal-image - OK - All required tests passed (successes=10, skipped=0, failures=0, errors=0)
+        2023-06-06 20:11:44 - INFO     - Creating terminal default on terminal_ns_uart0
+        2023-06-06 20:11:53 - INFO     - Creating terminal tf-a on terminal_sec_uart
+        2023-06-06 20:11:54 - INFO     - Creating terminal scp on terminal_uart_scp
+        2023-06-06 20:11:54 - INFO     - Creating terminal lcp on terminal_uart_lcp
+        2023-06-06 20:11:54 - INFO     - Creating terminal rss on terminal_rss_uart
+        2023-06-06 20:11:54 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+        2023-06-06 20:11:54 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+        2023-06-06 20:11:54 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+        2023-06-06 20:11:54 - INFO     - default: Waiting for login prompt
+        2023-06-06 20:19:57 - INFO     - RESULTS:
+        2023-06-06 20:19:57 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (7.39s)
+        2023-06-06 20:19:57 - INFO     - RESULTS - test_10_safety_island_c1.SafetyIslandC1Test.test_cluster1: PASSED (0.00s)
+        2023-06-06 20:19:57 - INFO     - RESULTS - test_10_safety_island_c2.SafetyIslandC2Test.test_cluster2: PASSED (0.00s)
+        2023-06-06 20:19:57 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.24s)
+        2023-06-06 20:19:57 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (17.43s)
+        2023-06-06 20:19:57 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (92.06s)
+        2023-06-06 20:19:57 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec: PASSED (89.35s)
+        2023-06-06 20:19:57 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
+        2023-06-06 20:19:57 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+        2023-06-06 20:19:57 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+        2023-06-06 20:19:57 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+        2023-06-06 20:19:57 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (135.16s)
+        2023-06-06 20:19:57 - INFO     - RESULTS - test_20_bsp.BspTest.test_cpu_hotplug: PASSED (93.19s)
+        2023-06-06 20:19:57 - INFO     - RESULTS - test_20_bsp.BspTest.test_networking: PASSED (17.70s)
+        2023-06-06 20:19:57 - INFO     - RESULTS - test_20_bsp.BspTest.test_rtc: PASSED (8.48s)
+        2023-06-06 20:19:57 - INFO     - RESULTS - test_20_bsp.BspTest.test_virtiorng: PASSED (8.22s)
+        2023-06-06 20:19:57 - INFO     - RESULTS - test_20_bsp.BspTest.test_watchdog: PASSED (5.50s)
+        2023-06-06 20:19:57 - INFO     - SUMMARY:
+        2023-06-06 20:19:57 - INFO     - baremetal-image () - Ran 17 tests in 474.728s
+
+      For the ``HIPC Validation`` selected as ``Extra Image Features``, a
+      similar output is printed out. The complete test suit takes around 15
+      minutes to complete.
+
+      .. code-block:: console
+
+        NOTE: Executing Tasks
+        2023-06-07 09:49:02 - INFO     - Creating terminal default on terminal_ns_uart0
+        2023-06-07 09:49:11 - INFO     - Creating terminal tf-a on terminal_sec_uart
+        2023-06-07 09:49:11 - INFO     - Creating terminal scp on terminal_uart_scp
+        2023-06-07 09:49:11 - INFO     - Creating terminal lcp on terminal_uart_lcp
+        2023-06-07 09:49:11 - INFO     - Creating terminal rss on terminal_rss_uart
+        2023-06-07 09:49:11 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+        2023-06-07 09:49:11 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+        2023-06-07 09:49:11 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+        2023-06-07 09:49:12 - INFO     - default: Waiting for login prompt
+        2023-06-07 10:04:24 - INFO     - RESULTS:
+        2023-06-07 10:04:24 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (5.16s)
+        2023-06-07 10:04:24 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster0: PASSED (211.84s)
+        2023-06-07 10:04:24 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster1: PASSED (211.80s)
+        2023-06-07 10:04:24 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster2: PASSED (282.60s)
+        2023-06-07 10:04:24 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster0: PASSED (21.53s)
+        2023-06-07 10:04:24 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster1: PASSED (20.99s)
+        2023-06-07 10:04:24 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster2: PASSED (21.27s)
+        2023-06-07 10:04:24 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
+        2023-06-07 10:04:24 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+        2023-06-07 10:04:24 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+        2023-06-07 10:04:24 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+        2023-06-07 10:04:24 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (129.07s)
+        2023-06-07 10:04:24 - INFO     - SUMMARY:
+        2023-06-07 10:04:24 - INFO     - baremetal-image () - Ran 12 tests in 904.258s
 
     * Virtualization Architecture Stack:
 
-      The previous test takes around 20 minutes to complete.
-
-      A similar output should be printed out:
+      For the ``Actuation Demo`` selected as ``Extra Image Features``, a similar
+      output is printed out. The complete test suit takes around 22 minutes to
+      complete.
 
       .. code-block:: console
 
-        NOTE: Executing Tasks
-        2023-04-12 09:09:10 - INFO     - Creating terminal default on terminal_ns_uart0
-        2023-04-12 09:09:18 - INFO     - Creating terminal tf-a on terminal_sec_uart
-        2023-04-12 09:09:19 - INFO     - Creating terminal scp on terminal_uart_scp
-        2023-04-12 09:09:19 - INFO     - Creating terminal lcp on terminal_uart_lcp
-        2023-04-12 09:09:19 - INFO     - Creating terminal rss on terminal_rss_uart
-        2023-04-12 09:09:19 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
-        2023-04-12 09:09:19 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
-        2023-04-12 09:09:19 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
-        2023-04-12 09:09:19 - INFO     - default: Waiting for login prompt
-        2023-04-12 09:19:19 - INFO     - Bitbake still alive (no events for 600s). Active tasks:
-        2023-04-12 09:19:19 - INFO     - /builds/engineering/ais/kronos/kronos/work/build/../../yocto/meta-kronos/dynamic-layers/virtualization-layer/recipes-core/images/virtualization-image.bb:do_testimage
-        2023-04-12 09:21:55 - INFO     - 'rtc' not tested in DomU
-        2023-04-12 09:21:55 - INFO     - 'virtiorng' not tested in DomU
-        2023-04-12 09:21:55 - INFO     - 'watchdog' not tested in DomU
-        2023-04-12 09:22:13 - INFO     - 'rtc' not tested in DomU
-        2023-04-12 09:22:13 - INFO     - 'virtiorng' not tested in DomU
-        2023-04-12 09:22:13 - INFO     - 'watchdog' not tested in DomU
-        2023-04-12 09:32:11 - INFO     - RESULTS:
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (0.86s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_10_safety_island_c0.SafetyIslandC0Test.test_cluster0: PASSED (0.00s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_10_safety_island_c1.SafetyIslandC1Test.test_cluster1: PASSED (0.00s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_10_safety_island_c2.SafetyIslandC2Test.test_cluster2: PASSED (0.00s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_cpu_hotplug: PASSED (17.78s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_networking: PASSED (2.02s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_cpu_hotplug: PASSED (3.49s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_networking: PASSED (3.41s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.PtestRunnerDom0Test.test_ptestrunner: PASSED (502.28s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (729.36s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_20_bsp.BspTest.test_cpu_hotplug: PASSED (26.93s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_20_bsp.BspTest.test_networking: PASSED (20.97s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_20_bsp.BspTest.test_rtc: PASSED (11.08s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_20_bsp.BspTest.test_virtiorng: PASSED (12.24s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_20_bsp.BspTest.test_watchdog: PASSED (6.87s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_rtc: SKIPPED (0.00s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_virtiorng: SKIPPED (0.00s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_watchdog: SKIPPED (0.00s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_rtc: SKIPPED (0.00s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_virtiorng: SKIPPED (0.00s)
-        2023-04-12 09:32:11 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_watchdog: SKIPPED (0.00s)
-        2023-04-12 09:32:11 - INFO     - SUMMARY:
-        2023-04-12 09:32:11 - INFO     - virtualization-image () - Ran 25 tests in 1358.820s
-        2023-04-12 09:32:11 - INFO     - virtualization-image - OK - All required tests passed (successes=19, skipped=6, failures=0, errors=0)
+        2023-06-06 20:11:46 - INFO     - Creating terminal default on terminal_ns_uart0
+        2023-06-06 20:11:55 - INFO     - Creating terminal tf-a on terminal_sec_uart
+        2023-06-06 20:11:55 - INFO     - Creating terminal scp on terminal_uart_scp
+        2023-06-06 20:11:55 - INFO     - Creating terminal lcp on terminal_uart_lcp
+        2023-06-06 20:11:55 - INFO     - Creating terminal rss on terminal_rss_uart
+        2023-06-06 20:11:55 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+        2023-06-06 20:11:55 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+        2023-06-06 20:11:55 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+        2023-06-06 20:11:55 - INFO     - default: Waiting for login prompt
+        2023-06-06 20:22:59 - INFO     - 'rtc' not tested in DomU
+        2023-06-06 20:22:59 - INFO     - 'virtiorng' not tested in DomU
+        2023-06-06 20:22:59 - INFO     - 'watchdog' not tested in DomU
+        2023-06-06 20:23:12 - INFO     - 'rtc' not tested in DomU
+        2023-06-06 20:23:12 - INFO     - 'virtiorng' not tested in DomU
+        2023-06-06 20:23:12 - INFO     - 'watchdog' not tested in DomU
+        2023-06-06 20:34:09 - INFO     - RESULTS:
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (0.74s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_10_safety_island_c1.SafetyIslandC1Test.test_cluster1: PASSED (0.00s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_10_safety_island_c2.SafetyIslandC2Test.test_cluster2: PASSED (0.00s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.24s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (20.09s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (116.22s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec: PASSED (93.95s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_cpu_hotplug: PASSED (6.07s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_networking: PASSED (2.40s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_cpu_hotplug: PASSED (1.50s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_networking: PASSED (2.50s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_40_virtualization.ParsecDomU1Test.test_parsec: PASSED (71.75s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_40_virtualization.ParsecDomU2Test.test_parsec: PASSED (79.14s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_40_virtualization.PtestRunnerDom0Test.test_ptestrunner: PASSED (433.47s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (403.12s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_20_bsp.BspTest.test_cpu_hotplug: PASSED (12.61s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_20_bsp.BspTest.test_networking: PASSED (9.84s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_20_bsp.BspTest.test_rtc: PASSED (6.58s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_20_bsp.BspTest.test_virtiorng: PASSED (6.69s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_20_bsp.BspTest.test_watchdog: PASSED (4.35s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_rtc: SKIPPED (0.00s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_virtiorng: SKIPPED (0.00s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_watchdog: SKIPPED (0.00s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_rtc: SKIPPED (0.00s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_virtiorng: SKIPPED (0.00s)
+        2023-06-06 20:34:09 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_watchdog: SKIPPED (0.00s)
+        2023-06-06 20:34:09 - INFO     - SUMMARY:
+        2023-06-06 20:34:09 - INFO     - virtualization-image () - Ran 30 tests in 1321.219s
+
+      For the ``HIPC Validation`` selected as ``Extra Image Features``, a
+      similar output is printed out. The complete test suit takes around 28
+      minutes to complete.
+
+      .. code-block:: console
+
+        2023-06-07 09:48:52 - INFO     - Creating terminal default on terminal_ns_uart0
+        2023-06-07 09:49:00 - INFO     - Creating terminal tf-a on terminal_sec_uart
+        2023-06-07 09:49:01 - INFO     - Creating terminal scp on terminal_uart_scp
+        2023-06-07 09:49:01 - INFO     - Creating terminal lcp on terminal_uart_lcp
+        2023-06-07 09:49:01 - INFO     - Creating terminal rss on terminal_rss_uart
+        2023-06-07 09:49:01 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+        2023-06-07 09:49:01 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+        2023-06-07 09:49:01 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+        2023-06-07 09:49:01 - INFO     - default: Waiting for login prompt
+        2023-06-07 10:11:24 - INFO     - HIPC to Cluster 0 not tested for DomU2
+        2023-06-07 10:16:12 - INFO     - HIPC to Cluster 2 not tested for DomU2
+        2023-06-07 10:16:12 - INFO     - Ping to Cluster 0 not tested for DomU2
+        2023-06-07 10:16:12 - INFO     - Ping to Cluster 2 not tested for DomU2
+        2023-06-07 10:16:30 - INFO     - RESULTS:
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (0.79s)
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster0: PASSED (277.58s)
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster1: PASSED (274.31s)
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster2: PASSED (301.45s)
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster0: PASSED (28.39s)
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster1: PASSED (30.31s)
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster2: PASSED (30.89s)
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster1: PASSED (259.74s)
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster1: PASSED (28.48s)
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (384.36s)
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster0: SKIPPED (0.00s)
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster2: SKIPPED (0.00s)
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster0: SKIPPED (0.00s)
+        2023-06-07 10:16:30 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster2: SKIPPED (0.00s)
+        2023-06-07 10:16:30 - INFO     - SUMMARY:
+        2023-06-07 10:16:30 - INFO     - virtualization-image () - Ran 18 tests in 1635.156s
+        2023-06-07 10:16:30 - INFO     - virtualization-image - OK - All required tests passed (successes=14, skipped=4, failures=0, errors=0)
 
   * |Arm SystemReadyTM| IR ACS:
 
