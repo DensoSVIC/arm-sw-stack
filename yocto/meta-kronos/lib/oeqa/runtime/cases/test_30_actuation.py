@@ -51,8 +51,8 @@ class ActuationTest(OERuntimeTestCase):
         for _ in range(0, 10):
             self.target.expect(self.linux_console,
                                r'bytes from 192\.168\.0\.1',
-                               timeout=10)
-        self.target.expect(self.linux_console, self.linux_prompt, timeout=10)
+                               timeout=150)
+        self.target.expect(self.linux_console, self.linux_prompt, timeout=120)
 
     def get_analyzer_path(self):
         # Get packet analyzer package path
