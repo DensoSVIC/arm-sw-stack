@@ -48,6 +48,7 @@ SRC_URI += "\
     file://0036-xen-arm-domctl-Add-SLC-related-PSR-domctl-subops.patch \
     file://0037-tools-xl-psr-Support-SLC-in-xl-psr-cat-show-set-comm.patch \
     file://0038-xen-arm-Allow-MPAM-v1.1-in-MSC-hardware-probing-proc.patch \
+    file://0039-libs-light-Increase-hotplug-timeout.patch \
     "
 # /* cSpell:enable */
 

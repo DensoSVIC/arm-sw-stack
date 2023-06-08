@@ -1,0 +1,33 @@
+From 7cb4a061b989da52936e67e74f9e4a577e1922cd Mon Sep 17 00:00:00 2001
+From: Peter Hoyes <Peter.Hoyes@arm.com>
+Date: Thu, 8 Jun 2023 14:17:57 +0100
+Subject: [PATCH] libs/light: Increase hotplug timeout
+
+On Kronos with systemd, where multiple network interfaces are
+initialized in parallel with other workloads, the hotplug script takes
+more than 40s to execute.
+
+Increase the timeout to 120s.
+
+Upstream-Status: Inappropriate [Kronos-specific]
+Signed-off-by: Peter Hoyes <Peter.Hoyes@arm.com>
+---
+ tools/libs/light/libxl_internal.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/libs/light/libxl_internal.h b/tools/libs/light/libxl_internal.h
+index a7c447c10e..7e9ef2a769 100644
+--- a/tools/libs/light/libxl_internal.h
++++ b/tools/libs/light/libxl_internal.h
+@@ -93,7 +93,7 @@
+ 
+ #define LIBXL_INIT_TIMEOUT 10
+ #define LIBXL_DESTROY_TIMEOUT 10
+-#define LIBXL_HOTPLUG_TIMEOUT 40
++#define LIBXL_HOTPLUG_TIMEOUT 120
+ /* QEMU may be slow to load and start due to a bug in Linux where the I/O
+  * subsystem sometime produce high latency under load. */
+ #define LIBXL_DEVICE_MODEL_START_TIMEOUT 60
+-- 
+2.34.1
+
