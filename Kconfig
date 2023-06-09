@@ -19,14 +19,21 @@ config ARM_FVP_EULA_ACCEPT_CHOICE
 comment "Target Build Setup"
 
 choice
-    prompt "Reference Stack Architecture"
+    prompt "Reference Stack Type"
+    default REFERENCE_STACK_FULL
+
+config REFERENCE_STACK_FULL
+    bool "Full Software Reference Stack"
+
+config REFERENCE_STACK_SYSTEMREADY
+    bool "Arm SystemReady IR Reference Stack"
+
+endchoice
+
+choice
+    depends on REFERENCE_STACK_FULL
+    prompt "Full Software Reference Stack Architecture"
     default ARCHITECTURE_BAREMETAL
-
-config ARCHITECTURE_SYSTEMREADY_FIRMWARE
-    bool "Arm SystemReady Firmware"
-
-config ARCHITECTURE_SYSTEMREADY_IR_ACS
-    bool "Arm SystemReady IR ACS"
 
 config ARCHITECTURE_BAREMETAL
     bool "Baremetal"
@@ -37,9 +44,8 @@ config ARCHITECTURE_VIRTUALIZATION
 endchoice
 
 choice
+    depends on REFERENCE_STACK_FULL
     prompt "Extra Image Features"
-    depends on !ARCHITECTURE_SYSTEMREADY_FIRMWARE
-    depends on !ARCHITECTURE_SYSTEMREADY_IR_ACS
     default EXTRA_IMAGE_FEATURES_ACTUATION
 
 config EXTRA_IMAGE_FEATURES_ACTUATION
@@ -51,14 +57,25 @@ config EXTRA_IMAGE_FEATURES_HIPC
 endchoice
 
 comment "Runtime Validation Setup"
-    depends on !ARCHITECTURE_SYSTEMREADY_FIRMWARE
-    depends on !ARCHITECTURE_SYSTEMREADY_IR_ACS
+    depends on REFERENCE_STACK_FULL
 
 config RUN_TESTS
-    depends on !ARCHITECTURE_SYSTEMREADY_FIRMWARE
-    depends on !ARCHITECTURE_SYSTEMREADY_IR_ACS
+    depends on REFERENCE_STACK_FULL
     bool "Run the tests automatically"
     default n
+
+choice
+    depends on REFERENCE_STACK_SYSTEMREADY
+    prompt "Arm SystemReady IR Reference Stack"
+    default SYSTEMREADY_IR_ACS
+
+config SYSTEMREADY_FIRMWARE
+    bool "Firmware Build Only"
+
+config SYSTEMREADY_IR_ACS
+    bool "Architecture Compliance Suite (ACS) Tests"
+
+endchoice
 
 ##############
 # Set up Kas #
@@ -68,8 +85,8 @@ config KAS_INCLUDE_ARCHITECTURE
     string
     default "kronos/yocto/kas/virtualization.yml" if ARCHITECTURE_VIRTUALIZATION
     default "kronos/yocto/kas/baremetal.yml" if ARCHITECTURE_BAREMETAL
-    default "kronos/yocto/kas/arm-systemready-firmware.yml" if ARCHITECTURE_SYSTEMREADY_FIRMWARE
-    default "kronos/yocto/kas/arm-systemready-ir-acs.yml" if ARCHITECTURE_SYSTEMREADY_IR_ACS
+    default "kronos/yocto/kas/arm-systemready-firmware.yml" if SYSTEMREADY_FIRMWARE
+    default "kronos/yocto/kas/arm-systemready-ir-acs.yml" if SYSTEMREADY_IR_ACS
 
 config KAS_INCLUDE_APPLICATION
     string
