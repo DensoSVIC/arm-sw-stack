@@ -59,7 +59,6 @@ plugins:
       - "*.patch"
       - "*.png"
       - "*.scc"
-      - "*.svg"
       - "*__init__.py"
       - ".csslintrc"
       - ".eslintignore"
@@ -68,6 +67,7 @@ plugins:
       - ".rubocop.yml"
       - "/license.rst"
       - "coffeelint.json"
+      - "/public"
   oelint-adv:
     enabled: true
     suppressions:
