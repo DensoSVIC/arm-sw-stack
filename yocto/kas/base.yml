@@ -22,7 +22,7 @@ repos:
   meta-cassini:
     url: https://gitlab.com/Linaro/cassini/meta-cassini
     path: layers/meta-cassini
-    refspec: main
+    refspec: mickledore-dev
     layers:
       meta-cassini-distro:
       meta-cassini-bsp: excluded
