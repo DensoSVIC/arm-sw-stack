@@ -15,3 +15,9 @@ env:
   ARTIFACTORY_KEY:
   SRC_URI_ACTUATION:
   TESTIMAGE_AUTO: "1"
+
+local_conf_header:
+  ci: |
+    BB_PRESSURE_MAX_CPU = "1"
+    BB_PRESSURE_MAX_MEMORY = "1"
+    BB_PRESSURE_MAX_IO = "1"
