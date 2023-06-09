@@ -82,7 +82,7 @@ Build
 *****
 
 The provided kas configuration menu can be used to build an image for
-different system architectures, and to apply different sets of customizable
+different reference stack types, and to apply different sets of customizable
 parameters. Therefore, the following build guidance is provided as a set of
 alternatives to target each of the main supported use cases.
 
@@ -101,15 +101,22 @@ To run the configuration menu:
 
 .. note::
   To build and run any image for the Kronos FVP the user has to accept its
-  EULA_, which can be done by selecting the corresponding configuration
+  `EULA`_, which can be done by selecting the corresponding configuration
   option in the build setup.
 
+Full Software Reference Stack
+=============================
 
 Baremetal Architecture
-======================
+----------------------
 
-To build a baremetal image choose ``Baremetal`` from
-the ``Reference Stack Architecture`` menu, then choose ``Save & Build``.
+To build a baremetal image:
+
+1. Select ``Full Software Reference Stack`` from the ``Reference Stack Type``
+   menu.
+2. Choose ``Baremetal`` from the
+   ``Full Software Reference Stack Architecture`` menu.
+3. Then choose ``Save & Build``.
 
 Validation tests can be run on the baremetal images.
 See :ref:`reproduce_run-time_integration_tests` for more details on running
@@ -119,10 +126,15 @@ run-time validation tests.
   The Safety Island Actuation Demo is built as part of the default deployment.
 
 Virtualization Architecture
-===========================
+---------------------------
 
-To build a virtualization image choose ``Virtualization`` from
-the ``Reference Stack Architecture`` menu, then choose ``Save & Build``.
+To build a virtualization image:
+
+1. Select ``Full Software Reference Stack`` from the ``Reference Stack Type``
+   menu.
+2. Choose ``Virtualization`` from the
+   ``Full Software Reference Stack Architecture`` menu.
+3. Then choose ``Save & Build``.
 
 As with the baremetal guidance above, the Reference Stack virtualization
 image can also run validation tests.
@@ -132,24 +144,33 @@ run-time validation tests.
 .. note::
   The Safety Island Actuation Demo is built as part of the default deployment.
 
-|Arm SystemReadyTM| Firmware Architecture
-=========================================
+|Arm SystemReadyTM| IR Reference Stack
+======================================
 
-To build an |Arm SystemReadyTM| Firmware image choose
-``Arm SystemReady Firmware`` from the
-``Reference Stack Architecture`` menu, then choose ``Save & Build``.
+Firmware Build Only
+-------------------
 
+To build the |Arm SystemReadyTM| firmware image:
 
-|Arm SystemReadyTM| IR ACS
-==========================
+1. Select ``Arm SystemReady IR Reference Stack`` from the
+   ``Reference Stack Type`` menu.
+2. Choose ``Firmware Build Only`` from the
+   ``Arm SystemReady IR Reference Stack`` menu.
+3. Then choose ``Save & Build``.
 
-To build an |Arm SystemReadyTM| IR ACS image choose ``Arm SystemReady IR ACS``
-from the ``Reference Stack Architecture`` menu, then choose ``Save & Build``.
+Architecture Compliance Suite (ACS) Tests
+-----------------------------------------
 
-As with the baremetal guidance above, the Reference Stack |Arm SystemReadyTM| IR
-ACS image can also run validation tests.
+To build and run the |Arm SystemReadyTM| IR ACS tests:
+
+1. Select ``Arm SystemReady IR Reference Stack`` from the
+   ``Reference Stack Type`` menu.
+2. Choose ``Architecture Compliance Suite (ACS) Tests`` from the
+   ``Arm SystemReady IR Reference Stack`` menu.
+3. Then choose ``Save & Build``.
+
 See :ref:`reproduce_run-time_integration_tests` for more details on running
-run-time validation tests.
+the |Arm SystemReadyTM| IR ACS tests.
 
 .. _reproduce_run:
 
