@@ -92,8 +92,6 @@ To run the configuration menu:
 
     kas menu kronos/Kconfig
 
-|
-
 .. image:: ../images/kronos_reference_stack_build_config.png
    :align: center
 
@@ -147,6 +145,11 @@ run-time validation tests.
 |Arm SystemReadyTM| IR Reference Stack
 ======================================
 
+.. image:: ../images/kronos_reference_stack_build_config_sr_ir.png
+   :align: center
+
+|
+
 Firmware Build Only
 -------------------
 
@@ -171,6 +174,23 @@ To build and run the |Arm SystemReadyTM| IR ACS tests:
 
 See :ref:`reproduce_run-time_integration_tests` for more details on running
 the |Arm SystemReadyTM| IR ACS tests.
+
+Linux Distros Installation
+--------------------------
+
+To build and run the |Arm SystemReadyTM| IR Linux distros installation tests:
+
+1. Select ``Arm SystemReady IR Reference Stack`` from the
+   ``Reference Stack Type`` menu.
+2. Choose ``Debian Linux Distro Installation`` or
+   ``Fedora Linux Distro Installation`` from the
+   ``Arm SystemReady IR Reference Stack`` menu.
+3. Then choose ``Save & Build``.
+4. Run the following command to start the installation:
+
+   .. code-block:: console
+
+      kas shell -c "../layers/meta-arm/scripts/runfvp --verbose --console"
 
 .. _reproduce_run:
 
