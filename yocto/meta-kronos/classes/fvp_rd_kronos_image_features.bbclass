@@ -56,6 +56,7 @@ FEATURE_PACKAGES_COMMON = " \
     packagegroup-machine-base \
     packagegroup-security-parsec \
     rpmsg-net-mod \
+    systemd-conf-kronos \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 
@@ -76,6 +77,7 @@ FEATURE_PACKAGES_virtualization = " \
 FEATURE_PACKAGES_domu = " \
     kronos-network-conf \
     packagegroup-core-boot \
+    systemd-conf-kronos \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 

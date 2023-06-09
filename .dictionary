@@ -369,6 +369,7 @@ POLLIN
 POLLNVAL
 postfunc
 postfuncs
+postinst
 POSTPROCESS
 postsmp
 prefuncs
@@ -476,8 +477,10 @@ sysvinit
 testimage
 THISDIR
 THRTL
+timesyncd
 titlesonly
 tmpdir
+tmpfiles
 toctree
 TOOLNG
 topdir
