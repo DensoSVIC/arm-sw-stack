@@ -36,3 +36,5 @@ and a high level overview of their purpose/functionality as a group:
     - :ref:`design_components_xen_downstream_changes` for Xen
   * - :ref:`design_components_linux`
     - :ref:`design_components_linux_downstream_changes` for Linux
+  * - :ref:`design_components_zephyr`
+    - :ref:`design_components_zephyr_downstream_changes` for Zephyr
