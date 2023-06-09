@@ -50,6 +50,7 @@ env:
 local_conf_header:
   cassini: |
     CASSINI_GENERIC_ARM64_FILESYSTEM = "0"
+    DISTRO_FEATURES:append = " ipv6"
     DISTRO_FEATURES:remove = "k3s"
     KERNEL_CLASSES:remove = "k3s_kernelcfg_check"
   kronos-extra-features: |

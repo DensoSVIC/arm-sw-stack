@@ -62,6 +62,7 @@ FEATURE_PACKAGES_COMMON = " \
 
 FEATURE_PACKAGES_baremetal = " \
     ${FEATURE_PACKAGES_COMMON} \
+    podman \
     "
 
 FEATURE_PACKAGES_virtualization = " \
@@ -78,6 +79,7 @@ FEATURE_PACKAGES_domu = " \
     kronos-network-conf \
     packagegroup-core-boot \
     systemd-conf-kronos \
+    podman \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 
