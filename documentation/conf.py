@@ -115,6 +115,8 @@ linux_version = "6.1"
 linux_version_patch = "25"
 xen_version = "4.17"
 zephyr_version = "3.3.0"
+fvp_version = "0.0"
+actuation_version = "main"
 
 rst_prolog = f"""
 .. |kas version| replace:: {kas_version}
@@ -159,6 +161,8 @@ rst_prolog = f"""
 .. |meta-virtualization revision| replace:: HEAD
 .. |meta-zephyr revision| replace:: HEAD
 .. |poky revision| replace:: HEAD
+.. |FVP_RD_Kronos version| replace:: {fvp_version}
+.. |Actuation version| replace:: {actuation_version}
 
 .. _kas build tool: https://kas.readthedocs.io/en/{kas_version}/userguide.html
 .. _kas menu tool: https://kas.readthedocs.io/en/{kas_version}/userguide.html#module-kas.plugins.menu
@@ -179,7 +183,7 @@ rst_prolog = f"""
 .. _Arm Memory Partitioning and Monitoring: https://developer.arm.com/documentation/ddi0598/latest
 .. _Zephyr: https://docs.zephyrproject.org/{zephyr_version}/
 .. _zperf sample: https://docs.zephyrproject.org/{zephyr_version}/connectivity/networking/api/zperf.html
-.. _Safety Island Actuation Demo: https://safety-island-actuation-demo.docs.arm.com/en/latest/
+.. _Safety Island Actuation Demo: https://safety-island-actuation-demo.docs.arm.com
 .. _ACS: https://developer.arm.com/Architectures/Architectural%20Compliance%20Suite
 .. _Arm SystemReady: https://www.arm.com/architecture/system-architectures/systemready-certification-program
 .. _Arm SystemReady program: https://www.arm.com/architecture/system-architectures/systemready-certification-program
@@ -203,6 +207,9 @@ rst_prolog = f"""
 .. _U-boot: https://u-boot.readthedocs.io
 .. _Xen Hypervisor: https://xenproject.org/help/documentation
 .. _GitLab Issues: https://gitlab.arm.com/automotive-and-industrial/kronos/kronos/-/issues
+.. _FVP download: https://developer.arm.com
+.. _Actuation repository: https://gitlab.arm.com/automotive-and-industrial/safety-island/actuation-demo/-/tree/{actuation_version}
+.. _Zephyr repository: https://github.com/zephyrproject-rtos/zephyr/tree/v{zephyr_version}
 """  # noqa: E501
 
 # URL to use for references to repository paths
