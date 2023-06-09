@@ -37,6 +37,7 @@ System Requirements
     * x86_64 or aarch64 host to build and execute the Kronos FVP
     * Ubuntu 20.04 Linux distribution
     * At least 200GiB of free disk for the download and builds
+    * At least 32GiB of RAM memory
 
 
 Install Dependencies
@@ -45,12 +46,12 @@ Install Dependencies
 Please follow the Yocto Project documentation on
 `how to install the essential packages`_ required for the build host.
 
-Install the kas tool:
+Install the kas tool and its optional dependency (to use the "menu" plugin):
 
 .. code-block:: console
   :substitutions:
 
-  sudo -H pip3 install --upgrade kas==|kas version|
+  sudo -H pip3 install --upgrade kas==|kas version| && sudo apt install python3-newt
 
 For more details on kas installation, see `kas Dependencies & installation`_.
 
