@@ -133,7 +133,34 @@ rst_prolog = f"""
 .. |kronos remote| replace:: https://git.gitlab.arm.com/automotive-and-industrial/kronos/kronos.git
 .. |kronos version| replace:: {kronos_version}
 .. |Zephyr version| replace:: {zephyr_version}
+.. |yocto version| replace:: {yocto_version}
+.. |layer dependency statement| replace:: {kronos_version} branch
+.. |meta-arm repository| replace:: https://git.yoctoproject.org/git/meta-arm
+.. |meta-cassini repository| replace:: https://gitlab.com/Linaro/cassini/meta-cassini
+.. |meta-clang repository| replace:: https://github.com/kraj/meta-clang
+.. |meta-openembedded repository| replace:: https://git.openembedded.org/meta-openembedded
+.. |meta-security repository| replace:: https://git.yoctoproject.org/git/meta-security
+.. |meta-virtualization repository| replace:: https://git.yoctoproject.org/git/meta-virtualization
+.. |meta-zephyr repository| replace:: https://git.yoctoproject.org/git/meta-zephyr
+.. |poky repository| replace:: https://git.yoctoproject.org/git/poky
+.. |meta-arm branch| replace:: {yocto_version}
+.. |meta-cassini branch| replace:: {cassini_version}
+.. |meta-clang branch| replace:: {yocto_version}
+.. |meta-openembedded branch| replace:: {yocto_version}
+.. |meta-security branch| replace:: {yocto_version}
+.. |meta-virtualization branch| replace:: {yocto_version}
+.. |meta-zephyr branch| replace:: {yocto_version}
+.. |poky branch| replace:: {yocto_version}
+.. |meta-arm revision| replace:: HEAD
+.. |meta-cassini revision| replace:: HEAD
+.. |meta-clang revision| replace:: HEAD
+.. |meta-openembedded revision| replace:: HEAD
+.. |meta-security revision| replace:: HEAD
+.. |meta-virtualization revision| replace:: HEAD
+.. |meta-zephyr revision| replace:: HEAD
+.. |poky revision| replace:: HEAD
 
+.. _kas build tool: https://kas.readthedocs.io/en/{kas_version}/userguide.html
 .. _kas menu tool: https://kas.readthedocs.io/en/{kas_version}/userguide.html#module-kas.plugins.menu
 .. _how to install the essential packages: https://docs.yoctoproject.org/{yocto_doc_version}singleindex.html#required-packages-for-the-build-host
 .. _kas Dependencies & installation: https://kas.readthedocs.io/en/{kas_version}/userguide.html#dependencies-installation

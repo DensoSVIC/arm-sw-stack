@@ -29,6 +29,7 @@ baremetal
 BASEVERSION
 bbappend
 bbclass
+bbclasses
 BBCLASSEXTEND
 BBFILE
 BBFILES
@@ -176,6 +177,7 @@ Fancellu
 ffch
 fileextrapaths
 FILESEXTRAPATHS
+filesystems
 fprintf
 fstype
 FSTYPES

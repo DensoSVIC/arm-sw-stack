@@ -17,4 +17,5 @@ Solution Design
    hipc
    components
    applications/index
+   integration
    validation
