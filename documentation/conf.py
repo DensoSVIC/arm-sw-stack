@@ -100,6 +100,7 @@ copybutton_line_continuation_character = "\\"
 # Common variables for rst_prolog
 yocto_version = "mickledore"
 yocto_doc_version = yocto_version + "/"
+cassini_version = yocto_version + "-dev"
 kronos_version = "main"
 kas_version = "3.2.3"
 trusted_firmware_m_version = "bd8c7c9c40e522d4db10d4b45412f7a56eb5dae7"
@@ -128,6 +129,7 @@ rst_prolog = f"""
 .. |Xen version| replace:: {xen_version}
 .. |Linux version| replace:: {linux_version}.{linux_version_patch}
 .. |Arm SystemReadyTM| replace:: Arm SystemReady\\ :sup:`TM`
+.. |kronos repository| replace:: https://gitlab.arm.com/automotive-and-industrial/kronos/kronos
 .. |kronos remote| replace:: https://git.gitlab.arm.com/automotive-and-industrial/kronos/kronos.git
 .. |kronos version| replace:: {kronos_version}
 .. |Zephyr version| replace:: {zephyr_version}
@@ -148,7 +150,7 @@ rst_prolog = f"""
 .. _Device Tree specification: https://www.devicetree.org/
 .. _xl documentation: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.1.html
 .. _Arm Memory Partitioning and Monitoring: https://developer.arm.com/documentation/ddi0598/latest
-.. _Zephyr: https://docs.zephyrproject.org/latest/
+.. _Zephyr: https://docs.zephyrproject.org/{zephyr_version}/
 .. _zperf sample: https://docs.zephyrproject.org/{zephyr_version}/connectivity/networking/api/zperf.html
 .. _Safety Island Actuation Demo: https://safety-island-actuation-demo.docs.arm.com/en/latest/
 .. _ACS: https://developer.arm.com/Architectures/Architectural%20Compliance%20Suite
@@ -162,15 +164,24 @@ rst_prolog = f"""
 .. _EBBR Specification - UEFI Runtime Services: https://arm-software.github.io/ebbr/index.html#uefi-runtime-services
 .. _EBBR Specification - Required Platform Specific Elements: https://arm-software.github.io/ebbr/index.html#required-platform-specific-elements
 .. _edk2-test-parser: https://gitlab.arm.com/systemready/edk2-test-parser/-/blob/ir1/EBBR.yaml
-.. _Runtime Security Subsystem: https://tf-m-user-guide.trustedfirmware.org/platform/arm/rss/readme.html
+.. _Runtime Security Subsystem (RSS): https://tf-m-user-guide.trustedfirmware.org/platform/arm/rss/readme.html
 .. _Arm Confidential Compute Architecture: https://www.arm.com/architecture/security-features/arm-confidential-compute-architecture
-.. _SCP-firmware: https://github.com/ARM-software/SCP-firmware#readme
+.. _System Control Processor (SCP) Firmware: https://developer.arm.com/tools-and-software/open-source-software/%20firmware/scp-firmware
+.. _Arm Kronos Reference Design Technical Overview: https://developer.arm.com/documentation/107916/0100
+.. _Fast Models FVP Reference Guide: https://developer.arm.com/documentation/100966/latest
+.. _Cassini: https://cassini.docs.arm.com/en/{cassini_version}
+.. _Yocto Project Quick Start: https://docs.yoctoproject.org/{yocto_doc_version}brief-yoctoprojectqs/index.html
+.. _Trusted Firmware-A (TF-A): https://trustedfirmware-a.readthedocs.io
+.. _Trusted Firmware-M (TF-M): https://tf-m-user-guide.trustedfirmware.org
+.. _U-boot: https://u-boot.readthedocs.io
+.. _Xen Hypervisor: https://xenproject.org/help/documentation
+.. _GitLab Issues: https://gitlab.arm.com/automotive-and-industrial/kronos/kronos/-/issues
 """  # noqa: E501
 
 # URL to use for references to repository paths
 repo_url_pattern = os.environ.get(
     'REPO_URL_PATTERN',
-    'https://gitlab.arm.com/automotive-and-industrial/kronos/-/tree/{ref}/{path}')  # noqa
+    'https://gitlab.arm.com/automotive-and-industrial/kronos/kronos/-/tree/{ref}/{path}')  # noqa
 # Read the Docs sometimes adds extra quotes to environment variables
 repo_url_pattern = repo_url_pattern.strip("'")
 

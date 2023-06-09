@@ -43,7 +43,7 @@ The stack comprises of the following components:
 RSS
 ***
 
-The `Runtime Security Subsystem`_ (RSS) is a security subsystem fulfilling the
+The `Runtime Security Subsystem (RSS)`_ is a security subsystem fulfilling the
 requirements of the `Arm Confidential Compute Architecture`_ (CCA). The RSS
 additionally adds an isolated environment to provide platform security services
 that are outside of the scope of the CCA Platform Security Domain.
@@ -131,8 +131,9 @@ The LCP is managed by the SCP. The main functionality of the LCP are: Per-core
 Dynamic Voltage Frequency Scaling (DVFS), Thermal management, Max Power
 Mitigation Mechanism (MPMM), Power limit enforcement and Sensor Data Collection.
 
-`SCP-firmware`_ provides a software reference implementation for the System
-Control Processor (SCP) and Local Power Controller (LCP) components.
+The `System Control Processor (SCP) Firmware`_ provides a software reference
+implementation for the System Control Processor (SCP) and Local Power
+Controller (LCP) components.
 
 MHUv3 Communication
 ===================
