@@ -333,7 +333,7 @@ Limitations of MPAM support in Xen include:
 Downstream Changes
 ------------------
 Patches for the Xen MPAM extension support at
-:kronos-repo:`yocto/meta-kronos/dynamic-layers/virtualization-layer/recipes-extended/xen/files/`
+:kronos-repo:`yocto/meta-kronos/recipes-extended/xen/files/`
 to:
 
  * Discover MPAM CPU feature
@@ -369,6 +369,14 @@ Downstream Changes
 
 The arm_si_rproc and rpmsg_net drivers can be found at
 :kronos-repo:`components/primary_compute/linux_drivers`.
+
+Additional patches are located at
+:kronos-repo:`yocto/meta-kronos/recipes-kernel/linux/files` related to:
+
+ * Make virtio rpmsg buffer size configurable
+ * Make mailbox transmit queue size configurable
+ * Disable remoteproc virtio rpmsg to use DMA api in Xen guest
+ * Modify MHUv2 driver to make it work with MHUv3
 
 *************
 Safety Island

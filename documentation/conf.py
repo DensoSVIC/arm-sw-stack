@@ -110,7 +110,7 @@ scp_firmware_version = "f71f34237365b2c4b54be798aba79b740dcc4020"
 # /* cspell:disable-next-line */
 scp_firmware_base_version = "master branch post v2.11.0"
 trusted_firmware_a_version = "2.8.0"
-uboot_version = "2022.07"
+uboot_version = "2023.01"
 linux_version = "6.1"
 linux_version_patch = "25"
 xen_version = "4.17"
