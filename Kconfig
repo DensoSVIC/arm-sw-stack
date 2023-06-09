@@ -75,6 +75,12 @@ config SYSTEMREADY_FIRMWARE
 config SYSTEMREADY_IR_ACS
     bool "Architecture Compliance Suite (ACS) Tests"
 
+config SYSTEMREADY_LINUX_DISTRO_DEBIAN
+    bool "Debian Linux Distro Installation"
+
+config SYSTEMREADY_LINUX_DISTRO_FEDORA
+    bool "Fedora Linux Distro Installation"
+
 endchoice
 
 ##############
@@ -87,6 +93,8 @@ config KAS_INCLUDE_ARCHITECTURE
     default "kronos/yocto/kas/baremetal.yml" if ARCHITECTURE_BAREMETAL
     default "kronos/yocto/kas/arm-systemready-firmware.yml" if SYSTEMREADY_FIRMWARE
     default "kronos/yocto/kas/arm-systemready-ir-acs.yml" if SYSTEMREADY_IR_ACS
+    default "kronos/yocto/kas/arm-systemready-linux-distros-debian.yml" if SYSTEMREADY_LINUX_DISTRO_DEBIAN
+    default "kronos/yocto/kas/arm-systemready-linux-distros-fedora.yml" if SYSTEMREADY_LINUX_DISTRO_FEDORA
 
 config KAS_INCLUDE_APPLICATION
     string
