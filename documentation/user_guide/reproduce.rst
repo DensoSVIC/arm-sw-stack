@@ -176,8 +176,8 @@ To build and run the |Arm SystemReadyTM| IR ACS tests:
    ``Arm SystemReady IR Reference Stack`` menu.
 3. Then choose ``Save & Build``.
 
-See :ref:`reproduce_sr_ir_validation` for more details on running the
-|Arm SystemReadyTM| IR ACS tests.
+See :ref:`reproduce_arm_systemready_ir_validation` for more details on running
+the |Arm SystemReadyTM| IR ACS tests.
 
 .. _user_guide_reproduce_sr_ir_linux_install:
 
@@ -198,8 +198,8 @@ To build and run the |Arm SystemReadyTM| IR Linux distros installation tests:
 
       kas shell -c "../layers/meta-arm/scripts/runfvp --verbose --console"
 
-See :ref:`reproduce_sr_ir_validation` for more details on running the Linux
-distros installation tests.
+See :ref:`reproduce_arm_systemready_ir_validation` for more details on running
+the Linux distros installation tests.
 
 .. _reproduce_run:
 
@@ -529,7 +529,7 @@ The following validation tests can be performed on the Reference Stack:
         2023-06-07 10:16:30 - INFO     - virtualization-image () - Ran 18 tests in 1635.156s
         2023-06-07 10:16:30 - INFO     - virtualization-image - OK - All required tests passed (successes=14, skipped=4, failures=0, errors=0)
 
-.. _reproduce_sr_ir_validation:
+.. _reproduce_arm_systemready_ir_validation:
 
 *********************************
 |Arm SystemReadyTM| IR Validation
@@ -594,8 +594,8 @@ printed out:
   2023-05-16 11:19:18 - INFO     - arm-systemready-ir-acs - OK - All required tests passed (successes=1, skipped=0, failures=0, errors=0)
   2023-05-16 11:19:20 - INFO     - ACS test suite results are consistent with baseline.
 
-Please refer to :ref:`validation_systemready_ir_tests` for an explanation on how
-the validation tests are set up and how they work in the Reference Stack.
+Please refer to :ref:`systemready_ir_acs_tests` for an explanation on how the
+ACS tests are set up and how they work in the Reference Stack.
 
 Linux Distributions Installation Tests
 ======================================
@@ -622,7 +622,11 @@ and `Fedora Server`_. To install Debian, you can refer to the
   The installation process may fail for some reason, please do not expect the
   installation to be successful every time.
 
-Here are some tips and possible problems encountered during the installation
+Please refer to :ref:`systemready_ir_linux_install` for an explanation on how
+the Linux distros installation is set up and how they work in the Reference
+Stack.
+
+Below are some tips and possible problems encountered during the installation
 process for reference.
 
 Debian

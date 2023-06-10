@@ -19,3 +19,4 @@ Solution Design
    applications/index
    integration
    validation
+   systemready_ir
