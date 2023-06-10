@@ -142,6 +142,8 @@ run-time validation tests.
 .. note::
   The Safety Island Actuation Demo is built as part of the default deployment.
 
+.. _user_guide_reproduce_sr_ir:
+
 |Arm SystemReadyTM| IR Reference Stack
 ======================================
 
@@ -161,6 +163,8 @@ To build the |Arm SystemReadyTM| firmware image:
    ``Arm SystemReady IR Reference Stack`` menu.
 3. Then choose ``Save & Build``.
 
+.. _user_guide_reproduce_sr_ir_acs:
+
 Architecture Compliance Suite (ACS) Tests
 -----------------------------------------
 
@@ -172,8 +176,10 @@ To build and run the |Arm SystemReadyTM| IR ACS tests:
    ``Arm SystemReady IR Reference Stack`` menu.
 3. Then choose ``Save & Build``.
 
-See :ref:`reproduce_run-time_integration_tests` for more details on running
-the |Arm SystemReadyTM| IR ACS tests.
+See :ref:`reproduce_sr_ir_validation` for more details on running the
+|Arm SystemReadyTM| IR ACS tests.
+
+.. _user_guide_reproduce_sr_ir_linux_install:
 
 Linux Distros Installation
 --------------------------
@@ -191,6 +197,9 @@ To build and run the |Arm SystemReadyTM| IR Linux distros installation tests:
    .. code-block:: console
 
       kas shell -c "../layers/meta-arm/scripts/runfvp --verbose --console"
+
+See :ref:`reproduce_sr_ir_validation` for more details on running the Linux
+distros installation tests.
 
 .. _reproduce_run:
 
@@ -520,57 +529,223 @@ The following validation tests can be performed on the Reference Stack:
         2023-06-07 10:16:30 - INFO     - virtualization-image () - Ran 18 tests in 1635.156s
         2023-06-07 10:16:30 - INFO     - virtualization-image - OK - All required tests passed (successes=14, skipped=4, failures=0, errors=0)
 
-  * |Arm SystemReadyTM| IR ACS:
+.. _reproduce_sr_ir_validation:
 
-    The previous test takes around 8 hours to complete.
+*********************************
+|Arm SystemReadyTM| IR Validation
+*********************************
 
-    A similar output should be printed out:
+|Arm SystemReadyTM| IR ACS Tests
+================================
 
-    .. code-block:: console
+The ACS for the |Arm SystemReadyTM| IR certification is delivered through a live
+OS image, which enables the basic automation to run the tests.
 
-      2023-05-16 03:50:16 - INFO     - NOTE: recipe arm-systemready-ir-acs-1.0-r0: task do_testimage: Started
-      2023-05-16 03:50:16 - INFO     - Creating terminal default on terminal_ns_uart0
-      2023-05-16 03:50:25 - INFO     - Creating terminal tf-a on terminal_sec_uart
-      2023-05-16 03:50:25 - INFO     - Creating terminal scp on terminal_uart_scp
-      2023-05-16 03:50:25 - INFO     - Creating terminal lcp on terminal_uart_lcp
-      2023-05-16 03:50:26 - INFO     - Creating terminal rss on terminal_rss_uart
-      2023-05-16 03:50:26 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
-      2023-05-16 03:50:26 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
-      2023-05-16 03:50:26 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
-      2023-05-16 03:55:48 - INFO     - Test Group (PlatformSpecificElements): FAILED
-      2023-05-16 03:56:45 - INFO     - Test Group (RequiredElements): FAILED
-      2023-05-16 03:57:41 - INFO     - Test Group (CheckEvent_Conf): PASSED
-      2023-05-16 03:58:37 - INFO     - Test Group (CheckEvent_Func): PASSED
-      2023-05-16 03:59:34 - INFO     - Test Group (CloseEvent_Func): PASSED
-      2023-05-16 04:00:34 - INFO     - Test Group (CreateEventEx_Conf): PASSED
-      2023-05-16 04:01:30 - INFO     - Test Group (CreateEventEx_Func): PASSED
-      2023-05-16 04:02:29 - INFO     - Test Group (CreateEvent_Conf): PASSED
-      2023-05-16 04:03:26 - INFO     - Test Group (CreateEvent_Func): PASSED
-      2023-05-16 04:04:23 - INFO     - Test Group (RaiseTPL_Func): PASSED
-      2023-05-16 04:05:19 - INFO     - Test Group (RestoreTPL_Func): PASSED
-      2023-05-16 04:06:16 - INFO     - Test Group (SetTimer_Conf): PASSED
-      2023-05-16 04:11:54 - INFO     - Test Group (SetTimer_Func): PASSED
-      2023-05-16 04:12:51 - INFO     - Test Group (SignalEvent_Func): PASSED
-      2023-05-16 04:13:48 - INFO     - Test Group (WaitForEvent_Conf): PASSED
-      2023-05-16 04:14:59 - INFO     - Test Group (WaitForEvent_Func): PASSED
-      2023-05-16 04:15:56 - INFO     - Test Group (AllocatePages_Conf): PASSED
-      2023-05-16 04:18:06 - INFO     - Test Group (AllocatePages_Func): PASSED
-      2023-05-16 04:19:02 - INFO     - Test Group (AllocatePool_Conf): PASSED
-      2023-05-16 04:20:01 - INFO     - Test Group (AllocatePool_Func): PASSED
-      2023-05-16 04:20:57 - INFO     - Test Group (FreePages_Conf): PASSED
-      2023-05-16 04:21:56 - INFO     - Test Group (FreePages_Func): PASSED
-      2023-05-16 04:22:52 - INFO     - Test Group (GetMemoryMap_Conf): PASSED
-      2023-05-16 04:23:48 - INFO     - Test Group (GetMemoryMap_Func): PASSED
-      ...
-      ...
-      2023-05-16 11:18:55 - INFO     - Test Group (virtio_blk virtio1): vda
-      2023-05-16 11:19:09 - INFO     - Linux tests complete
-      2023-05-16 11:19:18 - INFO     - RESULTS:
-      2023-05-16 11:19:18 - INFO     - RESULTS - arm_systemready_ir_acs.SystemReadyACSTest.test_acs: PASSED (26923.49s)
-      2023-05-16 11:19:18 - INFO     - SUMMARY:
-      2023-05-16 11:19:18 - INFO     - arm-systemready-ir-acs () - Ran 1 test in 26923.488s
-      2023-05-16 11:19:18 - INFO     - arm-systemready-ir-acs - OK - All required tests passed (successes=1, skipped=0, failures=0, errors=0)
-      2023-05-16 11:19:20 - INFO     - ACS test suite results are consistent with baseline.
+Follow the steps listed in :ref:`user_guide_reproduce_sr_ir_acs`, the system
+will boot with the ACS live OS image and the ACS tests will run automatically
+after the system boots.
 
-  Please refer to :ref:`validation` for an explanation on how the validation
-  tests are set up and how they work in the Reference Stack.
+The previous tests take around 8 hours to complete. A similar output should be
+printed out:
+
+.. code-block:: console
+
+  2023-05-16 03:50:16 - INFO     - NOTE: recipe arm-systemready-ir-acs-1.0-r0: task do_testimage: Started
+  2023-05-16 03:50:16 - INFO     - Creating terminal default on terminal_ns_uart0
+  2023-05-16 03:50:25 - INFO     - Creating terminal tf-a on terminal_sec_uart
+  2023-05-16 03:50:25 - INFO     - Creating terminal scp on terminal_uart_scp
+  2023-05-16 03:50:25 - INFO     - Creating terminal lcp on terminal_uart_lcp
+  2023-05-16 03:50:26 - INFO     - Creating terminal rss on terminal_rss_uart
+  2023-05-16 03:50:26 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+  2023-05-16 03:50:26 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+  2023-05-16 03:50:26 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+  2023-05-16 03:55:48 - INFO     - Test Group (PlatformSpecificElements): FAILED
+  2023-05-16 03:56:45 - INFO     - Test Group (RequiredElements): FAILED
+  2023-05-16 03:57:41 - INFO     - Test Group (CheckEvent_Conf): PASSED
+  2023-05-16 03:58:37 - INFO     - Test Group (CheckEvent_Func): PASSED
+  2023-05-16 03:59:34 - INFO     - Test Group (CloseEvent_Func): PASSED
+  2023-05-16 04:00:34 - INFO     - Test Group (CreateEventEx_Conf): PASSED
+  2023-05-16 04:01:30 - INFO     - Test Group (CreateEventEx_Func): PASSED
+  2023-05-16 04:02:29 - INFO     - Test Group (CreateEvent_Conf): PASSED
+  2023-05-16 04:03:26 - INFO     - Test Group (CreateEvent_Func): PASSED
+  2023-05-16 04:04:23 - INFO     - Test Group (RaiseTPL_Func): PASSED
+  2023-05-16 04:05:19 - INFO     - Test Group (RestoreTPL_Func): PASSED
+  2023-05-16 04:06:16 - INFO     - Test Group (SetTimer_Conf): PASSED
+  2023-05-16 04:11:54 - INFO     - Test Group (SetTimer_Func): PASSED
+  2023-05-16 04:12:51 - INFO     - Test Group (SignalEvent_Func): PASSED
+  2023-05-16 04:13:48 - INFO     - Test Group (WaitForEvent_Conf): PASSED
+  2023-05-16 04:14:59 - INFO     - Test Group (WaitForEvent_Func): PASSED
+  2023-05-16 04:15:56 - INFO     - Test Group (AllocatePages_Conf): PASSED
+  2023-05-16 04:18:06 - INFO     - Test Group (AllocatePages_Func): PASSED
+  2023-05-16 04:19:02 - INFO     - Test Group (AllocatePool_Conf): PASSED
+  2023-05-16 04:20:01 - INFO     - Test Group (AllocatePool_Func): PASSED
+  2023-05-16 04:20:57 - INFO     - Test Group (FreePages_Conf): PASSED
+  2023-05-16 04:21:56 - INFO     - Test Group (FreePages_Func): PASSED
+  2023-05-16 04:22:52 - INFO     - Test Group (GetMemoryMap_Conf): PASSED
+  2023-05-16 04:23:48 - INFO     - Test Group (GetMemoryMap_Func): PASSED
+  ...
+  ...
+  2023-05-16 11:18:55 - INFO     - Test Group (virtio_blk virtio1): vda
+  2023-05-16 11:19:09 - INFO     - Linux tests complete
+  2023-05-16 11:19:18 - INFO     - RESULTS:
+  2023-05-16 11:19:18 - INFO     - RESULTS - arm_systemready_ir_acs.SystemReadyACSTest.test_acs: PASSED (26923.49s)
+  2023-05-16 11:19:18 - INFO     - SUMMARY:
+  2023-05-16 11:19:18 - INFO     - arm-systemready-ir-acs () - Ran 1 test in 26923.488s
+  2023-05-16 11:19:18 - INFO     - arm-systemready-ir-acs - OK - All required tests passed (successes=1, skipped=0, failures=0, errors=0)
+  2023-05-16 11:19:20 - INFO     - ACS test suite results are consistent with baseline.
+
+Please refer to :ref:`validation_systemready_ir_tests` for an explanation on how
+the validation tests are set up and how they work in the Reference Stack.
+
+Linux Distributions Installation Tests
+======================================
+
+The |Arm SystemReadyTM| IR must boot at least two unmodified generic UEFI
+distribution images from an ISO image. To test the installation of a Linux
+distribution, follow the steps listed in
+:ref:`user_guide_reproduce_sr_ir_linux_install` to start the installation.
+
+This Software Stack currently supports two Linux distributions: `Debian Stable`_
+and `Fedora Server`_. To install Debian, you can refer to the
+`Debian GNU/Linux Installation Guide`_. Similarly, you can refer to the
+`Fedora Installation Guide`_ for the installation of Fedora.
+
+.. note::
+
+  The installation of a Linux distribution requires some manual interaction, for
+  example, some necessary selections or confirmations, entering the user and
+  password, etc.
+
+  The whole installation process takes a long time (possibly up to 24 hours, or
+  even longer).
+
+  The installation process may fail for some reason, please do not expect the
+  installation to be successful every time.
+
+Here are some tips and possible problems encountered during the installation
+process for reference.
+
+Debian
+------
+
+The whole process of installing Debian will probably take about 5 hours.
+
+The following are problems that have been encountered during the Debian
+installation process and how to solve them:
+
+* Detect and mount installation media
+
+    1. After the installer starts, it will prompt
+       ``No device for installation media was detected.`` in the
+       ``Detect and mount installation media`` tab.
+       Choose ``No`` to continue.
+
+    .. image:: ../images/sr-ir-linux-distro-debian-install-media-0.png
+       :align: center
+
+|
+
+    2. Choose ``Yes`` to Manually select a module and device for installation
+       media.
+
+    .. image:: ../images/sr-ir-linux-distro-debian-install-media-1.png
+       :align: center
+
+|
+
+    3. Choose ``none`` to continue.
+
+    .. image:: ../images/sr-ir-linux-distro-debian-install-media-2.png
+       :align: center
+
+|
+
+    4. Input ``/dev/mmcblk0`` as the device file for accessing the installation
+       media.
+
+    .. image:: ../images/sr-ir-linux-distro-debian-install-media-3.png
+       :align: center
+
+|
+
+* Install the GRUB boot loader
+
+  When the installation reaches the ``Install the GRUB boot loader`` phase,
+  there will be an error ``Unable to install GRUB in dummy``.
+  This is because on EBBR platform, UEFI SetVariable() is not required at
+  runtime (however, it is required at boot time), and Kronos happens to not
+  support UEFI SetVariable() yet.
+
+    .. image:: ../images/sr-ir-linux-distro-debian-install-grub.png
+       :align: center
+
+|
+
+  One workaround we have is to "execute a shell" when the GRUB install phase
+  throws the above error. To execute a shell, press ``Ctrl-a n`` to switch the
+  debug shell, and run the following commands:
+
+  .. code-block:: console
+
+     # chroot /target
+     # update-grub
+     # mkdir /boot/efi/EFI/BOOT
+     # cp -v /boot/efi/EFI/debian/grubaa64.efi /boot/efi/EFI/BOOT/bootaa64.efi
+
+  A snapshot is as below:
+
+  .. code-block:: console
+
+     [           1- installer   (2*shell)  3 shell  4 log           ][ Jun 06 23:13 ]
+     #
+     # chroot /target
+     # update-grub
+     Generating grub configuration file ...
+     Found linux image: /boot/vmlinuz-5.10.0-23-arm64
+     Found initrd image: /boot/initrd.img-5.10.0-23-arm64
+     Found linux image: /boot/vmlinuz-5.10.0-22-arm64
+     Found initrd image: /boot/initrd.img-5.10.0-22-arm64
+     Warning: os-prober will be executed to detect other bootable partitions.
+     Its output will be used to detect bootable binaries on them and create new boot
+     done
+     # ls /boot/efi/EFI/debian/
+     BOOTAA64.CSV  fbaa64.efi  grub.cfg  grubaa64.efi  mmaa64.efi  shimaa64.efi
+     # mkdir /boot/efi/EFI/BOOT
+     # cp -v /boot/efi/EFI/debian/grubaa64.efi /boot/efi/EFI/BOOT/bootaa64.efi
+     '/boot/efi/EFI/debian/grubaa64.efi' -> '/boot/efi/EFI/BOOT/bootaa64.efi'
+     #
+
+Fedora
+------
+
+Here are some tips for installing Fedora:
+
+1. It needs a little long time to wait GRUB to load installer kernel and initrd.
+2. Choose text mode installer.
+3. Use default storage partition setting.
+4. The installer will be stuck at "Configuring kernel-core.aarch64" for a long
+   time.
+5. Wait serval hours, the installer will verify the installed packages and
+   continue to install bootloader.
+6. The following error occurred while installing the boot loader. Ignore the
+   error by responding 'yes' and continue.
+
+   .. code-block:: console
+
+      Installing boot loader
+      ================================================================================
+      ================================================================================
+      Question
+
+      The following error occurred while installing the boot loader. The system will
+      not be bootable. Would you like to ignore this and continue with installation?
+
+      Failed to set new efi boot target. This is most likely a kernel or firmware bug.
+
+      Please respond 'yes' or 'no': yes
+
+      [anaconda]1:main* 2:shell  3:log  4:storage-log >Switch tab: Alt+Tab | Help: F1
+
+7. It may need more then 24 hours to complete the installation.
+8. Force restart the FVP, and boot the installed OS.
+9. Users can login the Linux shell about 20 minutes after restart.

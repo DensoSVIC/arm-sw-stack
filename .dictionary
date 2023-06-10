@@ -42,6 +42,8 @@ bitbake
 bitbang
 bitfield
 BITMASK
+BOOTAA
+bootaa
 bootable
 bootimg
 bootinfo
@@ -174,6 +176,7 @@ ethsi
 EVNT
 extlinks
 Fancellu
+fbaa
 ffch
 fileextrapaths
 FILESEXTRAPATHS
@@ -191,6 +194,7 @@ gicv
 gntalloc
 gntdev
 gnueabi
+grubaa
 HARDLIM
 helloworld
 heredocs
@@ -298,6 +302,8 @@ microcontrollers
 migr
 miibus
 mkdirhier
+mmaa
+mmcblk
 MMFR
 mmio
 MMUCR
@@ -429,6 +435,7 @@ sendbits
 sendcontrol
 sendline
 setuptools
+shimaa
 shpool
 SHRAM
 slirp

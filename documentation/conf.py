@@ -211,6 +211,10 @@ rst_prolog = f"""
 .. _FVP download: https://developer.arm.com
 .. _Actuation repository: https://gitlab.arm.com/automotive-and-industrial/safety-island/actuation-demo/-/tree/{actuation_version}
 .. _Zephyr repository: https://github.com/zephyrproject-rtos/zephyr/tree/v{zephyr_version}
+.. _Debian Stable: https://www.debian.org/releases/stable/
+.. _Debian GNU/Linux Installation Guide: https://www.debian.org/releases/bullseye/arm64/
+.. _Fedora Server: https://fedoraproject.org/server/download/
+.. _Fedora Installation Guide: https://docs.fedoraproject.org/en-US/fedora/latest/getting-started/
 """  # noqa: E501
 
 # URL to use for references to repository paths
