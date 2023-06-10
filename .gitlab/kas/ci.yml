@@ -21,3 +21,5 @@ local_conf_header:
     BB_PRESSURE_MAX_CPU = "1"
     BB_PRESSURE_MAX_MEMORY = "1"
     BB_PRESSURE_MAX_IO = "1"
+    INHERIT += "rm_work"
+    RM_WORK_EXCLUDE_ITEMS:append = " testimage"
