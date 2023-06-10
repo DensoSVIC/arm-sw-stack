@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+IMAGE_CLASSES:remove = "testimage"
 IMAGE_INSTALL = ""
 IMAGE_LINGUAS = ""
 
