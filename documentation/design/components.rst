@@ -448,6 +448,7 @@ related to:
  * MPU region configuration
  * zperf and networking fixes
  * A fix for SMP early stack initialization
+ * FPU sharing fixes and workaround
 
 **********
 References
