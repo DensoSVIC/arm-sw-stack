@@ -36,6 +36,9 @@ The stack comprises of the following components:
   * - :ref:`design_components_linux`
     - |Linux version|
     - `Linux repository`_
+  * - :ref:`design_components_zephyr`
+    - |Zephyr version|
+    - `Zephyr repository`_
 
 .. _design_components_rss:
 
