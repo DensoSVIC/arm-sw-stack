@@ -501,7 +501,35 @@ static enum ethernet_hw_caps veth_rpmsg_caps(const struct device *dev)
 #if defined(CONFIG_NET_VLAN)
 		| ETHERNET_HW_VLAN
 #endif
+#if defined(CONFIG_NET_PROMISCUOUS_MODE)
+		| ETHERNET_PROMISC_MODE
+#endif
 	);
+}
+
+static int veth_rpmsg_set_config(const struct device *dev,
+				 enum ethernet_config_type type,
+				 const struct ethernet_config *config)
+{
+	int ret = 0;
+
+	(void) dev;
+	(void) type;
+	(void) config;
+
+	switch (type) {
+#if defined(CONFIG_NET_PROMISCUOUS_MODE)
+	case ETHERNET_CONFIG_TYPE_PROMISC_MODE:
+		/* Always succeed */
+		break;
+#endif
+
+	default:
+		ret = -ENOTSUP;
+		break;
+	}
+
+	return ret;
 }
 
 int veth_rpmsg_send(const struct device *dev, struct net_pkt *pkt)
@@ -544,6 +572,7 @@ static const struct ethernet_api veth_rpmsg_api = {
 	.iface_api.init     = veth_rpmsg_iface_init,
 	.start              = veth_rpmsg_start,
 	.get_capabilities   = veth_rpmsg_caps,
+	.set_config         = veth_rpmsg_set_config,
 	.send               = veth_rpmsg_send,
 };
 
