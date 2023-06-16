@@ -99,9 +99,28 @@ static int mailbox_notify(void *priv, uint32_t id)
 	return ipm_send(ctx->ipm_handle, 0, id, NULL, 0);
 }
 
+static struct net_if *get_iface(struct veth_rpmsg_ctx *ctx, uint16_t vlan_tag)
+{
+#if defined(CONFIG_NET_VLAN)
+	struct net_if *iface;
+
+	iface = net_eth_get_vlan_iface(ctx->iface, vlan_tag);
+	if (!iface) {
+		return ctx->iface;
+	}
+
+	return iface;
+#else
+	ARG_UNUSED(vlan_tag);
+
+	return ctx->iface;
+#endif
+}
+
 static int rpmsg_recv_callback(struct rpmsg_endpoint *ept, void *data,
 			       size_t len, uint32_t src, void *priv)
 {
+	uint16_t vlan_tag = NET_VLAN_TAG_UNSPEC;
 	struct veth_rpmsg_ctx *ctx = priv;
 	struct net_if *iface = ctx->iface;
 	struct net_pkt *pkt = NULL;
@@ -120,13 +139,35 @@ static int rpmsg_recv_callback(struct rpmsg_endpoint *ept, void *data,
 			return -1;
 		}
 
-		if (net_pkt_write(pkt, data, len) != 0) {
-			LOG_ERR("Failed to write buff into packet.\n");
+		ret = net_pkt_write(pkt, data, len);
+		if (ret != 0) {
+			LOG_ERR("Failed to write buff into packet. (%d)\n",
+				ret);
 			net_pkt_unref(pkt);
 			return -1;
 		}
 
-		ret = net_recv_data(iface, pkt);
+#if defined(CONFIG_NET_VLAN)
+		struct net_eth_hdr *hdr = NET_ETH_HDR(pkt);
+
+		if (ntohs(hdr->type) == NET_ETH_PTYPE_VLAN) {
+			struct net_eth_vlan_hdr *hdr_vlan =
+				(struct net_eth_vlan_hdr *)
+				NET_ETH_HDR(pkt);
+
+			net_pkt_set_vlan_tci(pkt, ntohs(hdr_vlan->vlan.tci));
+			vlan_tag = net_pkt_vlan_tag(pkt);
+
+#if CONFIG_NET_TC_RX_COUNT > 1
+			enum net_priority prio;
+
+			prio = net_vlan2priority(net_pkt_vlan_priority(pkt));
+			net_pkt_set_priority(pkt, prio);
+#endif
+		}
+#endif /* CONFIG_NET_VLAN */
+
+		ret = net_recv_data(get_iface(ctx, vlan_tag), pkt);
 		if (ret < 0) {
 			LOG_ERR("Failed to write data into Rx Q: %d.\n", ret);
 			net_pkt_unref(pkt);
@@ -386,7 +427,11 @@ static void veth_rpmsg_iface_init(struct net_if *iface)
 
 static enum ethernet_hw_caps veth_rpmsg_caps(const struct device *dev)
 {
-	return 0;
+	return (0
+#if defined(CONFIG_NET_VLAN)
+		| ETHERNET_HW_VLAN
+#endif
+	);
 }
 
 int veth_rpmsg_send(const struct device *dev, struct net_pkt *pkt)
