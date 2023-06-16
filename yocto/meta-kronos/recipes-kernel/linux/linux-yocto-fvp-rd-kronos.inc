@@ -20,5 +20,6 @@ KERNEL_FEATURES:append = "\
     features/mailbox/mailbox.scc \
     features/remoteproc/remoteproc.scc \
     features/rpmsg-virtio/rpmsg-virtio.scc \
+    features/vswitch/vswitch.scc \
     features/xen/xen.scc \
     "
