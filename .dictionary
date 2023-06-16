@@ -43,7 +43,6 @@ bitbang
 bitfield
 BITMASK
 BOOTAA
-bootaa
 bootable
 bootimg
 bootinfo
@@ -267,7 +266,6 @@ Linaro
 linuxboot
 linuxlogin
 LIVEPATCH
-livepatch
 LLRAM
 loadpolicy
 luca
@@ -325,7 +323,6 @@ nativesdk
 netback
 netdev
 NETIF
-netif
 NETPORT
 networkd
 noanonpython
@@ -398,12 +395,10 @@ pytest
 qcow
 Rahul
 RAMDISK
-ramdisk
 RAMFW
 rbar
 rbuf
 RDEPENDS
-rdepends
 rdkronos
 readl
 readreg
