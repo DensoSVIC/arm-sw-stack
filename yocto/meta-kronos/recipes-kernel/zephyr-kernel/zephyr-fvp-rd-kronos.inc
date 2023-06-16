@@ -31,6 +31,8 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0018-arch-arm64-Fix-the-STACK_INIT-logic-during-the-reset.patch;patchdir=zephyr \
     file://zephyr/0019-arch-arm64-Enable-FPU-and-FPU_SHARING-for-v8r-aarch6.patch;patchdir=zephyr \
     file://zephyr/0020-arch-arm64-Save-SIMD-registers-on-interrupts.patch;patchdir=zephyr \
+    file://zephyr/0021-net-config-Add-VLAN-identifier-as-network-initial-co.patch;patchdir=zephyr \
+    file://zephyr/0022-net-eth-Fix-ethernet-max-header-size-on-VLAN-presenc.patch;patchdir=zephyr \
     "
 # /* cSpell:enable */
 
