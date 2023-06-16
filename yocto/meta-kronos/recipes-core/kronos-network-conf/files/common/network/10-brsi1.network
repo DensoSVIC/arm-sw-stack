@@ -4,6 +4,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-[NetDev]
-Name=brext0
-Kind=bridge
+[Match]
+Name=brsi1
+
+[Network]
+Address=192.168.1.2/24

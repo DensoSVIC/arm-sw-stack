@@ -27,3 +27,13 @@ IMAGE_EFI_BOOT_FILES:append = " xen-${MACHINE}.efi;xen.efi xen.cfg"
 do_image_wic[depends] += "xen:do_deploy xen-cfg:do_deploy "
 
 EXTRA_IMAGEDEPENDS += "xen xen-cfg"
+
+update_si_bridges() {
+    sed -i -r 's/192.168.0.2/192.168.0.253/g' ${IMAGE_ROOTFS}/etc/systemd/network/10-brsi0.network
+    sed -i -r 's/192.168.1.2/192.168.1.253/g' ${IMAGE_ROOTFS}/etc/systemd/network/10-brsi1.network
+    sed -i -r 's/192.168.2.2/192.168.2.253/g' ${IMAGE_ROOTFS}/etc/systemd/network/10-brsi2.network
+}
+
+update_si_bridges[doc] = "Sets the Safety Island Bridges IP address for Dom0."
+
+ROOTFS_POSTPROCESS_COMMAND += "update_si_bridges; "

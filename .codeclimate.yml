@@ -104,5 +104,7 @@ plugins:
       - 'oelint.vars.multilineident'
       # This check does not support custom overrides
       - 'oelint.vars.specific'
+      # This check does not support custom overrides
+      - oelint.func.specific
     exclude_patterns:
       - "/public"

@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 [Match]
-Name=ethsi1
+Name=brsi2
 
 [Network]
-Address=192.168.1.2/24
+Address=192.168.2.2/24

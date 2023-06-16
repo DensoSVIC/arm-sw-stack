@@ -344,6 +344,7 @@ OECMAKE
 OECONF
 oeqa
 OFLOW
+oneshot
 OPENAMP
 openembedded
 OPENMAP
@@ -353,6 +354,7 @@ outorder
 ovrl
 OVRN
 OVRWR
+ovsbr
 PACKAGECONFIG
 packagegroup
 pagetab
@@ -426,6 +428,7 @@ runstate
 rvdev
 RXEN
 rxlen
+sbindir
 sched
 sendbits
 sendcontrol
@@ -503,6 +506,7 @@ ubfx
 uboot
 uefi
 uintptr
+unitdir
 unixadmin
 unmanaged
 upscaling
@@ -531,6 +535,7 @@ vpmu
 vqid
 vring
 vrings
+vsctl
 vtpm
 WDOG
 WINDWR

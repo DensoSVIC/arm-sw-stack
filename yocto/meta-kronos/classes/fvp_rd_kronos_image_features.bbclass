@@ -60,6 +60,7 @@ FEATURE_PACKAGES_COMMON = " \
     packagegroup-security-parsec \
     rpmsg-net-mod \
     systemd-conf-kronos \
+    systemd-ovs-kronos \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 

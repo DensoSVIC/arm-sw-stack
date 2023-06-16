@@ -4,6 +4,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-[NetDev]
-Name=brsi0
-Kind=bridge
+[Match]
+Name=eth0
+
+[Network]
+Bridge=ovsbr0

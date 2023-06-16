@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 [Match]
-Name=brsi0
+Name=ovsbr0
 
 [Network]
-Address=192.168.0.253/24
+DHCP=ipv4

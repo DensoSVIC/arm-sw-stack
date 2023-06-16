@@ -4,8 +4,10 @@
 #
 # SPDX-License-Identifier: MIT
 
-[Match]
-Name=eth0
+# Prevent systemd-networkd from managing the openvswitch interfaces
 
-[Network]
-DHCP=ipv4
+[Match]
+Driver=openvswitch
+
+[Link]
+Unmanaged=yes
