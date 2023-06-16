@@ -264,13 +264,16 @@ Follow the instructions below to reproduce the ``Actuation Demo`` selected as
 ``Extra Image Features`` from the :ref:`user_guide_reproduce_build` section.
 The Safety Island Actuation Demo is listed
 in :ref:`design_applications_actuation`. These instructions can be run on both
-Baremetal and Virtualization and an assumption has been made that the FVP has
-been launched as indicated under :ref:`reproduce_run`.
+the Baremetal and Virtualization architectures and an assumption has been made
+that the FVP has been launched as indicated under :ref:`reproduce_run`.
 
 .. note::
   When running the ``runfvp`` command, the Safety Island (SI) Cluster 0
   terminal running the Actuation Service is available via the window titled
   **"FVP terminal_uart_si_cluster0"**.
+
+Baremetal Architecture
+**********************
 
 1. Run the ``ping`` command from the Primary Compute (running Linux) to verify
    that it can communicate with the Safety Island (running Zephyr):
@@ -345,6 +348,19 @@ been launched as indicated under :ref:`reproduce_run`.
 
     Chain ID   Result
     0          AnalyzerResult.SUCCESS
+
+Virtualization Architecture
+***************************
+
+1. Enter the DomU1 console using the ``xl`` tool:
+
+   .. code-block:: shell
+
+      xl console domu1
+
+2. Follow the instructions as for the Baremetal Architecture above.
+
+3. To leave the DomU console, type ``Ctrl+]`` and enter ``send esc``.
 
 .. _reproduce_run-time_integration_tests:
 
