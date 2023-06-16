@@ -433,6 +433,7 @@ setuptools
 shimaa
 shpool
 SHRAM
+SIMD
 slirp
 smmu
 SMMUs
