@@ -14,7 +14,7 @@ Heterogeneous Inter-processor Communication (HIPC)
 Introduction
 ************
 
-The Kronos FVP contains Armv9.0-A (Primary Compute) and Safety Island
+The Kronos FVP contains Armv9-A (Primary Compute) and Armv8-R64 (Safety Island)
 heterogeneous processing elements which share data via the Message Handling
 Unit (MHUv3) and shared Dynamic Random-Access Memory (DRAM). The MHUv3 is a
 mailbox controller used for signal transmission and the shared memory is used
@@ -26,25 +26,26 @@ The remoteproc framework allows different platforms/architectures to control
 (power on/off, load firmware) remote processors while abstracting the hardware
 differences, so the entire driver doesn't need to be duplicated. The remoteproc
 platform driver is added to the RD-Kronos stack to add support for communication
-between PC and SI clusters.
+between PC (Primary Compute) and SI (Safety Island) clusters.
 
-In the Kronos FVP, Linux regards the Safety Island clusters as its remote
-processors. The Kronos FVP Safety Island has three clusters. Each cluster will
-behave as an independent entity and has its own resources to establish the
-connection to the PC.
+In the Kronos FVP, Linux running in the Primary Compute, regards the Safety
+Island clusters as its remote processors. The Kronos FVP Safety Island has
+three clusters. Each cluster will behave as an independent entity and has its
+own resources to establish the connection to the Primary Compute.
 
-These clusters cannot be booted by the Armv9-A processor because they need to
-monitor the other hardware including the Primary Compute. Therefore, the initial
-status of the clusters in the driver is “RPROC_DETACHED”, which means the
-cluster has been booted independently from the Armv9-A processor. This driver
-will implement the notification handler using an MHUv3-based mailbox, which
-notifies other cores when new messages are sent to the virtual queue.
+These clusters cannot be booted by the Primary Compute processor because they
+need to monitor the other hardware including the Primary Compute. Therefore,
+the initial status of the clusters in the driver is ``RPROC_DETACHED``, which
+means the cluster has been booted independently from the Primary Compute
+processor. This driver implements the notification handler using an MHUv3-based
+mailbox, which notifies other cores when new messages are sent to the virtual
+queue.
 
 The memory regions of the resource table, vrings and message buffers are
 configured in the device tree bindings for each cluster. The driver will parse
 the device tree node for each cluster and will add each cluster to the
 remoteproc framework. Each cluster has its own resource table, vrings and
-message buffers that will be used as a base for communication
+message buffers that will be used as a base for communication.
 
 RPMsg Protocol
 ==============
@@ -62,7 +63,7 @@ On the Safety Island side, Zephyr has imported OpenAMP as an external module.
 The OpenAMP library implements the RPMsg backend based on virtio, which is
 compatible with the upstream Linux remoteproc and RPMsg components. This library
 can be used with the Zephyr kernel or Zephyr applications to behave as an RPMsg
-backend service for communication with the Armv9-A cores.
+backend service for communication with the Primary Compute.
 
 Virtual Network Device over RPMsg
 =================================
@@ -74,11 +75,11 @@ implemented based on RPMsg APIs. More often, they use BSD sockets for IPC. This
 is because BSD sockets can shield the difference between inter-processor
 communication and intra-processor communication, which makes applications
 generic and portable. In order to meet the needs of such applications, an RPMsg
-based virtual network device is added to the reference stack.
+based virtual network device is added to the Reference Stack.
 
 On the Safety Island side, it creates a network device over an RPMsg endpoint
 with a specific service name. The RPMsg endpoint announces its existence by
-sending a name service message to the Armv9-A cores. This message is then
+sending a name service message to the Primary Compute. This message is then
 handled by the RPMsg bus to create an RPMsg endpoint and a corresponding
 network device. After that, the network communication is established based on
 this pair of virtual network devices.

@@ -136,8 +136,7 @@ The :meta-arm-repo:`meta-arm-systemready/classes/arm-systemready-acs.bbclass`
 class in the meta-arm-systemready Yocto layer contains the common logic to
 deploy the |Arm SystemReadyTM| ACS pre-built image and set up the testimage
 environment. It also contains a testimage "postfunc" called ``acs_logs_handle``
-which which generates report files and analyzes the test results against a
-baseline.
+which generates report files and analyzes the test results against a baseline.
 
 The script
 :meta-arm-repo:`meta-arm-systemready/lib/oeqa/runtime/cases/arm_systemready_ir_acs.py`

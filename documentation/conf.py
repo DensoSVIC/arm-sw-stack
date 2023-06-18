@@ -169,7 +169,7 @@ rst_prolog = f"""
 .. _how to install the essential packages: https://docs.yoctoproject.org/{yocto_doc_version}singleindex.html#required-packages-for-the-build-host
 .. _kas Dependencies & installation: https://kas.readthedocs.io/en/{kas_version}/userguide.html#dependencies-installation
 .. _EULA: https://developer.arm.com/downloads/-/arm-ecosystem-fvps/eula
-.. _Writing New Tests: https://docs.yoctoproject.org/{yocto_doc_version}dev-manual/common-tasks.html#writing-new-tests
+.. _Writing New Tests: https://docs.yoctoproject.org/{yocto_doc_version}dev-manual/runtime-testing.html#writing-new-tests
 .. _testimage.bbclass: https://docs.yoctoproject.org/{yocto_doc_version}ref-manual/classes.html#testimage-bbclass
 .. _OEQA FVP: https://git.yoctoproject.org/meta-arm/tree/documentation/oeqa-fvp.md?h={yocto_version}
 .. _Trusted Firmware-M repository: https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git/tree/?h={trusted_firmware_m_version}

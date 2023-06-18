@@ -82,7 +82,7 @@ Build
 *****
 
 The provided kas configuration menu can be used to build an image for
-different reference stack types, and to apply different sets of customizable
+different Reference Stack types, and to apply different sets of customizable
 parameters. Therefore, the following build guidance is provided as a set of
 alternatives to target each of the main supported use cases.
 
@@ -302,7 +302,7 @@ Baremetal Architecture
       # Start the Packet Analyzer
       python3 packet_analyzer/start_analyzer.py -L debug -a localhost -c ./data -L
 
-   A message similar to the following should appear on the SI Cluster 0
+   A message similar to the following should appear on the SI Cluster 0:
 
    .. code-block:: shell
 
@@ -316,7 +316,7 @@ Baremetal Architecture
 
       actuation_player -p /usr/share/actuation_player/
 
-   A message similar to the following should appear on the SI Cluster 0
+   A message similar to the following should appear on the SI Cluster 0:
 
    .. code-block:: shell
 
@@ -332,7 +332,7 @@ Baremetal Architecture
     Thread get_analyzer_handle performing a blocking accept
 
    A message similar to the following should appear on the host terminal where
-   the Packet Analyzer is running
+   the Packet Analyzer is running:
 
    .. code-block:: shell
 
