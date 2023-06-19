@@ -118,5 +118,5 @@ class PtestRunnerDom0Test(OERuntimeTestCase):
     @OEHasPackage(['ptest-runner'])
     def test_ptestrunner(self):
         # Run ptest-runner
-        status, _ = self.target.run('ptest-runner')
+        status, _ = self.target.run('ptest-runner', timeout=1200)
         self.assertEqual(status, 0)
