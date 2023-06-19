@@ -26,9 +26,49 @@ class HIPCTestBase(OERuntimeTestCase):
     def tearDown(self):
         super().tearDown()
 
-    def ping(self, cl_addr, cl_console, peer_addr):
+    def vlan_subtest(self, cl_console, peer_addr, vlan_id):
+        # Test that without VLAN configuration, ping does not work
+        self.target.sendline(cl_console,
+                             f'net vlan del {vlan_id} 1')
+        self.target.expect(cl_console,
+                           rf'VLAN tag {vlan_id} removed from interface 1'
+                           r' \(.*\)',
+                           timeout=150)
+        self.target.sendline(cl_console,
+                             f'net ping {peer_addr} -c 1')
+        self.target.expect(cl_console, 'Ping timeout', timeout=120)
+
+        # Test that with a vlan identifier different from the specification, it
+        # does not work
+        self.target.sendline(cl_console,
+                             f'net vlan add {vlan_id + 10} 1')
+        self.target.expect(cl_console,
+                           rf'VLAN tag {vlan_id + 10} set to interface 1'
+                           r' \(.*\)',
+                           timeout=150)
+        self.target.sendline(cl_console,
+                             f'net ping {peer_addr} -c 1')
+        self.target.expect(cl_console, 'Ping timeout', timeout=120)
+        self.target.sendline(cl_console,
+                             f'net vlan del {vlan_id + 10} 1')
+        self.target.expect(cl_console,
+                           rf'VLAN tag {vlan_id + 10} removed from interface 1'
+                           r' \(.*\)',
+                           timeout=150)
+
+        # Set the original VLAN identifier
+        self.target.sendline(cl_console,
+                             f'net vlan add {vlan_id} 1')
+        self.target.expect(cl_console,
+                           rf'VLAN tag {vlan_id} set to interface 1 \(.*\)',
+                           timeout=150)
+
+    def ping(self, cl_addr, cl_console, peer_addr, vlan_id):
         self.target.sendline(cl_console)
         self.target.expect(cl_console, self.si_prompt, timeout=120)
+
+        # Run connectivity test for VLAN settings
+        self.vlan_subtest(cl_console, peer_addr, vlan_id)
 
         self.target.sendline(cl_console,
                              f'net ping {peer_addr} -c 10')
@@ -213,15 +253,15 @@ class HIPCTestBase(OERuntimeTestCase):
 
     @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
     def test_ping_cluster0(self):
-        self.ping(r'192.168.0.1', 'safety_island_c0', r'192.168.0.2')
+        self.ping(r'192.168.0.1', 'safety_island_c0', r'192.168.0.2', 100)
 
     @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
     def test_ping_cluster1(self):
-        self.ping(r'192.168.1.1', 'safety_island_c1', r'192.168.1.2')
+        self.ping(r'192.168.1.1', 'safety_island_c1', r'192.168.1.2', 200)
 
     @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
     def test_ping_cluster2(self):
-        self.ping(r'192.168.2.1', 'safety_island_c2', r'192.168.2.2')
+        self.ping(r'192.168.2.1', 'safety_island_c2', r'192.168.2.2', 300)
 
     @OETestDepends(['test_30_hipc.HIPCTestBase.test_ping_cluster0'])
     def test_hipc_cluster0(self):

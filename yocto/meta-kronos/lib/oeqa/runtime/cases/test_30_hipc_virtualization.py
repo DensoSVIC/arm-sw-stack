@@ -73,7 +73,7 @@ class HIPCTestDomU2(HIPCTestDomU1):
 
     @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
     def test_ping_cluster1(self):
-        self.ping(r'192.168.1.1', 'safety_island_c1', r'192.168.1.3')
+        self.ping(r'192.168.1.1', 'safety_island_c1', r'192.168.1.3', 200)
 
     def test_ping_cluster2(self):
         self.skipTest("Ping to Cluster 2 not tested for DomU2")
