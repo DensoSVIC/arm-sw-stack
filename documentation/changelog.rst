@@ -15,8 +15,7 @@ Unreleased
 New Features
 ============
 
-Implementation of the
-:ref:`Use-Cases <introduction_use_cases_and_reference_software_stack_overview>`.
+Implementation of the :ref:`Use-Cases <introduction_use_cases>`.
 
 Components versions used in the Reference Stack:
 

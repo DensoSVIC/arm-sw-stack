@@ -26,11 +26,38 @@ Further technical details of the Kronos Reference Design FVP can be found at
 `Arm Kronos Reference Design Technical Overview`_, with an
 introduction to FVPs available in the `Fast Models FVP Reference Guide`_.
 
-.. _introduction_use_cases_and_reference_software_stack_overview:
+.. note::
+  Users of this software stack must consider safety and security implications
+  according to their own usage goals.
 
-***********************************************
-Use-Cases and Reference Software Stack Overview
-***********************************************
+
+.. _introduction_use_cases:
+
+*********
+Use-Cases
+*********
+
+The solution contains all the instructions necessary to fetch and build the
+source as well as to download the required FVP and launch the following
+use-case examples:
+
+ * Safety Island Actuation Demo
+ * Heterogeneous Inter-processor Communication Validation
+ * |Arm SystemReadyTM| IR Firmware Build
+ * |Arm SystemReadyTM| IR Architecture Compliance Suite (ACS) Tests
+ * Linux Distribution Installation (Debian and Fedora)
+
+Instructions for achieving these use-cases are given in the
+:ref:`Reproduce <user_guide/reproduce:Reproduce>` section of the User Guide,
+subject to relevant assumed technical knowledge as listed later in this
+introduction at `Documentation Overview`_.
+
+
+.. _introduction_reference_software_stack_overview:
+
+*********************************
+Reference Software Stack Overview
+*********************************
 
 This Reference Software Stack is made available as part of the Arm Kronos
 Reference Design and is composed of multiple Open Source components which
@@ -77,19 +104,6 @@ Safety Island subsystem (Zephyr) via a bi-directional communication channel. The
 :ref:`design_applications_actuation` is integrated into the stack to show-case
 this Heterogeneous Inter-processor Communication (HIPC) between subsystems.
 
-The solution is provided via a set of Yocto layers which contain all the
-instructions necessary to fetch and build the source as well as to download
-the required FVP and launch the use-case examples.
-
-Instructions for achieving these use-cases are given in the
-:ref:`Reproduce <user_guide/reproduce:Reproduce>` section of the User Guide,
-subject to relevant assumed technical knowledge as listed later in this
-introduction at `Documentation Overview`_.
-
-
-.. note::
-  Users of this software stack must consider safety and security implications
-  according to their own usage goals.
 
 **********************
 Documentation Overview

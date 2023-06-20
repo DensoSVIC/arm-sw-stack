@@ -10,7 +10,7 @@ Integration
 
 The Arm Kronos Reference Software Stack uses the Yocto Project build framework
 to build, integrate and validate the
-:ref:`Use-Cases <introduction_use_cases_and_reference_software_stack_overview>`
+:ref:`Use-Cases <introduction_use_cases>`
 .
 
 The Yocto Project version used by the Reference Stack is |yocto version|.
@@ -27,7 +27,7 @@ bbclasses, recipes and libraries to build, integrate, and validate the
 :ref:`design_applications_actuation` with both the **Baremetal** and
 **Virtualization** Reference Stack Architectures as described in
 :ref:`Reference Stack Overview 
-<introduction_use_cases_and_reference_software_stack_overview>`.
+<introduction_reference_software_stack_overview>`.
 
 The layer source code can be found at :kronos-repo:`yocto/meta-kronos`.
 
