@@ -100,5 +100,8 @@ The Primary Compute boot flow follows the following steps:
    * Copies AP BL31 and BL33 from flash to SRAM and DRAM
    * Jumps to AP BL31
 
-2. AP BL31 starts AP BL33
-3. AP BL33 starts the Linux operating system
+2. AP BL31 starts AP BL33 (U-Boot)
+3. AP BL33 loads GRUB2 from the boot partition
+4. Grub loads and boots either Linux (Baremetal Architecture) or Xen
+   (Virtualization Architecture) from the boot partition, depending on the Grub
+   configuration
