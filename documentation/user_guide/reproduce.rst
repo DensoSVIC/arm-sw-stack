@@ -105,6 +105,12 @@ To run the configuration menu:
 Full Software Reference Stack
 =============================
 
+The Full Software Reference Stack contains the |Arm SystemReadyTM| firmware
+along with Linux-based software on the Primary Compute and Zephyr applications
+on the Safety Island to demonstrate the use-cases. The Baremetal Architecture
+boots Linux directly and the Virtualization Architecture boots Xen with 2
+guests.
+
 Baremetal Architecture
 ----------------------
 
@@ -144,8 +150,12 @@ run-time validation tests.
 
 .. _user_guide_reproduce_sr_ir:
 
-|Arm SystemReadyTM| IR Reference Stack
-======================================
+|Arm SystemReadyTM| IR Firmware Validation
+==========================================
+
+The |Arm SystemReadyTM| IR Firmware Only option just builds the
+|Arm SystemReadyTM| IR-aligned firmware. Optionally, additional artifacts can
+be built to validate the firmware.
 
 .. image:: ../images/kronos_reference_stack_build_config_sr_ir.png
    :align: center
