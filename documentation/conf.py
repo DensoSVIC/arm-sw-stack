@@ -117,6 +117,7 @@ xen_version = "4.17"
 zephyr_version = "3.3.0"
 fvp_version = "0.0"
 actuation_version = "main"
+systemready_ir_acs_version = "1.0"
 
 rst_prolog = f"""
 .. |kas version| replace:: {kas_version}
@@ -163,6 +164,7 @@ rst_prolog = f"""
 .. |poky revision| replace:: HEAD
 .. |FVP_RD_Kronos version| replace:: {fvp_version}
 .. |Actuation version| replace:: {actuation_version}
+.. |SystemReady IR ACS version| replace:: {systemready_ir_acs_version}
 
 .. _kas build tool: https://kas.readthedocs.io/en/{kas_version}/userguide.html
 .. _kas menu tool: https://kas.readthedocs.io/en/{kas_version}/userguide.html#module-kas.plugins.menu

@@ -134,9 +134,10 @@ The image is a bootable live OS image containing a collection of test suites.
 
 The :meta-arm-repo:`meta-arm-systemready/classes/arm-systemready-acs.bbclass`
 class in the meta-arm-systemready Yocto layer contains the common logic to
-deploy the |Arm SystemReadyTM| ACS pre-built image and set up the testimage
-environment. It also contains a testimage "postfunc" called ``acs_logs_handle``
-which generates report files and analyzes the test results against a baseline.
+deploy the |Arm SystemReadyTM| IR ACS version |SystemReady IR ACS version|
+pre-built image and set up the testimage environment. It also contains a
+testimage "postfunc" called ``acs_logs_handle`` which generates report files
+and analyzes the test results against a baseline.
 
 The script
 :meta-arm-repo:`meta-arm-systemready/lib/oeqa/runtime/cases/arm_systemready_ir_acs.py`
