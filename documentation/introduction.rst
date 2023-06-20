@@ -191,7 +191,7 @@ or feature requests, please submit an Issue via `GitLab Issues`_, following the
 project's template.
 
 ********************
-Feedback and support
+Feedback and Support
 ********************
 
 To request support please contact Arm at support@arm.com. Arm licensees may
