@@ -10,7 +10,7 @@ of VLAN, fix the issue using the size of struct net_eth_vlan_hdr
 when CONFIG_NET_VLAN is enabled.
 
 Signed-off-by: Luca Fancellu <luca.fancellu@arm.com>
-Upstream-Status: Pending
+Upstream-Status: Backport [main: b3f5db0c718f76560238a4e4c06bb5d8619589b9]
 ---
  include/zephyr/net/ethernet.h | 8 +++++++-
  1 file changed, 7 insertions(+), 1 deletion(-)

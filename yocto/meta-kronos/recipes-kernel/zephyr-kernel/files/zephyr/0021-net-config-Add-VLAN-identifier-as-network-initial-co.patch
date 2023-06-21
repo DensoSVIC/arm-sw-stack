@@ -12,7 +12,7 @@ VLAN identifier in the device if the Kconfig parameter is different
 from zero.
 
 Signed-off-by: Luca Fancellu <luca.fancellu@arm.com>
-Upstream-Status: Pending
+Upstream-Status: Backport [main: 38a43b0eec494a0bce0d94c8c31309c9cfe67984]
 ---
  subsys/net/lib/config/Kconfig |  7 +++++++
  subsys/net/lib/config/init.c  | 14 ++++++++++++++
