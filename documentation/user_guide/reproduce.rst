@@ -305,12 +305,10 @@ Baremetal Architecture
 
    .. code-block:: shell
 
-      # For x86 host
-      cd ~/kronos/build/tmp_baremetal/sysroots-components/x86_64/packet-analyzer-native/usr/bin/actuation_packet_analyzer
-      # For arm64 host
-      # cd ~/kronos/build/tmp_baremetal/sysroots-components/aarch64/packet-analyzer-native/usr/bin/actuation_packet_analyzer
+      cd ~/kronos/
       # Start the Packet Analyzer
-      python3 packet_analyzer/start_analyzer.py -L debug -a localhost -c ./data -L
+      NATIVE_SYSROOT_BIN=build/tmp_baremetal/work/fvp_rd_kronos-poky-linux/baremetal-image/1.0-r0/recipe-sysroot-native/usr/bin
+      ${NATIVE_SYSROOT_BIN}/python3-native/python3 ${NATIVE_SYSROOT_BIN}/actuation_packet_analyzer/packet_analyzer/start_analyzer.py -L debug -a localhost -c ./data
 
    A message similar to the following should appear on the SI Cluster 0:
 
@@ -368,7 +366,14 @@ Virtualization Architecture
 
       xl console domu1
 
-2. Follow the instructions as for the Baremetal Architecture above.
+2. Follow the instructions as for the Baremetal Architecture above, with the
+   difference of setting the value of ``NATIVE_SYSROOT_BIN`` to the following
+   instead:
+
+   .. code-block:: shell
+
+      NATIVE_SYSROOT_BIN=build/tmp_virtualization/work/fvp_rd_kronos-poky-linux/virtualization-image/1.0-r0/recipe-sysroot-native/usr/bin
+
 
 3. To leave the DomU console, type ``Ctrl+]`` and enter ``send esc``.
 
