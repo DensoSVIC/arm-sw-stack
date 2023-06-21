@@ -267,6 +267,9 @@ further details.
 Reproducing the Use-Cases
 =========================
 
+This section contains additional instructions to aid in reproducing the
+:ref:`introduction_use_cases` presented in the introduction.
+
 Safety Island Actuation Demo
 ----------------------------
 
@@ -376,6 +379,18 @@ Virtualization Architecture
 
 
 3. To leave the DomU1 console, type ``Ctrl+]`` and enter ``send esc``.
+
+
+Heterogeneous Inter-processor Communication Validation
+------------------------------------------------------
+
+The HIPC (Heterogeneous Inter-processor Communication) Demo allows basic
+validation of networking between the Primary Compute and the three Safety
+Island clusters to be performed. The ``ping`` and ``iperf`` tools are installed
+and can be executed automatically using the automated HIPC test suite (see
+:ref:`reproduce_run-time_integration_tests` below and the test descriptions in
+:ref:`validation_run-time_integration_tests`).
+
 
 .. _reproduce_run-time_integration_tests:
 
