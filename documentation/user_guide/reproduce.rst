@@ -650,8 +650,9 @@ and `Fedora Server`_. To install Debian, you can refer to the
   The whole installation process takes a long time (possibly up to 24 hours, or
   even longer).
 
-  The installation process may fail for some reason, please do not expect the
-  installation to be successful every time.
+  We suggest that when running the Linux distribution installations the FVP is
+  the only running process as it will consume large amounts of RAM that can make
+  the system unstable.
 
 Please refer to :ref:`systemready_ir_linux_install` for an explanation on how
 the Linux distros installation is set up and how they work in the Reference
