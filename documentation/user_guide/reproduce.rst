@@ -730,7 +730,7 @@ installation process and how to solve them:
   runtime (however, it is required at boot time), and Kronos happens to not
   support UEFI SetVariable() yet.
 
-    .. image:: ../images/sr-ir-linux-distro-debian-install-grub.png
+    .. image:: ../images/sr-ir-linux-distro-debian-install-grub-0.png
        :align: center
 
 |
@@ -769,6 +769,21 @@ installation process and how to solve them:
      '/boot/efi/EFI/debian/grubaa64.efi' -> '/boot/efi/EFI/BOOT/bootaa64.efi'
      #
 
+  After doing the above GRUB workaround, press ``Ctrl-a p`` to go back to the
+  installer again, then select ``Continue without boot loader`` in the
+  ``Debian installer main menu`` and continue.
+
+    .. image:: ../images/sr-ir-linux-distro-debian-install-grub-1.png
+       :align: center
+
+|
+
+* Finishing the installation
+
+  When the installation has reached the final ``Finishing the installation``
+  phase, you will need to wait some time to finish the remaining tasks,
+  and then it will automatically reboot into the installed OS.
+
 Fedora
 ------
 
@@ -777,12 +792,12 @@ Here are some tips for installing Fedora:
 1. It needs a little long time to wait GRUB to load installer kernel and initrd.
 2. Choose text mode installer.
 3. Use default storage partition setting.
-4. The installer will be stuck at "Configuring kernel-core.aarch64" for a long
+4. The installer will be stuck at ``Configuring kernel-core.aarch64`` for a long
    time.
 5. Wait serval hours, the installer will verify the installed packages and
    continue to install bootloader.
 6. The following error occurred while installing the boot loader. Ignore the
-   error by responding 'yes' and continue.
+   error by responding ``yes`` and continue.
 
    .. code-block:: console
 
@@ -802,4 +817,11 @@ Here are some tips for installing Fedora:
 
 7. It may need more then 24 hours to complete the installation.
 8. Force restart the FVP, and boot the installed OS.
+
+   .. note::
+
+      To restart the FVP, press ``Ctrl + ]`` and type ``quit`` then run
+      ``kas shell -c "../layers/meta-arm/scripts/runfvp --verbose --console"``
+      again.
+
 9. Users can login the Linux shell about 20 minutes after restart.
