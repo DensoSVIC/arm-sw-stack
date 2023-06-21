@@ -55,7 +55,9 @@ The RSS serves as the Root of Trust for the system, offering critical platform
 security services and holding and protecting the most sensitive assets in the
 system.
 
-In the current software stack, the RSS offers the Secure Boot service only.
+In the current software stack, the RSS offers the secure boot service only,
+further details of which can be found in the `Trusted Firmware-M Secure boot
+documentation`_.
 
 The RSS internally consists of 3 boot loaders and a runtime. The following
 diagram illustrates the high-level software structure of the RSS and some

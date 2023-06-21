@@ -217,6 +217,7 @@ rst_prolog = f"""
 .. _Debian GNU/Linux Installation Guide: https://www.debian.org/releases/bullseye/arm64/
 .. _Fedora Server: https://fedoraproject.org/server/download/
 .. _Fedora Installation Guide: https://docs.fedoraproject.org/en-US/fedora/latest/getting-started/
+.. _Trusted Firmware-M Secure boot documentation: https://tf-m-user-guide.trustedfirmware.org/design_docs/booting/tfm_secure_boot.html
 """  # noqa: E501
 
 # URL to use for references to repository paths
