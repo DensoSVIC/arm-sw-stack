@@ -6,16 +6,34 @@
 
 from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.core.decorator.depends import OETestDepends
+from oeqa.utils.xen_utils import XenUtils
 
 
 class LinuxLoginTest(OERuntimeTestCase):
     @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
     def test_linux_login(self):
-        console = self.target.DEFAULT_CONSOLE
+        console_name = self.target.DEFAULT_CONSOLE
+        hostname = r'.*'
 
         # Login
-        self.target.sendline(console, 'root')
-        self.target.expect(console, r'root@.*:~#', timeout=300)
+        self.target.sendline(console_name, 'root')
+        self.target.expect(console_name, rf'root@{hostname}:~#', timeout=300)
 
         # Ensure all services have started
         self.target.run('systemctl is-system-running --wait', timeout=300)
+
+        if 'virtualization' in self.td.get('IMAGE_FEATURES').split():
+            # Wait for the domains to be fully booted
+            console = self.target._get_terminal(console_name)
+            domu_hostnames = ['domu1']
+
+            if int(self.td.get('DOMU_INSTANCES', 0)) > 1:
+                domu_hostnames.append('domu2')
+
+            for domu_h in domu_hostnames:
+                dom0_prompt = rf'root@(?!{domu_h}){hostname}:~#'
+                linux_prompt = rf'root@{domu_h}:~#'
+                XenUtils.enter_guest_from_dom0(console, dom0_prompt,
+                                               linux_prompt, domu_h)
+                XenUtils.exit_guest_to_dom0(console, dom0_prompt,
+                                            linux_prompt, domu_h)

@@ -201,6 +201,7 @@ HIGHDMA
 hipc
 homepageping
 hostbridge
+hostnames
 hotplug
 htons
 hwclock
