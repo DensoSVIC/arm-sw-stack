@@ -375,7 +375,7 @@ Virtualization Architecture
       NATIVE_SYSROOT_BIN=build/tmp_virtualization/work/fvp_rd_kronos-poky-linux/virtualization-image/1.0-r0/recipe-sysroot-native/usr/bin
 
 
-3. To leave the DomU console, type ``Ctrl+]`` and enter ``send esc``.
+3. To leave the DomU1 console, type ``Ctrl+]`` and enter ``send esc``.
 
 .. _reproduce_run-time_integration_tests:
 
