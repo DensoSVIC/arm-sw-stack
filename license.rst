@@ -2,7 +2,8 @@
 License
 #######
 
-The software is provided under the MIT license (below).
+The repository’s standard license is the MIT license, under which most of the
+repository’s content is provided (below).
 
 ::
 
@@ -26,6 +27,14 @@ The software is provided under the MIT license (below).
     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
     IN THE SOFTWARE.
+
+
+Exceptions to this standard license relate to files that represent
+modifications to externally licensed works (for example, patch files). These
+files may therefore be included in the repository under alternative licenses in
+order to be compliant with the licensing requirements of the associated
+external works.
+
 
 ****************
 SPDX Identifiers
