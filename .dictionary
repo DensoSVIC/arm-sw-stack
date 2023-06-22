@@ -467,6 +467,7 @@ strsep
 struct
 stty
 subcomponents
+subdir
 subsys
 sufix
 suggestedvar
