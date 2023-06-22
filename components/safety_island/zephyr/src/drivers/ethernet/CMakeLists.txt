@@ -7,6 +7,7 @@
 zephyr_library()
 zephyr_library_sources_ifdef(CONFIG_ETH_SMSC91X eth_smsc91x.c)
 zephyr_library_sources_ifdef(CONFIG_VETH_RPMSG veth_rpmsg.c)
+zephyr_library_sources_ifdef(CONFIG_IPC_RPMSG_VETH ipc_rpmsg_veth.c)
 
 if(CONFIG_VETH_RPMSG)
    # METAL_MAX_DEVICE_REGIONS is used to give the number of memory regions shared

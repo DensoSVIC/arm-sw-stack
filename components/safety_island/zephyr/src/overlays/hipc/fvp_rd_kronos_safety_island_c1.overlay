@@ -13,11 +13,18 @@
 	};
 
 	soc {
-		shared_ram: memory@1a800000 {
+		shared_ram0: memory@1a800000 {
                         compatible = "zephyr,memory-region", "mmio-sram";
                         reg = <0x0 0x1a800000 DT_SIZE_M(40)>;
-                        zephyr,memory-region = "SHRAM";
+                        zephyr,memory-region = "SHRAM0";
                         zephyr,memory-region-mpu = "RAM_NOCACHE";
+                };
+
+		shared_ram1: mem@48000000 {
+			compatible = "zephyr,memory-region", "mmio-sram";
+			reg = <0x0 0x48000000 DT_SIZE_M(8)>;
+			zephyr,memory-region = "SHRAM1";
+			zephyr,memory-region-mpu = "RAM_NOCACHE";
                 };
 
                 shared_data: buffers_mem@1a801000 {
@@ -43,6 +50,20 @@
 				     "vq1_rx", "detach", "attach",
 				     "ack";
 		};
+
+		local_sram_cl1_cl0: memory@48000000 {
+			reg = <0x0 0x48000000 DT_SIZE_M(3)>;
+		};
+
+		ipc_rpmsg_veth_0: ipc_rpmsg_veth_0 {
+			compatible = "zephyr,ipc-openamp-static-vrings";
+			memory-region = <&local_sram_cl1_cl0>;
+			mboxes = <&cl1_cl0_mbox_tx 0>, <&cl0_cl1_mbox_rx 0>;
+			mbox-names = "tx", "rx";
+			zephyr,buffer-size = <1536>;
+			role = "remote";
+			status = "okay";
+		};
 	};
 };
 
@@ -51,5 +72,13 @@
 };
 
 &pc_cl1_mbox_tx {
+	status = "okay";
+};
+
+&cl1_cl0_mbox_tx {
+	status = "okay";
+};
+
+&cl0_cl1_mbox_rx {
 	status = "okay";
 };

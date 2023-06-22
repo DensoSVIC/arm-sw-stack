@@ -266,6 +266,7 @@ licenseremotefile
 Linaro
 linuxboot
 linuxlogin
+LISTIFY
 LIVEPATCH
 LLRAM
 loadpolicy
@@ -438,6 +439,7 @@ sendcontrol
 sendline
 setuptools
 shimaa
+SHMEM
 shpool
 SHRAM
 SIMD
