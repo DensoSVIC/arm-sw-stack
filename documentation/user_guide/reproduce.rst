@@ -170,10 +170,10 @@ Firmware Build Only
 
 To build the |Arm SystemReadyTM| firmware image:
 
-1. Select ``Arm SystemReady IR Reference Stack`` from the
+1. Select ``Arm SystemReady IR Firmware Only`` from the
    ``Reference Stack Type`` menu.
 2. Choose ``Firmware Build Only`` from the
-   ``Arm SystemReady IR Reference Stack`` menu.
+   ``Arm SystemReady IR Firmware Validation`` menu.
 3. Then choose ``Save & Build``.
 
 .. _user_guide_reproduce_sr_ir_acs:
@@ -183,10 +183,10 @@ Architecture Compliance Suite (ACS) Tests
 
 To build and run the |Arm SystemReadyTM| IR ACS tests:
 
-1. Select ``Arm SystemReady IR Reference Stack`` from the
+1. Select ``Arm SystemReady IR Firmware Only`` from the
    ``Reference Stack Type`` menu.
 2. Choose ``Architecture Compliance Suite (ACS) Tests`` from the
-   ``Arm SystemReady IR Reference Stack`` menu.
+   ``Arm SystemReady IR Firmware Validation`` menu.
 3. Then choose ``Save & Build``.
 
 See :ref:`reproduce_arm_systemready_ir_validation` for more details on running
@@ -199,11 +199,11 @@ Linux Distros Installation
 
 To build and run the |Arm SystemReadyTM| IR Linux distros installation tests:
 
-1. Select ``Arm SystemReady IR Reference Stack`` from the
+1. Select ``Arm SystemReady IR Firmware Only`` from the
    ``Reference Stack Type`` menu.
 2. Choose ``Debian Linux Distro Installation`` or
    ``Fedora Linux Distro Installation`` from the
-   ``Arm SystemReady IR Reference Stack`` menu.
+   ``Arm SystemReady IR Firmware Validation`` menu.
 3. Then choose ``Save & Build``.
 4. Run the following command to start the installation:
 
