@@ -64,6 +64,20 @@
 			role = "remote";
 			status = "okay";
 		};
+
+		local_sram_cl2_cl1: memory@48600000 {
+			reg = <0x0 0x48600000 DT_SIZE_M(2)>;
+		};
+
+		ipc_rpmsg_veth_1: ipc_rpmsg_veth_1 {
+			compatible = "zephyr,ipc-openamp-static-vrings";
+			memory-region = <&local_sram_cl2_cl1>;
+			mboxes = <&cl2_cl1_mbox_tx 0>, <&cl1_cl2_mbox_rx 0>;
+			mbox-names = "tx", "rx";
+			zephyr,buffer-size = <1536>;
+			role = "host";
+			status = "okay";
+		};
 	};
 };
 
@@ -80,5 +94,13 @@
 };
 
 &cl0_cl2_mbox_rx {
+	status = "okay";
+};
+
+&cl2_cl1_mbox_tx {
+	status = "okay";
+};
+
+&cl1_cl2_mbox_rx {
 	status = "okay";
 };

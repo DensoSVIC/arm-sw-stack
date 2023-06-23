@@ -131,6 +131,22 @@
 			interrupt-names = "rx";
 			status = "disabled";
 		};
+
+		cl2_cl1_mbox_tx: mhuv3@2afa0000 {
+			compatible = "arm,mhuv3-tx";
+			#mbox-cells = <1>;
+			reg = <0x0 0x2afa0000 0x1000>;
+			status = "disabled";
+		};
+
+		cl1_cl2_mbox_rx: mhuv3@2afb0000 {
+			compatible = "arm,mhuv3-rx";
+			#mbox-cells = <1>;
+			reg = <0x0 0x2afb0000 0x1000>;
+			interrupts = <GIC_SPI 87 0 IRQ_TYPE_LEVEL>;
+			interrupt-names = "rx";
+			status = "disabled";
+		};
 	};
 };
 
