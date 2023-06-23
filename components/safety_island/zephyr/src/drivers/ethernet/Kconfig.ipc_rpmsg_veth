@@ -46,3 +46,24 @@ config IPC_RPMSG_VETH_SI_NETMASK_0
 	help
 	  Static netmask to use if not overridden by DHCP for virtual
 	  ethernet 0.
+
+config IPC_RPMSG_VETH_EPT_NAME_1
+	string "RPMSG Named Service Announcement Endpoint name"
+	help
+	  RPMSG Named Service Announcement Endpoint name for virtual ethernet 1.
+
+config IPC_RPMSG_VETH_MAC_ADDR_1
+	string "Mac address"
+	help
+	  Ethernet mac address for virtual ethernet 1.
+
+config IPC_RPMSG_VETH_SI_IPV4_ADDR_1
+	string "IPv4 address"
+	help
+	  IPv4 address for virtual ethernet 1.
+
+config IPC_RPMSG_VETH_SI_NETMASK_1
+	string "Netmask"
+	help
+	  Static netmask to use if not overridden by DHCP for virtual
+	  ethernet 0.

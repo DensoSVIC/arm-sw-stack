@@ -64,6 +64,20 @@
 			zephyr,buffer-size = <1536>;
 			status = "okay";
 		};
+
+		local_sram_cl0_cl2: memory@48300000 {
+			reg = <0x0 0x48300000 DT_SIZE_M(3)>;
+		};
+
+		ipc_rpmsg_veth_1: ipc_rpmsg_veth_1 {
+			compatible = "zephyr,ipc-openamp-static-vrings";
+			memory-region = <&local_sram_cl0_cl2>;
+			mboxes = <&cl0_cl2_mbox_tx 0>, <&cl2_cl0_mbox_rx 0>;
+			mbox-names = "tx", "rx";
+			role = "host";
+			zephyr,buffer-size = <1536>;
+			status = "okay";
+		};
 	};
 };
 
@@ -80,5 +94,13 @@
 };
 
 &cl1_cl0_mbox_rx {
+	status = "okay";
+};
+
+&cl0_cl2_mbox_tx {
+	status = "okay";
+};
+
+&cl2_cl0_mbox_rx {
 	status = "okay";
 };
