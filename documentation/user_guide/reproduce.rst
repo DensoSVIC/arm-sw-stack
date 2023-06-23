@@ -394,6 +394,25 @@ and can be executed automatically using the automated HIPC test suite (see
 :ref:`reproduce_run-time_integration_tests` below and the test descriptions in
 :ref:`validation_run-time_integration_tests`).
 
+|Arm SystemReadyTM| IR Firmware Build
+-------------------------------------
+
+This is a build-only option with no supported runtime functionality. The
+firmware artifacts can be found in the
+directory ``build/tmp/deploy/images/fvp-rd-kronos``.
+
+
+|Arm SystemReadyTM| IR Architecture Compliance Suite (ACS) Tests
+----------------------------------------------------------------
+
+Please see :ref:`reproduce_arm_systemready_ir_validation` below.
+
+
+Linux Distribution Installation (Debian and Fedora)
+---------------------------------------------------
+
+Please see :ref:`reproduce_arm_systemready_ir_validation` below.
+
 
 .. _reproduce_run-time_integration_tests:
 
