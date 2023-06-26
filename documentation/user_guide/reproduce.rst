@@ -809,8 +809,104 @@ Fedora
 Here are some tips for installing Fedora:
 
 1. It needs a little long time to wait GRUB to load installer kernel and initrd.
-2. Choose text mode installer.
-3. Use default storage partition setting.
+2. Once the installer has started, enter ``2`` to choose ``Use text mode``.
+
+   .. code-block:: console
+
+      Starting installer, one moment...
+      anaconda 38.23.4-2.fc38 for Fedora 38 started.
+       * installation log files are stored in /tmp during the installation
+       * shell is available on TTY2 and in second TMUX pane (ctrl+b, then press 2)
+       * when reporting a bug add logs from /tmp as separate text/plain attachments
+
+      X or window manager startup failed, falling back to text mode.
+      ================================================================================
+      ================================================================================
+      X was unable to start on your machine. Would you like to start VNC to connect to
+      this computer from another computer and perform a graphical installation or
+      continue with a text mode installation?
+
+      1) Start VNC
+      2) Use text mode
+
+      Please make a selection from the above ['c' to continue, 'h' to help, 'q' to
+      quit, 'r' to refresh]: 2
+
+3. When reaching the installation menu, you will see several items marked as
+   ``!`` and you will need to enter the corresponding numbers to make the
+   necessary selections or configurations.
+
+   .. code-block:: console
+
+      ================================================================================
+      ================================================================================
+      Installation
+
+      1) [x] Language settings                 2) [x] Time settings
+             (English (United States))                (America/Chicago timezone)
+      3) [!] Installation source               4) [!] Software selection
+             (Setting up installation                 (Processing...)
+             source...)
+      5) [!] Installation Destination          6) [x] Network configuration
+             (Processing...)                          (Connected: eth0)
+      7) [!] Root password                     8) [!] User creation
+             (Root account is disabled)               (No user will be created)
+
+      Please make a selection from the above ['b' to begin installation, 'h' to help,
+      'q' to quit, 'r' to refresh]:
+
+   For ``3) [!] Installation source``, enter ``3``, then ``1`` to select
+   ``CD/DVD``.
+
+   .. code-block:: console
+
+      ================================================================================
+      ================================================================================
+      Installation source
+
+      Choose an installation source type.
+      1) CD/DVD
+      2) local ISO file
+      3) Network
+
+      Please make a selection from the above ['c' to continue, 'h' to help, 'q' to
+      quit, 'r' to refresh]: 1
+
+   For ``4) [!] Software selection``, enter ``4``, then ``c`` to continue.
+
+   For ``5) [!] Installation Destination``, enter ``5``, then ``c`` to select
+   the default options.
+
+   For ``6) [!] Network configuration``, it will automatically change to ``x``.
+
+   For ``7) [!] Root password``, follow the prompts to enter the password and
+   confirm.
+
+   After entering root password, ``8) [ ] User creation`` becomes optional and
+   can be skipped.
+
+   When all the items marked with ``!`` become ``x``, it's time to  enter ``b``
+   to start the installation.
+
+   .. code-block:: console
+
+      ================================================================================
+      ================================================================================
+      Installation
+
+      1) [x] Language settings                 2) [x] Time settings
+             (English (United States))                (America/Chicago timezone)
+      3) [x] Installation source               4) [x] Software selection
+             (Local media)                            (Fedora Server Edition)
+      5) [x] Installation Destination          6) [x] Network configuration
+             (Automatic partitioning                  (Connected: eth0)
+             selected)
+      7) [x] Root password                     8) [ ] User creation
+             (Root password is set)                   (No user will be created)
+
+      Please make a selection from the above ['b' to begin installation, 'h' to help,
+      'q' to quit, 'r' to refresh]: b
+
 4. The installer will be stuck at ``Configuring kernel-core.aarch64`` for a long
    time.
 5. Wait serval hours, the installer will verify the installed packages and
