@@ -533,6 +533,7 @@ VIRT
 virtio
 virtiorng
 virtqueue
+VLAN
 vmap
 vmid
 VMPIDR

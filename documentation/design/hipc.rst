@@ -108,10 +108,10 @@ Virtualization Architecture
 ===========================
 
 In the Virtualization Architecture of the Reference Stack, virtual network
-interfaces based on Xen bridges will be exposed to the domUs. Xen bridges are
-created in backend domain (dom0). The backend virtual network interfaces are
-added to these bridges along with an RPmsg virtual interface to communicate
-with the Safety Island.
+interfaces based on Xen drivers will be exposed to the domUs. Xen virtual
+networks are created in the control domain (Dom0). The Xen virtual network
+interfaces are added to an Open vSwitch virtual switch along with an RPmsg
+virtual interface to communicate with the Safety Island.
 
 Dom0 has a communication channel with the Safety Island which is the same as
 the baremetal architecture.
@@ -131,16 +131,43 @@ Please refer to the changelog :ref:`changelog_knownissues` and
 Network Topology
 ****************
 
+VLAN
+====
+
+`Open vSwitch`_ is used to create a virtual switch that connects all the
+network interfaces.
+
+VLAN is a concept standardized by IEEE 802.1Q. It is used to partition a switch
+into multiple logical switches. The VLAN tag has a value from 0 to 4096 stored
+in the packet header. Usually 0 means that the packet is untagged, but some
+values are reserved.
+
+On a switch, using VLAN tagged traffic makes sure that a packet tagged with a
+certain VLAN identifier reaches only ports that are configured to manage the
+traffic tagged with that identifier (tag).
+
+The traffic between the Primary Compute and the Safety Island is using the
+following VLAN identifiers:
+
+ * VLAN **100**: Traffic from/to **Cluster 0**
+ * VLAN **200**: Traffic from/to **Cluster 1**
+ * VLAN **300**: Traffic from/to **Cluster 2**
+
 Baremetal Architecture
 ======================
 
 This diagram shows the network topology for the baremetal architecture.
 ethsi{N} is the RPMsg-based virtual interface that is connected to Safety Island
 Cluster{N} where N is the cluster number, for example ethsi0 is connected to
-Safety Island cluster 0.
+Safety Island Cluster 0.
 
-User space applications on the Primary Compute can communicate with Safety
-Island cluster N via ethsi{N}. 
+ovsbr0 is the Open vSwitch network switch which carries untagged traffic. The
+communication between the Primary Compute and Safety Island is managed through
+the brsi{N} VLAN tagged switches that are configured to carry VLAN tagged
+traffic from/to the ethsi{N} interface with the Safety Island.
+
+User space applications on the Primary Compute can communicate with Safety
+Island cluster N via brsi{N}.
 
 |
 
@@ -153,12 +180,13 @@ Virtualization Architecture
 ===========================
 
 As shown in the diagram below the virtual network interfaces for the Xen guests
-are based on Xen bridges. domu1.ethsi{N} and domu2.ethsi{N} are backend virtual
-network interface that are exposed to domu1 and domu2 guests. ethsi{N} in the
+are based on Xen drivers. domu1.ethsi{N} and domu2.ethsi{N} are backend virtual
+network interfaces that are exposed to DomU1 and DomU2 guests. ethsi{N} in the
 Primary Compute is the RPMsg-based virtual interface that is connected to
 Safety Island Cluster{N} to provide communication between Primary Compute and
-Safety Island. ethsi{N}(Primary Compute) and domu1.ethsi{N} are added to the
-Xen bridge(brsi0) to have a connection between dom0 and domU1.
+Safety Island. ethsi{N}(Primary Compute) and domu1.ethsi{N} are added to
+Open vSwitch (brsi{N}) to have a connection between Dom0, DomU1 and Safety
+Island Cluster N.
 
 |
 
