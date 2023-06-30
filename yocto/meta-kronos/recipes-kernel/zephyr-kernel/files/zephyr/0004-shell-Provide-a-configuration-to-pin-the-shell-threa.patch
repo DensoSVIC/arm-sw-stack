@@ -1,6 +1,6 @@
-From 23d8a71971a9abac9b2b49e94afcf187962747e5 Mon Sep 17 00:00:00 2001
+From 47fa0a94cf0869a872008e3c7fb90dcbdb85839e Mon Sep 17 00:00:00 2001
 From: Ambroise Vincent <ambroise.vincent@arm.com>
-Date: Mon, 10 Jul 2023 10:38:05 +0100
+Date: Thu, 10 Jul 2023 10:38:05 +0100
 Subject: [PATCH] shell: Provide a configuration to pin the shell thread
 
 Introduce a CONFIG_SHELL_PIN_THREAD configuration options to pin the
@@ -14,12 +14,12 @@ Upstream-Status: Inappropriate
  2 files changed, 18 insertions(+), 1 deletion(-)
 
 diff --git a/subsys/shell/Kconfig b/subsys/shell/Kconfig
-index 5ec89ce50f..bd43526d04 100644
+index d155622e7b..52ef3ea96e 100644
 --- a/subsys/shell/Kconfig
 +++ b/subsys/shell/Kconfig
-@@ -251,6 +251,13 @@ config SHELL_AUTOSTART
- 	help
- 	  If enabled, shell will be automatically started.
+@@ -259,6 +259,13 @@ config SHELL_CMDS_RETURN_VALUE
+ 	  This option enables the retval command. It is used to retrieve
+ 	  the return value from the most recently executed command.
  
 +config SHELL_PIN_THREAD
 +	bool "Pin thread"
@@ -32,12 +32,12 @@ index 5ec89ce50f..bd43526d04 100644
  
  endif # SHELL
 diff --git a/subsys/shell/shell.c b/subsys/shell/shell.c
-index edd2feaf03..e8f2294b17 100644
+index 2d9e0883e2..b052e8418d 100644
 --- a/subsys/shell/shell.c
 +++ b/subsys/shell/shell.c
-@@ -1380,7 +1380,17 @@ int shell_init(const struct shell *shell, const void *transport_config,
- 				  shell->stack, CONFIG_SHELL_STACK_SIZE,
- 				  shell_thread, (void *)shell, (void *)log_backend,
+@@ -1383,7 +1383,17 @@ int shell_init(const struct shell *sh, const void *transport_config,
+ 				  sh->stack, CONFIG_SHELL_STACK_SIZE,
+ 				  shell_thread, (void *)sh, (void *)log_backend,
  				  UINT_TO_POINTER(init_log_level),
 -				  SHELL_THREAD_PRIORITY, 0, K_NO_WAIT);
 +				  SHELL_THREAD_PRIORITY, 0, K_FOREVER);
@@ -45,15 +45,15 @@ index edd2feaf03..e8f2294b17 100644
 +#if defined(CONFIG_SHELL_PIN_THREAD)
 +	err = k_thread_cpu_pin(tid, 0);
 +	if (err) {
-+		z_shell_fprintf(shell, SHELL_WARNING,
++		z_shell_fprintf(sh, SHELL_WARNING,
 +				"Failed to pin shell thread: %d\n", err);
 +	}
 +#endif /* CONFIG_SHELL_PIN_THREAD */
 +
 +	k_thread_start(tid);
  
- 	shell->ctx->tid = tid;
- 	k_thread_name_set(tid, shell->thread_name);
+ 	sh->ctx->tid = tid;
+ 	k_thread_name_set(tid, sh->thread_name);
 -- 
 2.25.1
 

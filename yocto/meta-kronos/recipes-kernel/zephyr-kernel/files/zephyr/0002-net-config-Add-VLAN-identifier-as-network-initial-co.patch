@@ -1,4 +1,4 @@
-From 8b91169789ccf8956228cb118112dc4ee694a56d Mon Sep 17 00:00:00 2001
+From 18c6fcd15679c757d63eff48087f1b5ed1a74512 Mon Sep 17 00:00:00 2001
 From: Luca Fancellu <luca.fancellu@arm.com>
 Date: Tue, 13 Jun 2023 11:31:05 +0100
 Subject: [PATCH] net: config: Add VLAN identifier as network initial
@@ -19,7 +19,7 @@ Upstream-Status: Backport [main: 38a43b0eec494a0bce0d94c8c31309c9cfe67984]
  2 files changed, 21 insertions(+)
 
 diff --git a/subsys/net/lib/config/Kconfig b/subsys/net/lib/config/Kconfig
-index 528bbb6986f7..0f1e3c50544e 100644
+index 528bbb6986..0f1e3c5054 100644
 --- a/subsys/net/lib/config/Kconfig
 +++ b/subsys/net/lib/config/Kconfig
 @@ -71,6 +71,13 @@ menuconfig NET_CONFIG_SETTINGS
@@ -37,7 +37,7 @@ index 528bbb6986f7..0f1e3c50544e 100644
  
  config NET_CONFIG_MY_IPV6_ADDR
 diff --git a/subsys/net/lib/config/init.c b/subsys/net/lib/config/init.c
-index 219852df81eb..edb34a08bba5 100644
+index e019987ca8..4a5002f99b 100644
 --- a/subsys/net/lib/config/init.c
 +++ b/subsys/net/lib/config/init.c
 @@ -16,6 +16,7 @@ LOG_MODULE_REGISTER(net_config, CONFIG_NET_CONFIG_LOG_LEVEL);
@@ -48,7 +48,7 @@ index 219852df81eb..edb34a08bba5 100644
  #include <zephyr/net/net_core.h>
  #include <zephyr/net/net_ip.h>
  #include <zephyr/net/net_if.h>
-@@ -378,6 +379,19 @@ int net_config_init_by_iface(struct net_if *iface, const char *app_info,
+@@ -379,6 +380,19 @@ int net_config_init_by_iface(struct net_if *iface, const char *app_info,
  #endif
  	}
  

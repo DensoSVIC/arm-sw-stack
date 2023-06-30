@@ -1,4 +1,4 @@
-From e41f2f54523ba33a9b9b0ce46393cff0058e0c8a Mon Sep 17 00:00:00 2001
+From 629bd94e07c09b1800752d23bf5943fa2244d0e3 Mon Sep 17 00:00:00 2001
 From: Luca Fancellu <luca.fancellu@arm.com>
 Date: Thu, 15 Jun 2023 16:44:35 +0100
 Subject: [PATCH] net: eth: Fix ethernet max header size on VLAN presence
@@ -16,7 +16,7 @@ Upstream-Status: Backport [main: b3f5db0c718f76560238a4e4c06bb5d8619589b9]
  1 file changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/include/zephyr/net/ethernet.h b/include/zephyr/net/ethernet.h
-index 0807c2be33ec..b4fad4224dd3 100644
+index 0807c2be33..b4fad4224d 100644
 --- a/include/zephyr/net/ethernet.h
 +++ b/include/zephyr/net/ethernet.h
 @@ -96,8 +96,14 @@ struct net_eth_addr {

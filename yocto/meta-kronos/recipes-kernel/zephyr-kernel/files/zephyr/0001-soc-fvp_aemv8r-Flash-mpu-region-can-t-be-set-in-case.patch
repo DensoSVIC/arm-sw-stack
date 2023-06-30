@@ -1,8 +1,8 @@
-From 6faa521fdcc37494dd12871bdc0c57a0d8b11b00 Mon Sep 17 00:00:00 2001
+From 34280b3d2a8c1aab37cf870d90f2b4324c189b98 Mon Sep 17 00:00:00 2001
 From: Yanqin Wei <yanqin.wei@arm.com>
 Date: Thu, 6 Apr 2023 19:47:41 +0800
-Subject: [PATCH] soc: fvp_aemv8r: Flash mpu region can't be set in case of no
- flash
+Subject: [PATCH] soc: fvp_aemv8r: Flash mpu region can't be set in case of
+ no flash
 
 Some platforms have not flash memory. The flash mpu region cannot
 be created in case CONFIG_FLASH_SIZE is zero.
@@ -34,5 +34,5 @@ index ab261e2e45..4165695710 100644
  	MPU_REGION_ENTRY("SRAM_0",
  			 (uintptr_t)__text_region_start,
 -- 
-2.40.0
+2.34.1
 
