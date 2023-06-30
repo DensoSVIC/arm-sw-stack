@@ -16,6 +16,7 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0003-net-eth-Fix-ethernet-max-header-size-on-VLAN-presenc.patch;patchdir=zephyr \
     file://zephyr/0004-shell-Provide-a-configuration-to-pin-the-shell-threa.patch;patchdir=zephyr \
     file://zephyr/0005-net-zperf-Add-support-for-bind-to-host-option-for-tc.patch;patchdir=zephyr \
+    file://zephyr/0006-drivers-eth_smsc91x-Implement-promiscuous-mode.patch;patchdir=zephyr \
     "
 # /* cSpell:enable */
 
