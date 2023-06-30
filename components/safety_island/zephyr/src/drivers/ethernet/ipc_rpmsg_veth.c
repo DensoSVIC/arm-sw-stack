@@ -146,7 +146,36 @@ static enum ethernet_hw_caps ipc_rpmsg_veth_caps(const struct device *dev)
 {
 	ARG_UNUSED(dev);
 
-	return 0;
+	return (0
+#if defined(CONFIG_NET_PROMISCUOUS_MODE)
+		| ETHERNET_PROMISC_MODE
+#endif
+	);
+}
+
+static int ipc_rpmsg_veth_set_config(const struct device *dev,
+				     enum ethernet_config_type type,
+				     const struct ethernet_config *config)
+{
+	int ret = 0;
+
+	(void) dev;
+	(void) type;
+	(void) config;
+
+	switch (type) {
+#if defined(CONFIG_NET_PROMISCUOUS_MODE)
+	case ETHERNET_CONFIG_TYPE_PROMISC_MODE:
+		/* Always succeed */
+		break;
+#endif
+
+	default:
+		ret = -ENOTSUP;
+		break;
+	}
+
+	return ret;
 }
 
 int ipc_rpmsg_veth_send(const struct device *dev, struct net_pkt *pkt)
@@ -212,6 +241,7 @@ static const struct ethernet_api ipc_rpmsg_veth_api = {
 	.iface_api.init   = ipc_rpmsg_veth_iface_init,
 	.start            = ipc_rpmsg_veth_start,
 	.get_capabilities = ipc_rpmsg_veth_caps,
+	.set_config       = ipc_rpmsg_veth_set_config,
 	.send             = ipc_rpmsg_veth_send,
 #if defined(CONFIG_NET_STATISTICS_ETHERNET)
 	.get_stats        = ipc_rpmsg_veth_get_stats,
