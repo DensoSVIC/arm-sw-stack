@@ -89,16 +89,16 @@ endchoice
 
 config KAS_INCLUDE_ARCHITECTURE
     string
-    default "kronos/yocto/kas/virtualization.yml" if ARCHITECTURE_VIRTUALIZATION
-    default "kronos/yocto/kas/baremetal.yml" if ARCHITECTURE_BAREMETAL
-    default "kronos/yocto/kas/arm-systemready-firmware.yml" if SYSTEMREADY_FIRMWARE
-    default "kronos/yocto/kas/arm-systemready-ir-acs.yml" if SYSTEMREADY_IR_ACS
-    default "kronos/yocto/kas/arm-systemready-linux-distros-debian.yml" if SYSTEMREADY_LINUX_DISTRO_DEBIAN
-    default "kronos/yocto/kas/arm-systemready-linux-distros-fedora.yml" if SYSTEMREADY_LINUX_DISTRO_FEDORA
+    default "yocto/kas/virtualization.yml" if ARCHITECTURE_VIRTUALIZATION
+    default "yocto/kas/baremetal.yml" if ARCHITECTURE_BAREMETAL
+    default "yocto/kas/arm-systemready-firmware.yml" if SYSTEMREADY_FIRMWARE
+    default "yocto/kas/arm-systemready-ir-acs.yml" if SYSTEMREADY_IR_ACS
+    default "yocto/kas/arm-systemready-linux-distros-debian.yml" if SYSTEMREADY_LINUX_DISTRO_DEBIAN
+    default "yocto/kas/arm-systemready-linux-distros-fedora.yml" if SYSTEMREADY_LINUX_DISTRO_FEDORA
 
 config KAS_INCLUDE_APPLICATION
     string
-    default "kronos/yocto/kas/hipc-validation.yml" if EXTRA_IMAGE_FEATURES_HIPC
+    default "yocto/kas/hipc-validation.yml" if EXTRA_IMAGE_FEATURES_HIPC
 
 if RUN_TESTS
     config TESTIMAGE_AUTO

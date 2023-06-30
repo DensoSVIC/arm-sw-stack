@@ -7,9 +7,9 @@
 
 ---
 header:
-  version: 13
+  version: 14
   includes:
-    - kronos/yocto/kas/base.yml
+    - yocto/kas/base.yml
 
 local_conf_header:
   baremetal: |

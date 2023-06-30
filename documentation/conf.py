@@ -102,7 +102,7 @@ yocto_version = "mickledore"
 yocto_doc_version = yocto_version + "/"
 cassini_version = yocto_version + "-dev"
 kronos_version = "main"
-kas_version = "3.2.3"
+kas_version = "3.3"
 trusted_firmware_m_version = "bd8c7c9c40e522d4db10d4b45412f7a56eb5dae7"
 # /* cspell:disable-next-line */
 trusted_firmware_m_base_version = "master branch post v1.7.0"

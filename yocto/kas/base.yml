@@ -7,7 +7,7 @@
 
 ---
 header:
-  version: 13
+  version: 14
   includes:
     - repo: meta-cassini
       file: meta-cassini-config/kas/cassini.yml
@@ -29,7 +29,7 @@ repos:
 
   kronos:
     layers:
-      kronos/yocto/meta-kronos:
+      yocto/meta-kronos:
 
   meta-arm:
     path: layers/meta-arm
