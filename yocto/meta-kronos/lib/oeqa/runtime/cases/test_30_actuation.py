@@ -78,7 +78,7 @@ class ActuationTest(OERuntimeTestCase):
         test_recordings = '/usr/share/actuation_player'
         proc_timeout = 500
 
-        # localhost:FVP_SI0_ETHERNET0_HOST_NETPORT maps to 172.20.51.1:49152
+        # localhost:FVP_ACTUATION_HOST_ANALYZER_PORT maps to 192.168.10.0:49152
         port = self.td.get('FVP_ACTUATION_HOST_ANALYZER_PORT')
         host = "localhost"
         analyzer = 'packet_analyzer/start_analyzer.py'
