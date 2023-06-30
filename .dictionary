@@ -96,6 +96,7 @@ cpupool
 cpupools
 CPUS
 cpython
+crosstool
 cspell
 CSSELR
 csumonidr
@@ -464,6 +465,7 @@ sram
 srcdir
 SRCPV
 SRCREV
+srcurichecksum
 SSBD
 sstate
 stdbool
