@@ -1,0 +1,86 @@
+# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+config NET_IFACE1_ADDR
+	string "Address for interface 1"
+	default ""
+
+config NET_IFACE1_GW
+	string "Gateway for interface 1"
+	default ""
+
+config NET_IFACE1_NETMASK
+	string "Netmask for interface 1"
+	default ""
+
+config NET_IFACE1_VLAN
+	int "Vlan for interface 1"
+	default 0
+
+config NET_IFACE1_BRIDGE
+	bool "Whether to add interface 1 to the bridge"
+	default n
+
+config NET_IFACE2_ADDR
+	string "Address for interface 2"
+	default ""
+
+config NET_IFACE2_GW
+	string "Gateway for interface 2"
+	default ""
+
+config NET_IFACE2_NETMASK
+	string "Netmask for interface 2"
+	default ""
+
+config NET_IFACE2_VLAN
+	int "Vlan for interface 2"
+	default 0
+
+config NET_IFACE2_BRIDGE
+	bool "Whether to add interface 2 to the bridge"
+	default n
+
+config NET_IFACE3_ADDR
+	string "Address for interface 3"
+	default ""
+
+config NET_IFACE3_GW
+	string "Gateway for interface 3"
+	default ""
+
+config NET_IFACE3_NETMASK
+	string "Netmask for interface 3"
+	default ""
+
+config NET_IFACE3_VLAN
+	int "Vlan for interface 3"
+	default 0
+
+config NET_IFACE3_BRIDGE
+	bool "Whether to add interface 3 to the bridge"
+	default n
+
+config NET_IFACE4_ADDR
+	string "Address for interface 4"
+	default ""
+
+config NET_IFACE4_GW
+	string "Gateway for interface 4"
+	default ""
+
+config NET_IFACE4_NETMASK
+	string "Netmask for interface 4"
+	default ""
+
+config NET_IFACE4_VLAN
+	int "Vlan for interface 4"
+	default 0
+
+config NET_IFACE4_BRIDGE
+	bool "Whether to add interface 4 to the bridge"
+	default n
+
+source "Kconfig.zephyr"
