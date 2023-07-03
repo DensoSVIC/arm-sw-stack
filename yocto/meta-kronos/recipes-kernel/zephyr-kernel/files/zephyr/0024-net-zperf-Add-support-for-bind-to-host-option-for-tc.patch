@@ -1,0 +1,441 @@
+From de2d01a2b5999e3b9a828f0a000bd1701d18374a Mon Sep 17 00:00:00 2001
+Message-Id: <de2d01a2b5999e3b9a828f0a000bd1701d18374a.1689687685.git.rahul.singh@arm.com>
+From: Rahul Singh <rahul.singh@arm.com>
+Date: Mon, 19 Jun 2023 12:20:20 +0100
+Subject: [PATCH] net: zperf: Add support for bind to host option for tcp/udp
+ download
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The current zperf tcp/udp download command doesn't provide the option
+to bind the server to a specific host address. If there is more than
+one interface it will not be possible to test each interface with zperf
+tcp/udp download command without building the Zpehyr.
+
+This patch will add support for zperf tcp/udp download command to bind
+server to host interface address.
+
+Upstream-Status: Pending
+Signed-off-by: Rahul Singh <rahul.singh@arm.com>
+---
+ include/zephyr/net/zperf.h                |   2 +
+ subsys/net/lib/zperf/zperf_shell.c        | 169 +++++++++++++++++++++-
+ subsys/net/lib/zperf/zperf_tcp_receiver.c |  51 ++-----
+ subsys/net/lib/zperf/zperf_udp_receiver.c |  53 ++-----
+ 4 files changed, 187 insertions(+), 88 deletions(-)
+
+diff --git a/include/zephyr/net/zperf.h b/include/zephyr/net/zperf.h
+index f93fe8e7e3..cd83dad68a 100644
+--- a/include/zephyr/net/zperf.h
++++ b/include/zephyr/net/zperf.h
+@@ -41,6 +41,8 @@ struct zperf_upload_params {
+ 
+ struct zperf_download_params {
+ 	uint16_t port;
++	struct in6_addr sin6_addr;    /* IPv6 address */
++	struct in_addr sin_addr;      /* IPv4 address */
+ };
+ 
+ struct zperf_results {
+diff --git a/subsys/net/lib/zperf/zperf_shell.c b/subsys/net/lib/zperf/zperf_shell.c
+index 1cb9cf7f8d..2c9cab4e4c 100644
+--- a/subsys/net/lib/zperf/zperf_shell.c
++++ b/subsys/net/lib/zperf/zperf_shell.c
+@@ -178,6 +178,137 @@ static int parse_ipv4_addr(const struct shell *sh, char *host, char *port,
+ 	return 0;
+ }
+ 
++static int zperf_dowload_bind_host(const struct shell *sh,
++				   size_t argc, char *argv[],
++				   struct zperf_download_params *param)
++{
++	struct in6_addr sin6_addr;    /* IPv6 address */
++	struct in_addr sin_addr;      /* IPv4 address */
++	int ret;
++
++	/* Parse options */
++	if (argc >= 3) {
++		if (IS_ENABLED(CONFIG_NET_IPV6) && !IS_ENABLED(CONFIG_NET_IPV4)) {
++			ret = net_addr_pton(AF_INET6, argv[2], &sin6_addr);
++			if (ret < 0) {
++				goto ipv6_err;
++			}
++
++			if (net_ipv6_is_addr_unspecified(&sin6_addr)) {
++				goto ipv6_err;
++			}
++
++			memcpy(&param->sin6_addr, &sin6_addr,
++			       sizeof(struct in6_addr));
++
++			return 0;
++		}
++
++		if (IS_ENABLED(CONFIG_NET_IPV4) && !IS_ENABLED(CONFIG_NET_IPV6)) {
++			ret = net_addr_pton(AF_INET, argv[2], &sin_addr);
++			if (ret < 0) {
++				goto ipv4_err;
++			}
++
++			if (net_ipv4_is_addr_unspecified(&sin_addr)) {
++				goto ipv4_err;
++			}
++
++			memcpy(&param->sin_addr, &sin_addr,
++			       sizeof(struct in_addr));
++
++			return 0;
++		}
++
++		if (IS_ENABLED(CONFIG_NET_IPV6) && IS_ENABLED(CONFIG_NET_IPV4)) {
++			if (net_addr_pton(AF_INET6, argv[2], &sin6_addr) < 0) {
++				if (net_addr_pton(AF_INET, argv[2],
++						  &sin_addr) < 0) {
++					goto ipv4_err;
++				}
++
++				if (net_ipv4_is_addr_unspecified(&sin_addr)) {
++					goto ipv4_err;
++				}
++
++				memcpy(&param->sin_addr, &sin_addr,
++				       sizeof(struct in_addr));
++			} else {
++				if (net_ipv6_is_addr_unspecified(&sin6_addr)) {
++					goto ipv6_err;
++				}
++
++				memcpy(&param->sin6_addr, &sin6_addr,
++				       sizeof(struct in6_addr));
++			}
++			return 0;
++		}
++ipv4_err:
++		shell_fprintf(sh, SHELL_WARNING, "Invalid IPv4 address %s\n",
++			      argv[2]);
++		return -ENOEXEC;
++
++ipv6_err:
++		shell_fprintf(sh, SHELL_WARNING, "Invalid IPv6 address %s\n",
++			      argv[2]);
++		return -ENOEXEC;
++	}
++
++	if (IS_ENABLED(CONFIG_NET_IPV6)) {
++		if (MY_IP6ADDR && strlen(MY_IP6ADDR)) {
++			/* Use Setting IP */
++			ret = zperf_get_ipv6_addr(MY_IP6ADDR, MY_PREFIX_LEN_STR,
++						  &sin6_addr);
++			if (ret < 0) {
++				shell_fprintf(sh, SHELL_WARNING,
++					      "Unable to set IPv6.\n");
++				goto use_existing_ipv6;
++			}
++			memcpy(&param->sin6_addr, &sin6_addr,
++			       sizeof(struct in6_addr));
++		} else {
++			/* Use existing IP */
++			const struct in6_addr *addr;
++use_existing_ipv6:
++			addr = zperf_get_default_if_in6_addr();
++			if (!addr) {
++				shell_fprintf(sh, SHELL_WARNING,
++					      "Unable to get IPv6 by default.\n");
++				return -ENOEXEC;
++			}
++			memcpy(&param->sin6_addr, addr,
++			       sizeof(struct in6_addr));
++		}
++	}
++
++	if (IS_ENABLED(CONFIG_NET_IPV4)) {
++		if (MY_IP4ADDR && strlen(MY_IP4ADDR)) {
++			/* Use Setting IP */
++			ret = zperf_get_ipv4_addr(MY_IP4ADDR, &sin_addr);
++			if (ret < 0) {
++				shell_fprintf(sh, SHELL_WARNING,
++					      "Unable to set IPv4.\n");
++				goto use_existing_ipv4;
++			}
++			memcpy(&param->sin_addr, &sin_addr,
++			       sizeof(struct in_addr));
++		} else {
++			/* Use existing IP */
++			const struct in_addr *addr;
++use_existing_ipv4:
++			addr = zperf_get_default_if_in4_addr();
++			if (!addr) {
++				shell_fprintf(sh, SHELL_WARNING,
++					      "Unable to get IPv4 by default.\n");
++				return -EINVAL;
++			}
++			memcpy(&param->sin_addr, addr, sizeof(struct in_addr));
++		}
++	}
++
++	return 0;
++}
++
+ static int cmd_setip(const struct shell *sh, size_t argc, char *argv[])
+ {
+ 	int start = 0;
+@@ -335,10 +466,24 @@ static int cmd_udp_download(const struct shell *sh, size_t argc,
+ 
+ 		if (argc >= 2) {
+ 			param.port = strtoul(argv[1], NULL, 10);
++			if (param.port < 1 || param.port > 65535) {
++				shell_fprintf(sh, SHELL_WARNING,
++					      "Invalid port number.\n");
++				shell_help(sh);
++				return -ENOEXEC;
++			}
+ 		} else {
+ 			param.port = DEF_PORT;
+ 		}
+ 
++		ret = zperf_dowload_bind_host(sh, argc, argv, &param);
++		if (ret < 0) {
++			shell_fprintf(sh, SHELL_WARNING,
++				      "Unable to bind host.\n");
++			shell_help(sh);
++			return -ENOEXEC;
++		}
++
+ 		ret = zperf_udp_download(&param, udp_session_cb, (void *)sh);
+ 		if (ret == -EALREADY) {
+ 			shell_fprintf(sh, SHELL_WARNING,
+@@ -1027,10 +1172,24 @@ static int cmd_tcp_download(const struct shell *sh, size_t argc,
+ 
+ 		if (argc >= 2) {
+ 			param.port = strtoul(argv[1], NULL, 10);
++			if (param.port < 1 || param.port > 65535) {
++				shell_fprintf(sh, SHELL_WARNING,
++					      "Invalid port number.\n");
++				shell_help(sh);
++				return -ENOEXEC;
++			}
+ 		} else {
+ 			param.port = DEF_PORT;
+ 		}
+ 
++		ret = zperf_dowload_bind_host(sh, argc, argv, &param);
++		if (ret < 0) {
++			shell_fprintf(sh, SHELL_WARNING,
++				      "Unable to bind host.\n");
++			shell_help(sh);
++			return -ENOEXEC;
++		}
++
+ 		ret = zperf_tcp_download(&param, tcp_session_cb, (void *)sh);
+ 		if (ret == -EALREADY) {
+ 			shell_fprintf(sh, SHELL_WARNING,
+@@ -1151,8 +1310,9 @@ SHELL_STATIC_SUBCMD_SET_CREATE(zperf_cmd_tcp,
+ 		  ,
+ 		  cmd_tcp_upload2),
+ 	SHELL_CMD(download, &zperf_cmd_tcp_download,
+-		  "[<port>]\n"
+-		  "Example: tcp download 5001\n",
++		  "[<port>]:  Server port to listen on/connect to\n"
++		  "[<host>]:  Bind to <host>, an interface address\n"
++		  "Example: tcp download 5001 192.168.0.1\n",
+ 		  cmd_tcp_download),
+ 	SHELL_SUBCMD_SET_END
+ );
+@@ -1203,8 +1363,9 @@ SHELL_STATIC_SUBCMD_SET_CREATE(zperf_cmd_udp,
+ 		  ,
+ 		  cmd_udp_upload2),
+ 	SHELL_CMD(download, &zperf_cmd_udp_download,
+-		  "[<port>]\n"
+-		  "Example: udp download 5001\n",
++		  "[<port>]:  Server port to listen on/connect to\n"
++		  "[<host>]:  Bind to <host>, an interface address\n"
++		  "Example: udp download 5001 192.168.0.1\n",
+ 		  cmd_udp_download),
+ 	SHELL_SUBCMD_SET_END
+ );
+diff --git a/subsys/net/lib/zperf/zperf_tcp_receiver.c b/subsys/net/lib/zperf/zperf_tcp_receiver.c
+index d01a4407ca..2d2184fe4c 100644
+--- a/subsys/net/lib/zperf/zperf_tcp_receiver.c
++++ b/subsys/net/lib/zperf/zperf_tcp_receiver.c
+@@ -47,6 +47,8 @@ static void *tcp_user_data;
+ static bool tcp_server_running;
+ static bool tcp_server_stop;
+ static uint16_t tcp_server_port;
++static struct in6_addr tcp_server_in6_addr;    /* IPv6 address */
++static struct in_addr tcp_server_in_addr;      /* IPv4 address */
+ static K_SEM_DEFINE(tcp_server_run, 0, 1);
+ 
+ static int tcp_bind_listen_connection(struct zsock_pollfd *pollfd,
+@@ -153,26 +155,8 @@ static void tcp_server_session(void)
+ 			goto error;
+ 		}
+ 
+-		if (MY_IP4ADDR && strlen(MY_IP4ADDR)) {
+-			/* Use Setting IP */
+-			ret = zperf_get_ipv4_addr(MY_IP4ADDR,
+-						  &in4_addr->sin_addr);
+-			if (ret < 0) {
+-				NET_WARN("Unable to set IPv4");
+-				goto use_existing_ipv4;
+-			}
+-		} else {
+-		use_existing_ipv4:
+-			/* Use existing IP */
+-			const struct in_addr *addr =
+-				zperf_get_default_if_in4_addr();
+-			if (!addr) {
+-				NET_ERR("Unable to get IPv4 by default");
+-				goto error;
+-			}
+-			memcpy(&in4_addr->sin_addr, addr,
+-				sizeof(struct in_addr));
+-		}
++		memcpy(&in4_addr->sin_addr, &tcp_server_in_addr,
++		       sizeof(struct in_addr));
+ 
+ 		in4_addr->sin_port = htons(tcp_server_port);
+ 
+@@ -201,27 +185,8 @@ static void tcp_server_session(void)
+ 			goto error;
+ 		}
+ 
+-		if (MY_IP6ADDR && strlen(MY_IP6ADDR)) {
+-			/* Use Setting IP */
+-			ret = zperf_get_ipv6_addr(MY_IP6ADDR,
+-						  MY_PREFIX_LEN_STR,
+-						  &in6_addr->sin6_addr);
+-			if (ret < 0) {
+-				NET_WARN("Unable to set IPv6");
+-				goto use_existing_ipv6;
+-			}
+-		} else {
+-		use_existing_ipv6:
+-			/* Use existing IP */
+-			const struct in6_addr *addr =
+-				zperf_get_default_if_in6_addr();
+-			if (!addr) {
+-				NET_ERR("Unable to get IPv4 by default");
+-				goto error;
+-			}
+-			memcpy(&in6_addr->sin6_addr, addr,
+-				sizeof(struct in6_addr));
+-		}
++		memcpy(&in6_addr->sin6_addr, &tcp_server_in6_addr,
++		       sizeof(struct in6_addr));
+ 
+ 		in6_addr->sin6_port = htons(tcp_server_port);
+ 
+@@ -386,6 +351,10 @@ int zperf_tcp_download(const struct zperf_download_params *param,
+ 		return -EALREADY;
+ 	}
+ 
++	memcpy(&tcp_server_in_addr, &param->sin_addr,
++	       sizeof(struct in_addr));
++	memcpy(&tcp_server_in6_addr, &param->sin6_addr,
++	       sizeof(struct in6_addr));
+ 	tcp_session_cb = callback;
+ 	tcp_user_data = user_data;
+ 	tcp_server_port = param->port;
+diff --git a/subsys/net/lib/zperf/zperf_udp_receiver.c b/subsys/net/lib/zperf/zperf_udp_receiver.c
+index f96acde6f4..ff08d427d1 100644
+--- a/subsys/net/lib/zperf/zperf_udp_receiver.c
++++ b/subsys/net/lib/zperf/zperf_udp_receiver.c
+@@ -48,6 +48,8 @@ static void *udp_user_data;
+ static bool udp_server_running;
+ static bool udp_server_stop;
+ static uint16_t udp_server_port;
++static struct in6_addr udp_server_in6_addr;    /* IPv6 address */
++static struct in_addr udp_server_in_addr;      /* IPv4 address */
+ static K_SEM_DEFINE(udp_server_run, 0, 1);
+ 
+ static inline void build_reply(struct zperf_udp_datagram *hdr,
+@@ -240,8 +242,6 @@ static void udp_server_session(void)
+ 	}
+ 
+ 	if (IS_ENABLED(CONFIG_NET_IPV4)) {
+-		const struct in_addr *in4_addr = NULL;
+-
+ 		in4_addr_my = zperf_get_sin();
+ 
+ 		fds[SOCK_ID_IPV4].fd = zsock_socket(AF_INET, SOCK_DGRAM,
+@@ -251,25 +251,8 @@ static void udp_server_session(void)
+ 			goto error;
+ 		}
+ 
+-		if (MY_IP4ADDR && strlen(MY_IP4ADDR)) {
+-			/* Use setting IP */
+-			ret = zperf_get_ipv4_addr(MY_IP4ADDR,
+-						  &in4_addr_my->sin_addr);
+-			if (ret < 0) {
+-				NET_WARN("Unable to set IPv4");
+-				goto use_existing_ipv4;
+-			}
+-		} else {
+-		use_existing_ipv4:
+-			/* Use existing IP */
+-			in4_addr = zperf_get_default_if_in4_addr();
+-			if (!in4_addr) {
+-				NET_ERR("Unable to get IPv4 by default");
+-				goto error;
+-			}
+-			memcpy(&in4_addr_my->sin_addr, in4_addr,
+-				sizeof(struct in_addr));
+-		}
++		memcpy(&in4_addr_my->sin_addr, &udp_server_in_addr,
++		       sizeof(struct in_addr));
+ 
+ 		NET_INFO("Binding to %s",
+ 			 net_sprint_ipv4_addr(&in4_addr_my->sin_addr));
+@@ -290,8 +273,6 @@ static void udp_server_session(void)
+ 	}
+ 
+ 	if (IS_ENABLED(CONFIG_NET_IPV6)) {
+-		const struct in6_addr *in6_addr = NULL;
+-
+ 		in6_addr_my = zperf_get_sin6();
+ 
+ 		fds[SOCK_ID_IPV6].fd = zsock_socket(AF_INET6, SOCK_DGRAM,
+@@ -301,26 +282,8 @@ static void udp_server_session(void)
+ 			goto error;
+ 		}
+ 
+-		if (MY_IP6ADDR && strlen(MY_IP6ADDR)) {
+-			/* Use setting IP */
+-			ret = zperf_get_ipv6_addr(MY_IP6ADDR,
+-						  MY_PREFIX_LEN_STR,
+-						  &in6_addr_my->sin6_addr);
+-			if (ret < 0) {
+-				NET_WARN("Unable to set IPv6");
+-				goto use_existing_ipv6;
+-			}
+-		} else {
+-		use_existing_ipv6:
+-			/* Use existing IP */
+-			in6_addr = zperf_get_default_if_in6_addr();
+-			if (!in6_addr) {
+-				NET_ERR("Unable to get IPv4 by default");
+-				goto error;
+-			}
+-			memcpy(&in6_addr_my->sin6_addr, in6_addr,
+-				sizeof(struct in6_addr));
+-		}
++		memcpy(&in6_addr_my->sin6_addr, &udp_server_in6_addr,
++		       sizeof(struct in6_addr));
+ 
+ 		NET_INFO("Binding to %s",
+ 			 net_sprint_ipv6_addr(&in6_addr_my->sin6_addr));
+@@ -436,6 +399,10 @@ int zperf_udp_download(const struct zperf_download_params *param,
+ 		return -EALREADY;
+ 	}
+ 
++	memcpy(&udp_server_in_addr, &param->sin_addr,
++	       sizeof(struct in_addr));
++	memcpy(&udp_server_in6_addr, &param->sin6_addr,
++	       sizeof(struct in6_addr));
+ 	udp_session_cb = callback;
+ 	udp_user_data  = user_data;
+ 	udp_server_port = param->port;
+-- 
+2.25.1
+

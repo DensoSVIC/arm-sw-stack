@@ -34,6 +34,7 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0021-net-config-Add-VLAN-identifier-as-network-initial-co.patch;patchdir=zephyr \
     file://zephyr/0022-net-eth-Fix-ethernet-max-header-size-on-VLAN-presenc.patch;patchdir=zephyr \
     file://zephyr/0023-shell-Provide-a-configuration-to-pin-the-shell-threa.patch;patchdir=zephyr \
+    file://zephyr/0024-net-zperf-Add-support-for-bind-to-host-option-for-tc.patch;patchdir=zephyr \
     "
 # /* cSpell:enable */
 
