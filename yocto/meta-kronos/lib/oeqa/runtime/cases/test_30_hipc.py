@@ -121,7 +121,7 @@ class HIPCTestBase(OERuntimeTestCase):
                 self.linux_console,
                 f'iperf -u -c {cl_addr} -t {test_duration} -b 100K -l 1438'
                 f' -P {connections_number}')
-            session_end_timeout = 200 * test_duration * connections_number
+            session_end_timeout = 300 * test_duration * connections_number
             self.target.expect(self.linux_console, 'Client connecting to ',
                                timeout=session_end_timeout)
 
@@ -151,7 +151,7 @@ class HIPCTestBase(OERuntimeTestCase):
             self.target.sendline(self.linux_console,
                                  f'iperf -c {cl_addr} -t {test_duration}'
                                  f' -P {connections_number}')
-            session_end_timeout = 200 * test_duration * connections_number
+            session_end_timeout = 300 * test_duration * connections_number
             self.target.expect(self.linux_console, 'Client connecting to ',
                                timeout=session_end_timeout)
             for _ in range(0, connections_number):

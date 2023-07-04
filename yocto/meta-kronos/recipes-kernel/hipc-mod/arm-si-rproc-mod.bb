@@ -20,4 +20,4 @@ S = "${WORKDIR}/src"
 
 inherit module
 
-RRECOMMENDS:${PN} += "kernel-module-arm-mhuv2"
+RRECOMMENDS:${PN} += "kernel-module-arm-mhuv3"

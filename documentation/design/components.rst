@@ -381,7 +381,7 @@ Additional patches are located at
  * Make virtio rpmsg buffer size configurable
  * Make mailbox transmit queue size configurable
  * Disable remoteproc virtio rpmsg to use DMA api in Xen guest
- * Modify MHUv2 driver to make it work with MHUv3
+ * Add MHUv3 driver
 
 *************
 Safety Island
