@@ -35,6 +35,18 @@ files may therefore be included in the repository under alternative licenses in
 order to be compliant with the licensing requirements of the associated
 external works.
 
+Find below the list of licenses related to externally licensed works:
+
+  * Apache-2.0
+  * BSD-2-Clause
+  * BSD-3-Clause
+  * BSD-3-Clause-Clear
+  * CC-BY-4.0
+  * GPL-2.0
+  * GPL-2.0-only
+  * LGPL-2.0
+  * LGPL-2.1
+  * MIT
 
 ****************
 SPDX Identifiers
