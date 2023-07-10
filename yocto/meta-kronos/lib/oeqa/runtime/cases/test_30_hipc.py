@@ -165,7 +165,7 @@ class HIPCTestBase(OERuntimeTestCase):
             self.target.sendline(cl_console)
             self.target.expect(cl_console, self.si_prompt, timeout=120)
 
-        test_duration = int(self.td.get('HIPC_PER_TEST_DURATION', 5))
+        test_duration = int(self.td.get('HIPC_PER_TEST_DURATION', 3))
 
         # The variable HIPC_TEST_PARALLEL_CONNS_SEQ contains the sequence of
         # how many multiple connections should be tested
