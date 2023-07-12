@@ -1,0 +1,264 @@
+From e836f79cf6c27ecf563a085308417d97ec8ab022 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Fri, 7 Jul 2023 15:43:41 +0800
+Subject: [PATCH] docs, tool: Add the mpam parameter in xl config file
+
+Add a xl config parameter named "mpam" so that the hypervisor can
+do guest MPAM cache allocation at guest boot time after parsing the
+xl config file.
+
+To achieve that, introduce the "libxl_mpam_info" type and add this
+to the "arch_arm" structure from "libxl_domain_build_info", also
+introduce the parsing logic of this config entry and related doc.
+
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Upstream-Status: Pending
+Issue-Id: SCM-6028
+---
+ docs/man/xl.cfg.5.pod.in             | 31 ++++++++++++++++++
+ tools/golang/xenlight/helpers.gen.go | 37 ++++++++++++++++++++++
+ tools/golang/xenlight/types.gen.go   |  6 ++++
+ tools/libs/light/libxl_arm.c         |  8 +++++
+ tools/libs/light/libxl_types.idl     |  6 ++++
+ tools/xl/xl_parse.c                  | 47 ++++++++++++++++++++++++++--
+ 6 files changed, 133 insertions(+), 2 deletions(-)
+
+diff --git a/docs/man/xl.cfg.5.pod.in b/docs/man/xl.cfg.5.pod.in
+index ec444fb2ba..efbeffd913 100644
+--- a/docs/man/xl.cfg.5.pod.in
++++ b/docs/man/xl.cfg.5.pod.in
+@@ -2870,6 +2870,37 @@ Currently, only the "sbsa_uart" model is supported for ARM.
+ 
+ =back
+ 
++=over 4
++
++=item B<mpam=[ "MPAM_SPEC_STRING", "MPAM_SPEC_STRING", ...]>
++
++The `mpam` parameter enables Arm Memory System Resource Partitioning and
++Monitoring (MPAM) usage for the guest and sets the MPAM configurations, the
++option is applicable only to AArch64 guests.
++
++Each B<MPAM_SPEC_STRING> is a comma-separated list of C<KEY=VALUE>
++settings from the following list:
++
++=over 4
++
++=item B<l3=l3_cpbm>
++
++A 32-bit integer (normally in hexadecimal) specifying the L3 cache MPAM
++configuration for domain. Note that MPAM has architecture maximum 32-bit CPBM,
++but hardware may have different implementations. If the CPBM value given in the
++device tree exceeds the maximum value of the system, it will be clamped to the
++maximum value supported by the system.
++
++=item B<slc=slc_cpbm>
++
++A 32-bit integer (normally in hexadecimal) specifying the System Level Cache
++(SLC) MPAM configuration for domain. Note that MPAM has architecture maximum
++32-bit CPBM, but hardware may have different implementations. If the CPBM value
++given in the device tree exceeds the maximum value of the system, it will be
++clamped to the maximum value supported by the system.
++
++=back
++
+ =head3 x86
+ 
+ =over 4
+diff --git a/tools/golang/xenlight/helpers.gen.go b/tools/golang/xenlight/helpers.gen.go
+index cb1bdf9bdf..fb11afc25c 100644
+--- a/tools/golang/xenlight/helpers.gen.go
++++ b/tools/golang/xenlight/helpers.gen.go
+@@ -906,6 +906,37 @@ return fmt.Errorf("converting field Vcpus: %v", err)
+  return nil
+  }
+ 
++// NewMpamInfo returns an instance of MpamInfo initialized with defaults.
++func NewMpamInfo() (*MpamInfo, error) {
++var (
++x MpamInfo
++xc C.libxl_mpam_info)
++
++C.libxl_mpam_info_init(&xc)
++defer C.libxl_mpam_info_dispose(&xc)
++
++if err := x.fromC(&xc); err != nil {
++return nil, err }
++
++return &x, nil}
++
++func (x *MpamInfo) fromC(xc *C.libxl_mpam_info) error {
++ x.L3Cpbm = uint32(xc.l3_cpbm)
++x.SlcCpbm = uint32(xc.slc_cpbm)
++
++ return nil}
++
++func (x *MpamInfo) toC(xc *C.libxl_mpam_info) (err error){defer func(){
++if err != nil{
++C.libxl_mpam_info_dispose(xc)}
++}()
++
++xc.l3_cpbm = C.uint32_t(x.L3Cpbm)
++xc.slc_cpbm = C.uint32_t(x.SlcCpbm)
++
++ return nil
++ }
++
+ // NewRdmReserve returns an instance of RdmReserve initialized with defaults.
+ func NewRdmReserve() (*RdmReserve, error) {
+ var (
+@@ -1117,6 +1148,9 @@ default:
+ return fmt.Errorf("invalid union key '%v'", x.Type)}
+ x.ArchArm.GicVersion = GicVersion(xc.arch_arm.gic_version)
+ x.ArchArm.Vuart = VuartType(xc.arch_arm.vuart)
++if err := x.ArchArm.Mpam.fromC(&xc.arch_arm.mpam);err != nil {
++return fmt.Errorf("converting field ArchArm.Mpam: %v", err)
++}
+ if err := x.ArchX86.MsrRelaxed.fromC(&xc.arch_x86.msr_relaxed);err != nil {
+ return fmt.Errorf("converting field ArchX86.MsrRelaxed: %v", err)
+ }
+@@ -1602,6 +1636,9 @@ default:
+ return fmt.Errorf("invalid union key '%v'", x.Type)}
+ xc.arch_arm.gic_version = C.libxl_gic_version(x.ArchArm.GicVersion)
+ xc.arch_arm.vuart = C.libxl_vuart_type(x.ArchArm.Vuart)
++if err := x.ArchArm.Mpam.toC(&xc.arch_arm.mpam); err != nil {
++return fmt.Errorf("converting field ArchArm.Mpam: %v", err)
++}
+ if err := x.ArchX86.MsrRelaxed.toC(&xc.arch_x86.msr_relaxed); err != nil {
+ return fmt.Errorf("converting field ArchX86.MsrRelaxed: %v", err)
+ }
+diff --git a/tools/golang/xenlight/types.gen.go b/tools/golang/xenlight/types.gen.go
+index 6fdcd94d24..999e9b908f 100644
+--- a/tools/golang/xenlight/types.gen.go
++++ b/tools/golang/xenlight/types.gen.go
+@@ -457,6 +457,11 @@ TeeTypeNone TeeType = 0
+ TeeTypeOptee TeeType = 1
+ )
+ 
++type MpamInfo struct {
++L3Cpbm uint32
++SlcCpbm uint32
++}
++
+ type RdmReserve struct {
+ Strategy RdmReserveStrategy
+ Policy RdmReservePolicy
+@@ -531,6 +536,7 @@ TypeUnion DomainBuildInfoTypeUnion
+ ArchArm struct {
+ GicVersion GicVersion
+ Vuart VuartType
++Mpam MpamInfo
+ }
+ ArchX86 struct {
+ MsrRelaxed Defbool
+diff --git a/tools/libs/light/libxl_arm.c b/tools/libs/light/libxl_arm.c
+index cd84a7c66e..141d24a231 100644
+--- a/tools/libs/light/libxl_arm.c
++++ b/tools/libs/light/libxl_arm.c
+@@ -179,6 +179,14 @@ int libxl__arch_domain_prepare_config(libxl__gc *gc,
+         return ERROR_FAIL;
+     }
+ 
++    if (d_config->b_info.arch_arm.mpam.l3_cpbm) {
++        config->arch.mpam.l3_cpbm = d_config->b_info.arch_arm.mpam.l3_cpbm;
++    }
++
++    if (d_config->b_info.arch_arm.mpam.slc_cpbm) {
++        config->arch.mpam.slc_cpbm = d_config->b_info.arch_arm.mpam.slc_cpbm;
++    }
++
+     return 0;
+ }
+ 
+diff --git a/tools/libs/light/libxl_types.idl b/tools/libs/light/libxl_types.idl
+index 1bb61be7c9..886661f5ce 100644
+--- a/tools/libs/light/libxl_types.idl
++++ b/tools/libs/light/libxl_types.idl
+@@ -492,6 +492,11 @@ libxl_tee_type = Enumeration("tee_type", [
+     (1, "optee")
+     ], init_val = "LIBXL_TEE_TYPE_NONE")
+ 
++libxl_mpam_info = Struct("mpam_info", [
++    ("l3_cpbm", uint32), # cache portion bitmask config for domain L3 cache
++    ("slc_cpbm", uint32), # cache portion bitmask config for domain SLC
++    ])
++
+ libxl_rdm_reserve = Struct("rdm_reserve", [
+     ("strategy",    libxl_rdm_reserve_strategy),
+     ("policy",      libxl_rdm_reserve_policy),
+@@ -658,6 +663,7 @@ libxl_domain_build_info = Struct("domain_build_info",[
+ 
+     ("arch_arm", Struct(None, [("gic_version", libxl_gic_version),
+                                ("vuart", libxl_vuart_type),
++                               ("mpam", libxl_mpam_info),
+                               ])),
+     ("arch_x86", Struct(None, [("msr_relaxed", libxl_defbool),
+                               ])),
+diff --git a/tools/xl/xl_parse.c b/tools/xl/xl_parse.c
+index 644ab8f8fd..644bbfbeab 100644
+--- a/tools/xl/xl_parse.c
++++ b/tools/xl/xl_parse.c
+@@ -1220,8 +1220,9 @@ void parse_config_data(const char *config_source,
+     XLU_ConfigList *cpus, *vbds, *nics, *pcis, *cvfbs, *cpuids, *vtpms,
+                    *usbctrls, *usbdevs, *p9devs, *vdispls, *pvcallsifs_devs;
+     XLU_ConfigList *channels, *ioports, *irqs, *iomem, *viridian, *dtdevs,
+-                   *mca_caps;
+-    int num_ioports, num_irqs, num_iomem, num_cpus, num_viridian, num_mca_caps;
++                   *mca_caps, *mpam;
++    int num_ioports, num_irqs, num_iomem, num_cpus, num_viridian, num_mca_caps,
++        num_mpam_configs;
+     int pci_power_mgmt = 0;
+     int pci_msitranslate = 0;
+     int pci_permissive = 0;
+@@ -2751,6 +2752,48 @@ skip_usbdev:
+         }
+     }
+ 
++    if (!xlu_cfg_get_list(config, "mpam", &mpam, &num_mpam_configs, 1)) {
++        for (i = 0; i < num_mpam_configs; i++) {
++            char *key_untrimmed, *value_untrimmed, *key, *value, *endptr;
++            uint32_t val;
++
++            buf = xlu_cfg_get_listitem(mpam, i);
++            if (!buf) {
++                fprintf(stderr, "xl: Unable to get element #%d in mpam list\n",
++                        i);
++                exit(EXIT_FAILURE);
++            }
++
++            if (split_string_into_pair(buf, "=",
++                                       &key_untrimmed, &value_untrimmed)) {
++                fprintf(stderr, "xl: failed to split \"%s\" into pair\n", buf);
++                exit(EXIT_FAILURE);
++            }
++            trim(isspace, key_untrimmed, &key);
++            trim(isspace, value_untrimmed, &value);
++
++            if (!strcmp(key, "l3")) {
++                val = strtoul(value, &endptr, 0);
++                if (endptr == value || val == UINT32_MAX) {
++                    fprintf(stderr, "xl: Invalid mpam parameter '%s' value\n", key);
++                }
++                b_info->arch_arm.mpam.l3_cpbm = val;
++            } else if (!strcmp(key, "slc")) {
++                val = strtoul(value, &endptr, 0);
++                if (endptr == value || val == UINT32_MAX) {
++                    fprintf(stderr, "xl: Invalid mpam parameter '%s' value\n", key);
++                }
++                b_info->arch_arm.mpam.slc_cpbm = val;
++            } else {
++                fprintf(stderr, "Unknown mpam parameter '%s'\n", key);
++                exit(EXIT_FAILURE);
++            }
++
++            free(key);
++            free(value);
++        }
++    }
++
+     parse_vkb_list(config, d_config);
+ 
+     xlu_cfg_get_defbool(config, "xend_suspend_evtchn_compat",
+-- 
+2.25.1
+

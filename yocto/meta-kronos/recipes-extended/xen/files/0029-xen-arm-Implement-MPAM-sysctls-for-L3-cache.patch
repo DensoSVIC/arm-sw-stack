@@ -1,4 +1,4 @@
-From c36bdc6f0c263610ea7d692b06edc396046bfc64 Mon Sep 17 00:00:00 2001
+From 8872f7f093a3b7079aa6357c6661ddf99ae45970 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Wed, 8 Jun 2022 13:13:38 +0000
 Subject: [PATCH] xen/arm: Implement MPAM sysctls for L3 cache
@@ -16,19 +16,18 @@ callers.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-3763
-Change-Id: I4d9ccf084b31c64a2877037847f2e1420a7a7db7
 ---
  xen/arch/arm/include/asm/mpam.h |  6 ++++
  xen/arch/arm/mpam.c             | 45 ++++++++++++++++++++++++++--
- xen/arch/arm/sysctl.c           | 53 +++++++++++++++++++++++++++++++++
- 3 files changed, 102 insertions(+), 2 deletions(-)
+ xen/arch/arm/sysctl.c           | 52 +++++++++++++++++++++++++++++++++
+ 3 files changed, 101 insertions(+), 2 deletions(-)
 
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index d1434202d4..b2796b6c72 100644
+index 286fd5dd88..6528d89b46 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
-@@ -425,6 +425,8 @@ struct mpam_domain {
- extern struct mpam_resource_config dom0_mpam_config;
+@@ -418,6 +418,8 @@ struct mpam_domain {
+ extern struct xen_arch_domctl_mpam dom0_mpam_config;
  extern bool mpam_enabled;
  
 +extern void mpam_get_cache_size(enum mpam_class_types cache_type,
@@ -36,34 +35,34 @@ index d1434202d4..b2796b6c72 100644
  extern void mpam_postsmp_setup(void);
  extern void mpam_presmp_setup(void);
  extern void mpam_restore_state(struct vcpu *n);
-@@ -434,6 +436,10 @@ extern void mpam_set_vcpu_partid_pmg(struct vcpu *vcpu,
+@@ -429,6 +431,10 @@ extern void mpam_set_vcpu_partid_pmg(struct vcpu *vcpu,
                                       uint8_t pmg_d, uint8_t pmg_i);
  extern void mpam_update_domain(struct domain *d);
  extern int mpam_discovery_cpu_online(unsigned int cpu);
-+extern int mpam_get_hwinfo(enum mpam_class_types type, uint32_t data[],
-+                           unsigned int array_len);
++extern int mpam_get_hwinfo(enum mpam_class_types type, unsigned int level,
++                           unsigned int *val);
 +extern uint16_t mpam_get_system_max_partid(void);
 +extern uint8_t mpam_get_system_max_pmg(void);
  
  #endif /* __ARM_MPAM_H__ */
  
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index b210842736..6a8921f7dd 100644
+index 7f18add935..8f2074fcec 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
-@@ -1420,8 +1420,8 @@ static int __init mpam_probe_cache_info(void)
+@@ -1419,8 +1419,8 @@ static int __init mpam_probe_cache_info(void)
   * Get MPAM hwinfo based on the input resource type.
   * Currently assume MPAM hwinfo is the same across different clusters.
   */
--static int mpam_get_hwinfo(enum mpam_class_types type, uint32_t data[],
--                           unsigned int array_len)
-+int mpam_get_hwinfo(enum mpam_class_types type, uint32_t data[],
-+                    unsigned int array_len)
+-static int mpam_get_hwinfo(enum mpam_class_types type, unsigned int level,
+-                           unsigned int *val)
++int mpam_get_hwinfo(enum mpam_class_types type, unsigned int level,
++                    unsigned int *val)
  {
      struct mpam_class *class;
  
-@@ -1578,6 +1578,47 @@ void mpam_update_domain(struct domain *d)
-         mpam_set_domain_resources(d);
+@@ -1579,6 +1579,47 @@ void mpam_set_vcpu_partid_pmg(struct vcpu *vcpu,
+     vcpu->arch.mpam1_el1 = regval;
  }
  
 +uint16_t mpam_get_system_max_partid(void)
@@ -111,7 +110,7 @@ index b210842736..6a8921f7dd 100644
   * Local variables:
   * mode: C
 diff --git a/xen/arch/arm/sysctl.c b/xen/arch/arm/sysctl.c
-index f903a55808..7daa439818 100644
+index f903a55808..e80b551cba 100644
 --- a/xen/arch/arm/sysctl.c
 +++ b/xen/arch/arm/sysctl.c
 @@ -9,6 +9,7 @@
@@ -122,7 +121,7 @@ index f903a55808..7daa439818 100644
  #include <xen/hypercall.h>
  #include <public/sysctl.h>
  #include <asm/mpam.h>
-@@ -29,12 +30,64 @@ long arch_do_sysctl(struct xen_sysctl *sysctl,
+@@ -29,12 +30,63 @@ long arch_do_sysctl(struct xen_sysctl *sysctl,
      case XEN_SYSCTL_psr_cmt_op:
          if ( !cpu_has_mpam )
              return -EOPNOTSUPP;
@@ -157,7 +156,7 @@ index f903a55808..7daa439818 100644
  
      case XEN_SYSCTL_psr_alloc:
 +    {
-+        uint32_t data[MPAM_INFO_ARRAY_SIZE] = { };
++        unsigned int hw_val;
 +
          if ( !cpu_has_mpam )
              return -EOPNOTSUPP;
@@ -165,14 +164,13 @@ index f903a55808..7daa439818 100644
 +        switch ( sysctl->u.psr_alloc.cmd )
 +        {
 +        case XEN_SYSCTL_PSR_get_l3_info:
-+            ret = mpam_get_hwinfo(MPAM_CLASS_CACHE, data, ARRAY_SIZE(data));
++            ret = mpam_get_hwinfo(MPAM_CLASS_CACHE, 3, &hw_val);
 +            if( ret )
 +                break;
 +
 +            sysctl->u.psr_alloc.u.cat_info.cos_max =
 +                mpam_get_system_max_partid();
-+            sysctl->u.psr_alloc.u.cat_info.cbm_len =
-+                data[MPAM_INFO_IDX_CPBM_LEN];
++            sysctl->u.psr_alloc.u.cat_info.cbm_len = hw_val;
 +
 +            if ( __copy_field_to_guest(u_sysctl, sysctl, u.psr_alloc) )
 +                ret = -EFAULT;

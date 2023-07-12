@@ -1,4 +1,4 @@
-From bc6b562952c5dccd9137d7e130e7e7dfe6b687e7 Mon Sep 17 00:00:00 2001
+From 284e68ee86e8c302ff27eb61f01169cd7498bf1c Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Mon, 25 Jul 2022 02:53:08 +0000
 Subject: [PATCH] xen/arm: mpam: Probe the MSC hardware at CPU online
@@ -24,7 +24,6 @@ The initialization of hardware will only happen before MPAM is enabled.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-3395
-Change-Id: I1a4f497bebe1d79041b040e12a77c5076b97b460
 ---
  xen/arch/arm/include/asm/mpam.h |   5 +
  xen/arch/arm/mpam.c             | 200 ++++++++++++++++++++++++++++++++

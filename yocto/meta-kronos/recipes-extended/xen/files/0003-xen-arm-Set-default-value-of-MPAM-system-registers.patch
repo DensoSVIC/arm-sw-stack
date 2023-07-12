@@ -1,4 +1,4 @@
-From 77a595ea2c7b978923866d78b88e45d476333254 Mon Sep 17 00:00:00 2001
+From 758d77c4d2ca9db1e6ea8aa3abcbd0881a43cdec Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Wed, 10 Aug 2022 06:38:36 +0000
 Subject: [PATCH] xen/arm: Set default value of MPAM system registers
@@ -30,7 +30,6 @@ field is cleared and the virtual PARTID mapping is disabled.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5079
-Change-Id: I91c861f72f26974d12ded24d249466512d9f4411
 ---
  xen/arch/arm/arm64/head.S                | 32 ++++++++++++++++++++++++
  xen/arch/arm/include/asm/arm64/sysregs.h | 16 ++++++++++++

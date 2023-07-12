@@ -1,4 +1,4 @@
-From 6b19de5c5dd4cbc0066ba423a7fb7e3f8694f113 Mon Sep 17 00:00:00 2001
+From 3a74c717ed5a1b062121f8beee15435608667f35 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Fri, 22 Jul 2022 13:06:30 +0000
 Subject: [PATCH] xen/common,arm: Move get_logical_cpu_from_hw_id() to
@@ -15,7 +15,6 @@ No functional change intended.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5049
-Change-Id: Ifda272cf1adf5a0f72a2db12841f2f6bf1ebedb5
 ---
  xen/arch/arm/include/asm/smp.h  | 14 ++++++++++++++
  xen/common/sched/boot-cpupool.c | 13 -------------

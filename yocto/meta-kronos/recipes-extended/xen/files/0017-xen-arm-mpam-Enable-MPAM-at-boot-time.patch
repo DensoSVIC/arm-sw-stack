@@ -1,4 +1,4 @@
-From 48d51ea72f22f7e08aece7fd3b0140258ad35d86 Mon Sep 17 00:00:00 2001
+From c3046407e97ca4024262da69d7e33775c1d31987 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 28 Jul 2022 05:11:12 +0000
 Subject: [PATCH] xen/arm: mpam: Enable MPAM at boot time
@@ -16,7 +16,6 @@ stages can be skipped.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5049
-Change-Id: Ib3996a28c5df176fef1fba6214119f0393f50504
 ---
  xen/arch/arm/include/asm/mpam.h |  1 +
  xen/arch/arm/mpam.c             | 44 +++++++++++++++++++++++++++++++++

@@ -1,4 +1,4 @@
-From ea39734fce90b0d00ec194a6f6a58e113b7ddb9e Mon Sep 17 00:00:00 2001
+From 7060a9b5f02c6ceaaaed4c7bc5d5d00ffd44ad68 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Sat, 8 Oct 2022 08:36:54 +0000
 Subject: [PATCH] tools/xl-psr: Split display name for arch-specific
@@ -19,7 +19,6 @@ x86-only wording in printf with the new per-arch name.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5244
-Change-Id: Iec79c1568ce516b930c3219f3b54ceb7d6fe7aca
 ---
  tools/xl/xl_psr.c | 26 +++++++++++++++++++-------
  1 file changed, 19 insertions(+), 7 deletions(-)

@@ -1,4 +1,4 @@
-From ac376dfb0847b7e1b34737c77f9d683e157690db Mon Sep 17 00:00:00 2001
+From d62eeac7286b34db9beee640992b692c2cfd1cb1 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 28 Jul 2022 09:36:45 +0000
 Subject: [PATCH] xen/arm: mpam: Introduce mpam_config for each PARTID
@@ -21,7 +21,6 @@ array is stored in each MPAM component for further query.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5049
-Change-Id: I4908a4a1b53464b8e73252bd838b7cd1486d846d
 ---
  xen/arch/arm/include/asm/mpam.h | 16 ++++---
  xen/arch/arm/mpam.c             | 74 +++++++++++++++++++++++++++++----

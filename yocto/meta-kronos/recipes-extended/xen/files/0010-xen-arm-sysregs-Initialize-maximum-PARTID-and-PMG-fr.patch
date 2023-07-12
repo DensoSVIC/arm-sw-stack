@@ -1,4 +1,4 @@
-From b95e1b440d18d66b6f8eb816326780b5adbc4428 Mon Sep 17 00:00:00 2001
+From 799dd3eb98cc8c7457745f5551dd0eca9c05a82e Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Mon, 25 Jul 2022 02:00:54 +0000
 Subject: [PATCH] xen/arm,sysregs: Initialize maximum PARTID and PMG from
@@ -17,7 +17,6 @@ boot time.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-3395
-Change-Id: I7081a344260d659b08d431d49c4aba8a79a8b815
 ---
  xen/arch/arm/include/asm/mpam.h |  4 ++++
  xen/arch/arm/mpam.c             | 19 +++++++++++++++++++

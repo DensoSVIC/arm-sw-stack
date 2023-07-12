@@ -1,4 +1,4 @@
-From 0c2fae4d73834cfbe4eacb88736443121102838d Mon Sep 17 00:00:00 2001
+From 61e5a9562e84211ce7f2482b1b98b85378602f27 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Sat, 8 Oct 2022 07:11:19 +0000
 Subject: [PATCH] tools/xl-psr: Support SLC in `xl psr-hwinfo` cmd
@@ -19,7 +19,6 @@ subops added by the previous patch.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5244
-Change-Id: Ic8612cfa2d6623d007cd28ce3b3340638a0034be
 ---
  tools/include/libxl.h        |  2 ++
  tools/include/xenctrl.h      |  3 +++

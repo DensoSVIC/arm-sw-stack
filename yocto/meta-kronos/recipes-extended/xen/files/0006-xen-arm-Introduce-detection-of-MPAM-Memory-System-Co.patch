@@ -1,4 +1,4 @@
-From 9e99e96d5108b258879cba0fd4737661403b324e Mon Sep 17 00:00:00 2001
+From dd0e0e5bdf8e883864185c27628c26566a943cd4 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 21 Jul 2022 05:29:50 +0000
 Subject: [PATCH] xen/arm: Introduce detection of MPAM Memory-System
@@ -21,7 +21,6 @@ checking the compatible property of each device node, which should match
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5049
-Change-Id: Ia772777a31d0e43e815daccbb15c64e03bdfcb65
 ---
  xen/arch/arm/include/asm/mpam.h | 22 +++++++++
  xen/arch/arm/mpam.c             | 81 +++++++++++++++++++++++++++++++++

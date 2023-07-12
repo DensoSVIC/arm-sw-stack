@@ -1,4 +1,4 @@
-From 28bbb5a939fd45296574dcfa1be0b48d001da969 Mon Sep 17 00:00:00 2001
+From ae2b734a4cac0d4f2e76500c6b39ed4398f478d6 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Sun, 9 Oct 2022 07:14:45 +0000
 Subject: [PATCH] tools/xl-psr: Support SLC in `xl psr-cat-{show,set}`
@@ -17,15 +17,27 @@ of domctl subops added by the previous patch.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5244
-Change-Id: Icd3985e8a4c697a84571fbff5c78c8a62919a895
 ---
- tools/include/xenctrl.h          |  1 +
- tools/libs/ctrl/xc_psr.c         |  6 ++++++
- tools/libs/light/libxl_psr.c     |  1 +
- tools/libs/light/libxl_types.idl |  1 +
- tools/xl/xl_psr.c                | 21 ++++++++++++++++++---
- 5 files changed, 27 insertions(+), 3 deletions(-)
+ tools/golang/xenlight/types.gen.go |  1 +
+ tools/include/xenctrl.h            |  1 +
+ tools/libs/ctrl/xc_psr.c           |  6 ++++++
+ tools/libs/light/libxl_psr.c       |  1 +
+ tools/libs/light/libxl_types.idl   |  1 +
+ tools/xl/xl_psr.c                  | 21 ++++++++++++++++++---
+ 6 files changed, 28 insertions(+), 3 deletions(-)
 
+diff --git a/tools/golang/xenlight/types.gen.go b/tools/golang/xenlight/types.gen.go
+index 871576fb0e..6fdcd94d24 100644
+--- a/tools/golang/xenlight/types.gen.go
++++ b/tools/golang/xenlight/types.gen.go
+@@ -1184,6 +1184,7 @@ PsrCbmTypeL3CbmCode PsrCbmType = 2
+ PsrCbmTypeL3CbmData PsrCbmType = 3
+ PsrCbmTypeL2Cbm PsrCbmType = 4
+ PsrCbmTypeMbaThrtl PsrCbmType = 5
++PsrCbmTypeSlcCbm PsrCbmType = 6
+ )
+ 
+ type PsrCatInfo struct {
 diff --git a/tools/include/xenctrl.h b/tools/include/xenctrl.h
 index 660c2321e0..dd4d4e694c 100644
 --- a/tools/include/xenctrl.h

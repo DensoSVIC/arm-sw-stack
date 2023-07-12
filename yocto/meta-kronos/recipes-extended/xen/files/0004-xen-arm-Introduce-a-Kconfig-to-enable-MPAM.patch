@@ -1,4 +1,4 @@
-From 3b340a92b8031c0b2f3f6dff272da60316b53fd6 Mon Sep 17 00:00:00 2001
+From 2b57b88fce70f10875b0113dd6cbdd8c15d99772 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 21 Jul 2022 04:56:22 +0000
 Subject: [PATCH] xen/arm: Introduce a Kconfig to enable MPAM
@@ -12,7 +12,6 @@ The default value of `CONFIG_MPAM` is set to n.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5049
-Change-Id: Ib6dde4e3767367a4d98d23a72c00552db645eeae
 ---
  xen/arch/arm/Kconfig  | 10 ++++++++++
  xen/arch/arm/Makefile |  1 +

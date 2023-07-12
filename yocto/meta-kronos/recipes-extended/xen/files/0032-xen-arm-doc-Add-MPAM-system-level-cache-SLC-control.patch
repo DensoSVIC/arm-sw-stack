@@ -1,4 +1,4 @@
-From b01bca7a9cdb60f3cd2433f9967eb39b4b27296e Mon Sep 17 00:00:00 2001
+From 899f343438d56f0ae8a84df607d1ad1d550c48fa Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 22 Sep 2022 07:28:14 +0000
 Subject: [PATCH] xen/arm, doc: Add MPAM system level cache (SLC) control
@@ -9,7 +9,7 @@ or L3 cache which are usually local to the CPU or cluster, the SLC
 is located within the interconnect as HN-F (Fully-coherent home node)
 protocol nodes and available to all CPUs.
 
-Since MPAM can support the portion and partitioning of the SLC, this
+Since MPAM can support the portion and patitioning of the SLC, this
 commit introduces the MPAM SLC portion control support by:
 
 - Introduce a new mpam_class type `MPAM_CLASS_SLC`.
@@ -22,14 +22,15 @@ commit introduces the MPAM SLC portion control support by:
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5135
-Change-Id: I46cae58654339bf72194570593694071b2cbcb9f
 ---
  docs/misc/arm/device-tree/booting.txt |  9 +++++
  docs/misc/xen-command-line.pandoc     |  6 +++-
+ xen/arch/arm/domain.c                 |  1 +
  xen/arch/arm/domain_build.c           |  4 +++
- xen/arch/arm/include/asm/mpam.h       |  4 ++-
- xen/arch/arm/mpam.c                   | 52 +++++++++++++++++++++++++--
- 5 files changed, 70 insertions(+), 5 deletions(-)
+ xen/arch/arm/include/asm/mpam.h       |  3 +-
+ xen/arch/arm/mpam.c                   | 50 +++++++++++++++++++++++++--
+ xen/include/public/arch-arm.h         |  1 +
+ 7 files changed, 70 insertions(+), 4 deletions(-)
 
 diff --git a/docs/misc/arm/device-tree/booting.txt b/docs/misc/arm/device-tree/booting.txt
 index 11e8678115..d8de339b96 100644
@@ -52,10 +53,10 @@ index 11e8678115..d8de339b96 100644
  for the DomU kernel and ramdisk.
  
 diff --git a/docs/misc/xen-command-line.pandoc b/docs/misc/xen-command-line.pandoc
-index 63bc3d5631..bbd36b66fa 100644
+index 50f336d09f..8ad492f294 100644
 --- a/docs/misc/xen-command-line.pandoc
 +++ b/docs/misc/xen-command-line.pandoc
-@@ -2776,7 +2776,7 @@ the hypervisor was compiled with `CONFIG_XSM` enabled.
+@@ -2797,7 +2797,7 @@ the hypervisor was compiled with `CONFIG_XSM` enabled.
    be enabled.
  
  ### dom0_mpam (Arm64)
@@ -64,7 +65,7 @@ index 63bc3d5631..bbd36b66fa 100644
  
  Set the amount of MPAM resource limit for the initial domain (dom0). This is an
  optional command line option.
-@@ -2785,3 +2785,7 @@ optional command line option.
+@@ -2806,3 +2806,7 @@ optional command line option.
  bitmap. System l3 cache resource is divided into numbers of portions. Each
  portion corresponds to a bit in <bitmap> and the set bit represents the
  corresponding cache portion is available.
@@ -72,33 +73,45 @@ index 63bc3d5631..bbd36b66fa 100644
 +maximum 32bit bitmap. System level cache resource is divided into numbers of
 +portions. Each portion corresponds to a bit in <bitmap> and the set bit
 +represents the corresponding cache portion is available.
+diff --git a/xen/arch/arm/domain.c b/xen/arch/arm/domain.c
+index 20441137b9..1ab887581b 100644
+--- a/xen/arch/arm/domain.c
++++ b/xen/arch/arm/domain.c
+@@ -806,6 +806,7 @@ int arch_domain_create(struct domain *d,
+ #ifdef CONFIG_MPAM
+     d->arch.mpam.partid = d->arch.p2m.vmid;
+     d->arch.mpam.cfg.l3_cpbm = config->arch.mpam.l3_cpbm;
++    d->arch.mpam.cfg.slc_cpbm = config->arch.mpam.slc_cpbm;
+     if ( mpam_enabled )
+         mpam_update_domain(d);
+ #endif
 diff --git a/xen/arch/arm/domain_build.c b/xen/arch/arm/domain_build.c
-index 93eea0c796..1356a3d7e7 100644
+index af431a4de0..63e732ba64 100644
 --- a/xen/arch/arm/domain_build.c
 +++ b/xen/arch/arm/domain_build.c
-@@ -3801,6 +3801,8 @@ static int __init construct_domU(struct domain *d,
-     {
-         dt_property_read_u32(node, "xen,domain-mpam-l3-cpbm",
-                              &d->arch.mpam.cfg.l3_cpbm);
-+        dt_property_read_u32(node, "xen,domain-mpam-slc-cpbm",
-+                             &d->arch.mpam.cfg.slc_cpbm);
-     }
+@@ -3945,6 +3945,8 @@ void __init create_domUs(void)
+         {
+             dt_property_read_u32(node, "xen,domain-mpam-l3-cpbm",
+                                  &d_cfg.arch.mpam.l3_cpbm);
++            dt_property_read_u32(node, "xen,domain-mpam-slc-cpbm",
++                                 &d_cfg.arch.mpam.slc_cpbm);
+         }
  #endif
  
-@@ -3996,6 +3998,8 @@ static int __init construct_dom0(struct domain *d)
+@@ -4068,6 +4070,8 @@ void __init create_dom0(void)
  #ifdef CONFIG_MPAM
-     d->arch.mpam.cfg.l3_cpbm = dom0_mpam_config.l3_cpbm ?
-                                dom0_mpam_config.l3_cpbm : 0;
-+    d->arch.mpam.cfg.slc_cpbm = dom0_mpam_config.slc_cpbm ?
-+                                dom0_mpam_config.slc_cpbm : 0;
+     dom0_cfg.arch.mpam.l3_cpbm = dom0_mpam_config.l3_cpbm ?
+                                  dom0_mpam_config.l3_cpbm : 0;
++    dom0_cfg.arch.mpam.slc_cpbm = dom0_mpam_config.slc_cpbm ?
++                                  dom0_mpam_config.slc_cpbm : 0;
  #endif
  
-     iommu_hwdom_init(d);
+     dom0 = domain_create(0, &dom0_cfg, CDF_privileged | CDF_directmap);
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index 507ca43c4e..a1f6b34491 100644
+index 6528d89b46..b72179296f 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
-@@ -266,7 +266,8 @@
+@@ -267,7 +267,8 @@
  #define MPAMIDR_PARTID_MAX     GENMASK(15, 0)
  
  enum mpam_class_types {
@@ -108,16 +121,8 @@ index 507ca43c4e..a1f6b34491 100644
      MPAM_CLASS_MEMORY,      /* Main memory */
      MPAM_CLASS_UNKNOWN,     /* Everything else, e.g. SMMU */
  };
-@@ -415,6 +416,7 @@ struct mpam_msc_ris
- 
- struct mpam_resource_config {
-     uint32_t l3_cpbm;
-+    uint32_t slc_cpbm;
- };
- 
- struct mpam_domain {
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index 51521aad58..03f0ccd45c 100644
+index 8f2074fcec..fba4b93bd7 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -63,6 +63,13 @@ static void __init read_cache_size_from_registers(void *arg)
@@ -179,13 +184,12 @@ index 51521aad58..03f0ccd45c 100644
                             cache_node->phandle);
  }
  
-@@ -1319,6 +1334,16 @@ static void mpam_update_resources(void *data)
+@@ -1318,6 +1333,15 @@ static void mpam_update_resources(void *data)
              mpam_cfg.cpbm = domain->cfg.l3_cpbm;
              mpam_update_class(class, domain->partid, &mpam_cfg);
          }
 +
-+        if ( domain->cfg.slc_cpbm &&
-+             class->type == MPAM_CLASS_SLC )
++        if ( class->type == MPAM_CLASS_SLC )
 +        {
 +            struct mpam_config mpam_cfg = {};
 +
@@ -196,7 +200,7 @@ index 51521aad58..03f0ccd45c 100644
      }
  }
  
-@@ -1364,10 +1389,14 @@ static int __init mpam_probe_cache_info(void)
+@@ -1363,10 +1387,14 @@ static int __init mpam_probe_cache_info(void)
          unsigned int cpu;
          uint32_t cache_size = 0, cache_level = 0;
          struct mpam_class *cache;
@@ -211,7 +215,7 @@ index 51521aad58..03f0ccd45c 100644
          rc = dt_property_read_u32(node, "cache-level", &cache_level);
          if ( !rc )
          {
-@@ -1381,7 +1410,7 @@ static int __init mpam_probe_cache_info(void)
+@@ -1380,7 +1408,7 @@ static int __init mpam_probe_cache_info(void)
              return rc;
  
          spin_lock(&mpam_list_lock);
@@ -220,46 +224,50 @@ index 51521aad58..03f0ccd45c 100644
          if ( IS_ERR(cache) )
          {
              spin_unlock(&mpam_list_lock);
-@@ -1437,6 +1466,7 @@ int mpam_get_hwinfo(enum mpam_class_types type, uint32_t data[],
+@@ -1434,6 +1462,9 @@ int mpam_get_hwinfo(enum mpam_class_types type, unsigned int level,
  
          switch (type)
          {
 +        case MPAM_CLASS_SLC:
++            *val = class->props.cpbm_wd;
++            return 0;
          case MPAM_CLASS_CACHE:
-             data[MPAM_INFO_IDX_CPBM_LEN] = class->props.cpbm_wd;
-             return 0;
-@@ -1472,6 +1502,22 @@ int mpam_set_domain_resources(struct domain *d)
-                                    d->arch.mpam.cfg.l3_cpbm;
+             if ( class->level != level )
+                 break;
+@@ -1475,6 +1506,21 @@ void mpam_sanitise_config(struct xen_arch_domctl_mpam *cfg, bool domain_create)
+         else
+             cfg->l3_cpbm = domain_create ? hw_lim : cfg->l3_cpbm;
      }
- 
-+    if ( d->arch.mpam.cfg.slc_cpbm )
++
++    if ( mpam_get_hwinfo(MPAM_CLASS_SLC, 0, &hw_val) )
 +    {
-+        if ( mpam_get_hwinfo(MPAM_CLASS_SLC, data, ARRAY_SIZE(data)) )
-+        {
-+            printk(XENLOG_ERR "MPAM: SLC CPBM not supported for dom %pd\n", d);
-+            return -EINVAL;
-+        }
-+
-+        cpbm_lim = (1 << data[MPAM_INFO_IDX_CPBM_LEN]) - 1;
-+
-+        /* Clamp the cpbm to avoid exceeding the max supported value */
-+        d->arch.mpam.cfg.slc_cpbm = (d->arch.mpam.cfg.slc_cpbm > cpbm_lim) ?
-+                                    cpbm_lim :
-+                                    d->arch.mpam.cfg.slc_cpbm;
++        if ( cfg->slc_cpbm )
++            printk(XENLOG_ERR "MPAM: SLC CPBM not supported\n");
 +    }
++    else
++    {
++        hw_lim = (1 << hw_val) - 1;
 +
-     mpam_update_resources(&d->arch.mpam);
-     smp_call_function(mpam_update_resources, &d->arch.mpam, 1);
- 
-@@ -1576,7 +1622,7 @@ void mpam_set_vcpu_partid_pmg(struct vcpu *vcpu,
- 
- void mpam_update_domain(struct domain *d)
- {
--    if ( d->arch.mpam.cfg.l3_cpbm )
-+    if ( d->arch.mpam.cfg.l3_cpbm || d->arch.mpam.cfg.slc_cpbm )
-         mpam_set_domain_resources(d);
++        if ( cfg->slc_cpbm )
++            cfg->slc_cpbm = (cfg->slc_cpbm > hw_lim) ? hw_lim : cfg->slc_cpbm;
++        else
++            cfg->slc_cpbm = domain_create ? hw_lim : cfg->slc_cpbm;
++    }
  }
  
+ void mpam_update_domain(struct domain *d)
+diff --git a/xen/include/public/arch-arm.h b/xen/include/public/arch-arm.h
+index 06826c4e44..cfb1e26468 100644
+--- a/xen/include/public/arch-arm.h
++++ b/xen/include/public/arch-arm.h
+@@ -299,6 +299,7 @@ DEFINE_XEN_GUEST_HANDLE(vcpu_guest_context_t);
+ 
+ struct xen_arch_domctl_mpam {
+     uint32_t l3_cpbm;
++    uint32_t slc_cpbm;
+ };
+ 
+ struct xen_arch_domainconfig {
 -- 
 2.25.1
 

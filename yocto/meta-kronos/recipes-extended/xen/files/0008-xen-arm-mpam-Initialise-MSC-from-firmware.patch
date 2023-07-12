@@ -1,4 +1,4 @@
-From d4b9fd589a82ecae90777ac0cb0845b8d86066ae Mon Sep 17 00:00:00 2001
+From 7dbcfb3e232f8db39cb54e45f594085b24aac094 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 21 Jul 2022 08:49:59 +0000
 Subject: [PATCH] xen/arm: mpam: Initialise MSC from firmware
@@ -29,7 +29,6 @@ nodes.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5049
-Change-Id: Iab83e3596cb1e83abe7b97582799902ffb6b3eca
 ---
  xen/arch/arm/include/asm/mpam.h |  27 ++++
  xen/arch/arm/mpam.c             | 233 +++++++++++++++++++++++++++++++-

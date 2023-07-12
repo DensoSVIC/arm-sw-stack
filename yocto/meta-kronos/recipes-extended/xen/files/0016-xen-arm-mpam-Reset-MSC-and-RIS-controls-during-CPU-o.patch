@@ -1,4 +1,4 @@
-From 709d7601a072b7eec53e7eecde4432376b1322b1 Mon Sep 17 00:00:00 2001
+From 89fe8b61a40f1649617f0f277e9f9e0e3dc492b6 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Wed, 27 Jul 2022 04:09:43 +0000
 Subject: [PATCH] xen/arm: mpam: Reset MSC and RIS controls during CPU
@@ -27,7 +27,6 @@ storage monitor only works if the CMAX is set to the maximum value.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5049
-Change-Id: I4dd637621cd05447f56881b84febe5a2668747f1
 ---
  xen/arch/arm/include/asm/mpam.h |   2 +
  xen/arch/arm/mpam.c             | 134 +++++++++++++++++++++++++++++++-

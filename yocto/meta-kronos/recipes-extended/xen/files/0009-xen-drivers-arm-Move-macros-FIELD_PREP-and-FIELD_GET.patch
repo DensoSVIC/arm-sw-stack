@@ -1,4 +1,4 @@
-From df4fea1ad16eff468ad78c3ecc26ce5c9fcc609a Mon Sep 17 00:00:00 2001
+From 22110b1c6002768dddb14ecfbfda1995958f0300 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Mon, 25 Jul 2022 01:35:58 +0000
 Subject: [PATCH] xen/drivers,arm: Move macros FIELD_PREP and FIELD_GET
@@ -16,7 +16,6 @@ No functional changes intended.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5049
-Change-Id: If8c70e430cca285e6fd3ec1fcfa55f84af620db0
 ---
  xen/arch/arm/include/asm/io.h         | 6 ++++++
  xen/drivers/passthrough/arm/smmu-v3.h | 6 ------

@@ -1,4 +1,4 @@
-From 1f7b26e7b34f84553fa25c4253af9a3215b5af20 Mon Sep 17 00:00:00 2001
+From f6f461ae7403f0d10969f5b6c01b2c60fa0ef52a Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Mon, 10 Jan 2022 08:05:54 +0000
 Subject: [PATCH] xen/arm: mpam: Add MPAM Xen cmdline with related
@@ -16,28 +16,26 @@ Dom0 is using Xen cmdline.
 This commit adds the MPAM Xen cmdline for Dom0 with related parsing
 function and data structure. Currently, only add support for L3 cache.
 
-The cmdline should follow the format of:
+Document the `dom0_mpam` cmdline should follow the format of:
 ```
 dom0_mpam=l3:<L3_bitmap>
 ```
 
-This commit also documents the `dom0_mpam` format.
-
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-3762
-Change-Id: Ie6be15959f7f51da8c56d71ab5c2210f39737a9a
 ---
  docs/misc/xen-command-line.pandoc | 11 +++++++++
- xen/arch/arm/include/asm/mpam.h   |  6 +++++
+ xen/arch/arm/include/asm/mpam.h   |  3 +++
  xen/arch/arm/mpam.c               | 37 +++++++++++++++++++++++++++++++
- 3 files changed, 54 insertions(+)
+ xen/include/public/arch-arm.h     |  4 ++++
+ 4 files changed, 55 insertions(+)
 
 diff --git a/docs/misc/xen-command-line.pandoc b/docs/misc/xen-command-line.pandoc
-index 424b12cfb2..63bc3d5631 100644
+index d601120faa..50f336d09f 100644
 --- a/docs/misc/xen-command-line.pandoc
 +++ b/docs/misc/xen-command-line.pandoc
-@@ -2774,3 +2774,14 @@ the hypervisor was compiled with `CONFIG_XSM` enabled.
+@@ -2795,3 +2795,14 @@ the hypervisor was compiled with `CONFIG_XSM` enabled.
  * `silo`: this will deny any unmediated communication channels between
    unprivileged VMs.  To choose this, the separated option in kconfig must also
    be enabled.
@@ -53,24 +51,28 @@ index 424b12cfb2..63bc3d5631 100644
 +portion corresponds to a bit in <bitmap> and the set bit represents the
 +corresponding cache portion is available.
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index d1ba5d7501..651a7f3032 100644
+index d1ba5d7501..bf5f89953c 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
-@@ -407,6 +407,12 @@ struct mpam_msc_ris
+@@ -9,6 +9,7 @@
+ #include <xen/cpumask.h>
+ #include <xen/spinlock.h>
+ #include <asm/cpufeature.h>
++#include <public/arch-arm.h>
+ 
+ /*
+  * MPAM MSCs have the following register layout. See:
+@@ -407,6 +408,8 @@ struct mpam_msc_ris
      struct mpam_component *comp;
  };
  
-+struct mpam_resource_config {
-+    uint32_t l3_cpbm;
-+};
-+
-+extern struct mpam_resource_config dom0_mpam_config;
++extern struct xen_arch_domctl_mpam dom0_mpam_config;
 +
  extern void mpam_postsmp_setup(void);
  extern void mpam_presmp_setup(void);
  extern int mpam_discovery_cpu_online(unsigned int cpu);
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index 8c33dec479..59a82093b7 100644
+index 8c33dec479..2186e30b73 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -22,11 +22,14 @@
@@ -84,7 +86,7 @@ index 8c33dec479..59a82093b7 100644
  #include <asm/mpam.h>
  #include <asm/smp.h>
  
-+struct mpam_resource_config dom0_mpam_config;
++struct xen_arch_domctl_mpam __initdata dom0_mpam_config;
  /*
   * mpam_list_lock protects the global lists when writing.
   * Once the MPAM is enabled these lists are read-only.
@@ -129,6 +131,21 @@ index 8c33dec479..59a82093b7 100644
  static struct dt_device_node *
  __init dt_find_next_cache_node(const struct dt_device_node *np)
  {
+diff --git a/xen/include/public/arch-arm.h b/xen/include/public/arch-arm.h
+index 1528ced509..9316920837 100644
+--- a/xen/include/public/arch-arm.h
++++ b/xen/include/public/arch-arm.h
+@@ -297,6 +297,10 @@ DEFINE_XEN_GUEST_HANDLE(vcpu_guest_context_t);
+ #define XEN_DOMCTL_CONFIG_TEE_NONE      0
+ #define XEN_DOMCTL_CONFIG_TEE_OPTEE     1
+ 
++struct xen_arch_domctl_mpam {
++    uint32_t l3_cpbm;
++};
++
+ struct xen_arch_domainconfig {
+     /* IN/OUT */
+     uint8_t gic_version;
 -- 
 2.25.1
 

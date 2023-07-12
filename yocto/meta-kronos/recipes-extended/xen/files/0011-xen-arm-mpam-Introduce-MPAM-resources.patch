@@ -1,4 +1,4 @@
-From 7eb17d8a52b581029a97f52232460592b1ee7652 Mon Sep 17 00:00:00 2001
+From 46b522f32f394f90b10c82642b52e54ac9d7d944 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Sat, 23 Jul 2022 09:58:32 +0000
 Subject: [PATCH] xen/arm: mpam: Introduce MPAM resources
@@ -29,7 +29,6 @@ This commit adds support for creating and destroying these structures.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5049
-Change-Id: I42f771efa799e9bb0a9df7981dd2c13ea8521802
 ---
  xen/arch/arm/include/asm/mpam.h |  45 +++++++
  xen/arch/arm/mpam.c             | 209 ++++++++++++++++++++++++++++++++

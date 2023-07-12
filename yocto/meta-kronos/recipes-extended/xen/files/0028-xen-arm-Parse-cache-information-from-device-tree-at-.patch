@@ -1,4 +1,4 @@
-From e41a251fb9e2932faa416dd3df2ea134f1dd367b Mon Sep 17 00:00:00 2001
+From c82a41c803153d509b164b5baf4dd51d505b8626 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Mon, 1 Aug 2022 07:24:00 +0000
 Subject: [PATCH] xen/arm: Parse cache information from device tree at
@@ -17,17 +17,16 @@ query.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-2794
-Change-Id: I1f8dac7236ccdd1a95e9df78ac8e08ffb59a9657
 ---
  xen/arch/arm/include/asm/mpam.h |  2 +
  xen/arch/arm/mpam.c             | 90 +++++++++++++++++++++++++++++++++
  2 files changed, 92 insertions(+)
 
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index 0cc51458cb..d1434202d4 100644
+index e902503e07..286fd5dd88 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
-@@ -376,6 +376,8 @@ struct mpam_class
+@@ -373,6 +373,8 @@ struct mpam_class
      struct mpam_props props;
      uint32_t nrdy_us;
      uint8_t level;
@@ -37,7 +36,7 @@ index 0cc51458cb..d1434202d4 100644
      /* member of mpam_classes */
      struct list_head classes_list;
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index 268de15860..b210842736 100644
+index ca499f398b..7f18add935 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -56,6 +56,27 @@ static unsigned int mpam_fw_num_msc;
@@ -68,7 +67,7 @@ index 268de15860..b210842736 100644
  static int __init parse_dom0_mpam_cmdline(const char *s)
  {
      char *token, *cmdline = (char *)s;
-@@ -1332,6 +1353,69 @@ static void __init mpam_load_supported_partid_pmg(void)
+@@ -1331,6 +1352,69 @@ static void __init mpam_load_supported_partid_pmg(void)
      ACCESS_ONCE(mpam_pmg_max) = FIELD_GET(MPAMIDR_PMG_MAX, sys_mpam_idr);
  }
  
@@ -138,7 +137,7 @@ index 268de15860..b210842736 100644
  /*
   * Get MPAM hwinfo based on the input resource type.
   * Currently assume MPAM hwinfo is the same across different clusters.
-@@ -1413,8 +1497,14 @@ void __init mpam_presmp_setup(void)
+@@ -1420,8 +1504,14 @@ void __init mpam_presmp_setup(void)
  
  void __init mpam_postsmp_setup(void)
  {

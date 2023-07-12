@@ -1,4 +1,4 @@
-From 5095ca911e8792c4911c67de7057e2c0671a8a0f Mon Sep 17 00:00:00 2001
+From 07868e0f91d7b12fa4ff7d508c99d35f9170b738 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 23 Jun 2022 09:52:24 +0000
 Subject: [PATCH] xen/arm: Return correct cores_per_socket value in
@@ -16,7 +16,6 @@ correct cores_per_socket can be returned from XEN_SYSCTL_physinfo.
 
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
-Change-Id: I35db58d7ad1d8f6e24658f50353f7dd4056beda8
 ---
  xen/arch/arm/smpboot.c | 2 ++
  1 file changed, 2 insertions(+)

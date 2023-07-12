@@ -1,4 +1,4 @@
-From d31778148da2b0cfbcefa71617fb23a2888062b9 Mon Sep 17 00:00:00 2001
+From dc9a6c654d730618ed1294edcf9aae737c857343 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Fri, 19 Aug 2022 04:01:43 +0000
 Subject: [PATCH] docs: device-tree: Add MPAM device tree binding
@@ -21,7 +21,6 @@ The Linux draft MPAM device tree binding can be found in [1]:
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5079
-Change-Id: Ifbe8f9d1d29e941a7742a55e8c13fe6de3729260
 ---
  docs/misc/arm/device-tree/mpam.txt | 203 +++++++++++++++++++++++++++++
  1 file changed, 203 insertions(+)

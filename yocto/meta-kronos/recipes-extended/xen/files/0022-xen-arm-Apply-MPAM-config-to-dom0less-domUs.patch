@@ -1,4 +1,4 @@
-From a43f215efe87a4a518268be7a414c09481005a71 Mon Sep 17 00:00:00 2001
+From 0363aa89230d8eb3c05dcf2297cb913dd23018cf Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 30 Jun 2022 03:17:32 +0000
 Subject: [PATCH] xen/arm: Apply MPAM config to dom0less domUs
@@ -15,7 +15,6 @@ value will be applied to corresponding MPAM registers at the boot time.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-2794
-Change-Id: I8b279e6605fcbf1d723e121fbdf7b42d06eae025
 ---
  docs/misc/arm/device-tree/booting.txt | 9 +++++++++
  xen/arch/arm/domain_build.c           | 8 ++++++++
@@ -42,24 +41,24 @@ index 87eaa3e254..11e8678115 100644
  for the DomU kernel and ramdisk.
  
 diff --git a/xen/arch/arm/domain_build.c b/xen/arch/arm/domain_build.c
-index 16435d30b5..93eea0c796 100644
+index e60fa6c707..af431a4de0 100644
 --- a/xen/arch/arm/domain_build.c
 +++ b/xen/arch/arm/domain_build.c
-@@ -3796,6 +3796,14 @@ static int __init construct_domU(struct domain *d,
-     else if ( rc == 0 && !strcmp(dom0less_enhanced, "no-xenstore") )
-         kinfo.dom0less_feature = DOM0LESS_ENHANCED_NO_XS;
+@@ -3940,6 +3940,14 @@ void __init create_domUs(void)
+             d_cfg.cpupool_id = pool_id;
+         }
  
 +#ifdef CONFIG_MPAM
-+    if ( mpam_enabled )
-+    {
-+        dt_property_read_u32(node, "xen,domain-mpam-l3-cpbm",
-+                             &d->arch.mpam.cfg.l3_cpbm);
-+    }
++        if ( mpam_enabled )
++        {
++            dt_property_read_u32(node, "xen,domain-mpam-l3-cpbm",
++                                 &d_cfg.arch.mpam.l3_cpbm);
++        }
 +#endif
 +
-     if ( vcpu_create(d, 0) == NULL )
-         return -ENOMEM;
- 
+         /*
+          * The variable max_init_domid is initialized with zero, so here it's
+          * very important to use the pre-increment operator to call
 -- 
 2.25.1
 

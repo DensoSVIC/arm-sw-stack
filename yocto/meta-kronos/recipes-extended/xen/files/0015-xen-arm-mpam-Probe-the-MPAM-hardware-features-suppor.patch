@@ -1,4 +1,4 @@
-From b1701ddb089a2d50241167fbf86fee03c9c0e9fe Mon Sep 17 00:00:00 2001
+From 894c39d798534fd06ad4e423361c0840017162fc Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Tue, 26 Jul 2022 02:22:54 +0000
 Subject: [PATCH] xen/arm: mpam: Probe the MPAM hardware features
@@ -20,7 +20,6 @@ feature probing. This is essential for resetting the MPAM controls
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5049
-Change-Id: Ib1a75fd6ecc06fbb326c6b10c669104084560bc6
 ---
  xen/arch/arm/include/asm/mpam.h |  57 ++++++++++++++
  xen/arch/arm/mpam.c             | 129 ++++++++++++++++++++++++++++++++

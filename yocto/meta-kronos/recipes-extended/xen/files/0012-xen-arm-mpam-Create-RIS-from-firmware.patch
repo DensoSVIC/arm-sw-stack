@@ -1,4 +1,4 @@
-From 558c60f2d5450a4e1f05647fcbe2758882e0d7a7 Mon Sep 17 00:00:00 2001
+From e5c2d65974f82cbb3eacca5b7ece5c1b56b9f32f Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Mon, 25 Jul 2022 07:18:55 +0000
 Subject: [PATCH] xen/arm: mpam: Create RIS from firmware
@@ -29,7 +29,6 @@ re-walk the device tree again.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5049
-Change-Id: I40a16766091854cc6da76e42255633ec2b25a077
 ---
  xen/arch/arm/mpam.c | 103 ++++++++++++++++++++++++++++++++++++++++++--
  1 file changed, 100 insertions(+), 3 deletions(-)

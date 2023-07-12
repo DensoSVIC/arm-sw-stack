@@ -1,4 +1,4 @@
-From 79556da4368d4a41b6ed9ec0bf0a8a27035f9745 Mon Sep 17 00:00:00 2001
+From 1a36dab8bf8d554817025b1f9d9d02fd7f47111d Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 21 Jul 2022 09:35:35 +0000
 Subject: [PATCH] xen/arm: mpam: Add MPAM memory-mapped register
@@ -18,7 +18,6 @@ mostly-used fields for these memory-mapped registers.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-3394
-Change-Id: I13a642c37fed2a27b6eff99336a26f76e047de6d
 ---
  xen/arch/arm/include/asm/mpam.h | 246 ++++++++++++++++++++++++++++++++
  1 file changed, 246 insertions(+)

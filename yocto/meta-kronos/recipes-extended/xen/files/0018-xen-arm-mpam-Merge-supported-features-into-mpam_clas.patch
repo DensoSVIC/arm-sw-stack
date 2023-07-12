@@ -1,4 +1,4 @@
-From 12dd05242c6271696eed5201071aa60cb86f073e Mon Sep 17 00:00:00 2001
+From 42c1fc7c3b9c752f7092ec0f48af2a9bd84dd714 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 28 Jul 2022 04:54:34 +0000
 Subject: [PATCH] xen/arm: mpam: Merge supported features into mpam_class
@@ -15,7 +15,6 @@ been probed.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-5049
-Change-Id: If2c94c862f60e232d04aadaf53900fcc5478787f
 ---
  xen/arch/arm/include/asm/mpam.h |  8 +++
  xen/arch/arm/mpam.c             | 98 +++++++++++++++++++++++++++++++++

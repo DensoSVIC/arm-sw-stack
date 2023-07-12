@@ -1,4 +1,4 @@
-From 28e58c638aba9d28765955108ae2efefb88a1ff1 Mon Sep 17 00:00:00 2001
+From b1a0ce36799026bfb6e6f65f7c2727c9af5948a0 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Wed, 8 Jun 2022 09:30:34 +0000
 Subject: [PATCH] xen/arm: Add dummy xl-psr related domctl and sysctl for
@@ -16,7 +16,6 @@ helpers in these ops.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-3763
-Change-Id: Id7c223471d7c11661bb363c74a3ef5215dd9545b
 ---
  xen/arch/arm/arm64/domctl.c | 13 +++++++++++++
  xen/arch/arm/sysctl.c       | 24 +++++++++++++++++++++++-

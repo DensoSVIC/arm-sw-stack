@@ -1,4 +1,4 @@
-From d4b665445003b2331f261afc722f0183cf56bad6 Mon Sep 17 00:00:00 2001
+From e3036edd2398e6f094e7d9f77043dfba30f40465 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Mon, 10 Apr 2023 10:27:52 +0800
 Subject: [PATCH] xen/arm: Allow MPAM v1.1 in MSC hardware probing
@@ -15,17 +15,16 @@ the MPAM driver during the hardware probing process.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-6012
-Change-Id: I2117bc62dcd8680cd31b4b3aed86a84da37bbb2b
 ---
  xen/arch/arm/include/asm/mpam.h | 3 ++-
  xen/arch/arm/mpam.c             | 5 +++--
  2 files changed, 5 insertions(+), 3 deletions(-)
 
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index a1f6b34491..fa3ec2a696 100644
+index b72179296f..6dc7b7120f 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
-@@ -15,7 +15,8 @@
+@@ -16,7 +16,8 @@
   * Arm Architecture Reference Manual Supplement - Memory System Resource
   * Partitioning and Monitoring (MPAM), for Armv8-A. DDI 0598A.a
   */
@@ -36,7 +35,7 @@ index a1f6b34491..fa3ec2a696 100644
  /* Memory mapped control pages: */
  /* ID Register offsets in the memory mapped page */
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index 03f0ccd45c..eaeebe3259 100644
+index fba4b93bd7..e8212f4380 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -893,9 +893,10 @@ static int __init mpam_msc_hw_probe(struct mpam_msc *msc)

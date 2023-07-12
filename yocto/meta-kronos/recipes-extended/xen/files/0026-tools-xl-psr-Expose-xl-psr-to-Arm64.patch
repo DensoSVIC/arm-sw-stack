@@ -1,4 +1,4 @@
-From 1d9b7db6eea4dcfbea46c3ea19f7f143a7a5e510 Mon Sep 17 00:00:00 2001
+From cc275fe21687b4ad9298f12586675c70c97208c4 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Wed, 8 Jun 2022 08:11:00 +0000
 Subject: [PATCH] tools/xl-psr: Expose xl-psr to Arm64
@@ -21,7 +21,6 @@ configurations and monitor.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-2795
-Change-Id: I1b9141ef9841efc15981ad48e79e4616bf50a326
 ---
  tools/include/libxl.h           | 4 ++--
  tools/include/xenctrl.h         | 2 +-

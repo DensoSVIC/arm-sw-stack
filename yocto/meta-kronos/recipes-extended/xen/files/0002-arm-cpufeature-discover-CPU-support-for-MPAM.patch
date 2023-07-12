@@ -1,4 +1,4 @@
-From 8cfa1f124e5964322869246b5466a34c2e0cd135 Mon Sep 17 00:00:00 2001
+From 2827de3a3d7b62c0a432c24393e238d39c055464 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Tue, 2 Nov 2021 07:49:19 +0000
 Subject: [PATCH] arm/cpufeature: discover CPU support for MPAM
@@ -20,7 +20,6 @@ the MPAM in Xen.
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-3394
-Change-Id: I11750b2e74da2895753186b84b40ee1634d8ea05
 ---
  xen/arch/arm/include/asm/cpufeature.h | 3 +++
  xen/arch/arm/setup.c                  | 5 +++--
