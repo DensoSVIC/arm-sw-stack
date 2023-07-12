@@ -4,6 +4,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+PREFERRED_PROVIDER_virtual/kernel = "linux-yocto-rt"
+
 ZEPHYR_INHERIT_CLASSES:append = " zephyr-machine-extras"
 ZEPHYR_TOOLCHAIN_VARIANT = "zephyr"
 
