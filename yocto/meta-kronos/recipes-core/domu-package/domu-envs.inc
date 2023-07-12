@@ -32,12 +32,14 @@ DOMU1_NUMBER_OF_CPUS ?= "2"
 # Refer to https://xenbits.xen.org/docs/4.17-testing/man/xl.cfg.5.html#CPU-Allocation
 # about how to set the CPULIST.
 DOMU1_VCPU_PIN ?= "cpus = [\"1-2\"]"
-DOMU1_EXTRA ?= "${DOMU1_BRIDGES}\\n${DOMU1_VCPU_PIN}\\n"
+DOMU1_MPAM ?= "mpam = [\"slc=0xc0\"]"
+DOMU1_EXTRA ?= "${DOMU1_BRIDGES}\\n${DOMU1_VCPU_PIN}\\n${DOMU1_MPAM}\\n"
 
 DOMU2_BRIDGES ?= "vif = ['script=vif-openvswitch,bridge=ovsbr0,vifname=domu2.ext0', 'script=vif-openvswitch,bridge=brsi0.100,vifname=domu2.ethsi0', 'script=vif-openvswitch,bridge=brsi1.200,vifname=domu2.ethsi1', 'script=vif-openvswitch,bridge=brsi2.300,vifname=domu2.ethsi2']"
 DOMU2_NUMBER_OF_CPUS ?= "1"
 DOMU2_VCPU_PIN ?= "cpus = [\"3\"]"
-DOMU2_EXTRA ?= "${DOMU2_BRIDGES}\\n${DOMU2_VCPU_PIN}\\n"
+DOMU2_MPAM ?= "mpam = [\"slc=0x30\"]"
+DOMU2_EXTRA ?= "${DOMU2_BRIDGES}\\n${DOMU2_VCPU_PIN}\\n${DOMU2_MPAM}\\n"
 
 python() {
     domu_instances = d.getVar("DOMU_INSTANCES")
