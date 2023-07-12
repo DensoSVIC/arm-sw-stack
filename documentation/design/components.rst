@@ -451,6 +451,7 @@ related to:
  * zperf and networking fixes
  * A fix for SMP early stack initialization
  * FPU sharing fixes and workaround
+ * Working around the shell interfering with network performance
 
 **********
 References
