@@ -34,6 +34,7 @@ check_cpbm_value() {
 check_domu_cpbm_values() {
     local index=0
     # We only support maximum 2 DomUs, so a two-element array is enough
+    local domain_cpbm_values_0=("0xc0" "0x30")
     local domain_cpbm_values_1=("0x10" "0x100")
     local domain_cpbm_values_2=("0xf0" "0xf00")
 
@@ -41,6 +42,11 @@ check_domu_cpbm_values() {
             sed 's/.*name\s*=\s*"\(.*\)".*/\1/')
 
     for domu in ${domus}; do
+        # DomUs have been set with initial CPBM (cache portion bitmask) at boot
+        # Verify if the value is consistent with the configured value
+        # Initial CPBM: DomU1=0xc0, DomU2=0x30
+        check_cpbm_value ${domu} ${domain_cpbm_values_0[index]}
+
         # Apply MPAM config for DomU and verify
         run xl psr-cat-set -l 0 ${domu} ${domain_cpbm_values_1[index]}
         [ "$status" -eq 0 ]
