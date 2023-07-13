@@ -179,7 +179,7 @@ rst_prolog = f"""
 .. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/tree/?h=v{trusted_firmware_a_version}
 .. _U-Boot repository: https://source.denx.de/u-boot/u-boot/-/tree/v{uboot_version}
 .. _Xen repository: https://xenbits.xen.org/gitweb/?p=xen.git;a=tree;h=refs/heads/stable-{xen_version}
-.. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fbase
+.. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fpreempt-rt%2Fbase
 .. _Zephyr repository: https://github.com/zephyrproject-rtos/zephyr/tree/v{zephyr_version}
 .. _Device Tree specification: https://www.devicetree.org/
 .. _xl documentation: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.1.html

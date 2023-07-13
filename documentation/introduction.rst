@@ -78,7 +78,8 @@ The remaining software in the Primary Compute subsystem, based on the
 
   **Baremetal Architecture**
 
-  The system boots a simple single rich operating system (Linux).
+  The system boots a simple single rich operating system (real-time Linux with
+  PREEMPT_RT).
 
 
 .. image:: images/kronos_baremetal_high_level_arch.svg
@@ -99,10 +100,11 @@ The remaining software in the Primary Compute subsystem, based on the
 
 |
 
-In both architectures the Primary Compute (Linux) can communicate with the
-Safety Island subsystem (Zephyr) via a bi-directional communication channel. The
-:ref:`design_applications_actuation` is integrated into the stack to show-case
-this Heterogeneous Inter-processor Communication (HIPC) between subsystems.
+In both architectures the Primary Compute (real-time Linux with PREEMPT_RT) can
+communicate with the Safety Island subsystem (Zephyr) via a bi-directional
+communication channel. The :ref:`design_applications_actuation` is integrated
+into the stack to show-case this Heterogeneous Inter-processor Communication
+(HIPC) between subsystems.
 
 
 **********************

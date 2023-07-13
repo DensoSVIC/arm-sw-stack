@@ -43,7 +43,7 @@ Components versions used in the Reference Stack:
   * - Xen
     - |Xen version|
     - `Xen repository`_
-  * - Linux Kernel
+  * - Linux Kernel (PREEMPT_RT)
     - |Linux version|
     - `Linux repository`_
   * - Zephyr

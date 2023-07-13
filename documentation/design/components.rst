@@ -348,8 +348,10 @@ to:
 
 .. _design_components_linux:
 
-Linux Kernel
-============
+Linux Kernel (PREEMPT_RT)
+=========================
+
+The Linux kernel is a real-time kernel that uses the PREEMPT_RT patch.
 
 Remoteproc
 ----------
