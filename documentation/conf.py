@@ -220,6 +220,7 @@ rst_prolog = f"""
 .. _Trusted Firmware-M Secure boot documentation: https://tf-m-user-guide.trustedfirmware.org/design_docs/booting/tfm_secure_boot.html
 .. _Open vSwitch: https://www.openvswitch.org
 .. _Tmux Documentation: https://man7.org/linux/man-pages/man1/tmux.1.html
+.. _Ethernet Bridging API: https://docs.zephyrproject.org/apidoc/{zephyr_version}/group__eth__bridge.html
 """  # noqa: E501
 
 # URL to use for references to repository paths

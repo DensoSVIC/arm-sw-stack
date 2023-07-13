@@ -171,6 +171,7 @@ ERCV
 ERRCODE
 errno
 etherdev
+ethpc
 ethsi
 EVNT
 extlinks

@@ -135,7 +135,7 @@ VLAN
 ====
 
 `Open vSwitch`_ is used to create a virtual switch that connects all the
-network interfaces.
+network interfaces of the Primary Compute.
 
 VLAN is a concept standardized by IEEE 802.1Q. It is used to partition a switch
 into multiple logical switches. The VLAN tag has a value from 0 to 4096 stored
@@ -153,13 +153,26 @@ following VLAN identifiers:
  * VLAN **200**: Traffic from/to **Cluster 1**
  * VLAN **300**: Traffic from/to **Cluster 2**
 
+External connection
+===================
+
+The Safety Island has a single network interface leading outside of the Kronos
+system. It is located on Cluster 0.
+
+A software-based network bridge is deployed on Cluster 0. It bridges this
+external interface with the IPC channels to the other Safety Island clusters, so
+that Cluster 1 and 2 can reach outside of Kronos.
+
+See :ref:`design_applications_bridge` for more information.
+
 Baremetal Architecture
 ======================
 
-This diagram shows the network topology for the baremetal architecture.
-ethsi{N} is the RPMsg-based virtual interface that is connected to Safety Island
-Cluster{N} where N is the cluster number, for example ethsi0 is connected to
-Safety Island Cluster 0.
+This diagram shows the network topology for the baremetal architecture. ethsi{N}
+is the name of the RPMsg-based virtual interfaces that are connected to Safety
+Island Cluster{N}, where N is the cluster number. For example, the ethsi0
+interfaces are connected to Safety Island Cluster 0. Similarly, ethpc is the
+name of the interfaces that are connected to the Primary Compute.
 
 ovsbr0 is the Open vSwitch network switch which carries untagged traffic. The
 communication between the Primary Compute and Safety Island is managed through

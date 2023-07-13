@@ -158,3 +158,18 @@ which triggers the Actuation Service to generate Control Commands to be
 forwarded to the host via BSD socket. These Control Commands are then captured
 by the Packet Analyzer which validates them against a recorded Control Commands
 list that is stored in the form of a CSV file.
+
+.. _validation_zephyr_bridge:
+
+Integration Tests validating the Safety Island Cluster 0 Bridge
+===============================================================
+
+The ``test_si{N}_bridge_ethernet0`` integration tests in
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_si0_bridge_ethernet0.py`
+verify the connection between the Host and the bridged Safety Island clusters.
+The tested configuration is:
+
+ * The Safety Island as an iperf server (TCP) and the Host as a client (TCP).
+
+UDP is not tested because the user networking of the FVP does not provide
+port forwarding for UDP traffic.
