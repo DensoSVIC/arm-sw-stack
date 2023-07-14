@@ -1,4 +1,4 @@
-From e836f79cf6c27ecf563a085308417d97ec8ab022 Mon Sep 17 00:00:00 2001
+From 368d44ad2fc3e90cffbd688fbeebc5a2071041b4 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Fri, 7 Jul 2023 15:43:41 +0800
 Subject: [PATCH] docs, tool: Add the mpam parameter in xl config file
@@ -15,19 +15,19 @@ Signed-off-by: Henry Wang <Henry.Wang@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-6028
 ---
- docs/man/xl.cfg.5.pod.in             | 31 ++++++++++++++++++
+ docs/man/xl.cfg.5.pod.in             | 33 +++++++++++++++++++
  tools/golang/xenlight/helpers.gen.go | 37 ++++++++++++++++++++++
  tools/golang/xenlight/types.gen.go   |  6 ++++
  tools/libs/light/libxl_arm.c         |  8 +++++
  tools/libs/light/libxl_types.idl     |  6 ++++
  tools/xl/xl_parse.c                  | 47 ++++++++++++++++++++++++++--
- 6 files changed, 133 insertions(+), 2 deletions(-)
+ 6 files changed, 135 insertions(+), 2 deletions(-)
 
 diff --git a/docs/man/xl.cfg.5.pod.in b/docs/man/xl.cfg.5.pod.in
-index ec444fb2ba..efbeffd913 100644
+index ec444fb2ba..67b1b96104 100644
 --- a/docs/man/xl.cfg.5.pod.in
 +++ b/docs/man/xl.cfg.5.pod.in
-@@ -2870,6 +2870,37 @@ Currently, only the "sbsa_uart" model is supported for ARM.
+@@ -2870,6 +2870,39 @@ Currently, only the "sbsa_uart" model is supported for ARM.
  
  =back
  
@@ -59,6 +59,8 @@ index ec444fb2ba..efbeffd913 100644
 +32-bit CPBM, but hardware may have different implementations. If the CPBM value
 +given in the device tree exceeds the maximum value of the system, it will be
 +clamped to the maximum value supported by the system.
++
++=back
 +
 +=back
 +
