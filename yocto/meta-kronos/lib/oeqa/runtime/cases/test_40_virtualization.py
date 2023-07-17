@@ -30,7 +30,7 @@ class DomUTest(OERuntimeTestCase):
         XenUtils.enter_guest_from_dom0(cls.console, cls.dom0_prompt,
                                        cls.linux_prompt, cls.domu_hostname)
 
-    def run_cmd(self, cmd, timeout=200):
+    def run_cmd(self, cmd, timeout=200, check=True):
         # Get the output of the command
         cmd_echo = re.compile(re.escape(cmd))
         self.target.sendline(self.linux_console, cmd)
@@ -55,10 +55,14 @@ class DomUTest(OERuntimeTestCase):
         self.target.sendline(self.linux_console, 'echo $?')
         self.target.expect(self.linux_console, r'[0-9]+\r\r\n', timeout=40)
         matches = self.target.match(self.linux_console)
-        status = matches[0].decode("utf-8", errors="replace").strip()
+        status = int(matches[0].decode("utf-8", errors="replace").strip())
         self.target.expect(self.linux_console, self.linux_prompt, timeout=200)
 
-        return int(status), output
+        if status and check:
+            self.fail("Command '%s' returned non-zero exit "
+                      "status %d:\n%s" % (cmd, status, output))
+
+        return status, output
 
     @classmethod
     def tearDownClass(cls):
