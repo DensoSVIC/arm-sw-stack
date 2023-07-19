@@ -34,30 +34,32 @@ Build Host Environment Setup
 System Requirements
 ===================
 
-    * x86_64 or aarch64 host to build and execute the Kronos FVP
-    * Ubuntu Desktop 20.04 Linux distribution
-    * Direct display, keyboard and mouse access to the build host
-    * At least 300GiB of free disk for the download and builds
-    * At least 32GiB of RAM memory
+  * x86_64 or aarch64 host to build and execute the Kronos FVP
+  * Ubuntu Desktop or Server 20.04 Linux distribution
+  * At least 300GiB of free disk for the download and builds
+  * At least 32GiB of RAM memory
 
-Please note that headless build hosts and remote access to build hosts are
-not currently supported.
 
 Install Dependencies
 ====================
 
-Please follow the Yocto Project documentation on
-`how to install the essential packages`_ required for the build host.
+  * Please follow the Yocto Project documentation on
+    `how to install the essential packages`_ required for the build host.
 
-Install the kas tool and its optional dependency (to use the "menu" plugin):
+  * Install the kas tool and its optional dependency (to use the "menu" plugin):
 
-.. code-block:: console
-  :substitutions:
+    .. code-block:: console
+      :substitutions:
 
-  sudo -H pip3 install --upgrade kas==|kas version| && sudo apt install python3-newt
+      sudo -H pip3 install --upgrade kas==|kas version| && sudo apt install python3-newt
 
-For more details on kas installation, see `kas Dependencies & installation`_.
+    For more details on kas installation, see
+    `kas Dependencies & installation`_.
+  * Install tmux (required for ``runfvp`` tool):
 
+    .. code-block:: console
+
+      sudo apt install tmux
 
 .. _user_guide_reproduce_download:
 
@@ -76,7 +78,17 @@ via:
 
   mkdir -p ~/kronos
   cd ~/kronos
+  tmux new-session -s kronos
   git clone |kronos remote| --branch |kronos version|
+
+.. note::
+   Performing the builds and FVP execution in a tmux session is mandatory for
+   Kronos because the ``runfvp`` tool that invokes the Kronos FVP expects the
+   presence of a tmux session to attach its spawned tmux windows for console
+   access to the processing elements. Please refer to
+   `Tmux Documentation`_ for more information on the usage of tmux. It is
+   recommended to change the default ``history-limit`` by adding
+   ``set-option -g history-limit 3000` to ``~/.tmux.conf`` before starting tmux.
 
 .. _user_guide_reproduce_build:
 
@@ -209,7 +221,7 @@ To build and run the |Arm SystemReadyTM| IR Linux distros installation tests:
 
    .. code-block:: console
 
-      kas shell -c "../layers/meta-arm/scripts/runfvp --verbose --console"
+      kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
 See :ref:`reproduce_arm_systemready_ir_validation` for more details on running
 the Linux distros installation tests.
@@ -225,14 +237,20 @@ the Primary Compute to manually execute commands and in this way try out its
 different functionalities. This can be done for the Baremetal and
 Virtualization Architectures.
 
+The ``runfvp`` tool that invokes the Kronos FVP creates one tmux window per
+processing element. The default window displayed will be that of the Primary
+Compute titled ``terminal_ns_uart0``. User may press ``Ctrl-b w`` to see the
+list of tmux windows and use arrow keys to navigate through the windows and
+press then ``Enter`` to select any processing element terminal.
+
+The Reference Stack running on the Primary Compute can be logged into as
+``root`` user without password in the Linux terminal.
+
 .. note::
   FVPs, and Fast Models in general, are functionally accurate, meaning that they
   fully execute all instructions correctly, however they are not cycle accurate.
   The main goal of the Reference Stack is to prove functionality only, and
   should not be used for performance analysis.
-
-The Reference Stack running on the Primary Compute can be logged into as
-``root`` user without password in the Linux terminal.
 
 Baremetal Architecture
 ======================
@@ -241,9 +259,16 @@ To start the FVP and connect to the Primary Compute terminal (running Linux):
 
   .. code-block:: console
 
-    kas shell -c "../layers/meta-arm/scripts/runfvp --verbose --console"
+    kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
 The user should wait for the system to boot and for the Linux prompt to appear.
+Following image shows a example on how the terminal should look like after the
+fvp invocation.
+
+  .. image:: ../images/kronos_reference_stack_fvp_run.png
+   :align: center
+
+|
 
 Virtualization Architecture
 ===========================
@@ -252,7 +277,7 @@ To start the FVP and connect to the Primary Compute terminal (running Linux):
 
   .. code-block:: console
 
-    kas shell -c "../layers/meta-arm/scripts/runfvp --verbose --console"
+    kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
 The user should wait for the system to boot and for the Linux prompt to appear.
 On a virtualization image, this will access Dom0. Use the ``xl`` tool to log
@@ -263,7 +288,7 @@ in to the DomU1:
     xl console domu1
 
 This command will provide a console on the DomU1. To exit, one can enter
-``Ctrl+]`` (to access the FVP telnet shell), followed by typing ``send esc``
+``Ctrl-]`` (to access the FVP telnet shell), followed by typing ``send esc``
 into the telnet shell and pressing ``Enter``. See the `xl documentation`_ for
 further details.
 
@@ -272,6 +297,8 @@ Reproducing the Use-Cases
 
 This section contains additional instructions to aid in reproducing the
 :ref:`introduction_use_cases` presented in the introduction.
+
+.. _user_guide_reproduce_actuation_demo:
 
 Safety Island Actuation Demo
 ----------------------------
@@ -283,10 +310,28 @@ in :ref:`design_applications_actuation`. These instructions can be run on both
 the Baremetal and Virtualization architectures and an assumption has been made
 that the FVP has been launched as indicated under :ref:`reproduce_run`.
 
-.. note::
-  When running the ``runfvp`` command, the Safety Island (SI) Cluster 0
-  terminal running the Actuation Service is available via the window titled
-  **"FVP terminal_uart_si_cluster0"**.
+The Safety Island (SI) Cluster 0 terminal running the Actuation Service is
+available via the tmux window titled ``terminal_uart_si_cluster0``. For ease of
+navigation, we recommend joining the SI Cluster 0 terminal to Primary Compute
+terminal and to create a tmux window attached to Primary Compute terminal in
+order to issue commands on the host machine. User can navigate through the panes
+by pressing ``Ctrl-b`` and arrow keys. Follow the steps below to achieve the
+same:
+
+1. Press ``Ctrl-b w`` from the tmux session and navigate to the tmux window
+   titled ``terminal_ns_uart0``.
+2. Press ``Ctrl-b %`` to add a new tmux window which will be used to issue
+   commands on the host machine.
+3. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_uart_si_cluster0``
+   followed by pressing ``Enter`` key to join the SI Cluster 0 terminal to
+   Primary Compute terminal
+
+Please refer the following for an example re-arrangement of tmux windows.
+
+  .. image:: ../images/kronos_reference_stack_fvp_rearrange_windows.png
+    :align: center
+
+|
 
 Baremetal Architecture
 **********************
@@ -306,8 +351,8 @@ Baremetal Architecture
       64 bytes from 192.168.0.1 seq=0 ttl=64 time=0.151 ms
 
 
-2. From a different terminal on the build host, start the Packet Analyzer on
-   the host where the FVP is running:
+2. From the tmux window started for host machine
+in :ref:`user_guide_reproduce_actuation_demo`, start the Packet Analyzer:
 
    .. code-block:: shell
 
@@ -322,6 +367,13 @@ Baremetal Architecture
 
       Actuation Service initialized.
       Accepted tcp connection from the Packet Analyzer: <11>
+
+   Please refer the following for an example invocation of package analyzer.
+
+     .. image:: ../images/kronos_reference_stack_packet_analyzer.png
+       :align: center
+
+|
 
 3. Start the Player on the Primary Compute which replays a recording of a
    driving scenario:
@@ -381,7 +433,7 @@ Virtualization Architecture
       NATIVE_SYSROOT_BIN=build/tmp_virtualization/work/fvp_rd_kronos-poky-linux/virtualization-image/1.0-r0/recipe-sysroot-native/usr/bin
 
 
-3. To leave the DomU1 console, type ``Ctrl+]`` and enter ``send esc``.
+3. To leave the DomU1 console, type ``Ctrl-]`` and enter ``send esc``.
 
 
 Heterogeneous Inter-processor Communication Validation
@@ -935,8 +987,10 @@ Here are some tips for installing Fedora:
 
    .. note::
 
-      To restart the FVP, press ``Ctrl + ]`` and type ``quit`` then run
-      ``kas shell -c "../layers/meta-arm/scripts/runfvp --verbose --console"``
+      To restart the FVP, press ``Ctrl-]`` and type ``quit`` on all the tmux
+      terminals started by the FVP, press ``Ctrl-c`` to stop the FVP process,
+      and then run
+      ``kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"``
       again.
 
 9. Users can login the Linux shell about 20 minutes after restart.

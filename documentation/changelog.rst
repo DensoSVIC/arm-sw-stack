@@ -110,8 +110,6 @@ Limitations
  * In the HIPC, the iperf parameter "-l/--length" should be less than 1473 (IP
    and UDP overhead) in the case of Zephyr running as a UDP server since it does
    not support IP fragmentation.
- * Headless build hosts and remote access to build hosts are not currently
-   supported.
 
 Resolved and Known Issues
 =========================
