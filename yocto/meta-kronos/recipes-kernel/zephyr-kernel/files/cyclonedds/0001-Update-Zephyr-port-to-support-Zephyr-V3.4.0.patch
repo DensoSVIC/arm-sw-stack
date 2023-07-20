@@ -1,0 +1,311 @@
+From 560d666fbd07d3071a7c34081a83c23238a9031e Mon Sep 17 00:00:00 2001
+From: Patrick Masselink <patrick.masselink@zettascale.tech>
+Date: Mon, 17 Jul 2023 16:26:11 +0200
+Subject: [PATCH] Update Zephyr port to support Zephyr V3.4.0
+
+Signed-off-by: Patrick Masselink <patrick.masselink@zettascale.tech>
+Upstream-Status: Pending
+---
+ ports/zephyr/README.md                        | 19 ++++++-----
+ .../zephyr/boards/s32z270dc2_rtu0_r52.overlay | 13 ++++++++
+ ports/zephyr/config.xml                       | 27 ---------------
+ ports/zephyr/src/ddsperf_main.c               |  4 +--
+ ports/zephyr/src/main.c                       |  4 +--
+ ports/zephyr/src/roundtrip_main.c             |  4 +--
+ ports/zephyr/src/throughput_main.c            |  4 +--
+ src/ddsrt/src/sockets/posix/socket.c          |  8 ++---
+ src/ddsrt/src/threads/posix/threads.c         | 33 ++++++++++++++-----
+ 9 files changed, 61 insertions(+), 55 deletions(-)
+ create mode 100644 ports/zephyr/boards/s32z270dc2_rtu0_r52.overlay
+
+diff --git a/ports/zephyr/README.md b/ports/zephyr/README.md
+index a0cfa9fc..7a65ad2a 100644
+--- a/ports/zephyr/README.md
++++ b/ports/zephyr/README.md
+@@ -4,16 +4,20 @@
+ This directory contains some proof-of-concept applications that show how to build and use CycloneDDS on [Zephyr RTOS](https://www.zephyrproject.org) for a NXP X-S32Z27X-DC board.
+ 
+ 
+-Getting Started with Zephyr information can be found [here](https://docs.zephyrproject.org/3.3.0/develop/getting_started/index.html)
++Getting Started with Zephyr information can be found [here](https://docs.zephyrproject.org/latest/develop/getting_started/index.html)
++Documentation for the NXP X-S32Z27X-DC board can be found [here](https://docs.zephyrproject.org/latest/boards/arm/s32z270dc2_r52/doc/index.html)
+ 
++## Usage
++The applications can be treated similarly to other Zephyr sample applications.
++The `CMakeLists.txt` is currently set up to build some of the CycloneDDS examples or ddsperf but can be easily modified or extended for other application code.
+ 
+-Documentation for the NXP X-S32Z27X-DC board can be found [here](https://docs.zephyrproject.org/3.3.0/boards/arm/s32z270dc2_r52/doc/index.html)
++:warning: While CycloneDDS can be built in-tree, it does not support multiple different builds. Therefore the CycloneDDS source directory needs to be cleaned in order to build for Zephyr and must not contain an in-tree build for eg. the host system. Alternatively, this directory with Zephyr examples can be copied outside the CycloneDDS source directory but that requires updating the `ExternalProject_Add` directive in `CMakeLists.txt` to point to the CycloneDDS source directory.
+ 
+-## Usage:
+-This directory can used like any generic Zephyr application.
+-The `CMakeLists.txt` is currently set up to build CycloneDDS examples and ddsperf but can be easily modified or extended for other application code.
++:warning: When building outside the Zephyr tree, `ZEPHYR_BASE` variable must be set. See [Application Development](https://docs.zephyrproject.org/latest/develop/application/index.html) for more info.
+ 
+-The copy_examples.sh script can be used (manually) to update the code from CycloneDDS examples and run idlc to generate types.
++:warning: A static IPv4/IPv6 address is defined in `prj.conf`. When running between two Zephyr nodes it is suggested to copy `prj.conf` to eg. `prj-host1.conf` and `prj-host2.conf`, updating the address as required and building with `-DCONF=prj-host1.conf` or `-DCONF=prj-host2.conf` respectively, as described in more detail [here](https://docs.zephyrproject.org/latest/samples/net/eth_native_posix/README.html). A different approach is to enable DHCP client support in Zephyr (see [example](https://docs.zephyrproject.org/latest/samples/net/dhcpv4_client/README.html)).
++
++The `copy_examples.sh` script can be used to (manually) update the code from CycloneDDS examples and run `idlc` to generate types.
+ 
+ For example, to build Roundtrip Ping for the `s32z270dc2_rtu0_r52` target:
+ ```
+@@ -25,6 +29,5 @@ $ west build -b qemu_x86 . -- -DOVERLAY_CONFIG=overlay-e1000.conf -DBUILD_ROUNDT
+ ```
+ Command-line parameters for the example can be modified in `src/rountrip_main.c`
+ 
+-
+-The CycloneDDS configuration in `config.xml` is automatically converted to a char array and available as environment variable to support the default behaviour of retrieving config from CYCLONEDDS_URI.
++The CycloneDDS configuration in `config.xml` is automatically converted to a char array and available as environment variable to support the default behaviour of retrieving config from `CYCLONEDDS_URI`.
+ Alternatively, [dds_create_domain_with_rawconfig](https://cyclonedds.io/docs/cyclonedds/latest/api/domain.html?#c.dds_create_domain_with_rawconfig) can be used without XML configuration data.
+diff --git a/ports/zephyr/boards/s32z270dc2_rtu0_r52.overlay b/ports/zephyr/boards/s32z270dc2_rtu0_r52.overlay
+new file mode 100644
+index 00000000..e6deb17c
+--- /dev/null
++++ b/ports/zephyr/boards/s32z270dc2_rtu0_r52.overlay
+@@ -0,0 +1,13 @@
++/* Define 7M sram ragion to override 1M sram0 (for RTU0 only) */
++/{
++	soc {
++		sram2: memory@32100000 {
++			compatible = "mmio-sram";
++			reg = <0x32100000 DT_SIZE_M(7)>;
++		};
++	};
++
++	chosen {
++		zephyr,sram = &sram2;
++	};
++};
+diff --git a/ports/zephyr/config.xml b/ports/zephyr/config.xml
+index 09c3ffe9..7e5d43d0 100644
+--- a/ports/zephyr/config.xml
++++ b/ports/zephyr/config.xml
+@@ -4,33 +4,6 @@
+       <!-- Transport>udp6</Transport -->
+       <MaxMessageSize>1400B</MaxMessageSize>
+     </General>
+-    <Threads>
+-      <Thread name="recv">
+-        <Scheduling>
+-          <Priority>15</Priority>
+-        </Scheduling>
+-      </Thread>
+-      <Thread name="tev">
+-        <Scheduling>
+-          <Priority>15</Priority>
+-        </Scheduling>
+-      </Thread>
+-      <Thread name="gc">
+-        <Scheduling>
+-          <Priority>15</Priority>
+-        </Scheduling>
+-      </Thread>
+-      <Thread name="dq.builtins">
+-        <Scheduling>
+-          <Priority>15</Priority>
+-        </Scheduling>
+-      </Thread>
+-      <Thread name="dq.user">
+-        <Scheduling>
+-          <Priority>15</Priority>
+-        </Scheduling>
+-      </Thread>
+-    </Threads>
+     <Sizing>
+       <ReceiveBufferSize>40KiB</ReceiveBufferSize>
+       <ReceiveBufferChunkSize>20KiB</ReceiveBufferChunkSize>
+diff --git a/ports/zephyr/src/ddsperf_main.c b/ports/zephyr/src/ddsperf_main.c
+index ae31bc24..c0f9c94e 100644
+--- a/ports/zephyr/src/ddsperf_main.c
++++ b/ports/zephyr/src/ddsperf_main.c
+@@ -13,7 +13,7 @@ char **environ = (char*[]) {
+   NULL
+ };
+ 
+-void main(void)
++int main(void)
+ {
+     printf("CycloneDDS DDSPerf (%s)\n", CONFIG_BOARD);
+ #if BUILD_DDSPERF_PING
+@@ -23,5 +23,5 @@ void main(void)
+ #endif
+     ddsperf_main(sizeof(args)/sizeof(args[0]), args);
+     printf("Done\n");
+-    return;
++    return 0;
+ }
+diff --git a/ports/zephyr/src/main.c b/ports/zephyr/src/main.c
+index b5c7e458..18b5edbb 100644
+--- a/ports/zephyr/src/main.c
++++ b/ports/zephyr/src/main.c
+@@ -202,7 +202,7 @@ void helloworld_subscriber()
+     DDS_FATAL("dds_delete (domain): %s\n", dds_strretcode(-rc));
+ }
+ 
+-void main(void)
++int main(void)
+ {
+     printf("CycloneDDS Hello World! %s\n", CONFIG_BOARD);
+ #if BUILD_HELLOWORLD_PUB
+@@ -211,5 +211,5 @@ void main(void)
+     helloworld_subscriber();
+ #endif
+     printf("Done\n");
+-    return;
++    return 0;
+ }
+diff --git a/ports/zephyr/src/roundtrip_main.c b/ports/zephyr/src/roundtrip_main.c
+index be10ad39..94ad215a 100644
+--- a/ports/zephyr/src/roundtrip_main.c
++++ b/ports/zephyr/src/roundtrip_main.c
+@@ -14,7 +14,7 @@ char **environ = (char*[]) {
+   NULL
+ };
+ 
+-void main(void)
++int main(void)
+ {
+     int ret;
+     printf("CycloneDDS Roundtrip (%s)\n", CONFIG_BOARD);
+@@ -34,5 +34,5 @@ void main(void)
+     ret = roundtrip_pong(sizeof(args)/sizeof(args[0]), args);
+ #endif
+     printf("Done (ret=%d)\n", ret);
+-    return;
++    return 0;
+ }
+diff --git a/ports/zephyr/src/throughput_main.c b/ports/zephyr/src/throughput_main.c
+index 8aaea176..0772c1b7 100644
+--- a/ports/zephyr/src/throughput_main.c
++++ b/ports/zephyr/src/throughput_main.c
+@@ -14,7 +14,7 @@ char **environ = (char*[]) {
+   NULL
+ };
+ 
+-void main(void)
++int main(void)
+ {
+     int ret;
+     printf("CycloneDDS Throughput (%s)\n", CONFIG_BOARD);
+@@ -26,5 +26,5 @@ void main(void)
+     ret = throughput_sub(sizeof(args)/sizeof(args[0]), args);
+ #endif
+     printf("Done (ret=%d)\n", ret);
+-    return;
++    return 0;
+ }
+diff --git a/src/ddsrt/src/sockets/posix/socket.c b/src/ddsrt/src/sockets/posix/socket.c
+index 1c9696aa..6e9cd678 100644
+--- a/src/ddsrt/src/sockets/posix/socket.c
++++ b/src/ddsrt/src/sockets/posix/socket.c
+@@ -332,7 +332,7 @@ ddsrt_setsockopt(
+           } else {
+             maddr = net_if_ipv6_maddr_add(iface, &(mreq->ipv6mr_multiaddr));
+             if (maddr) {
+-              net_if_ipv6_maddr_join(maddr);
++              net_if_ipv6_maddr_join(iface, maddr);
+               net_if_mcast_monitor(iface, &(maddr->address), true);
+               return DDS_RETCODE_OK;
+             }
+@@ -340,7 +340,7 @@ ddsrt_setsockopt(
+         } else if (optname == IPV6_LEAVE_GROUP) {
+           if (maddr) {
+             if (net_if_ipv6_maddr_rm(iface, &(mreq->ipv6mr_multiaddr))) {
+-              net_if_ipv6_maddr_leave(maddr);
++              net_if_ipv6_maddr_leave(iface, maddr);
+               net_if_mcast_monitor(iface, &(maddr->address), false);
+               return DDS_RETCODE_OK;
+             }
+@@ -380,7 +380,7 @@ ddsrt_setsockopt(
+           } else {
+             maddr = net_if_ipv4_maddr_add(iface, &(mreq->imr_multiaddr));
+             if (maddr) {
+-              net_if_ipv4_maddr_join(maddr);
++              net_if_ipv4_maddr_join(iface, maddr);
+               net_if_mcast_monitor(iface, &(maddr->address), true);
+               return DDS_RETCODE_OK;
+             }
+@@ -388,7 +388,7 @@ ddsrt_setsockopt(
+         } else if (optname == IP_DROP_MEMBERSHIP) {
+           if (maddr) {  
+             if (net_if_ipv4_maddr_rm(iface, &(mreq->imr_multiaddr))) {
+-              net_if_ipv4_maddr_leave(maddr);
++              net_if_ipv4_maddr_leave(iface, maddr);
+               net_if_mcast_monitor(iface, &(maddr->address), false);
+               return DDS_RETCODE_OK;
+             }
+diff --git a/src/ddsrt/src/threads/posix/threads.c b/src/ddsrt/src/threads/posix/threads.c
+index 101ff5fd..493513e9 100644
+--- a/src/ddsrt/src/threads/posix/threads.c
++++ b/src/ddsrt/src/threads/posix/threads.c
+@@ -314,7 +314,7 @@ ddsrt_thread_create (
+       DDS_ERROR ("ddsrt_thread_create(%s): CYCLONEDDS_THREAD_COUNT(%d) exceeded\n", name, currThrIdx);
+       goto err;
+     }
+-    if ((result = pthread_attr_setstack (&attr, &zephyr_stacks[currThrIdx], tattr.stackSize)) != 0)
++    if ((result = pthread_attr_setstack (&pattr, &zephyr_stacks[currThrIdx], tattr.stackSize)) != 0)
+     {
+       DDS_ERROR ("ddsrt_thread_create(%s): pthread_attr_setstack(%p, %"PRIu32") failed with error %d\n",
+         name, &zephyr_stacks[currThrIdx], tattr.stackSize, result);
+@@ -348,6 +348,17 @@ ddsrt_thread_create (
+       DDS_ERROR("ddsrt_thread_create(%s): pthread_getschedparam(self) failed with error %d\n", name, result);
+       goto err;
+     }
++#else
++    if ((result = pthread_attr_getschedparam(&pattr, &sched_param)) != 0)
++    {
++      DDS_ERROR("ddsrt_thread_create(%s): pthread_attr_getschedparam() failed with error %d\n", name, result);
++      goto err;
++    }
++    if ((result = pthread_attr_getschedpolicy(&pattr, &policy)) != 0)
++    {
++      DDS_ERROR("ddsrt_thread_create(%s): pthread_attr_getschedpolicy() failed with error %d\n", name, result);
++      goto err;
++    }
+ #endif
+     switch (tattr.schedClass)
+     {
+@@ -360,27 +371,33 @@ ddsrt_thread_create (
+         policy = SCHED_FIFO;
+         break;
+       case DDSRT_SCHED_TIMESHARE:
+-#if !defined(__ZEPHYR__)
+         policy = SCHED_OTHER;
+-#else
+-        DDS_ERROR("ddsrt_thread_create(%s): timeshare scheduling class not supported on this platform\n", name);
+-        goto err;
+-#endif
+         break;
+     }
+-    if (tattr.schedClass != DDSRT_SCHED_DEFAULT) {
++    if (tattr.schedClass != DDSRT_SCHED_DEFAULT)
++    {
+       if ((result = pthread_attr_setschedpolicy (&pattr, policy)) != 0)
+       {
+         DDS_ERROR("ddsrt_thread_create(%s): pthread_attr_setschedpolicy(%d) failed with error %d\n", name, policy, result);
+         goto err;
+       }
+     }
+-    sched_param.sched_priority = tattr.schedPriority;
++
++    if ((tattr.schedPriority >= sched_get_priority_min(policy)) && (tattr.schedPriority <= sched_get_priority_max(policy)))
++    {
++      sched_param.sched_priority = tattr.schedPriority;
++    }
++    else
++    {
++      DDS_WARNING("ddsrt_thread_create(%s): requested thread priority(%d) invalid for policy(%d), fall-back to default\n: %d", name, tattr.schedPriority, policy, sched_param.sched_priority);
++    }
++
+     if ((result = pthread_attr_setschedparam (&pattr, &sched_param)) != 0)
+     {
+       DDS_ERROR("ddsrt_thread_create(%s): pthread_attr_setschedparam(priority = %d) failed with error %d\n", name, tattr.schedPriority, result);
+       goto err;
+     }
++
+ #if !defined(__ZEPHYR__)
+     if ((result = pthread_attr_setinheritsched (&pattr, PTHREAD_EXPLICIT_SCHED)) != 0)
+     {
+-- 
+2.25.1
+

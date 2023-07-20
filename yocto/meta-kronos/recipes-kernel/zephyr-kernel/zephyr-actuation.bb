@@ -28,7 +28,10 @@ EXTRA_OECMAKE:append = "\
 "
 
 SRC_URI:append = " ${SRC_URI_ACTUATION};${BRANCH_ACTUATION};name=actuation;destsuffix=git/modules/lib/actuation"
-SRC_URI:append = " ${SRC_URI_CYCLONEDDS};name=cyclonedds;destsuffix=git/modules/lib/actuation/cyclonedds"
+SRC_URI:append = " \
+    ${SRC_URI_CYCLONEDDS};name=cyclonedds;destsuffix=git/modules/lib/actuation/cyclonedds \
+    file://cyclonedds/0001-Update-Zephyr-port-to-support-Zephyr-V3.4.0.patch;patchdir=modules/lib/actuation/cyclonedds \
+"
 
 SRCREV_actuation = "${SRCREV_ACTUATION}"
 SRCREV_cyclonedds = "${SRCREV_CYCLONEDDS}"
