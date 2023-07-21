@@ -21,7 +21,9 @@ CONFLICT_IMAGE_FEATURES = "virtualization domu"
 COMPATIBLE_MACHINE = "fvp-rd-kronos"
 
 BAREMETAL_IMAGE_NUM_CPUS ?= "4"
-BAREMETAL_IMAGE_MEM_SIZE ?= "2G"
+# The total RAM size is 2G and 32M of it has been allocated to OP-TEE. The
+# remaining RAM space size is (2048 - 32)M 
+BAREMETAL_IMAGE_MEM_SIZE ?= "2016M"
 GRUB_LINUX_APPEND:append = "\
     maxcpus=${BAREMETAL_IMAGE_NUM_CPUS} \
     mem=${BAREMETAL_IMAGE_MEM_SIZE} \
