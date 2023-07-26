@@ -18,8 +18,8 @@ for i in "${!PARTS[@]}"; do
 	fi
 done
 
-# Prefix each part with .gitlab/kas/
-PARTS=("${PARTS[@]/#/.gitlab/kas/}")
+# Prefix each part with yocto/kas/
+PARTS=("${PARTS[@]/#/yocto/kas/}")
 
 # Suffix each part with .yml
 PARTS=("${PARTS[@]/%/.yml}")

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 ---
 
-# Modify the .gitlab/kas base build with specific settings
+# Modify the yocto/kas base build with specific settings
 .yocto_base:
   variables:
     CACHE_DIR: /sstate-cache
