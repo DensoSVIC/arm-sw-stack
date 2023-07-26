@@ -26,7 +26,7 @@
   variables:
     IMAGE_DIR: $CACHE_DIR/$PROJECT_VERSION/images
   before_script:
-    - KASFILE_CI=.gitlab/kas/ci.yml
+    - KASFILE_CI=yocto/kas/ci.yml
     # Set the url and refspec for the specific repos
     - |
       if ! [ -z "${REPOS_META_ARM_URL}" ] &&

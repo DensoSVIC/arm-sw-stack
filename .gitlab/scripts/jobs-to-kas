@@ -26,4 +26,4 @@ PARTS=("${PARTS[@]/%/.yml}")
 
 # Print colon-separated with the ci only options appended
 IFS=":"
-echo "${PARTS[*]}:.gitlab/kas/ci.yml"
+echo "${PARTS[*]}:yocto/kas/ci.yml"
