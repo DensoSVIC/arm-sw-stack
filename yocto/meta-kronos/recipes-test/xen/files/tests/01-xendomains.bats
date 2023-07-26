@@ -61,6 +61,36 @@ check_domu_cpbm_values() {
     done
 }
 
+check_gicv4.1_functionality() {
+    local cpu_pool=("CPU0" "CPU1" "CPU2" "CPU3")
+    local its_pool=("0000000030040000" "0000000030080000" "00000000300c0000"
+                    "0000000030100000" "0000000030140000" "0000000030180000")
+
+    # In Kronos, we have 4 PCPUS
+    for cpu in ${cpu_pool}; do
+        # Xen Redistributor boot log shall have the following print
+        # indicating the hardware supports GICV4.1 virtual LPI direct injection
+        # "(XEN) GICv4: CPUx: VLPI support, ..., RVPEID support"
+        run bash -c "xl dmesg | grep \"$cpu: VLPI support.*RVPEID support\""
+        [ "$status" -eq 0 ]
+    done
+
+    # In Kronos, we have 6 v4.1 ITSes
+    for its in ${its_pool}; do
+        # Xen ITS boot log shall have the following print indicating
+        # the hardware has v4.1 ITS
+        # "(XEN) ITS@0000000030040000: Using GICv4.1 mode 00000000 00000001
+        run bash -c "xl dmesg | grep \"ITS@$its: Using GICv4.1 mode\""
+        [ "$status" -eq 0 ]
+    done
+
+    # SGI in DOM0 shall be the new, HW-based ones which do not have active state
+    # DOM0 log shall contain the following output:
+    # "Enabling SGIs without active state"
+    run bash -c "dmesg | grep \"Enabling SGIs without active state\""
+    [ "$status" -eq 0 ]
+}
+
 @test "Check restarting Xen domains" {
     # Ensure xendomains has started
     systemctl is-system-running --wait
@@ -86,4 +116,10 @@ check_domu_cpbm_values() {
     check_cpbm_value Domain-0 0xf
 
     check_domu_cpbm_values
+}
+
+@test "Verify GICv4.1 feature enablement" {
+    # GICv4.1 is an extension to GICv3, with new features of direct vLPI
+    # and vSGI injection
+    check_gicv4.1_functionality
 }
