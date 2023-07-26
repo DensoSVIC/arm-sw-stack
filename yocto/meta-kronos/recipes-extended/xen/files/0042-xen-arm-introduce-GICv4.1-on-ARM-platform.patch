@@ -1,0 +1,5194 @@
+From 1b27b030808820271dc9abe7ecdbae6438f9a5d2 Mon Sep 17 00:00:00 2001
+From: Penny Zheng <Penny.Zheng@arm.com>
+Date: Wed, 12 Jul 2023 15:21:20 +0800
+Subject: [PATCH] xen/arm: introduce GICv4.1 on ARM platform
+
+Aim of this big patch is to introduce GICv4.1 on ARM platform. GICv4.1
+is an extension to GICv3, with new features of direct vLPI/vSGI direct
+injection.
+
+upstream-Status: Inappropriate [Kronos-specific]
+Signed-off-by: Penny Zheng <penny.zheng@arm.com>
+---
+ tools/libs/light/libxl_arm.c           |   18 +
+ tools/libs/light/libxl_types.idl       |    4 +-
+ xen/arch/arm/Kconfig                   |    6 +
+ xen/arch/arm/Makefile                  |    1 +
+ xen/arch/arm/domain.c                  |   22 +-
+ xen/arch/arm/domain_build.c            |    2 +
+ xen/arch/arm/gic-v2.c                  |    2 +-
+ xen/arch/arm/gic-v3-its.c              |  536 +++++-
+ xen/arch/arm/gic-v3-lpi.c              |  180 ++-
+ xen/arch/arm/gic-v3.c                  |  257 ++-
+ xen/arch/arm/gic-v4-its.c              | 2061 ++++++++++++++++++++++++
+ xen/arch/arm/gic-vgic.c                |    6 +
+ xen/arch/arm/include/asm/domain.h      |   13 +-
+ xen/arch/arm/include/asm/event.h       |    2 +-
+ xen/arch/arm/include/asm/gic.h         |    4 +-
+ xen/arch/arm/include/asm/gic_v3_defs.h |   25 +
+ xen/arch/arm/include/asm/gic_v3_its.h  |  180 ++-
+ xen/arch/arm/include/asm/gic_v4_its.h  |  146 ++
+ xen/arch/arm/include/asm/mmio.h        |    2 +-
+ xen/arch/arm/include/asm/vgic.h        |  122 +-
+ xen/arch/arm/vgic-v3-its.c             |   82 +-
+ xen/arch/arm/vgic-v3.c                 |   87 +-
+ xen/arch/arm/vgic.c                    |  126 +-
+ xen/arch/x86/include/asm/hvm/hvm.h     |    2 +
+ xen/common/sched/core.c                |    3 +
+ xen/include/public/arch-arm.h          |    2 +
+ 26 files changed, 3658 insertions(+), 233 deletions(-)
+ create mode 100644 xen/arch/arm/gic-v4-its.c
+ create mode 100644 xen/arch/arm/include/asm/gic_v4_its.h
+
+diff --git a/tools/libs/light/libxl_arm.c b/tools/libs/light/libxl_arm.c
+index b43a84643e..4cecd16e65 100644
+--- a/tools/libs/light/libxl_arm.c
++++ b/tools/libs/light/libxl_arm.c
+@@ -55,6 +55,10 @@ static const char *gicv_to_string(libxl_gic_version gic_version)
+         return "V2";
+     case LIBXL_GIC_VERSION_V3:
+         return "V3";
++    case LIBXL_GIC_VERSION_V4:
++        return "V4";
++    case LIBXL_GIC_VERSION_V4_1:
++        return "V4_1";
+     default:
+         return "unknown";
+     }
+@@ -160,6 +164,12 @@ int libxl__arch_domain_prepare_config(libxl__gc *gc,
+     case LIBXL_GIC_VERSION_V3:
+         config->arch.gic_version = XEN_DOMCTL_CONFIG_GIC_V3;
+         break;
++    case LIBXL_GIC_VERSION_V4:
++        config->arch.gic_version = XEN_DOMCTL_CONFIG_GIC_V4;
++        break;
++    case LIBXL_GIC_VERSION_V4_1:
++        config->arch.gic_version = XEN_DOMCTL_CONFIG_GIC_V4_1;
++        break;
+     default:
+         LOG(ERROR, "Unknown GIC version %d",
+             d_config->b_info.arch_arm.gic_version);
+@@ -194,6 +204,12 @@ int libxl__arch_domain_save_config(libxl__gc *gc,
+     case XEN_DOMCTL_CONFIG_GIC_V3:
+         d_config->b_info.arch_arm.gic_version = LIBXL_GIC_VERSION_V3;
+         break;
++    case XEN_DOMCTL_CONFIG_GIC_V4:
++        d_config->b_info.arch_arm.gic_version = LIBXL_GIC_VERSION_V4;
++        break;
++    case XEN_DOMCTL_CONFIG_GIC_V4_1:
++        d_config->b_info.arch_arm.gic_version = LIBXL_GIC_VERSION_V4_1;
++        break;
+     default:
+         LOG(ERROR, "Unexpected gic version %u", config->arch.gic_version);
+         return ERROR_FAIL;
+@@ -1262,6 +1278,8 @@ next_resize:
+                                  GUEST_GICC_BASE, GUEST_GICC_SIZE) );
+             break;
+         case LIBXL_GIC_VERSION_V3:
++        case LIBXL_GIC_VERSION_V4:
++        case LIBXL_GIC_VERSION_V4_1:
+             FDT( make_gicv3_node(gc, fdt) );
+             break;
+         default:
+diff --git a/tools/libs/light/libxl_types.idl b/tools/libs/light/libxl_types.idl
+index 1bb61be7c9..db1f22d8a6 100644
+--- a/tools/libs/light/libxl_types.idl
++++ b/tools/libs/light/libxl_types.idl
+@@ -484,7 +484,9 @@ libxl_vnode_info = Struct("vnode_info", [
+ libxl_gic_version = Enumeration("gic_version", [
+     (0, "DEFAULT"),
+     (0x20, "v2"),
+-    (0x30, "v3")
++    (0x30, "v3"),
++    (0x40, "v4"),
++    (0x50, "v4_1")
+     ], init_val = "LIBXL_GIC_VERSION_DEFAULT")
+ 
+ libxl_tee_type = Enumeration("tee_type", [
+diff --git a/xen/arch/arm/Kconfig b/xen/arch/arm/Kconfig
+index 93db339a76..6c0395b97a 100644
+--- a/xen/arch/arm/Kconfig
++++ b/xen/arch/arm/Kconfig
+@@ -154,6 +154,12 @@ config TEE
+ 	  This option enables generic TEE mediators support. It allows guests
+ 	  to access real TEE via one of TEE mediators implemented in XEN.
+ 
++config GICV4
++	bool "GICv4 driver"
++	depends on GICV3 && HAS_ITS
++	help
++	  Driver for ARM Generic Interrupt Controller v4 extension.
++
+ source "arch/arm/tee/Kconfig"
+ 
+ config STATIC_SHM
+diff --git a/xen/arch/arm/Makefile b/xen/arch/arm/Makefile
+index 1076e6b670..49029ea9d1 100644
+--- a/xen/arch/arm/Makefile
++++ b/xen/arch/arm/Makefile
+@@ -25,6 +25,7 @@ obj-y += gic.o
+ obj-y += gic-v2.o
+ obj-$(CONFIG_GICV3) += gic-v3.o
+ obj-$(CONFIG_HAS_ITS) += gic-v3-its.o
++obj-$(CONFIG_GICV4) += gic-v4-its.o
+ obj-$(CONFIG_HAS_ITS) += gic-v3-lpi.o
+ obj-y += guestcopy.o
+ obj-y += guest_atomics.o
+diff --git a/xen/arch/arm/domain.c b/xen/arch/arm/domain.c
+index d02ccbffdf..08acb654e0 100644
+--- a/xen/arch/arm/domain.c
++++ b/xen/arch/arm/domain.c
+@@ -547,7 +547,7 @@ void dump_pageframe_info(struct domain *d)
+  * The new VGIC has a bigger per-IRQ structure, so we need more than one
+  * page on ARM64. Cowardly increase the limit in this case.
+  */
+-#if defined(CONFIG_NEW_VGIC) && defined(CONFIG_ARM_64)
++#if defined(CONFIG_NEW_VGIC) || defined(CONFIG_GICV4) && defined(CONFIG_ARM_64)
+ #define MAX_PAGES_PER_VCPU  2
+ #else
+ #define MAX_PAGES_PER_VCPU  1
+@@ -678,6 +678,14 @@ int arch_sanitise_domain_config(struct xen_domctl_createdomain *config)
+             config->arch.gic_version = XEN_DOMCTL_CONFIG_GIC_V3;
+             break;
+ 
++        case GIC_V4:
++            config->arch.gic_version = XEN_DOMCTL_CONFIG_GIC_V4;
++            break;
++
++        case GIC_V4_1:
++            config->arch.gic_version = XEN_DOMCTL_CONFIG_GIC_V4_1;
++            break;
++
+         default:
+             ASSERT_UNREACHABLE();
+             return -EINVAL;
+@@ -756,6 +764,14 @@ int arch_domain_create(struct domain *d,
+         d->arch.vgic.version = GIC_V3;
+         break;
+ 
++    case XEN_DOMCTL_CONFIG_GIC_V4:
++        d->arch.vgic.version = GIC_V4;
++        break;
++
++    case XEN_DOMCTL_CONFIG_GIC_V4_1:
++        d->arch.vgic.version = GIC_V4_1;
++        break;
++
+     default:
+         BUG();
+     }
+@@ -1161,9 +1177,11 @@ void vcpu_update_evtchn_irq(struct vcpu *v)
+  */
+ void vcpu_block_unless_event_pending(struct vcpu *v)
+ {
++    current->arch.wfi_nomask = true;
+     vcpu_block();
+-    if ( local_events_need_delivery_nomask() )
++    if ( local_events_need_delivery() )
+         vcpu_unblock(current);
++    current->arch.wfi_nomask = false;
+ }
+ 
+ void vcpu_kick(struct vcpu *vcpu)
+diff --git a/xen/arch/arm/domain_build.c b/xen/arch/arm/domain_build.c
+index 365d991e7f..03018b2f4d 100644
+--- a/xen/arch/arm/domain_build.c
++++ b/xen/arch/arm/domain_build.c
+@@ -3062,6 +3062,8 @@ static int __init make_gic_domU_node(struct kernel_info *kinfo)
+     {
+ #ifdef CONFIG_GICV3
+     case GIC_V3:
++    case GIC_V4:
++    case GIC_V4_1:
+         return make_gicv3_domU_node(kinfo);
+ #endif
+     case GIC_V2:
+diff --git a/xen/arch/arm/gic-v2.c b/xen/arch/arm/gic-v2.c
+index ae5bd8e95f..914d592397 100644
+--- a/xen/arch/arm/gic-v2.c
++++ b/xen/arch/arm/gic-v2.c
+@@ -191,7 +191,7 @@ static void gicv2_save_state(struct vcpu *v)
+     writel_gich(0, GICH_HCR);
+ }
+ 
+-static void gicv2_restore_state(const struct vcpu *v)
++static void gicv2_restore_state(struct vcpu *v)
+ {
+     int i;
+ 
+diff --git a/xen/arch/arm/gic-v3-its.c b/xen/arch/arm/gic-v3-its.c
+index f710fb2727..bbeaa1659e 100644
+--- a/xen/arch/arm/gic-v3-its.c
++++ b/xen/arch/arm/gic-v3-its.c
+@@ -30,6 +30,9 @@
+ #include <asm/gic.h>
+ #include <asm/gic_v3_defs.h>
+ #include <asm/gic_v3_its.h>
++#ifdef CONFIG_GICV4
++#include <asm/gic_v4_its.h>
++#endif
+ #include <asm/io.h>
+ #include <asm/page.h>
+ 
+@@ -41,25 +44,9 @@
+  */
+ LIST_HEAD(host_its_list);
+ 
+-/*
+- * Describes a device which is using the ITS and is used by a guest.
+- * Since device IDs are per ITS (in contrast to vLPIs, which are per
+- * guest), we have to differentiate between different virtual ITSes.
+- * We use the doorbell address here, since this is a nice architectural
+- * property of MSIs in general and we can easily get to the base address
+- * of the ITS and look that up.
+- */
+-struct its_device {
+-    struct rb_node rbnode;
+-    struct host_its *hw_its;
+-    void *itt_addr;
+-    paddr_t guest_doorbell;             /* Identifies the virtual ITS */
+-    uint32_t host_devid;
+-    uint32_t guest_devid;
+-    uint32_t eventids;                  /* Number of event IDs (MSIs) */
+-    uint32_t *host_lpi_blocks;          /* Which LPIs are used on the host */
+-    struct pending_irq *pend_irqs;      /* One struct per event */
+-};
++unsigned long its_list_map;
++
++unsigned int nvpeid = 16;
+ 
+ bool gicv3_its_host_has_its(void)
+ {
+@@ -67,7 +54,7 @@ bool gicv3_its_host_has_its(void)
+ }
+ 
+ #define BUFPTR_MASK                     GENMASK(19, 5)
+-static int its_send_command(struct host_its *hw_its, const void *its_cmd)
++int its_send_command(struct host_its *hw_its, const void *its_cmd)
+ {
+     /*
+      * The command queue should actually never become full, if it does anyway
+@@ -83,11 +70,9 @@ static int its_send_command(struct host_its *hw_its, const void *its_cmd)
+     s_time_t deadline = NOW() + MILLISECS(1);
+     uint64_t readp, writep;
+     int ret = -EBUSY;
++    unsigned long flags;
+ 
+-    /* No ITS commands from an interrupt handler (at the moment). */
+-    ASSERT(!in_irq());
+-
+-    spin_lock(&hw_its->cmd_lock);
++    spin_lock_irqsave(&hw_its->cmd_lock, flags);
+ 
+     do {
+         readp = readq_relaxed(hw_its->its_base + GITS_CREADR) & BUFPTR_MASK;
+@@ -103,15 +88,15 @@ static int its_send_command(struct host_its *hw_its, const void *its_cmd)
+          * If the command queue is full, wait for a bit in the hope it drains
+          * before giving up.
+          */
+-        spin_unlock(&hw_its->cmd_lock);
++        spin_unlock_irqrestore(&hw_its->cmd_lock, flags);
+         cpu_relax();
+         udelay(1);
+-        spin_lock(&hw_its->cmd_lock);
++        spin_lock_irqsave(&hw_its->cmd_lock, flags);
+     } while ( NOW() <= deadline );
+ 
+     if ( ret )
+     {
+-        spin_unlock(&hw_its->cmd_lock);
++        spin_unlock_irqrestore(&hw_its->cmd_lock, flags);
+         if ( printk_ratelimit() )
+             printk(XENLOG_WARNING "host ITS: command queue full.\n");
+         return ret;
+@@ -127,13 +112,13 @@ static int its_send_command(struct host_its *hw_its, const void *its_cmd)
+     writep = (writep + ITS_CMD_SIZE) % ITS_CMD_QUEUE_SZ;
+     writeq_relaxed(writep & BUFPTR_MASK, hw_its->its_base + GITS_CWRITER);
+ 
+-    spin_unlock(&hw_its->cmd_lock);
++    spin_unlock_irqrestore(&hw_its->cmd_lock, flags);
+ 
+     return 0;
+ }
+ 
+ /* Wait for an ITS to finish processing all commands. */
+-static int gicv3_its_wait_commands(struct host_its *hw_its)
++int gicv3_its_wait_commands(struct host_its *hw_its)
+ {
+     /*
+      * As there could be quite a number of commands in a queue, we will
+@@ -160,8 +145,7 @@ static int gicv3_its_wait_commands(struct host_its *hw_its)
+     return -ETIMEDOUT;
+ }
+ 
+-static uint64_t encode_rdbase(struct host_its *hw_its, unsigned int cpu,
+-                              uint64_t reg)
++uint64_t encode_rdbase(struct host_its *hw_its, unsigned int cpu, uint64_t reg)
+ {
+     reg &= ~GENMASK(51, 16);
+ 
+@@ -170,7 +154,7 @@ static uint64_t encode_rdbase(struct host_its *hw_its, unsigned int cpu,
+     return reg;
+ }
+ 
+-static int its_send_cmd_sync(struct host_its *its, unsigned int cpu)
++int its_send_cmd_sync(struct host_its *its, unsigned int cpu)
+ {
+     uint64_t cmd[4];
+ 
+@@ -182,9 +166,8 @@ static int its_send_cmd_sync(struct host_its *its, unsigned int cpu)
+     return its_send_command(its, cmd);
+ }
+ 
+-static int its_send_cmd_mapti(struct host_its *its,
+-                              uint32_t deviceid, uint32_t eventid,
+-                              uint32_t pintid, uint16_t icid)
++int its_send_cmd_mapti(struct host_its *its, uint32_t deviceid,
++                       uint32_t eventid, uint32_t pintid, uint16_t icid)
+ {
+     uint64_t cmd[4];
+ 
+@@ -234,8 +217,7 @@ static int its_send_cmd_mapd(struct host_its *its, uint32_t deviceid,
+     return its_send_command(its, cmd);
+ }
+ 
+-static int its_send_cmd_inv(struct host_its *its,
+-                            uint32_t deviceid, uint32_t eventid)
++int its_send_cmd_inv(struct host_its *its, uint32_t deviceid, uint32_t eventid)
+ {
+     uint64_t cmd[4];
+ 
+@@ -247,6 +229,57 @@ static int its_send_cmd_inv(struct host_its *its,
+     return its_send_command(its, cmd);
+ }
+ 
++int its_send_cmd_discard(struct host_its *its, struct its_device *dev,
++                         uint32_t eventid)
++{
++    uint64_t cmd[4];
++    uint32_t deviceid = dev->host_devid;
++
++    cmd[0] = GITS_CMD_DISCARD | ((uint64_t)deviceid << 32);
++    cmd[1] = (uint64_t)eventid;
++    cmd[2] = 0x00;
++    cmd[3] = 0x00;
++
++    return its_send_command(its, cmd);
++}
++
++int its_send_cmd_clear(struct host_its *its, uint32_t deviceid, uint32_t eventid)
++{
++    uint64_t cmd[4];
++
++    cmd[0] = GITS_CMD_CLEAR | ((uint64_t)deviceid << 32);
++    cmd[1] = eventid;
++    cmd[2] = 0x00;
++    cmd[3] = 0x00;
++
++    return its_send_command(its, cmd);
++}
++
++int its_send_cmd_int(struct host_its *its, uint32_t deviceid, uint32_t eventid)
++{
++    uint64_t cmd[4];
++
++    cmd[0] = GITS_CMD_INT | ((uint64_t)deviceid << 32);
++    cmd[1] = eventid;
++    cmd[2] = 0x00;
++    cmd[3] = 0x00;
++
++    return its_send_command(its, cmd);
++}
++
++int its_send_cmd_movi(struct host_its *its, uint32_t deviceid, uint32_t eventid,
++                      uint16_t icid)
++{
++    uint64_t cmd[4];
++
++    cmd[0] = GITS_CMD_MOVI | ((uint64_t)deviceid << 32);
++    cmd[1] = eventid;
++    cmd[2] = icid;
++    cmd[3] = 0x00;
++
++    return its_send_command(its, cmd);
++}
++
+ /* Set up the (1:1) collection mapping for the given host CPU. */
+ int gicv3_its_setup_collection(unsigned int cpu)
+ {
+@@ -344,14 +377,117 @@ static void *its_map_cbaser(struct host_its *its)
+ /* The ITS BASE registers work with page sizes of 4K, 16K or 64K. */
+ #define BASER_PAGE_BITS(sz) ((sz) * 2 + 12)
+ 
++static bool its_parse_indirect_baser(void __iomem *basereg,
++                                     unsigned int pagesz,
++                                     unsigned int *entry_size,
++                                     unsigned int *nr_items)
++{
++    bool indirect = false;
++    unsigned int idx = ilog2(*nr_items);
++    unsigned int table_size;
++
++    table_size = ROUNDUP(*nr_items * *entry_size,
++                         BIT(BASER_PAGE_BITS(pagesz), UL));
++
++    /* No need to enable Indirection if memory requirement <= (pagesz*2) bytes */
++    if ( table_size > (2 * BIT(BASER_PAGE_BITS(pagesz), UL)) )
++    {
++        /*
++         * Find out whether hw supports a single or two-level table by
++         * reading bit at offset '62' after writing '1' to it.
++         * This field is RAZ/WI for GIC implementations that only support
++         * flat tables.
++         */
++        writeq_relaxed(GITS_BASER_INDIRECT, basereg);
++        indirect = (readq_relaxed(basereg)) & GITS_BASER_INDIRECT;
++
++        if ( indirect )
++        {
++            /*
++             * For computing lvl1 table size, subtract ID bits that
++             * represents sparse lvl2 table from 'ids', which is
++             * reported by ITS hardware, times lvl1 table entry size.
++             */
++            idx -= ilog2(BIT(BASER_PAGE_BITS(pagesz), UL) / *entry_size);
++            *entry_size = GITS_LVL1_ENTRY_SIZE;
++        }
++
++        *nr_items = BIT(idx, UL);
++    }
++
++    return indirect;
++}
++
++bool its_alloc_table_entry(struct its_baser *baser, uint32_t id)
++{
++    uint64_t reg = baser->val;
++    bool indirect = reg & GITS_BASER_INDIRECT;
++    unsigned int idx;
++    __le64 *table;
++    unsigned int entry_size = GITS_BASER_ENTRY_SIZE(reg);
++
++    /* Don't allow id that exceeds single, flat table limit */
++    if ( !indirect )
++        return (id < (baser->table_size / entry_size));
++
++    /* Compute 1st level table index & check if that exceeds table limit */
++    idx = id / (baser->pagesz / entry_size);
++    if ( idx >= (baser->pagesz / GITS_LVL1_ENTRY_SIZE) )
++        return false;
++
++    table = baser->base;
++
++    /* Allocate memory for 2nd level table */
++    if (!table[idx])
++    {
++        unsigned int page_size = baser->pagesz;
++        void *buffer;
++
++        buffer = xzalloc_bytes(page_size);
++        if ( !buffer )
++            return -ENOMEM;
++
++        /* Flush Lvl2 table to PoC if hw doesn't support coherency */
++        if ( (reg & GITS_BASER_INNER_CACHEABILITY_MASK) <= GIC_BASER_CACHE_nC )
++            clean_and_invalidate_dcache_va_range(buffer, page_size);
++
++        table[idx] = cpu_to_le64(virt_to_maddr(buffer) | GITS_VALID_BIT);
++
++        /* Flush Lvl1 entry to PoC if hw doesn't support coherency */
++        if ( (reg & GITS_BASER_INNER_CACHEABILITY_MASK) <= GIC_BASER_CACHE_nC )
++            clean_and_invalidate_dcache_va_range(table + idx,
++                                                 GITS_LVL1_ENTRY_SIZE);
++
++        /* Ensure updated table contents are visible to ITS hardware */
++        dsb(sy);
++    }
++
++    return true;
++}
++
++struct its_baser *its_get_baser(struct host_its *hw_its, uint32_t type)
++{
++    unsigned int i;
++
++    for ( i = 0; i < GITS_BASER_NR_REGS; i++ )
++    {
++        if (GITS_BASER_TYPE(hw_its->tables[i].val) == type)
++            return &hw_its->tables[i];
++    }
++
++    return NULL;
++}
++
+ static int its_map_baser(void __iomem *basereg, uint64_t regc,
+-                         unsigned int nr_items)
++                         unsigned int nr_items, struct its_baser *baser)
+ {
+     uint64_t attr, reg;
+     unsigned int entry_size = GITS_BASER_ENTRY_SIZE(regc);
++    unsigned int page_size[4] = {SZ_4K, SZ_16K, SZ_64K, SZ_64K};
+     unsigned int pagesz = 2;    /* try 64K pages first, then go down. */
+     unsigned int table_size;
+     void *buffer;
++    bool indirect;
+ 
+     attr  = GIC_BASER_InnerShareable << GITS_BASER_SHAREABILITY_SHIFT;
+     attr |= GIC_BASER_CACHE_SameAsInner << GITS_BASER_OUTER_CACHEABILITY_SHIFT;
+@@ -363,6 +499,8 @@ static int its_map_baser(void __iomem *basereg, uint64_t regc,
+      * attributes), retrying if necessary.
+      */
+ retry:
++    indirect = its_parse_indirect_baser(basereg, pagesz, &entry_size, &nr_items);
++
+     table_size = ROUNDUP(nr_items * entry_size,
+                          BIT(BASER_PAGE_BITS(pagesz), UL));
+     /* The BASE registers support at most 256 pages. */
+@@ -385,10 +523,16 @@ retry:
+     reg |= GITS_VALID_BIT;
+     reg |= encode_baser_phys_addr(virt_to_maddr(buffer),
+                                   BASER_PAGE_BITS(pagesz));
++    reg |= indirect ? GITS_BASER_INDIRECT : 0x0;
+ 
+     writeq_relaxed(reg, basereg);
+     regc = readq_relaxed(basereg);
+ 
++    baser->val = regc;
++    baser->base = buffer;
++    baser->table_size = table_size;
++    baser->pagesz = page_size[pagesz];
++
+     /* The host didn't like our attributes, just use what it returned. */
+     if ( (regc & BASER_ATTR_MASK) != attr )
+     {
+@@ -451,12 +595,114 @@ static int gicv3_disable_its(struct host_its *hw_its)
+     return -ETIMEDOUT;
+ }
+ 
++static int __init its_compute_its_list_map(struct host_its *hw_its)
++{
++    int its_number;
++    uint32_t ctlr;
++
++    its_number = find_first_zero_bit(&its_list_map, GICv4_ITS_LIST_MAX);
++    if ( its_number >= GICv4_ITS_LIST_MAX )
++    {
++        printk(XENLOG_ERR
++               "ITS@%lx: No ITSList entry available!\n", hw_its->addr);
++        return -EINVAL;
++    }
++
++    ctlr = readl_relaxed(hw_its->its_base + GITS_CTLR);
++    ctlr &= ~GITS_CTLR_ITS_NUMBER;
++    ctlr |= its_number << GITS_CTLR_ITS_NUMBER_SHIFT;
++    writel_relaxed(ctlr, hw_its->its_base + GITS_CTLR);
++    ctlr = readl_relaxed(hw_its->its_base + GITS_CTLR);
++    if ( (ctlr & GITS_CTLR_ITS_NUMBER) !=
++         (its_number << GITS_CTLR_ITS_NUMBER_SHIFT) )
++    {
++        its_number = ctlr & GITS_CTLR_ITS_NUMBER;
++        its_number >>= GITS_CTLR_ITS_NUMBER_SHIFT;
++    }
++
++    if ( test_and_set_bit(its_number, &its_list_map) )
++    {
++        printk(XENLOG_ERR
++               "ITS@%lx: Duplicate ITSList entry %d\n",
++               hw_its->addr, its_number);
++        return -EINVAL;
++    }
++
++    return its_number;
++}
++
++uint32_t compute_common_aff(uint64_t val)
++{
++    uint32_t aff, clpiaff;
++
++    aff = FIELD_GET(GICR_TYPER_AFFINITY, val);
++    clpiaff = FIELD_GET(GICR_TYPER_COMMON_LPI_AFF, val);
++
++    return aff & ~(GENMASK(31, 0) >> (clpiaff * 8));
++}
++
++uint32_t compute_its_aff(struct host_its *hw_its)
++{
++    uint64_t val, typer;
++    uint32_t svpet;
++
++    typer = readq_relaxed(hw_its->its_base + GITS_TYPER);
++
++    /*
++     * Reencode the ITS SVPET and MPIDR as a GICR_TYPER, and compute
++     * the resulting affinity. We then use that to see if this match
++     * our own affinity.
++     */
++    svpet = FIELD_GET(GITS_TYPER_SVPET, typer);
++    val  = FIELD_PREP(GICR_TYPER_COMMON_LPI_AFF, svpet);
++    val |= FIELD_PREP(GICR_TYPER_AFFINITY, hw_its->mpidr);
++    return compute_common_aff(val);
++}
++
++static struct host_its *find_sibling_its(struct host_its *cur_its)
++{
++    uint64_t cur_typer;
++    struct host_its *its;
++    uint32_t aff;
++
++    cur_typer = readq_relaxed(cur_its->its_base + GITS_TYPER);
++    if ( !FIELD_GET(GITS_TYPER_SVPET, cur_typer) )
++        return NULL;
++
++    aff = compute_its_aff(cur_its);
++
++    list_for_each_entry(its, &host_its_list, entry)
++    {
++        uint64_t typer, baser;
++
++        if ( !its->is_v4_1 || its == cur_its )
++            continue;
++
++        typer = readq_relaxed(its->its_base + GITS_TYPER);
++        if ( !FIELD_GET(GITS_TYPER_SVPET, typer) )
++            continue;
++
++        if ( aff != compute_its_aff(its) )
++            continue;
++
++        /* GICv4.1 guarantees that the vPE table is GITS_BASER2 */
++        baser = its->tables[2].val;
++        if ( !(baser & GITS_BASER_VALID) )
++            continue;
++
++        return its;
++    }
++
++    return NULL;
++}
++
+ static int gicv3_its_init_single_its(struct host_its *hw_its)
+ {
+     uint64_t reg;
+     int i, ret;
++    int its_number;
+ 
+-    hw_its->its_base = ioremap_nocache(hw_its->addr, hw_its->size);
++    hw_its->its_base = ioremap_nocache(hw_its->addr, SZ_64K);
+     if ( !hw_its->its_base )
+         return -ENOMEM;
+ 
+@@ -470,32 +716,81 @@ static int gicv3_its_init_single_its(struct host_its *hw_its)
+     hw_its->itte_size = GITS_TYPER_ITT_SIZE(reg);
+     if ( reg & GITS_TYPER_PTA )
+         hw_its->flags |= HOST_ITS_USES_PTA;
++    hw_its->is_v4 = reg & GITS_TYPER_VLPIS;
++    if ( hw_its->is_v4 )
++    {
++        if ( !(reg & GITS_TYPER_VMOVP) )
++        {
++            its_number = its_compute_its_list_map(hw_its);
++            if ( its_number < 0 )
++                return its_number;
++            dprintk(XENLOG_INFO,
++                    "ITS@%lx: Using ITS number %d\n",
++                    hw_its->addr, its_number);
++        }
++        else
++            dprintk(XENLOG_INFO,
++                    "ITS@%lx: Single VMOVP capable\n", hw_its->addr);
++    }
++    hw_its->is_v4_1 = reg & GITS_TYPER_VMAPP;
++    if ( hw_its->is_v4_1 )
++    {
++        uint32_t svpet = FIELD_GET(GITS_TYPER_SVPET, reg);
++
++        hw_its->sgir_base = ioremap_nocache(hw_its->addr + SZ_128K, SZ_64K);
++        if ( !hw_its->sgir_base )
++            return -ENOMEM;
++
++        hw_its->mpidr = readl_relaxed(hw_its->its_base + GITS_MPIDR);
++
++        printk("ITS@%"PRIpaddr": Using GICv4.1 mode %08x %08x\n",
++               hw_its->addr, hw_its->mpidr, svpet);
++    }
++
+     spin_lock_init(&hw_its->cmd_lock);
+ 
+     for ( i = 0; i < GITS_BASER_NR_REGS; i++ )
+     {
+         void __iomem *basereg = hw_its->its_base + GITS_BASER0 + i * 8;
+         unsigned int type;
++        struct its_baser *baser = hw_its->tables + i;
+ 
+         reg = readq_relaxed(basereg);
+-        type = (reg & GITS_BASER_TYPE_MASK) >> GITS_BASER_TYPE_SHIFT;
++        type = GITS_BASER_TYPE(reg);
+         switch ( type )
+         {
+         case GITS_BASER_TYPE_NONE:
+             continue;
+         case GITS_BASER_TYPE_DEVICE:
+-            ret = its_map_baser(basereg, reg, BIT(hw_its->devid_bits, UL));
++            ret = its_map_baser(basereg, reg, BIT(hw_its->devid_bits, UL), baser);
+             if ( ret )
+                 return ret;
+             break;
+         case GITS_BASER_TYPE_COLLECTION:
+-            ret = its_map_baser(basereg, reg, num_possible_cpus());
++            ret = its_map_baser(basereg, reg, num_possible_cpus(), baser);
+             if ( ret )
+                 return ret;
+             break;
+-        /* In case this is a GICv4, provide a (dummy) vPE table as well. */
+         case GITS_BASER_TYPE_VCPU:
+-            ret = its_map_baser(basereg, reg, 1);
++            /*
++             * vPE configuration table could be shared among ITSes in the
++             * same aff group.
++             */
++            if ( hw_its->is_v4_1 )
++            {
++                struct host_its *sib_its;
++
++                sib_its = find_sibling_its(hw_its);
++                if ( sib_its )
++                {
++                    *baser = sib_its->tables[2];
++                    writeq_relaxed(baser->val, basereg);
++                    baser->val = readq_relaxed(basereg);
++                    continue;
++                }
++            }
++
++            ret = its_map_baser(basereg, reg, BIT(ITS_MAX_VPEID_BITS, UL), baser);
+             if ( ret )
+                 return ret;
+             break;
+@@ -580,13 +875,40 @@ static int compare_its_guest_devices(struct its_device *dev,
+     return 0;
+ }
+ 
++int its_inv_lpi(struct host_its *its, struct its_device *dev,
++                uint32_t eventid, unsigned int cpu)
++{
++    int ret;
++
++    if ( event_is_forwarded_to_vcpu(dev, eventid) )
++    {
++        if ( gic_has_v4_1_extension() )
++        {
++            direct_lpi_inv(dev, eventid, 0, cpu);
++            return 0;
++        }
++        else
++            return its_send_cmd_vinv(its, dev, eventid);
++    }
++
++    ret = its_send_cmd_inv(its, dev->host_devid, eventid);
++    if ( ret )
++        return ret;
++
++    ret = its_send_cmd_sync(its, cpu);
++    if ( ret )
++        return ret;
++
++    return gicv3_its_wait_commands(its);
++}
++
+ /*
+  * On the host ITS @its, map @nr_events consecutive LPIs.
+  * The mapping connects a device @devid and event @eventid pair to LPI @lpi,
+  * increasing both @eventid and @lpi to cover the number of requested LPIs.
+  */
+ static int gicv3_its_map_host_events(struct host_its *its,
+-                                     uint32_t devid, uint32_t eventid,
++                                     struct its_device *dev, uint32_t eventid,
+                                      uint32_t lpi, uint32_t nr_events)
+ {
+     uint32_t i;
+@@ -595,22 +917,17 @@ static int gicv3_its_map_host_events(struct host_its *its,
+     for ( i = 0; i < nr_events; i++ )
+     {
+         /* For now we map every host LPI to host CPU 0 */
+-        ret = its_send_cmd_mapti(its, devid, eventid + i, lpi + i, 0);
++        ret = its_send_cmd_mapti(its, dev->host_devid, eventid + i, lpi + i, 0);
+         if ( ret )
+             return ret;
+ 
+-        ret = its_send_cmd_inv(its, devid, eventid + i);
++        /* TODO: Consider using INVALL here. Didn't work on the model, though. */
++        ret = its_inv_lpi(its, dev, eventid + i, 0);
+         if ( ret )
+             return ret;
+     }
+ 
+-    /* TODO: Consider using INVALL here. Didn't work on the model, though. */
+-
+-    ret = its_send_cmd_sync(its, 0);
+-    if ( ret )
+-        return ret;
+-
+-    return gicv3_its_wait_commands(its);
++    return 0;
+ }
+ 
+ int gicv3_its_unmap_all_guest_device(struct domain *d)
+@@ -639,6 +956,69 @@ int gicv3_its_unmap_all_guest_device(struct domain *d)
+     return 0;
+ }
+ 
++static bool its_alloc_device_table(struct host_its *hw_its, uint32_t dev_id)
++{
++    struct its_baser *baser;
++
++    baser = its_get_baser(hw_its, GITS_BASER_TYPE_DEVICE);
++    if ( !baser )
++        return false;
++
++    return its_alloc_table_entry(baser, dev_id);
++}
++
++struct its_device *its_create_device(struct host_its *hw_its,
++                                     uint32_t host_devid, uint64_t nr_events)
++{
++    void *itt_addr = NULL;
++    struct its_device *dev = NULL;
++    int ret;
++
++    /* Sanitise the provided hardware values against the host ITS. */
++    if ( host_devid >= BIT(hw_its->devid_bits, UL) )
++        return NULL;
++
++    /* An Interrupt Translation Table needs to be 256-byte aligned. */
++    itt_addr = _xzalloc(nr_events * hw_its->itte_size, 256);
++    if ( !itt_addr )
++        return NULL;
++
++    dev = xzalloc(struct its_device);
++    if ( !dev )
++        goto fail_itt;
++
++    if ( !its_alloc_device_table(hw_its, host_devid) )
++        goto fail_dev;
++
++    ret = its_send_cmd_mapd(hw_its, host_devid, fls(nr_events - 1),
++                            virt_to_maddr(itt_addr), true);
++    if ( ret )
++        goto fail_dev;
++
++    dev->itt_addr = itt_addr;
++    dev->hw_its = hw_its;
++    dev->host_devid = host_devid;
++    dev->eventids = nr_events;
++
++    return dev;
++
++ fail_dev:
++    xfree(dev);
++ fail_itt:
++    xfree(itt_addr);
++
++    return NULL;
++}
++
++static void its_free_device(struct its_device *dev)
++{
++    xfree(dev->host_lpi_blocks);
++    xfree(dev->itt_addr);
++    if ( dev->pend_irqs )
++        xfree(dev->pend_irqs);
++    xfree(dev);
++}
++
+ /*
+  * Map a hardware device, identified by a certain host ITS and its device ID
+  * to domain d, a guest ITS (identified by its doorbell address) and device ID.
+@@ -651,7 +1031,6 @@ int gicv3_its_map_guest_device(struct domain *d,
+                                paddr_t guest_doorbell, uint32_t guest_devid,
+                                uint64_t nr_events, bool valid)
+ {
+-    void *itt_addr = NULL;
+     struct host_its *hw_its;
+     struct its_device *dev = NULL;
+     struct rb_node **new = &d->arch.vgic.its_devices.rb_node, *parent = NULL;
+@@ -715,17 +1094,12 @@ int gicv3_its_map_guest_device(struct domain *d,
+     if ( !valid )
+         goto out_unlock;
+ 
+-    ret = -ENOMEM;
+-
+-    /* An Interrupt Translation Table needs to be 256-byte aligned. */
+-    itt_addr = _xzalloc(nr_events * hw_its->itte_size, 256);
+-    if ( !itt_addr )
+-        goto out_unlock;
+-
+-    dev = xzalloc(struct its_device);
++    dev = its_create_device(hw_its, host_devid, nr_events);
+     if ( !dev )
+         goto out_unlock;
+ 
++    ret = -ENOMEM;
++
+     /*
+      * Allocate the pending_irqs for each virtual LPI. They will be put
+      * into the domain's radix tree upon the guest's MAPTI command.
+@@ -746,17 +1120,13 @@ int gicv3_its_map_guest_device(struct domain *d,
+     if ( !dev->host_lpi_blocks )
+         goto out_unlock;
+ 
+-    ret = its_send_cmd_mapd(hw_its, host_devid, fls(nr_events - 1),
+-                            virt_to_maddr(itt_addr), true);
+-    if ( ret )
+-        goto out_unlock;
+-
+-    dev->itt_addr = itt_addr;
+-    dev->hw_its = hw_its;
+     dev->guest_doorbell = guest_doorbell;
+     dev->guest_devid = guest_devid;
+-    dev->host_devid = host_devid;
+-    dev->eventids = nr_events;
++
++#ifdef CONFIG_GICV4
++   spin_lock_init(&dev->event_map.vlpi_lock);
++   dev->event_map.nr_lpis = nr_events;
++#endif
+ 
+     rb_link_node(&dev->rbnode, parent, new);
+     rb_insert_color(&dev->rbnode, &d->arch.vgic.its_devices);
+@@ -773,7 +1143,7 @@ int gicv3_its_map_guest_device(struct domain *d,
+         if ( ret < 0 )
+             break;
+ 
+-        ret = gicv3_its_map_host_events(hw_its, host_devid, i * LPI_BLOCK,
++        ret = gicv3_its_map_host_events(hw_its, dev, i * LPI_BLOCK,
+                                         dev->host_lpi_blocks[i], LPI_BLOCK);
+         if ( ret < 0 )
+             break;
+@@ -805,19 +1175,14 @@ out_unlock:
+ 
+ out:
+     if ( dev )
+-    {
+-        xfree(dev->pend_irqs);
+-        xfree(dev->host_lpi_blocks);
+-    }
+-    xfree(itt_addr);
+-    xfree(dev);
++        its_free_device(dev);
+ 
+     return ret;
+ }
+ 
+ /* Must be called with the its_device_lock held. */
+-static struct its_device *get_its_device(struct domain *d, paddr_t vdoorbell,
+-                                         uint32_t vdevid)
++struct its_device *get_its_device(struct domain *d, paddr_t vdoorbell,
++                                  uint32_t vdevid)
+ {
+     struct rb_node *node = d->arch.vgic.its_devices.rb_node;
+     struct its_device *dev;
+@@ -886,7 +1251,8 @@ int gicv3_remove_guest_event(struct domain *d, paddr_t vdoorbell_address,
+     if ( host_lpi == INVALID_LPI )
+         return -EINVAL;
+ 
+-    gicv3_lpi_update_host_entry(host_lpi, d->domain_id, INVALID_LPI);
++    gicv3_lpi_update_host_entry(host_lpi, d->domain_id, INVALID_LPI,
++                                false, INVALID_VCPU_ID);
+ 
+     return 0;
+ }
+@@ -913,7 +1279,8 @@ struct pending_irq *gicv3_assign_guest_event(struct domain *d,
+     if ( !pirq )
+         return NULL;
+ 
+-    gicv3_lpi_update_host_entry(host_lpi, d->domain_id, virt_lpi);
++    gicv3_lpi_update_host_entry(host_lpi, d->domain_id, virt_lpi,
++                                false, INVALID_VCPU_ID);
+ 
+     return pirq;
+ }
+@@ -1166,6 +1533,9 @@ int gicv3_its_init(void)
+     else
+         gicv3_its_acpi_init();
+ 
++    if ( gic_has_v4_1_extension() )
++        gicv4_its_init_nvpeid();
++
+     list_for_each_entry(hw_its, &host_its_list, entry)
+     {
+         ret = gicv3_its_init_single_its(hw_its);
+diff --git a/xen/arch/arm/gic-v3-lpi.c b/xen/arch/arm/gic-v3-lpi.c
+index 61d90eb386..cfdf3fbb7b 100644
+--- a/xen/arch/arm/gic-v3-lpi.c
++++ b/xen/arch/arm/gic-v3-lpi.c
+@@ -27,6 +27,7 @@
+ #include <xen/warning.h>
+ #include <asm/atomic.h>
+ #include <asm/domain.h>
++#include <asm/event.h>
+ #include <asm/gic.h>
+ #include <asm/gic_v3_defs.h>
+ #include <asm/gic_v3_its.h>
+@@ -50,36 +51,14 @@ union host_lpi {
+     struct {
+         uint32_t virt_lpi;
+         uint16_t dom_id;
+-        uint16_t pad;
++        uint16_t db_vcpu_id;
+     };
+ };
+ 
+ #define LPI_PROPTABLE_NEEDS_FLUSHING    (1U << 0)
+ 
+ /* Global state */
+-static struct {
+-    /* The global LPI property table, shared by all redistributors. */
+-    uint8_t *lpi_property;
+-    /*
+-     * A two-level table to lookup LPIs firing on the host and look up the
+-     * VCPU and virtual LPI number to inject into.
+-     */
+-    union host_lpi **host_lpis;
+-    /*
+-     * Number of physical LPIs the host supports. This is a property of
+-     * the GIC hardware. We depart from the habit of naming these things
+-     * "physical" in Xen, as the GICv3/4 spec uses the term "physical LPI"
+-     * in a different context to differentiate them from "virtual LPIs".
+-     */
+-    unsigned long int max_host_lpi_ids;
+-    /*
+-     * Protects allocation and deallocation of host LPIs and next_free_lpi,
+-     * but not the actual data stored in the host_lpi entry.
+-     */
+-    spinlock_t host_lpis_lock;
+-    uint32_t next_free_lpi;
+-    unsigned int flags;
+-} lpi_data;
++struct __lpi_data lpi_data;
+ 
+ struct lpi_redist_data {
+     paddr_t             redist_addr;
+@@ -91,6 +70,7 @@ static DEFINE_PER_CPU(struct lpi_redist_data, lpi_redist);
+ 
+ #define MAX_NR_HOST_LPIS   (lpi_data.max_host_lpi_ids - LPI_OFFSET)
+ #define HOST_LPIS_PER_PAGE      (PAGE_SIZE / sizeof(union host_lpi))
++uint32_t lpi_id_bits;
+ 
+ static union host_lpi *gic_get_host_lpi(uint32_t plpi)
+ {
+@@ -193,24 +173,49 @@ void gicv3_do_LPI(unsigned int lpi)
+      * ignore them, as they have no further state and no-one can expect
+      * to see them if they have not been mapped.
+      */
+-    if ( hlpi.virt_lpi == INVALID_LPI )
++    if ( hlpi.virt_lpi == INVALID_LPI && hlpi.db_vcpu_id == INVALID_VCPU_ID )
+         goto out;
+ 
+     d = rcu_lock_domain_by_id(hlpi.dom_id);
+     if ( !d )
+         goto out;
+ 
+-    /*
+-     * TODO: Investigate what to do here for potential interrupt storms.
+-     * As we keep all host LPIs enabled, for disabling LPIs we would need
+-     * to queue a ITS host command, which we avoid so far during a guest's
+-     * runtime. Also re-enabling would trigger a host command upon the
+-     * guest sending a command, which could be an attack vector for
+-     * hogging the host command queue.
+-     * See the thread around here for some background:
+-     * https://lists.xen.org/archives/html/xen-devel/2016-12/msg00003.html
+-     */
+-    vgic_vcpu_inject_lpi(d, hlpi.virt_lpi);
++    /* It is a doorbell interrupt. */
++    if ( hlpi.db_vcpu_id != INVALID_VCPU_ID )
++    {
++#ifdef CONFIG_GICV4
++        struct vcpu *v = d->vcpu[hlpi.db_vcpu_id];
++
++        /* We got the message, no need to fire again */
++        if ( !gic_has_v4_1_extension() )
++            its_vpe_mask_db(&v->arch.vgic.its_vpe);
++
++        /*
++         * Update the pending_last flag that indicates that VLPIs are pending.
++         * And the corresponding vcpu is also kicked into action.
++         */
++        v->arch.vgic.its_vpe.pending_last = true;
++
++        vcpu_kick(v);
++#else
++        printk(XENLOG_WARNING
++               "Doorbell LPI is only suooprted on GICV4\n");
++#endif
++    }
++    else
++    {
++        /*
++         * TODO: Investigate what to do here for potential interrupt storms.
++         * As we keep all host LPIs enabled, for disabling LPIs we would need
++         * to queue a ITS host command, which we avoid so far during a guest's
++         * runtime. Also re-enabling would trigger a host command upon the
++         * guest sending a command, which could be an attack vector for
++         * hogging the host command queue.
++         * See the thread around here for some background:
++         * https://lists.xen.org/archives/html/xen-devel/2016-12/msg00003.html
++         */
++        vgic_vcpu_inject_lpi(d, hlpi.virt_lpi);
++    }
+ 
+     rcu_unlock_domain(d);
+ 
+@@ -219,7 +224,8 @@ out:
+ }
+ 
+ void gicv3_lpi_update_host_entry(uint32_t host_lpi, int domain_id,
+-                                 uint32_t virt_lpi)
++                                 uint32_t virt_lpi, bool is_db,
++                                 uint16_t db_vcpu_id)
+ {
+     union host_lpi *hlpip, hlpi;
+ 
+@@ -229,19 +235,23 @@ void gicv3_lpi_update_host_entry(uint32_t host_lpi, int domain_id,
+ 
+     hlpip = &lpi_data.host_lpis[host_lpi / HOST_LPIS_PER_PAGE][host_lpi % HOST_LPIS_PER_PAGE];
+ 
+-    hlpi.virt_lpi = virt_lpi;
+-    hlpi.dom_id = domain_id;
++    if ( !is_db )
++    {
++        hlpi.virt_lpi = virt_lpi;
++        hlpi.dom_id = domain_id;
++    }
++    else
++    {
++        hlpi.dom_id = domain_id;
++        hlpi.db_vcpu_id = db_vcpu_id;
++    }
+ 
+     write_u64_atomic(&hlpip->data, hlpi.data);
+ }
+ 
+-static int gicv3_lpi_allocate_pendtable(unsigned int cpu)
++struct page_info *lpi_allocate_pendtable(void)
+ {
+     void *pendtable;
+-
+-    if ( per_cpu(lpi_redist, cpu).pending_table )
+-        return -EBUSY;
+-
+     /*
+      * The pending table holds one bit per LPI and even covers bits for
+      * interrupt IDs below 8192, so we allocate the full range.
+@@ -250,18 +260,32 @@ static int gicv3_lpi_allocate_pendtable(unsigned int cpu)
+      */
+     pendtable = _xzalloc(lpi_data.max_host_lpi_ids / 8, SZ_64K);
+     if ( !pendtable )
+-        return -ENOMEM;
++        return NULL;
+ 
+     /* Make sure the physical address can be encoded in the register. */
+     if ( virt_to_maddr(pendtable) & ~GENMASK(51, 16) )
+     {
+         xfree(pendtable);
+-        return -ERANGE;
++        return NULL;
+     }
+     clean_and_invalidate_dcache_va_range(pendtable,
+                                          lpi_data.max_host_lpi_ids / 8);
+ 
+-    per_cpu(lpi_redist, cpu).pending_table = pendtable;
++    return virt_to_page(pendtable);
++}
++
++static int gicv3_lpi_allocate_pendtable(unsigned int cpu)
++{
++    struct page_info *pendtable;
++
++    if ( per_cpu(lpi_redist, cpu).pending_table )
++        return -EBUSY;
++
++    pendtable = lpi_allocate_pendtable();
++    if ( !pendtable )
++        return -EINVAL;
++
++    per_cpu(lpi_redist, cpu).pending_table = page_to_virt(pendtable);
+ 
+     return 0;
+ }
+@@ -304,6 +328,27 @@ static int gicv3_lpi_set_pendtable(void __iomem *rdist_base)
+     return 0;
+ }
+ 
++struct page_info *lpi_allocate_proptable(void)
++{
++    void *table;
++
++    /* The property table holds one byte per LPI. */
++    table = _xmalloc(lpi_data.max_host_lpi_ids, SZ_4K);
++    if ( !table )
++        return NULL;
++
++    /* Make sure the physical address can be encoded in the register. */
++    if ( (virt_to_maddr(table) & ~GENMASK(51, 12)) )
++    {
++        xfree(table);
++        return NULL;
++    }
++    memset(table, GIC_PRI_IRQ | LPI_PROP_RES1, MAX_NR_HOST_LPIS);
++    clean_and_invalidate_dcache_va_range(table, MAX_NR_HOST_LPIS);
++
++    return virt_to_page(table);
++}
++
+ /*
+  * Tell a redistributor about the (shared) property table, allocating one
+  * if not already done.
+@@ -322,25 +367,18 @@ static int gicv3_lpi_set_proptable(void __iomem * rdist_base)
+      */
+     if ( !lpi_data.lpi_property )
+     {
+-        /* The property table holds one byte per LPI. */
+-        void *table = _xmalloc(lpi_data.max_host_lpi_ids, SZ_4K);
++        struct page_info *table;
+ 
++        table = lpi_allocate_proptable();
+         if ( !table )
+-            return -ENOMEM;
++            return -EINVAL;
+ 
+-        /* Make sure the physical address can be encoded in the register. */
+-        if ( (virt_to_maddr(table) & ~GENMASK(51, 12)) )
+-        {
+-            xfree(table);
+-            return -ERANGE;
+-        }
+-        memset(table, GIC_PRI_IRQ | LPI_PROP_RES1, MAX_NR_HOST_LPIS);
+-        clean_and_invalidate_dcache_va_range(table, MAX_NR_HOST_LPIS);
+-        lpi_data.lpi_property = table;
++        lpi_data.lpi_property = page_to_virt(table);
+     }
+ 
+     /* Encode the number of bits needed, minus one */
+-    reg |= fls(lpi_data.max_host_lpi_ids - 1) - 1;
++    lpi_id_bits = fls(lpi_data.max_host_lpi_ids - 1);
++    reg |= lpi_id_bits - 1;
+ 
+     reg |= virt_to_maddr(lpi_data.lpi_property);
+ 
+@@ -496,6 +534,20 @@ static int find_unused_host_lpi(uint32_t start, uint32_t *index)
+     return -1;
+ }
+ 
++void lpi_write_config(uint8_t *prop_table, uint32_t lpi, uint8_t clr,
++                      uint8_t set)
++{
++    u8 *cfg;
++
++    cfg = prop_table + lpi - 8192;
++    *cfg &= ~clr;
++    *cfg |= set | LPI_PROP_RES1;
++
++    /* Make the above write visible to the redistributors. */
++    if ( lpi_data.flags & LPI_PROPTABLE_NEEDS_FLUSHING )
++        clean_and_invalidate_dcache_va_range(cfg, sizeof(*cfg));
++}
++
+ /*
+  * Allocate a block of 32 LPIs on the given host ITS for device "devid",
+  * starting with "eventid". Put them into the respective ITT by issuing a
+@@ -561,6 +613,7 @@ int gicv3_allocate_host_lpi_block(struct domain *d, uint32_t *first_lpi)
+          */
+         hlpi.virt_lpi = INVALID_LPI;
+         hlpi.dom_id = d->domain_id;
++        hlpi.db_vcpu_id = INVALID_VCPU_ID;
+         write_u64_atomic(&lpi_data.host_lpis[chunk][lpi_idx + i].data,
+                          hlpi.data);
+ 
+@@ -568,7 +621,8 @@ int gicv3_allocate_host_lpi_block(struct domain *d, uint32_t *first_lpi)
+          * Enable this host LPI, so we don't have to do this during the
+          * guest's runtime.
+          */
+-        lpi_data.lpi_property[lpi + i] |= LPI_PROP_ENABLED;
++        lpi_write_config(lpi_data.lpi_property, lpi + i + LPI_OFFSET, 0xff,
++                         LPI_PROP_ENABLED);
+     }
+ 
+     lpi_data.next_free_lpi = lpi + LPI_BLOCK;
+@@ -580,10 +634,6 @@ int gicv3_allocate_host_lpi_block(struct domain *d, uint32_t *first_lpi)
+      */
+     spin_unlock(&lpi_data.host_lpis_lock);
+ 
+-    if ( lpi_data.flags & LPI_PROPTABLE_NEEDS_FLUSHING )
+-        clean_and_invalidate_dcache_va_range(&lpi_data.lpi_property[lpi],
+-                                             LPI_BLOCK);
+-
+     *first_lpi = lpi + LPI_OFFSET;
+ 
+     return 0;
+diff --git a/xen/arch/arm/gic-v3.c b/xen/arch/arm/gic-v3.c
+index cfea0504a1..afb742f351 100644
+--- a/xen/arch/arm/gic-v3.c
++++ b/xen/arch/arm/gic-v3.c
+@@ -41,6 +41,9 @@
+ #include <asm/gic.h>
+ #include <asm/gic_v3_defs.h>
+ #include <asm/gic_v3_its.h>
++#ifdef CONFIG_GICV4
++#include <asm/gic_v4_its.h>
++#endif
+ #include <asm/io.h>
+ #include <asm/sysregs.h>
+ 
+@@ -56,13 +59,66 @@ static struct {
+ 
+ static struct gic_info gicv3_info;
+ 
++#ifdef CONFIG_GICV4
++/* Global state */
++static struct {
++    bool has_vlpis;
++    bool has_direct_lpi;
++    bool has_vpend_valid_dirty;
++    bool has_rvpeid;
++} gicv4 = { .has_vlpis = true, .has_direct_lpi = true,
++            .has_vpend_valid_dirty = true, .has_rvpeid = true, };
++
++bool gic_support_directLPI(void)
++{
++    return gicv4.has_direct_lpi;
++}
++
++bool gic_support_vptValidDirty(void)
++{
++    return gicv4.has_vpend_valid_dirty;
++}
++
++bool gic_has_v4_1_extension(void)
++{
++    return gicv4.has_rvpeid;
++}
++
++void gicv4_its_init_nvpeid(void)
++{
++    uint32_t reg;
++
++    reg = readl_relaxed(gicv3.map_dbase + GICD_TYPER2);
++    if ( gic_has_v4_1_extension() && (reg & GICD_TYPER2_VIL) )
++        nvpeid = 1 + (reg & GICD_TYPER2_VID);
++}
++#endif
++
+ /* per-cpu re-distributor base */
+-static DEFINE_PER_CPU(void __iomem*, rbase);
++DEFINE_PER_CPU(void __iomem*, rbase);
+ 
+ #define GICD                   (gicv3.map_dbase)
+ #define GICD_RDIST_BASE        (this_cpu(rbase))
+ #define GICD_RDIST_SGI_BASE    (GICD_RDIST_BASE + SZ_64K)
+ 
++#ifdef CONFIG_GICV4
++static bool gic_is_gicv4(void)
++{
++    return gicv4.has_vlpis;
++}
++
++bool vgic_has_directVLPI(struct domain *d)
++{
++    return (gicv4.has_vlpis) && ((d->arch.vgic.version == GIC_V4) ||
++                                 (d->arch.vgic.version == GIC_V4_1));
++}
++#else
++static bool gic_is_gicv4(void)
++{
++    return false;
++}
++#endif
++
+ /*
+  * Saves all 16(Max) LR registers. Though number of LRs implemented
+  * is implementation specific.
+@@ -369,13 +425,15 @@ static void gicv3_save_state(struct vcpu *v)
+      * are now visible to the system register interface
+      */
+     dsb(sy);
++    if ( vgic_has_directVLPI(v->domain) )
++        vgic_v4_put(v, false);
+     gicv3_save_lrs(v);
+     save_aprn_regs(&v->arch.gic);
+     v->arch.gic.v3.vmcr = READ_SYSREG(ICH_VMCR_EL2);
+     v->arch.gic.v3.sre_el1 = READ_SYSREG(ICC_SRE_EL1);
+ }
+ 
+-static void gicv3_restore_state(const struct vcpu *v)
++static void gicv3_restore_state(struct vcpu *v)
+ {
+     register_t val;
+ 
+@@ -404,6 +462,9 @@ static void gicv3_restore_state(const struct vcpu *v)
+     restore_aprn_regs(&v->arch.gic);
+     gicv3_restore_lrs(v);
+ 
++    if ( vgic_has_directVLPI(v->domain) )
++        vgic_v4_load(v);
++
+     /*
+      * Make sure all stores are visible the GIC
+      */
+@@ -702,7 +763,8 @@ static bool gicv3_enable_lpis(void)
+     return true;
+ }
+ 
+-static int __init gicv3_populate_rdist(void)
++static int __init gic_iterate_rdists(int (*fn)(struct rdist_region *,
++                                               void __iomem *))
+ {
+     int i;
+     uint32_t aff;
+@@ -740,43 +802,18 @@ static int __init gicv3_populate_rdist(void)
+ 
+         do {
+             typer = readq_relaxed(ptr + GICR_TYPER);
+-
+             if ( (typer >> 32) == aff )
+             {
++                int ret;
++
+                 this_cpu(rbase) = ptr;
+ 
+-                if ( typer & GICR_TYPER_PLPIS )
+-                {
+-                    paddr_t rdist_addr;
+-                    unsigned int procnum;
+-                    int ret;
+-
+-                    /*
+-                     * The ITS refers to redistributors either by their physical
+-                     * address or by their ID. Which one to use is an ITS
+-                     * choice. So determine those two values here (which we
+-                     * can do only here in GICv3 code) and tell the
+-                     * ITS code about it, so it can use them later to be able
+-                     * to address those redistributors accordingly.
+-                     */
+-                    rdist_addr = gicv3.rdist_regions[i].base;
+-                    rdist_addr += ptr - gicv3.rdist_regions[i].map_base;
+-                    procnum = (typer & GICR_TYPER_PROC_NUM_MASK);
+-                    procnum >>= GICR_TYPER_PROC_NUM_SHIFT;
+-
+-                    gicv3_set_redist_address(rdist_addr, procnum);
+-
+-                    ret = gicv3_lpi_init_rdist(ptr);
+-                    if ( ret && ret != -ENODEV )
+-                    {
+-                        printk("GICv3: CPU%d: Cannot initialize LPIs: %u\n",
+-                               smp_processor_id(), ret);
+-                        break;
+-                    }
+-                }
+-
+-                printk("GICv3: CPU%d: Found redistributor in region %d @%p\n",
+-                        smp_processor_id(), i, ptr);
++                ret = fn(gicv3.rdist_regions + i, ptr);
++                if ( ret )
++                    return ret;
++
++                printk("GICv3: CPU%d: Found redistributor @%p\n",
++                       smp_processor_id(), ptr);
+                 return 0;
+             }
+ 
+@@ -791,15 +828,106 @@ static int __init gicv3_populate_rdist(void)
+                 if ( typer & GICR_TYPER_VLPIS )
+                     ptr += SZ_64K * 2; /* Skip VLPI_base + reserved page */
+             }
+-
+         } while ( !(typer & GICR_TYPER_LAST) );
+     }
+ 
++    return -ENODEV;
++}
++
++static int __init __gicv3_populate_rdist(struct rdist_region *region,
++                                         void __iomem *ptr)
++{
++    uint64_t typer;
++
++    typer = readq_relaxed(ptr + GICR_TYPER);
++    if ( typer & GICR_TYPER_PLPIS )
++    {
++        paddr_t rdist_addr;
++        unsigned int procnum;
++        int ret;
++
++        /*
++         * The ITS refers to redistributors either by their physical
++         * address or by their ID. Which one to use is an ITS
++         * choice. So determine those two values here (which we
++         * can do only here in GICv3 code) and tell the
++         * ITS code about it, so it can use them later to be able
++         * to address those redistributors accordingly.
++         */
++        rdist_addr = region->base;
++        rdist_addr += ptr - region->map_base;
++        procnum = (typer & GICR_TYPER_PROC_NUM_MASK);
++        procnum >>= GICR_TYPER_PROC_NUM_SHIFT;
++
++        gicv3_set_redist_address(rdist_addr, procnum);
++
++        ret = gicv3_lpi_init_rdist(ptr);
++        if ( ret && ret != -ENODEV )
++        {
++            printk("GICv3: CPU%d: Cannot initialize LPIs: %u\n",
++                   smp_processor_id(), ret);
++            return ret;
++        }
++    }
++
++    return 0;
++}
++
++static int __init gicv3_populate_rdist(void)
++{
++    if ( gic_iterate_rdists(__gicv3_populate_rdist) == 0 )
++        return 0;
++
+     dprintk(XENLOG_ERR, "GICv3: CPU%d: mpidr 0x%"PRIregister" has no re-distributor!\n",
+             smp_processor_id(), cpu_logical_map(smp_processor_id()));
++    return -ENODEV;
++}
+ 
++#ifdef CONFIG_GICV4
++static int __init __gicv4_update_vlpi_properties(struct rdist_region *region,
++                                                 void __iomem *ptr)
++{
++    uint64_t typer;
++
++    typer = readq_relaxed(ptr + GICR_TYPER);
++    gicv4.has_vlpis &= !!(typer & GICR_TYPER_VLPIS);
++    gicv4.has_rvpeid &= !!(typer & GICR_TYPER_RVPEID);
++    /* RVPEID implies some form of DirectLPI. */
++    gicv4.has_direct_lpi &= (!!(typer & GICR_TYPER_DirectLPIS) ||
++                             !!(typer & GICR_TYPER_RVPEID));
++    gicv4.has_vpend_valid_dirty &= !!(typer & GICR_TYPER_DIRTY);
++
++    /* Detect non-sensical configurations */
++    if ( gicv4.has_rvpeid && !gicv4.has_vlpis )
++    {
++        gicv4.has_direct_lpi = false;
++        gicv4.has_vlpis = false;
++        gicv4.has_rvpeid = false;
++    }
++
++    printk("GICv4: CPU%d: %sVLPI support, %sdirect LPI support, %sValid+Dirty support, %sRVPEID support\n",
++           smp_processor_id(), !!(typer & GICR_TYPER_VLPIS) ? "" : "no ",
++           (!!(typer & GICR_TYPER_DirectLPIS) ||
++            !!(typer & GICR_TYPER_RVPEID)) ? "" : "no ",
++           !!(typer & GICR_TYPER_DIRTY) ? "" : "no ",
++           !!(typer & GICR_TYPER_RVPEID) ? "" : "no ");
++
++    return 0;
++}
++
++static int __init gicv4_update_vlpi_properties(void)
++{
++    if ( gic_iterate_rdists(__gicv4_update_vlpi_properties) == 0 )
++        return 0;
++
++    return -ENODEV;
++}
++#else
++static int __init gicv4_update_vlpi_properties(void)
++{
+     return -ENODEV;
+ }
++#endif
+ 
+ static int gicv3_cpu_init(void)
+ {
+@@ -809,6 +937,10 @@ static int gicv3_cpu_init(void)
+     if ( gicv3_populate_rdist() )
+         return -ENODEV;
+ 
++    ret = gicv4_update_vlpi_properties();
++    if ( ret )
++        return ret;
++
+     if ( gicv3_enable_redist() )
+         return -ENODEV;
+ 
+@@ -820,6 +952,23 @@ static int gicv3_cpu_init(void)
+         ret = gicv3_its_setup_collection(smp_processor_id());
+         if ( ret )
+             return ret;
++
++#ifdef CONFIG_GICV4
++        if ( gic_has_v4_1_extension() )
++        {
++            ret = allocate_vpe_l1_table();
++            if ( ret )
++            {
++                /*
++                 * If the allocation has failed, at least let's disable
++                 * direct injection.
++                 */
++                gicv4.has_rvpeid = false;
++                gicv4.has_vlpis = false;
++                return ret;
++            }
++        }
++#endif
+     }
+ 
+     /* Set priority on PPI and SGI interrupts */
+@@ -1034,10 +1183,10 @@ static void gicv3_update_lr(int lr, unsigned int virq, uint8_t priority,
+     val =  (((uint64_t)state & 0x3) << ICH_LR_STATE_SHIFT);
+ 
+     /*
+-     * When the guest is GICv3, all guest IRQs are Group 1, as Group0
+-     * would result in a FIQ in the guest, which it wouldn't expect
++     * When the guest is GICv3/GICv4/GICv4.1, all guest IRQs are Group 1, as
++     * Group0 would result in a FIQ in the guest, which it wouldn't expect
+      */
+-    if ( current->domain->arch.vgic.version == GIC_V3 )
++    if ( current->domain->arch.vgic.version >= GIC_V3 )
+         val |= ICH_LR_GRP1;
+ 
+     val |= (uint64_t)priority << ICH_LR_PRIORITY_SHIFT;
+@@ -1123,10 +1272,10 @@ static void gicv3_write_lr(int lr_reg, const struct gic_lr *lr)
+     }
+ 
+     /*
+-     * When the guest is using vGICv3, all the IRQs are Group 1. Group 0
+-     * would result in a FIQ, which will not be expected by the guest OS.
++     * When the guest is using vGICv3/vGICv4/vGICv4.1, all the IRQs are Group 1.
++     * Group 0 would result in a FIQ, which will not be expected by the guest OS.
+      */
+-    if ( vgic_version == GIC_V3 )
++    if ( vgic_version >= GIC_V3 )
+         lrv |= ICH_LR_GRP1;
+ 
+     gicv3_ich_write_lr(lr_reg, lrv);
+@@ -1747,6 +1896,25 @@ static bool gic_dist_supports_lpis(void)
+     return (readl_relaxed(GICD + GICD_TYPER) & GICD_TYPE_LPIS);
+ }
+ 
++#ifdef CONFIG_GICV4
++static void __init gicv4_init(void)
++{
++    if ( gic_has_v4_1_extension() )
++        gicv3_info.hw_version = GIC_V4_1;
++    else
++        gicv3_info.hw_version = GIC_V4;
++
++    gicv4_its_vpeid_allocator_init();
++
++    gicv4_init_vpe_proxy();
++}
++#else
++static void __init gicv4_init(void)
++{
++    ASSERT_UNREACHABLE();
++}
++#endif
++
+ /* Set up the GIC */
+ static int __init gicv3_init(void)
+ {
+@@ -1821,6 +1989,9 @@ static int __init gicv3_init(void)
+ 
+     gicv3_hyp_init();
+ 
++    if ( gic_is_gicv4() )
++        gicv4_init();
++
+ out:
+     spin_unlock(&gicv3.lock);
+ 
+diff --git a/xen/arch/arm/gic-v4-its.c b/xen/arch/arm/gic-v4-its.c
+new file mode 100644
+index 0000000000..ca853d1840
+--- /dev/null
++++ b/xen/arch/arm/gic-v4-its.c
+@@ -0,0 +1,2061 @@
++/*
++ * xen/arch/arm/gic-v4-its.c
++ *
++ * ARM Generic Interrupt Controller support v4 version
++ * based on xen/arch/arm/gic-v3-its.c and kernel GICv4 driver
++ *
++ * Copyright (C) 2023 - ARM Ltd
++ * Penny Zheng <penny.zheng@arm.com>, ARM Ltd ported to Xen
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <xen/errno.h>
++#include <xen/init.h>
++#include <xen/lib.h>
++#include <xen/sched.h>
++#include <xen/spinlock.h>
++
++#include <asm/delay.h>
++#include <asm/gic_v3_defs.h>
++#include <asm/gic_v3_its.h>
++#include <asm/gic_v4_its.h>
++#include <asm/io.h>
++#include <asm/vgic.h>
++
++
++/*
++ * VPE ID is at most 16 bits.
++ * Using a bitmap here limits us to 65536 concurrent VPEs.
++ */
++static unsigned long *vpeid_mask;
++
++static spinlock_t vpeid_alloc_lock = SPIN_LOCK_UNLOCKED;
++
++static uint16_t vmovp_seq_num;
++static spinlock_t vmovp_lock = SPIN_LOCK_UNLOCKED;
++
++static struct {
++    spinlock_t lock;
++    struct its_device *dev;
++    struct its_vpe **vpes;
++    int next_victim;
++} vpe_proxy;
++
++/* per-re-distributor VPE affinity group */
++DEFINE_PER_CPU(cpumask_t*, vpe_table_mask);
++#define vpe_table_mask_cpu(cpu) (per_cpu(vpe_table_mask, cpu))
++#define VPE_TABLE_MASK          (this_cpu(vpe_table_mask))
++
++void __init gicv4_its_vpeid_allocator_init(void)
++{
++    /* Allocate space for vpeid_mask based on MAX_VPEID */
++    vpeid_mask = xzalloc_array(unsigned long, BITS_TO_LONGS(MAX_VPEID));
++
++    if ( !vpeid_mask )
++        panic("Could not allocate VPEID bitmap space\n");
++}
++
++static void __iomem *gic_data_rdist_vlpi_base(unsigned int cpu)
++{
++    /*
++     * Each Redistributor defines two 64KB frames in the physical address map.
++     * In GICv4, there are two additional 64KB frames.
++     * The frames for each Redistributor must be contiguous and must be
++     * ordered as follows:
++     * 1. RD_base
++     * 2. SGI_base
++     * 3. VLPI_base
++     * 4. Reserved
++     */
++    return per_cpu(rbase, cpu) + SZ_128K;
++}
++
++static int __init its_alloc_vpeid(struct its_vpe *vpe)
++{
++    int id;
++
++    spin_lock(&vpeid_alloc_lock);
++
++    id = find_first_zero_bit(vpeid_mask, MAX_VPEID);
++
++    if ( id == MAX_VPEID )
++    {
++        id = -EBUSY;
++        printk(XENLOG_ERR "VPEID pool exhausted\n");
++        goto out;
++    }
++
++    set_bit(id, vpeid_mask);
++
++out:
++    spin_unlock(&vpeid_alloc_lock);
++
++    return id;
++}
++
++static void __init its_free_vpeid(uint32_t vpe_id)
++{
++    spin_lock(&vpeid_alloc_lock);
++
++    clear_bit(vpe_id, vpeid_mask);
++
++    spin_unlock(&vpeid_alloc_lock);
++}
++
++static bool allocate_vpe_l2_table(unsigned int cpu, uint32_t id)
++{
++    void __iomem *rdbase = per_cpu(rbase, cpu);
++    unsigned int psz, esz, idx, npg, gpsz;
++    uint64_t val;
++    void *buffer;
++    __le64 *table;
++    paddr_t pa;
++
++    /* Skip non-present CPUs */
++    if ( !rdbase )
++        return true;
++
++    val = gits_read_vpropbaser(gic_data_rdist_vlpi_base(cpu) +
++                               GICR_VPROPBASER);
++
++    gpsz = FIELD_GET(GICR_VPROPBASER_4_1_PAGE_SIZE, val);
++    esz = FIELD_GET(GICR_VPROPBASER_4_1_ENTRY_SIZE, val) + 1;
++    npg  = FIELD_GET(GICR_VPROPBASER_4_1_SIZE, val) + 1;
++
++    switch ( gpsz ) {
++    default:
++        WARN_ON(1);
++        fallthrough;
++    case GIC_PAGE_SIZE_4K:
++        psz = SZ_4K;
++        break;
++    case GIC_PAGE_SIZE_16K:
++        psz = SZ_16K;
++        break;
++    case GIC_PAGE_SIZE_64K:
++        psz = SZ_64K;
++        break;
++    }
++
++    /* Don't allow vpe_id that exceeds single, flat table limit */
++    if ( !(val & GICR_VPROPBASER_4_1_INDIRECT) )
++        return (id < (npg * psz / (esz * SZ_8)));
++
++    /* Compute 1st level table index and check if that exceeds table limit */
++    idx = id >> ilog2(psz / (esz * SZ_8));
++    if ( idx >= (npg * psz / GITS_LVL1_ENTRY_SIZE) )
++        return false;
++
++    pa = FIELD_GET(GICR_VPROPBASER_4_1_ADDR, val);
++    table = (__le64 *)maddr_to_virt(pa << 12);
++
++    /* Allocate memory for 2nd level table */
++    if ( !table[idx] )
++    {
++        buffer = _xzalloc(psz, psz);
++        if ( !buffer )
++            return -ENOMEM;
++
++        /* Flush Lvl2 table if hw doesn't support coherency */
++        if ( !(val & GICR_VPROPBASER_SHAREABILITY_MASK) )
++            clean_and_invalidate_dcache_va_range(buffer, psz);
++
++        table[idx] = cpu_to_le64(virt_to_maddr(buffer) | GITS_BASER_VALID);
++
++        /* Flush Lvl1 entry to PoC if hw doesn't support coherency */
++        if ( !(val & GICR_VPROPBASER_SHAREABILITY_MASK) )
++            clean_and_invalidate_dcache_va_range(table + idx, GITS_LVL1_ENTRY_SIZE);
++
++        /* Ensure updated table contents are visible to RD hardware */
++        dsb(sy);
++    }
++
++    return true;
++}
++
++static bool __init its_alloc_vpe_entry(uint32_t vpe_id)
++{
++    struct host_its *hw_its;
++    unsigned int cpu;
++
++    /*
++     * Make sure the L2 tables are allocated on *all* v4 ITSs. We
++     * could try and only do it on ITSs corresponding to devices
++     * that have interrupts targeted at this VPE, but the
++     * complexity becomes crazy.
++     */
++    list_for_each_entry(hw_its, &host_its_list, entry)
++    {
++        struct its_baser *baser;
++
++        if ( !hw_its->is_v4 )
++            continue;
++
++        baser = its_get_baser(hw_its, GITS_BASER_TYPE_VCPU);
++        if ( !baser )
++            return false;
++
++        if ( !its_alloc_table_entry(baser, vpe_id) )
++            return false;
++    }
++
++    /* Non v4.1? No need to iterate RDs and go back early. */
++    if ( !gic_has_v4_1_extension() )
++        return true;
++
++    /*
++     * Make sure the L2 tables are allocated for all copies of
++     * the L1 table on *all* v4.1 RDs.
++     */
++    for_each_possible_cpu(cpu)
++        if ( !allocate_vpe_l2_table(cpu, vpe_id) )
++            return false;
++
++    return true;
++}
++
++static int its_send_cmd_vsync(struct host_its *its, uint16_t vpeid)
++{
++    uint64_t cmd[4];
++
++    cmd[0] = GITS_CMD_VSYNC;
++    cmd[1] = (uint64_t)vpeid << 32;
++    cmd[2] = 0x00;
++    cmd[3] = 0x00;
++
++    return its_send_command(its, cmd);
++}
++
++static int its_send_cmd_vmapp(struct host_its *its, struct its_vpe *vpe,
++                              bool valid)
++{
++    uint64_t cmd[4];
++    uint16_t vpeid = vpe->vpe_id;
++    uint64_t vpt_addr, vprop_addr;
++    bool alloc, ptz;
++
++    cmd[0] = GITS_CMD_VMAPP;
++    cmd[1] = (uint64_t)vpeid << 32;
++    cmd[2] = valid ? GITS_VALID_BIT : 0;
++
++    /* Unmap command */
++    if ( !valid )
++    {
++        if ( its->is_v4_1 )
++            alloc = !atomic_dec_return(&vpe->vmapp_count);
++
++        goto out;
++    }
++
++    /* Target redistributor */
++    cmd[2] |= encode_rdbase(its, vpe->col_idx, 0x0);
++    vpt_addr = virt_to_maddr(vpe->vpendtable);
++    cmd[3] = (vpt_addr & GENMASK(51, 16)) |
++             ((HOST_LPIS_NRBITS - 1) & GENMASK(4, 0));
++
++    if ( !its->is_v4_1 )
++        goto out;
++
++    alloc = atomic_inc_return(&vpe->vmapp_count) == 1 ? true : false;
++    cmd[0] |= alloc ? GITS_ALLOC_BIT : 0;
++    /* Virtual property table */
++    vprop_addr = virt_to_maddr(vpe->its_vm->vproptable);
++    cmd[0] |= vprop_addr & GENMASK(51, 16);
++
++    /*
++     * GICv4.1 provides a way to get the VLPI state, which needs the vPE
++     * to be unmapped first, and in this case, we may remap the vPE
++     * back while the VPT is not empty. So we can't assume that the
++     * VPT is empty on map. This is why we never advertise PTZ.
++     */
++    ptz = false;
++    cmd[0] |= ptz ? GITS_PTZ_BIT : 0;
++
++    /* Default doorbell interrupt */
++    cmd[1] |= (uint64_t)vpe->vpe_db_lpi;
++
++ out:
++    return its_send_command(its, cmd);
++}
++
++static int its_send_cmd_vinvall(struct host_its *its, struct its_vpe *vpe)
++{
++    uint64_t cmd[4];
++    uint16_t vpeid = vpe->vpe_id;
++
++    cmd[0] = GITS_CMD_VINVALL;
++    cmd[1] = (uint64_t)vpeid << 32;
++    cmd[2] = 0x00;
++    cmd[3] = 0x00;
++
++    return its_send_command(its, cmd);
++}
++
++static int its_map_vpe(struct host_its *its, struct its_vpe *vpe)
++{
++    int ret;
++
++    /*
++     * VMAPP command maps the vPE to the target RDbase, including an
++     * associated virtual LPI Pending table.
++     */
++    ret = its_send_cmd_vmapp(its, vpe, true);
++    if ( ret )
++        return ret;
++
++    ret = its_send_cmd_vinvall(its, vpe);
++    if ( ret )
++        return ret;
++
++    ret = its_send_cmd_vsync(its, vpe->vpe_id);
++    if ( ret )
++        return ret;
++
++    return 0;
++}
++
++static int gicv4_vpe_db_proxy_unmap_locked(struct its_vpe *vpe)
++{
++    int ret;
++
++    /* GICv4.1 doesn't use a proxy, so nothing to do here */
++    if ( gic_has_v4_1_extension() )
++        return 0;
++
++    /* Already unmapped? */
++    if ( vpe->vpe_proxy_event == -1 )
++        return 0;
++
++    ret = its_send_cmd_discard(vpe_proxy.dev->hw_its, vpe_proxy.dev,
++                               vpe->vpe_proxy_event);
++    if ( ret )
++        return ret;
++    vpe_proxy.vpes[vpe->vpe_proxy_event] = NULL;
++
++    /*
++     * We don't track empty slots at all, so let's move the
++     * next_victim pointer to quickly reuse the unmapped slot
++     */
++    if ( vpe_proxy.vpes[vpe_proxy.next_victim] )
++        vpe_proxy.next_victim = vpe->vpe_proxy_event;
++
++    vpe->vpe_proxy_event = -1;
++
++    return 0;
++}
++
++static void gicv4_vpe_db_proxy_unmap(struct its_vpe *vpe)
++{
++    /* GICv4.1 doesn't use a proxy, so nothing to do here */
++    if ( gic_has_v4_1_extension() )
++        return;
++
++    if ( !gic_support_directLPI() )
++    {
++        unsigned long flags;
++
++        spin_lock_irqsave(&vpe_proxy.lock, flags);
++        gicv4_vpe_db_proxy_unmap_locked(vpe);
++        spin_unlock_irqrestore(&vpe_proxy.lock, flags);
++    }
++}
++
++/*
++ * If a GICv4.0 doesn't implement Direct LPIs (which is extremely
++ * likely), the only way to perform an invalidate is to use a fake
++ * device to issue an INV command, implying that the LPI has first
++ * been mapped to some event on that device. Since this is not exactly
++ * cheap, we try to keep that mapping around as long as possible, and
++ * only issue an UNMAP if we're short on available slots.
++ *
++ * GICv4.1 mandates that we're able to invalidate by writing to a
++ * MMIO register. And most of the time, we don't even have to invalidate
++ * vPE doorbell, as the redistributor can be told whether to generate a
++ * doorbell or not.
++ */
++static int gicv4_vpe_db_proxy_map_locked(struct its_vpe *vpe)
++{
++    int ret;
++
++    /* GICv4.1 doesn't use a proxy, so nothing to do here */
++    if ( gic_has_v4_1_extension() )
++        return 0;
++
++    /* Already mapped? */
++    if ( vpe->vpe_proxy_event != -1 )
++        return 0;
++
++    /* This slot was already allocated. Kick the other VPE out. */
++    if ( vpe_proxy.vpes[vpe_proxy.next_victim] )
++    {
++        struct its_vpe *old_vpe = vpe_proxy.vpes[vpe_proxy.next_victim];
++
++        ret = gicv4_vpe_db_proxy_unmap_locked(old_vpe);
++        if ( ret )
++            return ret;
++    }
++
++    /* Map the new VPE instead */
++    vpe_proxy.vpes[vpe_proxy.next_victim] = vpe;
++    vpe->vpe_proxy_event = vpe_proxy.next_victim;
++    vpe_proxy.next_victim = (vpe_proxy.next_victim + 1) %
++                            vpe_proxy.dev->eventids;
++
++    return its_send_cmd_mapti(vpe_proxy.dev->hw_its, vpe_proxy.dev->host_devid,
++                              vpe->vpe_proxy_event, vpe->vpe_db_lpi,
++                              vpe->col_idx);
++}
++
++int __init gicv4_init_vpe_proxy(void)
++{
++    struct host_its *hw_its;
++    uint32_t devid;
++
++    /* GICv4.1 doesn't use a proxy, so nothing to do here */
++    if ( gic_has_v4_1_extension() )
++        return 0;
++
++    if ( gic_support_directLPI() )
++    {
++        printk("ITS: Using DirectLPI for GICv4 VPE invalidation\n");
++        return 0;
++    }
++
++    /* Any ITS will do, even if not v4 */
++    hw_its = list_first_entry(&host_its_list, struct host_its, entry);
++
++    vpe_proxy.vpes = xzalloc_array(struct its_vpe *, nr_cpu_ids);
++    if ( !vpe_proxy.vpes )
++    {
++        printk(XENLOG_ERR "ITS: Can't allocate GICv4 VPE proxy device array\n");
++        return -ENOMEM;
++    }
++
++    /* Use the last possible DevID */
++    devid = BIT(hw_its->devid_bits, UL) - 1;
++    vpe_proxy.dev = its_create_device(hw_its, devid, nr_cpu_ids);
++    if ( !vpe_proxy.dev )
++    {
++        printk(XENLOG_ERR "ITS: Can't allocate GICv4 VPE proxy device\n");
++        return -ENOMEM;
++    }
++
++    spin_lock_init(&vpe_proxy.lock);
++    vpe_proxy.next_victim = 0;
++    printk(XENLOG_INFO
++           "ITS: Allocated DevID %u as GICv4 VPE proxy device\n", devid);
++
++    return 0;
++}
++
++static int __init its_vpe_init(struct its_vpe *vpe)
++{
++    int vpe_id, rc = -ENOMEM;
++    struct page_info *vpendtable;
++    struct host_its *hw_its;
++
++    /* Allocate vpe id */
++    vpe_id = its_alloc_vpeid(vpe);
++    if ( vpe_id < 0 )
++        return rc;
++
++    /* Allocate VPT */
++    vpendtable = lpi_allocate_pendtable();
++    if ( !vpendtable )
++        goto fail_vpt;
++
++    if ( !its_alloc_vpe_entry(vpe_id) )
++        goto fail_entry;
++
++    rwlock_init(&vpe->lock);
++    vpe->vpe_id = vpe_id;
++    vpe->vpendtable = page_to_virt(vpendtable);
++    if ( gic_has_v4_1_extension() )
++        atomic_set(&vpe->vmapp_count, 0);
++    else
++        vpe->vpe_proxy_event = -1;
++
++    /*
++     * We eagerly inform all the v4 ITS and map vPE to the first
++     * possible CPU
++     */
++    vpe->col_idx = cpumask_first(&cpu_online_map);
++    list_for_each_entry(hw_its, &host_its_list, entry)
++    {
++        if ( !hw_its->is_v4 )
++            continue;
++
++        if ( its_map_vpe(hw_its, vpe) )
++            goto fail_entry;
++    }
++
++    return 0;
++
++ fail_entry:
++    xfree(page_to_virt(vpendtable));
++ fail_vpt:
++    its_free_vpeid(vpe_id);
++
++    return rc;
++}
++
++static void __init its_vpe_teardown(struct its_vpe *vpe)
++{
++    gicv4_vpe_db_proxy_unmap(vpe);
++    its_free_vpeid(vpe->vpe_id);
++    xfree(vpe->vpendtable);
++}
++
++int vgic_v4_its_vm_init(struct domain *d)
++{
++    struct its_vm *its_vm = &d->arch.vgic.its_vm;
++    unsigned int nr_vcpus = d->max_vcpus;
++    unsigned int nr_db_lpis, nr_chunks, i = 0;
++    uint32_t *db_lpi_bases;
++    struct page_info *vproptable;
++    int ret = -ENOMEM;
++
++    d->arch.vgic.its_vm.vpes = xzalloc_array(struct its_vpe *, nr_vcpus);
++    if ( !d->arch.vgic.its_vm.vpes )
++        return ret;
++    d->arch.vgic.its_vm.nr_vpes = nr_vcpus;
++
++    /* Allocate a doorbell interrupt for each VPE. */
++    nr_db_lpis = d->arch.vgic.its_vm.nr_vpes;
++    nr_chunks = DIV_ROUND_UP(nr_db_lpis, LPI_BLOCK);
++    db_lpi_bases = xzalloc_array(uint32_t, nr_chunks);
++    if ( !db_lpi_bases )
++        return ret;
++
++    do {
++        /* Allocate doorbell interrupts in chunks of LPI_BLOCK (=32). */
++        ret = gicv3_allocate_host_lpi_block(d, &db_lpi_bases[i]);
++        if ( ret )
++            goto fail_db;
++    } while ( ++i < nr_chunks );
++
++    vproptable = lpi_allocate_proptable();
++    if ( !vproptable )
++        goto fail_db;
++
++    its_vm->db_lpi_bases = db_lpi_bases;
++    its_vm->nr_db_lpis = nr_db_lpis;
++    its_vm->vproptable = page_to_virt(vproptable);
++
++    return 0;
++
++ fail_db:
++    while ( --i >= 0 )
++        gicv3_free_host_lpi_block(its_vm->db_lpi_bases[i]);
++    xfree(db_lpi_bases);
++
++    return ret;
++}
++
++void vgic_v4_free_its_vm(struct domain *d)
++{
++    struct its_vm *its_vm = &d->arch.vgic.its_vm;
++    int nr_chunks = DIV_ROUND_UP(its_vm->nr_db_lpis, LPI_BLOCK);
++
++    if ( its_vm->vpes )
++        xfree(its_vm->vpes);
++    while ( --nr_chunks >= 0 )
++        gicv3_free_host_lpi_block(its_vm->db_lpi_bases[nr_chunks]);
++    if ( its_vm->db_lpi_bases )
++        xfree(its_vm->db_lpi_bases);
++    if ( its_vm->vproptable )
++        xfree(its_vm->vproptable);
++}
++
++static void its_vpe_unmask_db(struct its_vpe *vpe);
++int vgic_v4_its_vpe_init(struct vcpu *vcpu)
++{
++    struct its_vm *its_vm = &vcpu->domain->arch.vgic.its_vm;
++    struct its_vpe *its_vpe = &vcpu->arch.vgic.its_vpe;
++    unsigned int vcpuid = vcpu->vcpu_id;
++    int ret;
++
++    its_vm->vpes[vcpuid] = its_vpe;
++    its_vpe->vpe_db_lpi = its_vm->db_lpi_bases[vcpuid/32] + (vcpuid % 32);
++    /*
++     * Sometimes vlpi gets firstly mapped before associated vpe
++     * becoming resident, so in case missing the interrupt, we intend to
++     * enable doorbell at the initialization stage
++     */
++    its_vpe_unmask_db(its_vpe);
++    its_vpe->its_vm = its_vm;
++
++    gicv3_lpi_update_host_entry(its_vpe->vpe_db_lpi, vcpu->domain->domain_id,
++                                INVALID_LPI, true, vcpu->vcpu_id);
++
++    ret = its_vpe_init(its_vpe);
++    if ( ret )
++    {
++        its_vpe_teardown(its_vpe);
++        return ret;
++    }
++
++    return 0;
++}
++
++static int its_send_cmd_vmapti(struct host_its *its, struct its_device *dev,
++                               uint32_t eventid)
++{
++    uint64_t cmd[4];
++    uint32_t deviceid = dev->host_devid;
++    struct its_vlpi_map *map = &dev->event_map.vlpi_maps[eventid];
++    uint16_t vpeid = map->vm->vpes[map->vpe_idx]->vpe_id;
++    uint32_t vintid = map->vintid;
++    uint32_t db_pintid;
++
++    if ( map->db_enabled )
++        db_pintid = map->vm->vpes[map->vpe_idx]->vpe_db_lpi;
++    else
++        db_pintid = 1023;
++
++    cmd[0] = GITS_CMD_VMAPTI | ((uint64_t)deviceid << 32);
++    cmd[1] = eventid | ((uint64_t)vpeid << 32);
++    cmd[2] = vintid | ((uint64_t)db_pintid << 32);
++    cmd[3] = 0x00;
++
++    return its_send_command(its, cmd);
++}
++
++static bool pirq_is_forwarded_to_vcpu(struct pending_irq *pirq)
++{
++    ASSERT(pirq);
++    return test_bit(GIC_IRQ_GUEST_FORWARDED, &pirq->status);
++}
++
++static int its_send_cmd_vmovi(struct host_its *its, struct its_vlpi_map *map)
++{
++    uint64_t cmd[4];
++    struct its_device *dev = map->dev;
++    uint32_t eventid = map->eventid;
++    uint32_t deviceid = dev->host_devid;
++    uint16_t vpeid = map->vm->vpes[map->vpe_idx]->vpe_id;
++    uint32_t db_pintid;
++
++    if ( map->db_enabled )
++        db_pintid = map->vm->vpes[map->vpe_idx]->vpe_db_lpi;
++    else
++        db_pintid = 1023;
++
++    cmd[0] = GITS_CMD_VMOVI | ((uint64_t)deviceid << 32);
++    cmd[1] = eventid | ((uint64_t)vpeid << 32);
++    cmd[2] = (map->db_enabled ? 1UL : 0UL) | ((uint64_t)db_pintid << 32);
++    cmd[3] = 0x00;
++
++    return its_send_command(its, cmd);
++}
++
++static int gicv4_its_vlpi_map(struct its_vlpi_map *map)
++{
++    struct its_device *dev;
++    struct host_its *its;
++    uint32_t eventid;
++    int ret;
++
++    if ( !map )
++        return -EINVAL;
++    dev = map->dev;
++    its = map->dev->hw_its;
++    eventid = map->eventid;
++
++    spin_lock(&dev->event_map.vlpi_lock);
++
++    if ( !dev->event_map.vm )
++    {
++        struct its_vlpi_map *maps;
++
++        maps = xzalloc_array(struct its_vlpi_map, dev->event_map.nr_lpis);
++        if ( !maps )
++        {
++            ret = -ENOMEM;
++            goto out;
++        }
++
++        dev->event_map.vm = map->vm;
++        dev->event_map.vlpi_maps = maps;
++    }
++    else if ( dev->event_map.vm != map->vm )
++    {
++        ret = -EINVAL;
++        goto out;
++    }
++
++    /* Get our private copy of the mapping information */
++    dev->event_map.vlpi_maps[eventid] = *map;
++
++    if ( pirq_is_forwarded_to_vcpu(map->pirq) )
++    {
++        struct its_vlpi_map *old = &dev->event_map.vlpi_maps[eventid];
++        uint32_t old_vpeid = old->vm->vpes[old->vpe_idx]->vpe_id;
++
++        /* Already mapped, move it around */
++        ret = its_send_cmd_vmovi(dev->hw_its, map);
++        if ( ret )
++            goto out;
++
++        /*
++         * ARM spec says that If, after using VMOVI to move an interrupt from
++         * vPE A to vPE B, software moves the same interrupt again, a VSYNC
++         * command must be issued to vPE A between the moves to ensure correct
++         * behavior.
++         * So each time we issue VMOVI, we VSYNC the old VPE for good measure.
++         */
++        ret = its_send_cmd_vsync(dev->hw_its, old_vpeid);
++    }
++    else
++    {
++        /* Drop the original physical mapping firstly */
++        ret = its_send_cmd_discard(its, dev, eventid);
++        if ( ret )
++            goto out;
++
++        /* Then install the virtual one */
++        ret = its_send_cmd_vmapti(its, dev, eventid);
++        if ( ret )
++            goto out;
++
++        /* Increment the number of VLPIs */
++        dev->event_map.nr_vlpis++;
++    }
++
++ out:
++    spin_unlock(&dev->event_map.vlpi_lock);
++    return ret;
++}
++
++int gicv4_its_vlpi_unmap(struct pending_irq *pirq)
++{
++    struct its_vlpi_map *map = pirq->vlpi_map;
++    struct its_device *dev = map->dev;
++    int ret;
++    uint32_t host_lpi;
++
++    spin_lock(&dev->event_map.vlpi_lock);
++
++    if ( !dev->event_map.vm || !pirq_is_tied_to_hw(pirq) )
++    {
++        ret = -EINVAL;
++        goto out;
++    }
++
++    /* Drop the virtual mapping */
++    ret = its_send_cmd_discard(dev->hw_its, dev, map->eventid);
++    if ( ret )
++        goto out;
++
++    /* Restore the physical one */
++    pirq_clear_forwarded_to_vcpu(pirq);
++    host_lpi = dev->host_lpi_blocks[map->eventid / LPI_BLOCK] +
++               (map->eventid % LPI_BLOCK);
++    /* Map every host LPI to host CPU 0 */
++    ret = its_send_cmd_mapti(dev->hw_its, dev->host_devid, map->eventid,
++                             host_lpi, 0);
++    if ( ret )
++        goto out;
++
++    lpi_write_config(lpi_data.lpi_property, host_lpi, 0xff, LPI_PROP_ENABLED);
++
++    ret = its_inv_lpi(dev->hw_its, dev, map->eventid, 0);
++    if ( ret )
++        goto out;
++
++    xfree(map);
++    /*
++     * Drop the refcount and make the device available again if
++     * this was the last VLPI.
++     */
++    if ( !--dev->event_map.nr_vlpis )
++    {
++        dev->event_map.vm = NULL;
++        xfree(dev->event_map.vlpi_maps);
++    }
++
++out:
++    spin_unlock(&dev->event_map.vlpi_lock);
++    return ret;
++}
++
++int gicv4_assign_guest_event(struct domain *d, paddr_t vdoorbell_address,
++                             uint32_t vdevid, uint32_t eventid,
++                             struct pending_irq *pirq)
++
++{
++    int ret = ENODEV;
++    struct its_vm *vm = &d->arch.vgic.its_vm;
++    struct its_vlpi_map *map;
++    struct its_device *dev;
++
++    spin_lock(&d->arch.vgic.its_devices_lock);
++    dev = get_its_device(d, vdoorbell_address, vdevid);
++    if ( dev && eventid < dev->eventids )
++    {
++        /* Prepare the vlpi mapping info */
++        map = xzalloc(struct its_vlpi_map);
++        if ( !map )
++            goto out;
++        map->vm = vm;
++        map->vintid = pirq->irq;
++        map->db_enabled = true;
++        map->vpe_idx = pirq->lpi_vcpu_id;
++        map->properties = pirq->lpi_priority |
++                          (test_bit(GIC_IRQ_GUEST_ENABLED, &pirq->status) ?
++                          LPI_PROP_ENABLED : 0);
++        map->pirq = pirq;
++        map->dev = dev;
++        map->eventid = eventid;
++
++        ret = gicv4_its_vlpi_map(map);
++        if ( ret )
++        {
++            xfree(map);
++            goto out;
++        }
++
++        pirq->vlpi_map = map;
++        goto out;
++    }
++
++ out:
++    spin_unlock(&d->arch.vgic.its_devices_lock);
++    return ret;
++}
++
++int gicv4_its_vlpi_move(struct pending_irq *pirq, struct vcpu *vcpu)
++{
++    struct its_vlpi_map *map = pirq->vlpi_map;
++    struct its_device *dev = map->dev;
++
++    if ( !dev->event_map.vm || !map )
++        return -EINVAL;
++
++    map->vpe_idx = vcpu->vcpu_id;
++    return gicv4_its_vlpi_map(map);
++}
++
++/*
++ * There is no real VINV command.
++ * We do a normal INV, with a VSYNC instead of a SYNC.
++ */
++int its_send_cmd_vinv(struct host_its *its, struct its_device *dev,
++                      uint32_t eventid)
++{
++    int ret;
++    struct its_vlpi_map *map = &dev->event_map.vlpi_maps[eventid];
++    uint16_t vpeid = map->vm->vpes[map->vpe_idx]->vpe_id;
++
++    ret = its_send_cmd_inv(its, dev->host_devid, eventid);
++    if ( ret )
++        return ret;
++
++    ret = its_send_cmd_vsync(its, vpeid);
++    if ( ret )
++        return ret;
++
++    return gicv3_its_wait_commands(its);
++}
++
++bool event_is_forwarded_to_vcpu(struct its_device *dev, uint32_t eventid)
++{
++    struct pending_irq *pirq;
++
++    /* No vlpi maps at all ? */
++    if ( !dev->event_map.vlpi_maps)
++        return false;
++
++    pirq = dev->event_map.vlpi_maps[eventid].pirq;
++    return pirq_is_forwarded_to_vcpu(pirq);
++}
++
++static int its_vlpi_set_doorbell(struct its_vlpi_map *map, bool enable)
++{
++    if (map->db_enabled == enable)
++        return 0;
++
++    map->db_enabled = enable;
++
++    /*
++     * Ideally, we'd issue a VMAPTI to set the doorbell to its LPI
++     * value or to 1023, depending on the enable bit. But that
++     * would be issuing a mapping for an /existing/ DevID+EventID
++     * pair, which is UNPREDICTABLE. Instead, let's issue a VMOVI
++     * to the /same/ vPE, using this opportunity to adjust the doorbell.
++     */
++    return its_send_cmd_vmovi(map->dev->hw_its, map);
++}
++
++int its_vlpi_prop_update(struct pending_irq *pirq, uint8_t property,
++                         bool needs_inv)
++{
++    struct its_vlpi_map *map;
++    unsigned int cpu;
++    int ret;
++
++    if ( !pirq->vlpi_map )
++        return -EINVAL;
++
++    map = pirq->vlpi_map;
++
++    /* Cache the updated property and update the vproptable. */
++    map->properties = property;
++    lpi_write_config(map->vm->vproptable, pirq->irq, 0xff, property);
++
++    if ( needs_inv )
++    {
++        cpu = map->vm->vpes[map->vpe_idx]->col_idx;
++        ret = its_inv_lpi(map->dev->hw_its, map->dev, map->eventid, cpu);
++        if ( ret )
++            return ret;
++    }
++
++    return its_vlpi_set_doorbell(map, property & LPI_PROP_ENABLED);
++}
++
++int its_set_vlpi_state(struct pending_irq *pirq, bool state)
++{
++    struct its_vlpi_map *map;
++    int ret;
++
++    map = pirq->vlpi_map;
++    if ( !map )
++        return -EINVAL;
++
++    if ( state )
++        ret = its_send_cmd_int(map->dev->hw_its, map->dev->host_devid,
++                               map->eventid);
++    else
++        ret = its_send_cmd_clear(map->dev->hw_its, map->dev->host_devid,
++                                 map->eventid);
++
++    return ret;
++}
++
++/* GICR_SYNCR.Busy == 1 until the invalidation completes. */
++static void wait_for_syncr(void __iomem *rdbase)
++{
++    while ( readl_relaxed(rdbase + GICR_SYNCR) & 1 )
++        cpu_relax();
++}
++
++static int vpe_to_cpuid_lock(struct its_vpe *vpe, unsigned long *flags)
++{
++    spin_lock_irqsave(&vpe->vpe_lock, *flags);
++    return vpe->col_idx;
++}
++
++static void vpe_to_cpuid_unlock(struct its_vpe *vpe, unsigned long *flags)
++{
++    spin_unlock_irqrestore(&vpe->vpe_lock, *flags);
++}
++
++/*
++ * LPI/VLPI invalidation through MMIO registers(GICR_INVLPIR,
++ * GICR_INVALLR, and GICR_SYNCR)
++ */
++void direct_lpi_inv(struct its_device *dev, uint32_t eventid,
++                    uint32_t db_lpi, unsigned int cpu)
++{
++    void __iomem *rdbase;
++    uint64_t val;
++    struct its_vpe *vpe = NULL;
++    unsigned long flags;
++
++    /* Register-based VLPI invalidation */
++    if ( dev )
++    {
++        struct its_vlpi_map *map = &dev->event_map.vlpi_maps[eventid];
++
++        /*
++         * The GICR_INVLPIR, GICR_INVALLR, and GICR_SYNCR registers
++         * are mandatory in GICv4.1
++         */
++        WARN_ON(!gic_has_v4_1_extension());
++
++        val  = GICR_INVLPIR_V;
++        vpe = map->vm->vpes[map->vpe_idx];
++        val |= FIELD_PREP(GICR_INVLPIR_VPEID, vpe->vpe_id);
++        val |= FIELD_PREP(GICR_INVLPIR_INTID, map->vintid);
++        vpe_to_cpuid_lock(vpe, &flags);
++    }
++    else
++        /* Register-based LPI invalidation for DB on GICv4.0 */
++        val = FIELD_PREP(GICR_INVLPIR_INTID, db_lpi);
++
++    rdbase = per_cpu(rbase, cpu);
++    writeq_relaxed(val, rdbase + GICR_INVLPIR);
++    wait_for_syncr(rdbase);
++
++    if ( vpe )
++        vpe_to_cpuid_unlock(vpe, &flags);
++}
++
++static void gicv4_vpe_db_proxy_move(struct its_vpe *vpe, unsigned int from,
++                                    unsigned int to)
++{
++    unsigned long flags;
++
++    /* GICv4.1 doesn't use a proxy, so nothing to do here */
++    if ( gic_has_v4_1_extension() )
++        return;
++
++    if ( gic_support_directLPI() )
++    {
++        void __iomem *rdbase;
++
++        rdbase = per_cpu(rbase, from);
++        /* Clear potential pending state on the old redistributor */
++        writeq_relaxed(vpe->vpe_db_lpi, rdbase + GICR_CLRLPIR);
++        wait_for_syncr(rdbase);
++        return;
++    }
++
++    spin_lock_irqsave(&vpe_proxy.lock, flags);
++
++    gicv4_vpe_db_proxy_map_locked(vpe);
++
++    /* MOVI instructs the appropriate Redistributor to move the pending state */
++    its_send_cmd_movi(vpe_proxy.dev->hw_its, vpe_proxy.dev->host_devid,
++                      vpe->vpe_proxy_event, to);
++
++    /*
++     * ARM spec says that If, after using MOVI to move an interrupt from
++     * collection A to collection B, software moves the same interrupt again
++     * from collection B to collection C, a SYNC command must be used before
++     * the second MOVI for the Redistributor associated with collection A to
++     * ensure correct behavior.
++     * So each time we issue VMOVI, we VSYNC the old VPE for good measure.
++     */
++    WARN_ON(its_send_cmd_sync(vpe_proxy.dev->hw_its, from));
++
++    spin_unlock_irqrestore(&vpe_proxy.lock, flags);
++}
++
++static void its_vpe_send_inv_db(struct its_vpe *vpe)
++{
++    if ( gic_support_directLPI() )
++    {
++        unsigned int cpu = vpe->col_idx;
++
++        /* Target the redistributor this VPE is currently known on */
++        direct_lpi_inv(NULL, 0, vpe->vpe_db_lpi, cpu);
++    }
++    else
++    {
++        struct its_device *dev = vpe_proxy.dev;
++        unsigned long flags;
++
++        spin_lock_irqsave(&vpe_proxy.lock, flags);
++        gicv4_vpe_db_proxy_map_locked(vpe);
++        its_send_cmd_inv(dev->hw_its, dev->host_devid, vpe->vpe_proxy_event);
++        spin_unlock_irqrestore(&vpe_proxy.lock, flags);
++    }
++}
++
++static struct host_its *find_4_1_its(void)
++{
++    /* Preserve the search result for multiple call */
++    static struct host_its *its = NULL;
++    static bool once = true;
++
++    /* The search will be only done once */
++    if ( !its && once )
++    {
++        list_for_each_entry(its, &host_its_list, entry)
++        {
++            if ( its->is_v4_1 )
++                return its;
++        }
++
++        /* No found */
++        its = NULL;
++        once = false;
++    }
++
++    return its;
++}
++
++bool vgic_has_directVSGI(struct domain *d)
++{
++    return ( find_4_1_its() != NULL ) && (d->arch.vgic.version == GIC_V4_1);
++}
++
++static int its_vpe_send_4_1_inv_db(struct host_its *its, struct its_vpe *vpe)
++{
++    uint64_t cmd[4];
++    uint16_t vpeid = vpe->vpe_id;
++    int ret;
++
++    cmd[0] = GITS_CMD_INVDB;
++    cmd[1] = (uint64_t)vpeid << 32;
++    cmd[2] = 0x00;
++    cmd[3] = 0x00;
++
++    ret = its_send_command(its, cmd);
++    if ( ret )
++        return ret;
++
++    /* INVDB is synchronized by a VSYNC command. */
++    return its_send_cmd_vsync(its, vpeid);
++}
++
++static void its_vpe_inv_db(struct its_vpe *vpe)
++{
++    struct host_its *its;
++
++    /*
++     * GICv4.1 wants doorbells to be invalidated using the
++     * INVDB command in order to be broadcast to all RDs. Send
++     * it to the first valid ITS, and let the HW do its magic.
++     */
++    its = find_4_1_its();
++    if ( its )
++        its_vpe_send_4_1_inv_db(its, vpe);
++    else
++        its_vpe_send_inv_db(vpe);
++}
++
++void its_vpe_mask_db(struct its_vpe *vpe)
++{
++    /* Only clear enable bit. */
++    lpi_write_config(lpi_data.lpi_property, vpe->vpe_db_lpi, LPI_PROP_ENABLED, 0);
++    its_vpe_inv_db(vpe);
++}
++
++static void its_vpe_unmask_db(struct its_vpe *vpe)
++{
++    /* Only set enable bit. */
++    lpi_write_config(lpi_data.lpi_property, vpe->vpe_db_lpi, 0, LPI_PROP_ENABLED);
++    its_vpe_inv_db(vpe);
++}
++
++static uint64_t read_vpend_dirty_clean(void __iomem *vlpi_base,
++                                       unsigned int count)
++{
++    uint64_t val;
++    bool clean;
++
++    do {
++        val = gits_read_vpendbaser(vlpi_base + GICR_VPENDBASER);
++        /* Poll GICR_VPENDBASER.Dirty until it reads 0. */
++        clean = !(val & GICR_VPENDBASER_Dirty);
++        if ( !clean )
++        {
++            count--;
++            cpu_relax();
++            udelay(1);
++        }
++    } while ( !clean && count );
++
++    if ( !clean )
++    {
++        printk(XENLOG_WARNING "ITS virtual pending table not totally parsed\n");
++        val |= GICR_VPENDBASER_PendingLast;
++    }
++
++    return val;
++}
++
++/*
++ * When a vPE is made resident, the GIC starts parsing the virtual pending
++ * table to deliver pending interrupts. This takes place asynchronously,
++ * and can at times take a long while.
++ */
++static void its_wait_vpt_parse_complete(void __iomem *vlpi_base)
++{
++    if ( !gic_support_vptValidDirty() )
++        return;
++
++    read_vpend_dirty_clean(vlpi_base, 500);
++}
++
++static void its_make_vpe_resident(struct its_vpe *vpe, unsigned int cpu)
++{
++    void __iomem *vlpi_base = gic_data_rdist_vlpi_base(cpu);
++    uint64_t val;
++
++    /* Switch in this VM's virtual property table. */
++    val  = virt_to_maddr(vpe->its_vm->vproptable) & GENMASK(51, 12);
++    val |= GIC_BASER_CACHE_RaWb << GICR_VPROPBASER_INNER_CACHEABILITY_SHIFT;
++    val |= GIC_BASER_InnerShareable << GICR_VPROPBASER_SHAREABILITY_SHIFT;
++    val |= GIC_BASER_CACHE_SameAsInner << GICR_VPROPBASER_OUTER_CACHEABILITY_SHIFT;
++    val |= (HOST_LPIS_NRBITS - 1) & GICR_VPROPBASER_IDBITS_MASK;
++    gits_write_vpropbaser(val, vlpi_base + GICR_VPROPBASER);
++
++    /* Switch in this VCPU's VPT. */
++    val  = virt_to_maddr(vpe->vpendtable) & GENMASK(51, 16);
++    val |= GIC_BASER_CACHE_RaWaWb << GICR_VPENDBASER_INNER_CACHEABILITY_SHIFT;
++    val |= GIC_BASER_InnerShareable << GICR_VPENDBASER_SHAREABILITY_SHIFT;
++    val |= GIC_BASER_CACHE_SameAsInner << GICR_VPENDBASER_OUTER_CACHEABILITY_SHIFT;
++    /*
++     * When the GICR_VPENDBASER.Valid bit is written from 0 to 1,
++     * this bit is RES1.
++     */
++    val |= GICR_VPENDBASER_PendingLast;
++    val |= vpe->idai ? GICR_VPENDBASER_IDAI : 0;
++    val |= GICR_VPENDBASER_Valid;
++    gits_write_vpendbaser(val, vlpi_base + GICR_VPENDBASER);
++
++    its_wait_vpt_parse_complete(vlpi_base);
++}
++
++static void encode_vmovp_v4_1(uint64_t *cmd, uint32_t default_db_pintid)
++{
++    /* Always requiring a Default Doorbell on GICv4.1 */
++    cmd[2] |= GITS_DB_BIT;
++    cmd[3] |= default_db_pintid;
++}
++
++static int its_send_cmd_vmovp(struct its_vpe *vpe)
++{
++    uint16_t vpeid = vpe->vpe_id;
++    int ret;
++    struct host_its *hw_its;
++
++    if ( !its_list_map )
++    {
++        uint64_t cmd[4];
++
++        hw_its = list_first_entry(&host_its_list, struct host_its, entry);
++        cmd[0] = GITS_CMD_VMOVP;
++        cmd[1] = (uint64_t)vpeid << 32;
++        cmd[2] = encode_rdbase(hw_its, vpe->col_idx, 0x0) << 16;
++        cmd[3] = 0x00;
++
++        if ( hw_its->is_v4_1 )
++            encode_vmovp_v4_1(cmd, vpe->vpe_db_lpi);
++
++        return its_send_command(hw_its, cmd);
++    }
++
++    /*
++     * If using the its_list "feature", we need to make sure that all ITSs
++     * receive all VMOVP commands in the same order. The only way
++     * to guarantee this is to make vmovp a serialization point.
++     */
++    spin_lock(&vmovp_lock);
++
++    vmovp_seq_num++;
++
++    /* Emit VMOVPs */
++    list_for_each_entry(hw_its, &host_its_list, entry)
++    {
++        uint64_t cmd[4];
++
++        if ( !hw_its->is_v4 )
++            continue;
++
++        cmd[0] = GITS_CMD_VMOVP | ((uint64_t)vmovp_seq_num << 32);
++        cmd[1] = its_list_map | ((uint64_t)vpeid << 32);
++        cmd[2] = encode_rdbase(hw_its, vpe->col_idx, 0x0) << 16;
++        cmd[3] = 0x00;
++
++        if ( hw_its->is_v4_1 )
++            encode_vmovp_v4_1(cmd, vpe->vpe_db_lpi);
++
++        ret = its_send_command(hw_its, cmd);
++        if ( ret )
++        {
++            spin_unlock(&vmovp_lock);
++            return ret;
++        }
++    }
++
++    spin_unlock(&vmovp_lock);
++
++    return 0;
++}
++
++static void gicv4_vpe_send_clear(struct its_vpe *vpe)
++{
++    if ( gic_support_directLPI() )
++    {
++        void __iomem *rdbase;
++
++        rdbase = per_cpu(rbase, vpe->col_idx);
++        /* Clear potential pending state */
++        writeq_relaxed(vpe->vpe_db_lpi, rdbase + GICR_CLRLPIR);
++        wait_for_syncr(rdbase);
++    }
++    else
++    {
++        unsigned long flags;
++
++        spin_lock_irqsave(&vpe_proxy.lock, flags);
++
++        gicv4_vpe_db_proxy_map_locked(vpe);
++
++        its_send_cmd_clear(vpe_proxy.dev->hw_its, vpe_proxy.dev->host_devid,
++                           vpe->vpe_proxy_event);
++
++        spin_unlock_irqrestore(&vpe_proxy.lock, flags);
++    }
++}
++
++static void its_make_vpe_4_1_resident(struct its_vpe *vpe, unsigned int cpu)
++{
++    void __iomem *vlpi_base = gic_data_rdist_vlpi_base(cpu);
++    uint64_t val = 0;
++
++    val |= GICR_VPENDBASER_Valid;
++    /* All guest LPIs are forwarded as Group 1 */
++    val |= GICR_VPENDBASER_4_1_VGRP1EN;
++    val |= FIELD_PREP(GICR_VPENDBASER_4_1_VPEID, vpe->vpe_id);
++
++    gits_write_vpendbaser(val, vlpi_base + GICR_VPENDBASER);
++}
++
++static int gicv4_vpe_set_affinity(struct vcpu *vcpu)
++{
++    struct its_vpe *vpe = &vcpu->arch.vgic.its_vpe;
++    unsigned int from, to = vcpu->processor;
++    unsigned long flags;
++    int ret = 0;
++
++    /*
++     * Changing affinity is mega expensive, so let's be as lazy as
++     * we can and only do it if we really have to. Also, if mapped
++     * into the proxy device, we need to move the doorbell interrupt
++     * to its new location.
++     *
++     * Another thing is that changing the affinity of a vPE affects
++     * *other interrupts* such as all the vLPIs that are routed to
++     * this vPE. This means that we must ensure nobody samples
++     * vpe->col_idx during the update, hence the lock below which
++     * must also be taken on any vLPI handling path that evaluates
++     * vpe->col_idx, such as reg-based vLPI invalidation.
++     */
++    from = vpe_to_cpuid_lock(vpe, &flags);
++    if ( from == to )
++        goto out;
++
++    vpe->col_idx = to;
++
++    /*
++     * GICv4.1 allows us to skip VMOVP if moving to a cpu whose RD
++     * is sharing its VPE table with the current one.
++     */
++    if ( cpumask_empty(vpe_table_mask_cpu(to)) &&
++         cpumask_test_cpu(from, vpe_table_mask_cpu(to)) )
++        goto out;
++
++    ret = its_send_cmd_vmovp(vpe);
++    if ( ret )
++        goto out;
++    gicv4_vpe_db_proxy_move(vpe, from, to);
++
++ out:
++    vpe_to_cpuid_unlock(vpe, &flags);
++    return ret;
++}
++
++void vgic_v4_load(struct vcpu *vcpu)
++{
++    struct its_vpe *vpe = &vcpu->arch.vgic.its_vpe;
++
++    if ( vpe->resident )
++        return;
++
++    /*
++     * Before making the VPE resident, make sure the redistributor
++     * corresponding to our current CPU expects us here
++     */
++    WARN_ON(gicv4_vpe_set_affinity(vcpu));
++
++    if ( gic_has_v4_1_extension() )
++        /* GICv4.1 can directly deal with doorbells */
++        its_make_vpe_4_1_resident(vpe, vcpu->processor);
++    else
++    {
++        /* Disabled the doorbell, as we're about to enter the guest */
++        its_vpe_mask_db(vpe);
++        its_make_vpe_resident(vpe, vcpu->processor);
++    }
++
++    /*
++     * Now that the VPE is resident, let's get rid of a potential
++     * doorbell interrupt that would still be pending. This is a
++     * GICv4.0 only "feature".
++     */
++    if ( !gic_has_v4_1_extension() )
++        gicv4_vpe_send_clear(vpe);
++
++    vpe->resident = true;
++}
++
++static uint64_t its_clear_vpend_valid(void __iomem *vlpi_base, uint64_t clr,
++                                      uint64_t set)
++{
++    unsigned int count = 1000000;    /* 1s! */
++    uint64_t val;
++
++    /*
++     * Clearing the Valid bit informs the Redistributor that a context
++     * switch is taking place.
++     */
++    val = gits_read_vpendbaser(vlpi_base + GICR_VPENDBASER);
++    val &= ~GICR_VPENDBASER_Valid;
++    val &= ~clr;
++    val |= set;
++    gits_write_vpendbaser(val, vlpi_base + GICR_VPENDBASER);
++
++    return read_vpend_dirty_clean(vlpi_base, count);
++}
++
++static void its_make_vpe_non_resident(struct its_vpe *vpe, unsigned int cpu)
++{
++    void __iomem *vlpi_base = gic_data_rdist_vlpi_base(cpu);
++    uint64_t val;
++
++    val = its_clear_vpend_valid(vlpi_base, 0, 0);
++    vpe->idai = val & GICR_VPENDBASER_IDAI;
++    //vpe->pending_last = val & GICR_VPENDBASER_PendingLast;
++    vpe->pending_last = 0;
++}
++
++static void its_make_vpe_4_1_non_resident(struct its_vpe *vpe, unsigned int cpu,
++                                          bool req_db)
++{
++    void __iomem *vlpi_base = gic_data_rdist_vlpi_base(cpu);
++    uint64_t val;
++
++    if ( req_db )
++    {
++        /*
++         * vPE is going to block: make the vPE non-resident with
++         * PendingLast clear and DB set. The GIC guarantees that if
++         * we read-back PendingLast clear, then a doorbell will be
++         * delivered when an interrupt comes.
++         */
++        val = its_clear_vpend_valid(vlpi_base,
++                                    GICR_VPENDBASER_PendingLast,
++                                    GICR_VPENDBASER_4_1_DB);
++        //vpe->pending_last = val & GICR_VPENDBASER_PendingLast;
++        vpe->pending_last = 0;
++    }
++    else
++    {
++        /*
++         * We're not blocking, so just make the vPE non-resident
++         * with PendingLast set, indicating that we'll be back.
++         * When GICR_VPENDBASER.Valid is written from 1 to 0,
++         * if GICR_VPENDBASER.PendingLast is written as 1 then Doorbell bit
++         * is treated as 0.
++         */
++         val = its_clear_vpend_valid(vlpi_base,
++                                     0, GICR_VPENDBASER_PendingLast);
++         //vpe->pending_last = true;
++         vpe->pending_last = 0;
++    }
++}
++
++void vgic_v4_put(struct vcpu *vcpu, bool need_db)
++{
++    struct its_vpe *vpe = &vcpu->arch.vgic.its_vpe;
++
++    if ( !vpe->resident )
++        return;
++
++    if ( !gic_has_v4_1_extension() )
++    {
++        its_make_vpe_non_resident(vpe, vcpu->processor);
++        if ( need_db )
++            /* Enable the doorbell, as the guest is going to block */
++            its_vpe_unmask_db(vpe);
++    }
++    else
++        /* GICv4.1 can directly deal with doorbells */
++        its_make_vpe_4_1_non_resident(vpe, vcpu->processor, need_db);
++
++    vpe->resident = false;
++}
++
++static int its_vpe_invall(struct its_vpe *vpe)
++{
++    struct host_its *its;
++
++    list_for_each_entry(its, &host_its_list, entry)
++    {
++        if ( !its->is_v4 )
++            continue;
++
++        /*
++         * Sending a VINVALL to a single ITS is enough, as all
++         * we need is to reach the redistributors.
++         */
++        return its_send_cmd_vinvall(its, vpe);
++    }
++
++    return 0;
++}
++
++static void its_vpe_4_1_invall(struct its_vpe *vpe)
++{
++    unsigned int cpu;
++    void __iomem *rdbase;
++    uint64_t val;
++    unsigned long flags;
++
++    val  = GICR_INVALLR_V;
++    val |= FIELD_PREP(GICR_INVALLR_VPEID, vpe->vpe_id);
++
++    /* Target the redistributor this vPE is currently mapped on */
++    cpu = vpe_to_cpuid_lock(vpe, &flags);
++    rdbase = GICD_RDIST_BASE_CPU(cpu);
++    writeq_relaxed(val, rdbase + GICR_INVALLR);
++    wait_for_syncr(rdbase);
++    vpe_to_cpuid_unlock(vpe, &flags);
++}
++
++int gicv4_its_handle_invall(struct domain *d, struct vcpu *vcpu)
++{
++    struct its_vpe *vpe = d->arch.vgic.its_vm.vpes[vcpu->vcpu_id];
++
++    if ( !gic_has_v4_1_extension() )
++        return its_vpe_invall(vpe);
++
++    its_vpe_4_1_invall(vpe);
++
++    return 0;
++}
++
++static uint64_t inherit_vpe_l1_table_from_rd(void)
++{
++    uint32_t aff;
++    uint64_t val;
++    unsigned int cpu;
++
++    val = readl_relaxed(GICD_RDIST_BASE + GICR_TYPER);
++    aff = compute_common_aff(val);
++
++    for_each_present_cpu ( cpu )
++    {
++        if ( cpu == smp_processor_id() )
++            continue;
++
++        val = readl_relaxed(GICD_RDIST_BASE_CPU(cpu) + GICR_TYPER);
++        if ( aff != compute_common_aff(val) )
++            continue;
++
++        /*
++         * At this point, we have found a particular CPU, which has
++         * already booted, and its Redistributors lives in the same
++         * CommonLPIAff group. Then we must inherit its VPROPBASER
++         * to ensure they share the same copy of VPE configuration table.
++         * Make sure we don't write the Z bit in that case.
++         */
++        val = gits_read_vpropbaser(gic_data_rdist_vlpi_base(cpu) +
++                                   GICR_VPROPBASER);
++        val &= ~GICR_VPROPBASER_4_1_Z;
++
++        /*
++         * All redistributors in the same CommonLPIaff group
++         * share the same copy.
++         */
++        VPE_TABLE_MASK = vpe_table_mask_cpu(cpu);
++
++        return val;
++    }
++
++    return 0;
++}
++
++static uint64_t inherit_vpe_l1_table_from_its(void)
++{
++    struct host_its *its;
++    uint64_t val;
++    uint32_t aff;
++
++    val = readl_relaxed(GICD_RDIST_BASE + GICR_TYPER);
++    aff = compute_common_aff(val);
++
++    list_for_each_entry(its, &host_its_list, entry)
++    {
++        uint64_t typer, baser;
++        paddr_t addr;
++
++        if ( !its->is_v4_1 )
++            continue;
++
++        typer = readq_relaxed(its->its_base + GITS_TYPER);
++        if ( !FIELD_GET(GITS_TYPER_SVPET, typer) )
++            continue;
++
++        if ( aff != compute_its_aff(its) )
++            continue;
++
++        /* GICv4.1 guarantees that the vPE table is GITS_BASER2 */
++        baser = its->tables[2].val;
++        if ( !(baser & GITS_BASER_VALID) )
++            continue;
++
++        /* We have found an ITS, from which we shall inherit vPE table */
++        val = GICR_VPROPBASER_4_1_VALID;
++        if ( baser & GITS_BASER_INDIRECT )
++            val |= GICR_VPROPBASER_4_1_INDIRECT;
++        val |= FIELD_PREP(GICR_VPROPBASER_4_1_PAGE_SIZE,
++                          FIELD_GET(GITS_BASER_PAGE_SIZE_MASK, baser));
++        switch ( FIELD_GET(GITS_BASER_PAGE_SIZE_MASK, baser) )
++        {
++        case GIC_PAGE_SIZE_64K:
++            addr = GITS_BASER_ADDR_48_to_52(baser);
++            break;
++        default:
++            addr = baser & GENMASK(47, 12);
++            break;
++        }
++        val |= FIELD_PREP(GICR_VPROPBASER_4_1_ADDR, addr >> 12);
++        val |= FIELD_PREP(GICR_VPROPBASER_SHAREABILITY_MASK,
++                  FIELD_GET(GITS_BASER_SHAREABILITY_MASK, baser));
++        val |= FIELD_PREP(GICR_VPROPBASER_INNER_CACHEABILITY_MASK,
++                  FIELD_GET(GITS_BASER_INNER_CACHEABILITY_MASK, baser));
++        val |= FIELD_PREP(GICR_VPROPBASER_4_1_SIZE,
++                          GITS_BASER_NR_PAGES(baser) - 1);
++
++        return val;
++    }
++
++    return 0;
++}
++
++int allocate_vpe_l1_table(void)
++{
++    void __iomem *vlpi_base = gic_data_rdist_vlpi_base(smp_processor_id());
++    void __iomem *buffer;
++    uint64_t val, gpsz, npg, pa;
++    unsigned int psz = SZ_64K;
++    unsigned int epp, esz;
++
++    if ( !gic_has_v4_1_extension() )
++        return 0;
++
++    /*
++     * if VPENDBASER.Valid is set, disable any previously programmed VPE
++     * by setting PendingLast while clearing Valid. This has the effect of
++     * making sure no doorbell will be generated and we can then safely
++     * clear VPROPBASER.Valid.
++     */
++    if ( gits_read_vpendbaser(vlpi_base + GICR_VPENDBASER) &
++                              GICR_VPENDBASER_Valid )
++        gits_write_vpendbaser(GICR_VPENDBASER_PendingLast,
++                              vlpi_base + GICR_VPENDBASER);
++
++    /* Check if we can inherit the configuration from another Redistributor. */
++    val = inherit_vpe_l1_table_from_rd();
++    if ( val & GICR_VPROPBASER_4_1_VALID )
++        goto out;
++
++    VPE_TABLE_MASK = xzalloc(cpumask_t);
++    if ( !VPE_TABLE_MASK )
++        return -ENOMEM;
++
++    /* Check if we can inherit the configuration from ITS Baser2. */
++    val = inherit_vpe_l1_table_from_its();
++    if ( val & GICR_VPROPBASER_4_1_VALID )
++        goto out;
++
++    /* First probe the page size and entry size */
++    val = FIELD_PREP(GICR_VPROPBASER_4_1_PAGE_SIZE, GIC_PAGE_SIZE_64K);
++    gits_write_vpropbaser(val, vlpi_base + GICR_VPROPBASER);
++    val = gits_read_vpropbaser(vlpi_base + GICR_VPROPBASER);
++    gpsz = FIELD_GET(GICR_VPROPBASER_4_1_PAGE_SIZE, val);
++    esz = FIELD_GET(GICR_VPROPBASER_4_1_ENTRY_SIZE, val) + 1;
++
++    switch ( gpsz )
++    {
++    default:
++        gpsz = GIC_PAGE_SIZE_4K;
++    case GIC_PAGE_SIZE_4K:
++        psz = SZ_4K;
++        break;
++    case GIC_PAGE_SIZE_16K:
++        psz = SZ_16K;
++        break;
++    case GIC_PAGE_SIZE_64K:
++        psz = SZ_64K;
++        break;
++    }
++
++    /* Start populating the register from scratch. */
++    val = 0;
++    val |= FIELD_PREP(GICR_VPROPBASER_4_1_PAGE_SIZE, gpsz);
++    val |= FIELD_PREP(GICR_VPROPBASER_4_1_ENTRY_SIZE, esz - 1);
++
++    /* How many entries per GIC page? */
++    epp = psz / (esz * SZ_8);
++
++    /*
++     * If we need more than just a single L1 page, flag the table
++     * as indirect and compute the number of required L1 pages.
++     */
++    if ( epp < MAX_VPEID )
++    {
++        int nl2;
++
++        val |= GICR_VPROPBASER_4_1_INDIRECT;
++
++        /* Number of L2 pages required to cover the VPEID range */
++        nl2 = DIV_ROUND_UP(MAX_VPEID, epp);
++
++        /* Number of L1 pages to point to the L2 pages */
++        npg = DIV_ROUND_UP(nl2 * SZ_8, psz);
++    }
++    else
++        npg = 1;
++
++    val |= FIELD_PREP(GICR_VPROPBASER_4_1_SIZE, npg - 1);
++
++    buffer = _xzalloc(npg * psz, psz);
++    if ( !buffer )
++        return -ENOMEM;
++    pa = virt_to_maddr(buffer);
++
++    val |= FIELD_PREP(GICR_VPROPBASER_4_1_ADDR, pa >> 12);
++    val |= GIC_BASER_CACHE_RaWb;
++    val |= GIC_BASER_InnerShareable;
++    val |= GICR_VPROPBASER_4_1_Z;
++    val |= GICR_VPROPBASER_4_1_VALID;
++
++ out:
++    gits_write_vpropbaser(val, vlpi_base + GICR_VPROPBASER);
++    cpumask_set_cpu(smp_processor_id(), VPE_TABLE_MASK);
++
++    printk(XENLOG_DEBUG "CPU%d: VPROPBASER = %lx\n", smp_processor_id(), val);
++
++    return 0;
++}
++
++static int its_send_cmd_vsgi(struct host_its *its, uint8_t vsgi_irq,
++                             struct its_vpe *vpe, bool clear)
++{
++    uint64_t cmd[4];
++    uint16_t vpeid = vpe->vpe_id;
++    uint8_t priority = vpe->sgi_config[vsgi_irq].priority;
++    int ret;
++
++    if ( vsgi_irq > 15 )
++        return -EINVAL;
++
++    cmd[0] = GITS_CMD_VSGI | ((uint64_t)vsgi_irq << 32) |
++             ((uint64_t)priority << 20);
++    cmd[0] |= vpe->sgi_config[vsgi_irq].enabled ? GITS_ENABLE_BIT : 0;
++    cmd[0] |= vpe->sgi_config[vsgi_irq].group ? GITS_GROUP_BIT : 0;
++    cmd[0] |= clear ?  GITS_CLEAR_BIT : 0;
++    cmd[1] = (uint64_t)vpeid << 32;
++    cmd[2] = 0x00;
++    cmd[3] = 0x00;
++
++    ret = its_send_command(its, cmd);
++    if ( ret )
++        return ret;
++
++    return its_send_cmd_vsync(its, vpeid);
++}
++
++int vgic_v4_configure_vcpu_sgi(struct vcpu *v)
++{
++    unsigned int i;
++    struct host_its *hw_its;
++    struct its_vpe *vpe = &v->arch.vgic.its_vpe;
++    int ret;
++
++    hw_its = find_4_1_its();
++    if ( !hw_its )
++        return -ENOENT;
++
++    for ( i = 0; i < VGIC_NR_SGIS; i++ )
++    {
++        vpe->sgi_config[i].enabled = false;
++        vpe->sgi_config[i].group = true;
++        vpe->sgi_config[i].priority = 0;
++
++         /* Write out the initial VSGI configuration */
++        ret = its_send_cmd_vsgi(hw_its, i, vpe, false);
++        if ( ret )
++            return ret;
++    }
++
++    return 0;
++}
++
++int its_sgi_mask_irq(struct vcpu *v, unsigned int irq)
++{
++    int ret;
++    struct its_vpe *vpe = &v->arch.vgic.its_vpe;
++    struct host_its *hw_its;
++
++    ASSERT(irq < 16);
++
++    hw_its = find_4_1_its();
++    if ( !hw_its )
++        return -EINVAL;
++
++    vpe->sgi_config[irq].enabled = false;
++    ret = its_send_cmd_vsgi(hw_its, irq, vpe, false);
++    if ( ret )
++        return ret;
++
++    return 0;
++}
++
++int its_sgi_unmask_irq(struct vcpu *v, unsigned int irq)
++{
++    int ret;
++    struct its_vpe *vpe = &v->arch.vgic.its_vpe;
++    struct host_its *hw_its;
++
++    ASSERT(irq < 16);
++
++    hw_its = find_4_1_its();
++    if ( !hw_its )
++        return -EINVAL;
++
++    vpe->sgi_config[irq].enabled = true;
++    ret = its_send_cmd_vsgi(hw_its, irq, vpe, false);
++    if ( ret )
++        return ret;
++
++    return 0;
++}
++
++int its_sgi_get_pending_state(struct vcpu *v, uint32_t *ipending)
++{
++    struct its_vpe *vpe = &v->arch.vgic.its_vpe;
++    void __iomem *base;
++    uint32_t status;
++    uint32_t count = 1000000;    /* 1s! */
++    unsigned int cpu;
++    unsigned long flags;
++
++    /*
++     * We can race against the following events:
++     *
++     * - Concurrent vPE affinity change: we must make sure it cannot
++     *   happen, or we'll talk to the wrong redistributor. This is
++     *   identical to what happens with vLPIs.
++     */
++    cpu = vpe_to_cpuid_lock(vpe, &flags);
++    base = gic_data_rdist_vlpi_base(cpu);
++    writel_relaxed(vpe->vpe_id, base + GICR_VSGIR);
++    do {
++        status = readl_relaxed(base + GICR_VSGIPENDR);
++        /* Wait until BUSY is cleared */
++        if ( !(status & GICR_VSGIPENDR_BUSY) )
++            goto out;
++
++        count--;
++        if ( !count )
++        {
++            printk(XENLOG_G_ERR "%pv: unable to get SGI pending status\n", v);
++            goto out;
++        }
++        cpu_relax();
++        udelay(1);
++    } while ( count );
++
++ out:
++    vpe_to_cpuid_unlock(vpe, &flags);
++
++    if ( !count )
++        return -ENXIO;
++
++    *ipending = status & GICR_VSGIPENDR_PENDING;
++
++    return 0;
++}
++
++int its_sgi_set_pending_state(struct vcpu *v, unsigned int vsgi, bool state)
++{
++    struct its_vpe *vpe = &v->arch.vgic.its_vpe;
++    struct host_its *its = find_4_1_its();
++    uint64_t val;
++    int ret = 0;
++
++    if ( state )
++    {
++        val = FIELD_PREP(GITS_SGIR_VPEID, vpe->vpe_id);
++        val |= FIELD_PREP(GITS_SGIR_VINTID, vsgi);
++        writeq_relaxed(val, its->sgir_base + GITS_SGIR);
++    }
++    else
++    {
++         /*
++          * Clearing the pending bit by emiting a VSGI command with
++          * the "clear" bit set
++          */
++        ret = its_send_cmd_vsgi(its, vsgi, vpe, true);
++    }
++
++    return ret;
++}
++
++int its_sgi_prop_update(struct vcpu *v, unsigned int irq, uint8_t priority)
++{
++    int ret;
++    struct its_vpe *vpe = &v->arch.vgic.its_vpe;
++    struct host_its *hw_its;
++
++    ASSERT(irq < 16);
++
++    hw_its = find_4_1_its();
++    if ( !hw_its )
++        return -EINVAL;
++
++    vpe->sgi_config[irq].priority = priority;
++    ret = its_send_cmd_vsgi(hw_its, irq, vpe, false);
++    if ( ret )
++        return ret;
++
++    return 0;
++}
++
++static void vgic_v4_sync_sgi_config(struct its_vpe *vpe,
++                                    struct pending_irq *pirq)
++{
++    bool enabled;
++
++    enabled = test_bit(GIC_IRQ_GUEST_ENABLED, &pirq->status);
++    vpe->sgi_config[pirq->irq].enabled = enabled;
++    /* Always Group-1 interrupt */
++    vpe->sgi_config[pirq->irq].group = true;
++    vpe->sgi_config[pirq->irq].priority = pirq->priority;
++}
++
++/* Transfer from old, software-emulated SGIs to the new, HW-based ones */
++static void vgic_v4_enable_vsgis(struct vcpu *vcpu)
++{
++    struct its_vpe *vpe = &vcpu->arch.vgic.its_vpe;
++    unsigned int i;
++    struct host_its *hw_its = find_4_1_its();
++    unsigned long flags;
++
++    for ( i = 0; i < VGIC_NR_SGIS; i++ )
++    {
++        struct pending_irq *p = irq_to_pending(vcpu, i);
++
++        spin_lock_irqsave(&vcpu->arch.vgic.lock, flags);
++
++        if ( p->hw )
++            goto unlock;
++
++        /*
++         * With GICv4.1, every virtual SGI can be directly injected. So
++         * let's pretend that they are HW-based interrupts.
++         */
++        p->hw = true;
++
++        /* Transfer the full pending_irq state to the vPE */
++        vgic_v4_sync_sgi_config(vpe, p);
++        WARN_ON(its_send_cmd_vsgi(hw_its, i, vpe, false));
++
++        /* Transfer pending state */
++        if ( test_bit(GIC_IRQ_GUEST_ENABLED, &p->status) &&
++             !list_empty(&p->inflight) )
++        {
++            /*
++             * If IRQ is lr_pending, we could transfer to use ITS MMIO
++             * registers to deliver pending state
++             */
++            if ( !list_empty(&p->lr_queue) )
++            {
++                list_del_init(&p->lr_queue);
++                WARN_ON(its_sgi_set_pending_state(vcpu, i, true));
++                clear_bit(GIC_IRQ_GUEST_QUEUED, &p->status);
++                list_del_init(&p->inflight);
++            }
++            else
++                gic_raise_inflight_irq(vcpu, i);
++        }
++
++    unlock:
++        spin_unlock_irqrestore(&vcpu->arch.vgic.lock, flags);
++    }
++}
++
++/* Transfer from new, HW-based SGIS to the old, software-emulated ones */
++static void vgic_v4_disable_vsgis(struct vcpu *vcpu)
++{
++    struct its_vpe *vpe = &vcpu->arch.vgic.its_vpe;
++    unsigned int i;
++    struct host_its *hw_its = find_4_1_its();
++    uint32_t ipending;
++    unsigned long flags;
++    int ret;
++
++    ret = its_sgi_get_pending_state(vcpu, &ipending);
++    WARN_ON(ret);
++
++    for ( i = 0; i < VGIC_NR_SGIS; i++ )
++    {
++        struct pending_irq *p = irq_to_pending(vcpu, i);
++
++        spin_lock_irqsave(&vcpu->arch.vgic.lock, flags);
++
++        if ( !p->hw )
++            goto unlock;
++
++        p->hw = false;
++
++        /* Transfer pending state */
++        if ( ipending & (1U << i) )
++             vgic_inject_irq(vcpu->domain, vcpu, i, true);
++
++        /*
++         * Disable HW-based VSGI and clearing the pending bit.
++         * For VSGI command:
++         * To change the configuration, CLEAR must be set to false,
++         * leaving the pending bit unchanged.
++         * To clear the pending bit, CLEAR must be set to true, leaving
++         * the configuration unchanged.
++         * You just can't do both at once, hence the two commands below.
++         */
++        vpe->sgi_config[i].enabled = false;
++        WARN_ON(its_send_cmd_vsgi(hw_its, i, vpe, false));
++        WARN_ON(its_send_cmd_vsgi(hw_its, i, vpe, true));
++
++    unlock:
++        spin_unlock_irqrestore(&vcpu->arch.vgic.lock, flags);
++    }
++}
++
++void vgic_v4_configure_vsgis(struct domain *d)
++{
++    struct vcpu *v;
++
++    WARN_ON(domain_pause_except_self(d));
++
++    for_each_vcpu ( d, v )
++    {
++        if ( d->arch.vgic.nassgireq )
++            vgic_v4_enable_vsgis(v);
++        else
++            vgic_v4_disable_vsgis(v);
++    }
++
++    domain_unpause_except_self(d);
++}
++
++bool guest_support_nassgi(struct domain *d)
++{
++    return d->arch.vgic.nassgireq;
++}
++
++/*
++ * Local variables:
++ * mode: C
++ * c-file-style: "BSD"
++ * c-basic-offset: 4
++ * indent-tabs-mode: nil
++ * End:
++ */
+diff --git a/xen/arch/arm/gic-vgic.c b/xen/arch/arm/gic-vgic.c
+index 98c021f1a8..6fc2933cab 100644
+--- a/xen/arch/arm/gic-vgic.c
++++ b/xen/arch/arm/gic-vgic.c
+@@ -387,6 +387,12 @@ int vgic_vcpu_pending_irq(struct vcpu *v)
+         }
+     }
+ 
++#ifdef CONFIG_GICV4
++    if ( vgic_has_directVLPI(v->domain) )
++        if ( v->arch.vgic.its_vpe.pending_last )
++            rc = 1;
++#endif
++
+ out:
+     spin_unlock_irqrestore(&v->arch.vgic.lock, flags);
+     return rc;
+diff --git a/xen/arch/arm/include/asm/domain.h b/xen/arch/arm/include/asm/domain.h
+index 487ac83a7f..af605a221c 100644
+--- a/xen/arch/arm/include/asm/domain.h
++++ b/xen/arch/arm/include/asm/domain.h
+@@ -9,6 +9,9 @@
+ #include <asm/mmio.h>
+ #include <asm/mpam.h>
+ #include <asm/gic.h>
++#ifdef CONFIG_GICV4
++#include <asm/gic_v4_its.h>
++#endif
+ #include <asm/vgic.h>
+ #include <asm/vpl011.h>
+ #include <public/hvm/params.h>
+@@ -118,7 +121,6 @@ struct arch_domain
+ #ifdef CONFIG_MPAM
+     struct mpam_domain mpam;
+ #endif
+-
+ }  __cacheline_aligned;
+ 
+ struct arch_vcpu
+@@ -239,6 +241,7 @@ struct arch_vcpu
+     uint64_t mpam0_el1;
+     uint64_t mpam1_el1;
+ #endif
++    bool wfi_nomask;
+ }  __cacheline_aligned;
+ 
+ void vcpu_show_execution_state(struct vcpu *);
+@@ -293,7 +296,13 @@ static inline void free_vcpu_guest_context(struct vcpu_guest_context *vgc)
+     xfree(vgc);
+ }
+ 
+-static inline void arch_vcpu_block(struct vcpu *v) {}
++#ifdef CONFIG_GICV4
++#define arch_vcpu_block(v) vgic_v4_put(v, true)
++#define arch_vcpu_unblock(v) vgic_v4_load(v)
++#else
++#define arch_vcpu_block(v) ((void)(v))
++#define arch_vcpu_unblock(v) ((void)(v))
++#endif
+ 
+ #define arch_vm_assist_valid_mask(d) (1UL << VMASST_TYPE_runstate_update_flag)
+ 
+diff --git a/xen/arch/arm/include/asm/event.h b/xen/arch/arm/include/asm/event.h
+index b14c166ad6..1e4ec01765 100644
+--- a/xen/arch/arm/include/asm/event.h
++++ b/xen/arch/arm/include/asm/event.h
+@@ -35,7 +35,7 @@ static inline int local_events_need_delivery_nomask(void)
+ 
+ static inline int local_events_need_delivery(void)
+ {
+-    if ( !vcpu_event_delivery_is_enabled(current) )
++    if ( !current->arch.wfi_nomask && !vcpu_event_delivery_is_enabled(current) )
+         return 0;
+     return local_events_need_delivery_nomask();
+ }
+diff --git a/xen/arch/arm/include/asm/gic.h b/xen/arch/arm/include/asm/gic.h
+index 76e3fa5dc4..f3c83389c0 100644
+--- a/xen/arch/arm/include/asm/gic.h
++++ b/xen/arch/arm/include/asm/gic.h
+@@ -235,6 +235,8 @@ enum gic_version {
+     GIC_INVALID = 0,    /* the default until explicitly set up */
+     GIC_V2,
+     GIC_V3,
++    GIC_V4,
++    GIC_V4_1,
+ };
+ 
+ DECLARE_PER_CPU(uint64_t, lr_mask);
+@@ -332,7 +334,7 @@ struct gic_hw_operations {
+     /* Save GIC registers */
+     void (*save_state)(struct vcpu *);
+     /* Restore GIC registers */
+-    void (*restore_state)(const struct vcpu *);
++    void (*restore_state)(struct vcpu *);
+     /* Dump GIC LR register information */
+     void (*dump_state)(const struct vcpu *);
+ 
+diff --git a/xen/arch/arm/include/asm/gic_v3_defs.h b/xen/arch/arm/include/asm/gic_v3_defs.h
+index 34ed5f857d..4ddb6c8577 100644
+--- a/xen/arch/arm/include/asm/gic_v3_defs.h
++++ b/xen/arch/arm/include/asm/gic_v3_defs.h
+@@ -53,11 +53,18 @@
+ 
+ #define GICD_TYPE_LPIS               (1U << 17)
+ 
++#define GICD_TYPER2                  0x000c
++
++#define GICD_TYPER2_VIL              (1U << 7)
++#define GICD_TYPER2_VID              GENMASK(4, 0)
++#define GICD_TYPER2_nASSGIcap        (1U << 8)
++
+ #define GICD_CTLR_RWP                (1UL << 31)
+ #define GICD_CTLR_ARE_NS             (1U << 4)
+ #define GICD_CTLR_ENABLE_G1A         (1U << 1)
+ #define GICD_CTLR_ENABLE_G1          (1U << 0)
+ #define GICD_IROUTER_SPI_MODE_ANY    (1UL << 31)
++#define GICD_CTLR_nASSGIreq          (1U << 8)
+ 
+ #define GICC_CTLR_EL1_EOImode_drop   (1U << 1)
+ 
+@@ -105,11 +112,23 @@
+ #define GICR_IGRPMODR0               (0x0D00)
+ #define GICR_NSACR                   (0x0E00)
+ 
++/* GICR for vSGI with GICV4.1 */
++#define GICR_VSGIR                   (0x0080)
++
++#define GICR_VSGIPENDR               (0x0088)
++#define GICR_VSGIPENDR_BUSY          (1U << 31)
++#define GICR_VSGIPENDR_PENDING       GENMASK(15, 0)
++
+ #define GICR_CTLR_ENABLE_LPIS        (1U << 0)
+ 
+ #define GICR_TYPER_PLPIS             (1U << 0)
+ #define GICR_TYPER_VLPIS             (1U << 1)
++#define GICR_TYPER_DirectLPIS        (1U << 3)
+ #define GICR_TYPER_LAST              (1U << 4)
++#define GICR_TYPER_RVPEID            (1U << 7)
++#define GICR_TYPER_COMMON_LPI_AFF    GENMASK_ULL(25, 24)
++#define GICR_TYPER_AFFINITY          GENMASK_ULL(63, 32)
++
+ #define GICR_TYPER_PROC_NUM_SHIFT    8
+ #define GICR_TYPER_PROC_NUM_MASK     (0xffff << GICR_TYPER_PROC_NUM_SHIFT)
+ 
+@@ -208,6 +227,12 @@ struct rdist_region {
+     bool single_rdist;
+ };
+ 
++/* per-cpu re-distributor base */
++DECLARE_PER_CPU(void __iomem*, rbase);
++
++#define GICD_RDIST_BASE             (this_cpu(rbase))
++#define GICD_RDIST_BASE_CPU(cpu)    (per_cpu(rbase, cpu))
++
+ #endif /* __ASM_ARM_GIC_V3_DEFS_H__ */
+ 
+ /*
+diff --git a/xen/arch/arm/include/asm/gic_v3_its.h b/xen/arch/arm/include/asm/gic_v3_its.h
+index 54813de5cd..c69c8c8f2c 100644
+--- a/xen/arch/arm/include/asm/gic_v3_its.h
++++ b/xen/arch/arm/include/asm/gic_v3_its.h
+@@ -20,9 +20,15 @@
+ #ifndef __ASM_ARM_ITS_H__
+ #define __ASM_ARM_ITS_H__
+ 
++#define GIC_PAGE_SIZE_4K                0UL
++#define GIC_PAGE_SIZE_16K               1UL
++#define GIC_PAGE_SIZE_64K               2UL
++#define GIC_PAGE_SIZE_MASK              3UL
++
+ #define GITS_CTLR                       0x000
+ #define GITS_IIDR                       0x004
+ #define GITS_TYPER                      0x008
++#define GITS_MPIDR                      0x018
+ #define GITS_CBASER                     0x080
+ #define GITS_CWRITER                    0x088
+ #define GITS_CREADR                     0x090
+@@ -39,10 +45,21 @@
+ 
+ /* Register bits */
+ #define GITS_VALID_BIT                  BIT(63, UL)
++#ifdef CONFIG_GICV4
++#define GITS_ALLOC_BIT                  BIT(8, UL)
++#define GITS_PTZ_BIT                    BIT(9, UL)
++#define GITS_DB_BIT                     BIT(63, UL)
++#define GITS_ENABLE_BIT                 BIT(8, UL)
++#define GITS_CLEAR_BIT                  BIT(9, UL)
++#define GITS_GROUP_BIT                  BIT(10, UL)
++#endif
+ 
+ #define GITS_CTLR_QUIESCENT             BIT(31, UL)
+ #define GITS_CTLR_ENABLE                BIT(0, UL)
+ 
++#define GITS_CTLR_ITS_NUMBER_SHIFT      4
++#define GITS_CTLR_ITS_NUMBER            (0xfUL << GITS_CTLR_ITS_NUMBER_SHIFT)
++
+ #define GITS_TYPER_PTA                  BIT(19, UL)
+ #define GITS_TYPER_DEVIDS_SHIFT         13
+ #define GITS_TYPER_DEVIDS_MASK          (0x1fUL << GITS_TYPER_DEVIDS_SHIFT)
+@@ -59,11 +76,17 @@
+ #define GITS_TYPER_ITT_SIZE(r)          ((((r) & GITS_TYPER_ITT_SIZE_MASK) >> \
+                                                  GITS_TYPER_ITT_SIZE_SHIFT) + 1)
+ #define GITS_TYPER_PHYSICAL             (1U << 0)
+-
++#define GITS_TYPER_VLPIS                (1UL << 1)
++#define GICR_TYPER_DIRTY                (1UL << 2)
++#define GITS_TYPER_VMOVP                (1UL << 37)
++#define GITS_TYPER_VMAPP                (1UL << 40)
++#define GITS_TYPER_SVPET                GENMASK(42, 41)
+ #define GITS_BASER_INDIRECT             BIT(62, UL)
++#define GITS_BASER_VALID                BIT(63, UL)
+ #define GITS_BASER_INNER_CACHEABILITY_SHIFT        59
+ #define GITS_BASER_TYPE_SHIFT           56
+ #define GITS_BASER_TYPE_MASK            (7ULL << GITS_BASER_TYPE_SHIFT)
++#define GITS_BASER_TYPE(reg)            ((reg & GITS_BASER_TYPE_MASK) >> GITS_BASER_TYPE_SHIFT)
+ #define GITS_BASER_OUTER_CACHEABILITY_SHIFT        53
+ #define GITS_BASER_TYPE_NONE            0UL
+ #define GITS_BASER_TYPE_DEVICE          1UL
+@@ -76,12 +99,23 @@
+ #define GITS_BASER_ENTRY_SIZE_SHIFT     48
+ #define GITS_BASER_ENTRY_SIZE(reg)                                       \
+                         ((((reg) >> GITS_BASER_ENTRY_SIZE_SHIFT) & 0x1f) + 1)
++#define GITS_LVL1_ENTRY_SIZE            8UL
+ #define GITS_BASER_SHAREABILITY_SHIFT   10
+ #define GITS_BASER_PAGE_SIZE_SHIFT      8
++#define __GITS_BASER_PSZ(sz)            (GIC_PAGE_SIZE_ ## sz <<         \
++                                        GITS_BASER_PAGE_SIZE_SHIFT)
++#define GITS_BASER_PAGE_SIZE_4K         __GITS_BASER_PSZ(4K)
++#define GITS_BASER_PAGE_SIZE_16K        __GITS_BASER_PSZ(16K)
++#define GITS_BASER_PAGE_SIZE_64K        __GITS_BASER_PSZ(64K)
++#define GITS_BASER_PAGE_SIZE_MASK       __GITS_BASER_PSZ(MASK)
++#define GITS_BASER_NR_PAGES(r)          (((r) & 0xff) + 1)
++
+ #define GITS_BASER_SIZE_MASK            0xff
+ #define GITS_BASER_SHAREABILITY_MASK   (0x3ULL << GITS_BASER_SHAREABILITY_SHIFT)
+ #define GITS_BASER_OUTER_CACHEABILITY_MASK   (0x7ULL << GITS_BASER_OUTER_CACHEABILITY_SHIFT)
+ #define GITS_BASER_INNER_CACHEABILITY_MASK   (0x7ULL << GITS_BASER_INNER_CACHEABILITY_SHIFT)
++#define GITS_BASER_ADDR_48_to_52(baser)                 \
++    (((baser) & GENMASK(47, 16)) | (((baser) >> 12) & 0xf) << 48)
+ 
+ #define GITS_CBASER_SIZE_MASK           0xff
+ 
+@@ -115,6 +149,55 @@
+ /* We allocate LPIs on the hosts in chunks of 32 to reduce handling overhead. */
+ #define LPI_BLOCK                       32U
+ 
++/*
++ * Maximum number of ITSs when GITS_TYPER.VMOVP == 0, using the
++ * ITSList mechanism to perform inter-ITS synchronization.
++ */
++#define GICv4_ITS_LIST_MAX      16
++
++extern unsigned int nvpeid;
++/* The maximum number of VPEID bits supported by VLPI commands */
++#define ITS_MAX_VPEID_BITS      nvpeid
++#define MAX_VPEID               (1UL << ITS_MAX_VPEID_BITS)
++
++#ifdef CONFIG_GICV4
++#include <asm/gic_v4_its.h>
++#endif
++
++/*
++ * Describes a device which is using the ITS and is used by a guest.
++ * Since device IDs are per ITS (in contrast to vLPIs, which are per
++ * guest), we have to differentiate between different virtual ITSes.
++ * We use the doorbell address here, since this is a nice architectural
++ * property of MSIs in general and we can easily get to the base address
++ * of the ITS and look that up.
++ */
++struct its_device {
++    struct rb_node rbnode;
++    struct host_its *hw_its;
++    void *itt_addr;
++    paddr_t guest_doorbell;             /* Identifies the virtual ITS */
++    uint32_t host_devid;
++    uint32_t guest_devid;
++    uint32_t eventids;                  /* Number of event IDs (MSIs) */
++    uint32_t *host_lpi_blocks;          /* Which LPIs are used on the host */
++    struct pending_irq *pend_irqs;      /* One struct per event */
++#ifdef CONFIG_GICV4
++    struct event_vlpi_map event_map;
++#endif
++};
++
++/*
++ * The ITS_BASER structure - contains memory information, cached
++ * value of BASER register configuration.
++ */
++struct its_baser {
++    void            *base;
++    uint64_t        val;
++    unsigned int    table_size;
++    unsigned int    pagesz;
++};
++
+ /* data structure for each hardware ITS */
+ struct host_its {
+     struct list_head entry;
+@@ -122,19 +205,66 @@ struct host_its {
+     paddr_t addr;
+     paddr_t size;
+     void __iomem *its_base;
++    void __iomem *sgir_base;
+     unsigned int devid_bits;
+     unsigned int evid_bits;
+     unsigned int itte_size;
+     spinlock_t cmd_lock;
+     void *cmd_buf;
+     unsigned int flags;
++    bool is_v4;
++    struct its_baser tables[GITS_BASER_NR_REGS];
++    bool is_v4_1;
++    uint32_t mpidr;
+ };
+ 
+-
+ #ifdef CONFIG_HAS_ITS
+ 
+-extern struct list_head host_its_list;
++struct __lpi_data {
++    /* The global LPI property table, shared by all redistributors. */
++    uint8_t *lpi_property;
++    /*
++     * A two-level table to lookup LPIs firing on the host and look up the
++     * VCPU and virtual LPI number to inject into.
++     */
++    union host_lpi **host_lpis;
++    /*
++     * Number of physical LPIs the host supports. This is a property of
++     * the GIC hardware. We depart from the habit of naming these things
++     * "physical" in Xen, as the GICv3/4 spec uses the term "physical LPI"
++     * in a different context to differentiate them from "virtual LPIs".
++     */
++    unsigned long int max_host_lpi_ids;
++    /*
++     * Protects allocation and deallocation of host LPIs and next_free_lpi,
++     * but not the actual data stored in the host_lpi entry.
++     */
++    spinlock_t host_lpis_lock;
++    uint32_t next_free_lpi;
++    unsigned int flags;
++};
++extern struct __lpi_data lpi_data;
+ 
++extern struct list_head host_its_list;
++extern unsigned long its_list_map;
++
++int its_send_cmd_discard(struct host_its *its, struct its_device *dev,
++                         uint32_t eventid);
++int its_send_cmd_inv(struct host_its *its, uint32_t deviceid, uint32_t eventid);
++int its_send_cmd_clear(struct host_its *its, uint32_t deviceid, uint32_t eventid);
++int its_send_cmd_int(struct host_its *its, uint32_t deviceid, uint32_t eventid);
++int gicv3_its_wait_commands(struct host_its *hw_its);
++int its_inv_lpi(struct host_its *its, struct its_device *dev,
++                uint32_t eventid, unsigned int cpu);
++int its_send_cmd_mapti(struct host_its *its, uint32_t deviceid,
++                       uint32_t eventid, uint32_t pintid, uint16_t icid);
++struct its_device *its_create_device(struct host_its *hw_its,
++                                     uint32_t host_devid, uint64_t nr_events);
++int update_lpi_property(struct domain *d, struct pending_irq *p,
++                        bool needs_inv);
++int its_send_cmd_movi(struct host_its *its, uint32_t deviceid, uint32_t eventid,
++                      uint16_t icid);
++int its_send_cmd_sync(struct host_its *its, unsigned int cpu);
+ #ifdef CONFIG_ACPI
+ unsigned long gicv3_its_make_hwdom_madt(const struct domain *d,
+                                         void *base_ptr);
+@@ -200,8 +330,48 @@ struct pending_irq *gicv3_assign_guest_event(struct domain *d, paddr_t doorbell,
+                                              uint32_t devid, uint32_t eventid,
+                                              uint32_t virt_lpi);
+ void gicv3_lpi_update_host_entry(uint32_t host_lpi, int domain_id,
+-                                 uint32_t virt_lpi);
+-
++                                 uint32_t virt_lpi, bool is_db,
++                                 uint16_t db_vcpu_id);
++extern uint32_t lpi_id_bits;
++#define HOST_LPIS_NRBITS   lpi_id_bits
++#define MAX_HOST_LPIS      BIT(lpi_id_bits, UL)
++
++bool its_alloc_table_entry(struct its_baser *baser, uint32_t id);
++struct its_baser *its_get_baser(struct host_its *hw_its, uint32_t type);
++struct page_info *lpi_allocate_pendtable(void);
++struct page_info *lpi_allocate_proptable(void);
++void lpi_write_config(uint8_t *prop_table, uint32_t lpi, uint8_t clr,
++                      uint8_t set);
++
++uint64_t encode_rdbase(struct host_its *hw_its, unsigned int cpu, uint64_t reg);
++int its_send_command(struct host_its *hw_its, const void *its_cmd);
++
++struct its_device *get_its_device(struct domain *d, paddr_t vdoorbell,
++                                  uint32_t vdevid);
++
++/* GICv4 functions */
++int gicv4_assign_guest_event(struct domain *d, paddr_t vdoorbell_address,
++                             uint32_t vdevid, uint32_t eventid,
++                             struct pending_irq *pirq);
++int gicv4_its_vlpi_move(struct pending_irq *pirq, struct vcpu *vcpu);
++#ifndef CONFIG_GICV4
++#define event_is_forwarded_to_vcpu(dev, eventid) ((void)dev, (void)eventid, false)
++#else
++bool event_is_forwarded_to_vcpu(struct its_device *dev, uint32_t eventid);
++void its_vpe_mask_db(struct its_vpe *vpe);
++#endif
++int its_send_cmd_vinv(struct host_its *its, struct its_device *dev,
++                      uint32_t eventid);
++int its_vlpi_prop_update(struct pending_irq *pirq, uint8_t property,
++                         bool needs_inv);
++int its_set_vlpi_state(struct pending_irq *pirq, bool state);
++int gicv4_its_vlpi_unmap(struct pending_irq *pirq);
++int gicv4_its_handle_invall(struct domain *d, struct vcpu *vcpu);
++/* GICv4.1 functions */
++uint32_t compute_common_aff(uint64_t val);
++uint32_t compute_its_aff(struct host_its *hw_its);
++void direct_lpi_inv(struct its_device *dev, uint32_t eventid,
++                    uint32_t db_lpi, unsigned int cpu);
+ #else
+ 
+ #ifdef CONFIG_ACPI
+diff --git a/xen/arch/arm/include/asm/gic_v4_its.h b/xen/arch/arm/include/asm/gic_v4_its.h
+new file mode 100644
+index 0000000000..12b0a2c3d3
+--- /dev/null
++++ b/xen/arch/arm/include/asm/gic_v4_its.h
+@@ -0,0 +1,146 @@
++/*
++ * ARM GICv4 ITS support
++ *
++ * Penny Zheng <penny.zheng@arm.com>
++ * Copyright (c) 2023 ARM Ltd.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; under version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#ifndef __ASM_ARM_GICV4_ITS_H__
++#define __ASM_ARM_GICV4_ITS_H__
++
++#define GITS_CMD_VMOVI                   0x21
++#define GITS_CMD_VMOVP                   0x22
++#define GITS_CMD_VSGI                    0x23
++#define GITS_CMD_VSYNC                   0x25
++#define GITS_CMD_VMAPP                   0x29
++#define GITS_CMD_VMAPTI                  0x2a
++#define GITS_CMD_VINVALL                 0x2d
++#define GITS_CMD_INVDB                   0x2e
++
++/* ITS registers, offsets from sgir_base */
++#define GITS_SGIR                        0x00020
++
++#define GITS_SGIR_VPEID                  GENMASK_ULL(47, 32)
++#define GITS_SGIR_VINTID                 GENMASK_ULL(7, 0)
++
++/* Describes the mapping of a VLPI */
++struct its_vlpi_map {
++    struct its_vm       *vm;
++    unsigned int        vpe_idx;    /* Index of the VPE */
++    uint32_t            vintid;     /* Virtual LPI number */
++    bool                db_enabled; /* Is the VPE doorbell to be generated? */
++    uint8_t             properties;
++    struct pending_irq  *pirq;
++    struct its_device   *dev;
++    uint32_t            eventid;
++};
++
++struct event_vlpi_map {
++    unsigned int            nr_lpis;
++    spinlock_t              vlpi_lock;
++    struct its_vm           *vm;
++    struct its_vlpi_map     *vlpi_maps;
++    unsigned int            nr_vlpis;
++};
++
++extern void gicv4_its_vpeid_allocator_init(void);
++extern int gicv4_init_vpe_proxy(void);
++
++int allocate_vpe_l1_table(void);
++
++#include <asm/arm64/io.h>
++
++#define GICR_VPROPBASER                              0x0070
++#define GICR_VPENDBASER                              0x0078
++
++#define GICR_VPROPBASER_OUTER_CACHEABILITY_SHIFT         56
++#define GICR_VPROPBASER_SHAREABILITY_SHIFT               10
++#define GICR_VPROPBASER_SHAREABILITY_MASK                \
++        (3UL << GICR_VPROPBASER_SHAREABILITY_SHIFT)
++#define GICR_VPROPBASER_INNER_CACHEABILITY_SHIFT          7
++#define GICR_VPROPBASER_INNER_CACHEABILITY_MASK           \
++        (7UL << GICR_VPROPBASER_INNER_CACHEABILITY_SHIFT)
++#define GICR_VPROPBASER_IDBITS_MASK                    0x1f
++
++#define GICR_VPENDBASER_Dirty                   (1UL << 60)
++#define GICR_VPENDBASER_PendingLast             (1UL << 61)
++#define GICR_VPENDBASER_IDAI                    (1UL << 62)
++#define GICR_VPENDBASER_Valid                   (1UL << 63)
++
++#define GICR_VPENDBASER_OUTER_CACHEABILITY_SHIFT         56
++#define GICR_VPENDBASER_SHAREABILITY_SHIFT               10
++#define GICR_VPENDBASER_INNER_CACHEABILITY_SHIFT          7
++
++/*
++ * GICv4.1 VPENDBASER, used for VPE residency. On top of these fields,
++ * also use the above Valid, PendingLast and Dirty.
++ */
++#define GICR_VPENDBASER_4_1_VGRP1EN             (1ULL << 58)
++#define GICR_VPENDBASER_4_1_VPEID               GENMASK_ULL(15, 0)
++#define GICR_VPENDBASER_4_1_DB                  (1ULL << 62)
++
++/*
++ * GICv4.1 VPROPBASER reinvention. A subtle mix between the old
++ * VPROPBASER and ITS_BASER.
++ */
++#define GICR_VPROPBASER_4_1_VALID               (1ULL << 63)
++#define GICR_VPROPBASER_4_1_ENTRY_SIZE          GENMASK_ULL(61, 59)
++#define GICR_VPROPBASER_4_1_INDIRECT            (1ULL << 55)
++#define GICR_VPROPBASER_4_1_PAGE_SIZE           GENMASK_ULL(54, 53)
++#define GICR_VPROPBASER_4_1_Z                   (1ULL << 52)
++#define GICR_VPROPBASER_4_1_ADDR                GENMASK_ULL(51, 12)
++#define GICR_VPROPBASER_4_1_SIZE                GENMASK_ULL(6, 0)
++
++#define GICR_INVALLR_VPEID                      GENMASK_ULL(47, 32)
++#define GICR_INVALLR_V                          (1UL << 63)
++
++#define gits_read_vpropbaser(c)         readq_relaxed(c)
++#define gits_write_vpropbaser(v, c)     writeq_relaxed(v, c)
++
++/*
++ * GICR_VPENDBASER - the Valid bit must be cleared before changing
++ * anything else.
++ */
++static inline void gits_write_vpendbaser(uint64_t val, void __iomem *addr)
++{
++    uint64_t tmp;
++
++    tmp = readq_relaxed(addr);
++    while ( tmp & GICR_VPENDBASER_Valid )
++    {
++        tmp &= ~GICR_VPENDBASER_Valid;
++        writeq_relaxed(tmp, addr);
++        tmp = readq_relaxed(addr);
++    }
++
++    writeq_relaxed(val, addr);
++}
++#define gits_read_vpendbaser(c)     readq_relaxed(c)
++
++#define GICR_INVLPIR_INTID                GENMASK_ULL(31, 0)
++#define GICR_INVLPIR_VPEID                GICR_INVALLR_VPEID
++#define GICR_INVLPIR_V                    GICR_INVALLR_V
++
++#endif
++
++/*
++ * Local variables:
++ * mode: C
++ * c-file-style: "BSD"
++ * c-basic-offset: 4
++ * indent-tabs-mode: nil
++ * End:
++ */
++
+diff --git a/xen/arch/arm/include/asm/mmio.h b/xen/arch/arm/include/asm/mmio.h
+index 79e64d9af8..5ae1f85e9f 100644
+--- a/xen/arch/arm/include/asm/mmio.h
++++ b/xen/arch/arm/include/asm/mmio.h
+@@ -24,7 +24,7 @@
+ 
+ #include <asm/hsr.h>
+ 
+-#define MAX_IO_HANDLER  16
++#define MAX_IO_HANDLER  32
+ 
+ enum instr_decode_state
+ {
+diff --git a/xen/arch/arm/include/asm/vgic.h b/xen/arch/arm/include/asm/vgic.h
+index 3d44868039..bcfbfb1063 100644
+--- a/xen/arch/arm/include/asm/vgic.h
++++ b/xen/arch/arm/include/asm/vgic.h
+@@ -69,6 +69,7 @@ struct pending_irq
+      * LPI with the same number in an LR must be from an older LPI, which
+      * has been unmapped before.
+      *
++     * GIC_IRQ_GUEST_FORWARDED: the IRQ is forwarded to a VCPU(GICv4 only)
+      */
+ #define GIC_IRQ_GUEST_QUEUED   0
+ #define GIC_IRQ_GUEST_ACTIVE   1
+@@ -76,6 +77,7 @@ struct pending_irq
+ #define GIC_IRQ_GUEST_ENABLED  3
+ #define GIC_IRQ_GUEST_MIGRATING   4
+ #define GIC_IRQ_GUEST_PRISTINE_LPI  5
++#define GIC_IRQ_GUEST_FORWARDED     6
+     unsigned long status;
+     struct irq_desc *desc; /* only set if the irq corresponds to a physical irq */
+     unsigned int irq;
+@@ -93,11 +95,31 @@ struct pending_irq
+      * TODO: when implementing irq migration, taking only the current
+      * vgic lock is not going to be enough. */
+     struct list_head lr_queue;
++    bool hw;                    /* Tied to HW IRQ */
++#ifdef CONFIG_GICV4
++    struct its_vlpi_map *vlpi_map;
++#endif
+ };
+ 
+ #define NR_INTERRUPT_PER_RANK   32
+ #define INTERRUPT_RANK_MASK (NR_INTERRUPT_PER_RANK - 1)
+ 
++#ifdef CONFIG_GICV4
++static inline bool pirq_is_tied_to_hw(struct pending_irq *pirq)
++{
++    ASSERT(pirq);
++    return pirq->hw;
++}
++
++static inline void pirq_clear_forwarded_to_vcpu(struct pending_irq *pirq)
++{
++    ASSERT(pirq);
++    pirq->hw = false;
++}
++#else
++#define pirq_is_tied_to_hw(pirq) ((void)pirq, false)
++#endif
++
+ /* Represents state corresponding to a block of 32 interrupts */
+ struct vgic_irq_rank {
+     spinlock_t lock; /* Covers access to all other members of this struct */
+@@ -126,6 +148,57 @@ struct vgic_irq_rank {
+     uint8_t vcpu[32];
+ };
+ 
++#define VGIC_NR_SGIS            16
++
++#ifdef CONFIG_GICV4
++struct its_vm {
++    struct its_vpe **vpes;
++    /* Number of VPE. */
++    unsigned int nr_vpes;
++    uint32_t *db_lpi_bases;
++    unsigned int nr_db_lpis;
++    /* Property table per VM. */
++    void *vproptable;
++};
++
++struct its_vpe {
++    rwlock_t lock;
++    uint32_t vpe_id;
++    /* Pending table per VCPU. */
++    void *vpendtable;
++    uint32_t vpe_db_lpi;
++    struct its_vm *its_vm;
++    unsigned int col_idx;
++    /* Implementation Defined Area Invalid */
++    bool resident;
++    /* Pending VLPIs on schedule out? */
++    bool            pending_last;
++    union {
++        /* GICv4.0 implementations */
++        struct {
++            /* Implementation Defined Area Invalid */
++            bool idai;
++            /* VPE proxy mapping */
++            int vpe_proxy_event;
++        };
++        /* GICv4.1 implementations */
++        struct {
++            atomic_t vmapp_count;
++        };
++    };
++    struct {
++        uint8_t priority;
++        bool    enabled;
++        bool    group;
++    }sgi_config[VGIC_NR_SGIS];
++    /*
++     * Ensure mutual exclusion between affinity setting of the vPE
++     * and vLPI operations using vpe->col_idx.
++     */
++    spinlock_t vpe_lock;
++};
++#endif
++
+ struct vgic_dist {
+     /* Version of the vGIC */
+     enum gic_version version;
+@@ -176,6 +249,10 @@ struct vgic_dist {
+      */
+     bool rdists_enabled;                /* Is any redistributor enabled? */
+     bool has_its;
++#ifdef CONFIG_GICV4
++    struct its_vm its_vm;
++#endif
++    bool nassgireq;
+ #endif
+ };
+ 
+@@ -210,6 +287,9 @@ struct vgic_cpu {
+ #define VGIC_V3_RDIST_LAST      (1 << 0)        /* last vCPU of the rdist */
+ #define VGIC_V3_LPIS_ENABLED    (1 << 1)
+     uint8_t flags;
++#ifdef CONFIG_GICV4
++    struct its_vpe its_vpe;
++#endif
+ };
+ 
+ struct sgi_target {
+@@ -292,7 +372,8 @@ static inline paddr_t vgic_dist_base(const struct vgic_dist *vgic)
+ extern struct vcpu *vgic_get_target_vcpu(struct vcpu *v, unsigned int virq);
+ extern void vgic_remove_irq_from_queues(struct vcpu *v, struct pending_irq *p);
+ extern void gic_remove_from_lr_pending(struct vcpu *v, struct pending_irq *p);
+-extern void vgic_init_pending_irq(struct pending_irq *p, unsigned int virq);
++extern void vgic_init_pending_irq(struct pending_irq *p, unsigned int virq,
++                                  bool hw);
+ extern struct pending_irq *irq_to_pending(struct vcpu *v, unsigned int irq);
+ extern struct pending_irq *spi_to_pending(struct domain *d, unsigned int irq);
+ extern struct vgic_irq_rank *vgic_rank_offset(struct vcpu *v, int b, int n, int s);
+@@ -312,6 +393,45 @@ extern bool vgic_migrate_irq(struct vcpu *old, struct vcpu *new, unsigned int ir
+ extern void vgic_check_inflight_irqs_pending(struct domain *d, struct vcpu *v,
+                                              unsigned int rank, uint32_t r);
+ 
++/* GICV4 functions */
++#ifdef CONFIG_GICV4
++extern bool vgic_has_directVLPI(struct domain *d);
++extern bool gic_support_directLPI(void);
++extern bool gic_support_vptValidDirty(void);
++extern bool gic_has_v4_1_extension(void);
++extern bool vgic_has_directVSGI(struct domain *d);
++extern bool guest_support_nassgi(struct domain *d);
++#else
++#define vgic_has_directVLPI(d) ((void)(d), false)
++#define gic_support_directLPI() (false)
++#define gic_support_vptValidDirty() (false)
++#define gic_has_v4_1_extension() (false)
++#define vgic_has_directVSGI(d) ((void)(d), false)
++#define guest_support_nassgi(d) ((void)(d), false)
++#endif
++
++extern int vgic_v4_its_vm_init(struct domain *d);
++extern void vgic_v4_free_its_vm(struct domain *d);
++extern int vgic_v4_its_vpe_init(struct vcpu *vcpu);
++extern void vgic_v4_load(struct vcpu *vcpu);
++extern void vgic_v4_put(struct vcpu *vcpu, bool need_db);
++extern void gicv4_its_init_nvpeid(void);
++extern int vgic_v4_configure_vcpu_sgi(struct vcpu *v);
++extern int its_sgi_get_pending_state(struct vcpu *v, uint32_t *ipending);
++extern int its_sgi_mask_irq(struct vcpu *v, unsigned int irq);
++extern int its_sgi_unmask_irq(struct vcpu *v, unsigned int irq);
++extern int its_sgi_set_pending_state(struct vcpu *v, unsigned int vsgi,
++                                     bool state);
++extern int its_sgi_prop_update(struct vcpu *v, unsigned int irq,
++                               uint8_t priority);
++#ifdef CONFIG_GICV4
++extern void vgic_v4_configure_vsgis(struct domain *d);
++#else
++static inline void vgic_v4_configure_vsgis(struct domain *d)
++{
++}
++#endif
++
+ #endif /* !CONFIG_NEW_VGIC */
+ 
+ /*** Common VGIC functions used by Xen arch code ****/
+diff --git a/xen/arch/arm/vgic-v3-its.c b/xen/arch/arm/vgic-v3-its.c
+index 0467d03ab7..e63396591e 100644
+--- a/xen/arch/arm/vgic-v3-its.c
++++ b/xen/arch/arm/vgic-v3-its.c
+@@ -43,6 +43,9 @@
+ #include <asm/mmio.h>
+ #include <asm/gic_v3_defs.h>
+ #include <asm/gic_v3_its.h>
++#ifdef CONFIG_GICV4
++#include <asm/gic_v4_its.h>
++#endif
+ #include <asm/vgic.h>
+ #include <asm/vgic-emul.h>
+ #include <asm/vreg.h>
+@@ -389,6 +392,7 @@ static int its_handle_int(struct virt_its *its, uint64_t *cmdptr)
+     struct vcpu *vcpu;
+     uint32_t vlpi;
+     bool ret;
++    struct pending_irq *p;
+ 
+     spin_lock(&its->its_lock);
+     ret = read_itte(its, devid, eventid, &vcpu, &vlpi);
+@@ -399,6 +403,14 @@ static int its_handle_int(struct virt_its *its, uint64_t *cmdptr)
+     if ( vlpi == INVALID_LPI )
+         return -1;
+ 
++    p = gicv3_its_get_event_pending_irq(its->d, its->doorbell_address,
++                                        devid, eventid);
++    if ( unlikely(!p) )
++        return -1;
++
++    if ( pirq_is_tied_to_hw(p) )
++        return its_set_vlpi_state(p, true);
++
+     vgic_vcpu_inject_lpi(its->d, vlpi);
+ 
+     return 0;
+@@ -455,6 +467,12 @@ static int its_handle_clear(struct virt_its *its, uint64_t *cmdptr)
+     if ( unlikely(!p) )
+         goto out_unlock;
+ 
++    if ( pirq_is_tied_to_hw(p) )
++    {
++        ret = its_set_vlpi_state(p, false);
++        goto out_unlock;
++    }
++
+     /*
+      * TODO: This relies on the VCPU being correct in the ITS tables.
+      * This can be fixed by either using a per-IRQ lock or by using
+@@ -487,7 +505,7 @@ out_unlock:
+  * property table and update the virtual IRQ's state in the given pending_irq.
+  * Must be called with the respective VGIC VCPU lock held.
+  */
+-static int update_lpi_property(struct domain *d, struct pending_irq *p)
++int update_lpi_property(struct domain *d, struct pending_irq *p, bool needs_inv)
+ {
+     paddr_t addr;
+     uint8_t property;
+@@ -517,6 +535,9 @@ static int update_lpi_property(struct domain *d, struct pending_irq *p)
+     else
+         clear_bit(GIC_IRQ_GUEST_ENABLED, &p->status);
+ 
++    if ( pirq_is_tied_to_hw(p) )
++        return its_vlpi_prop_update(p, property, needs_inv);
++
+     return 0;
+ }
+ 
+@@ -530,6 +551,9 @@ static int update_lpi_property(struct domain *d, struct pending_irq *p)
+  */
+ static void update_lpi_vgic_status(struct vcpu *v, struct pending_irq *p)
+ {
++    if ( pirq_is_tied_to_hw(p) )
++        return;
++
+     ASSERT(spin_is_locked(&v->arch.vgic.lock));
+ 
+     if ( test_bit(GIC_IRQ_GUEST_ENABLED, &p->status) )
+@@ -579,7 +603,7 @@ static int its_handle_inv(struct virt_its *its, uint64_t *cmdptr)
+     spin_lock_irqsave(&vcpu->arch.vgic.lock, flags);
+ 
+     /* Read the property table and update our cached status. */
+-    if ( update_lpi_property(d, p) )
++    if ( update_lpi_property(d, p, true) )
+         goto out_unlock;
+ 
+     /* Check whether the LPI needs to go on a VCPU. */
+@@ -651,7 +675,7 @@ static int its_handle_invall(struct virt_its *its, uint64_t *cmdptr)
+ 
+             vlpi = pirqs[i]->irq;
+             /* If that fails for a single LPI, carry on to handle the rest. */
+-            err = update_lpi_property(its->d, pirqs[i]);
++            err = update_lpi_property(its->d, pirqs[i], false);
+             if ( !err )
+                 update_lpi_vgic_status(vcpu, pirqs[i]);
+             else
+@@ -668,6 +692,9 @@ static int its_handle_invall(struct virt_its *its, uint64_t *cmdptr)
+     read_unlock(&its->d->arch.vgic.pend_lpi_tree_lock);
+     spin_unlock_irqrestore(&vcpu->arch.vgic.lock, flags);
+ 
++    if ( vgic_has_directVLPI(its->d) )
++        return gicv4_its_handle_invall(its->d, vcpu);
++
+     return ret;
+ }
+ 
+@@ -688,6 +715,14 @@ static int its_discard_event(struct virt_its *its,
+     if ( vlpi == INVALID_LPI )
+         return -ENOENT;
+ 
++    p = gicv3_its_get_event_pending_irq(its->d, its->doorbell_address,
++                                        vdevid, vevid);
++    if ( unlikely(!p) )
++        return -EINVAL;
++
++    if ( pirq_is_tied_to_hw(p) )
++        if ( gicv4_its_vlpi_unmap(p) )
++            return -EINVAL;
+     /*
+      * TODO: This relies on the VCPU being correct in the ITS tables.
+      * This can be fixed by either using a per-IRQ lock or by using
+@@ -709,7 +744,7 @@ static int its_discard_event(struct virt_its *its,
+ 
+     /* Cleanup the pending_irq and disconnect it from the LPI. */
+     vgic_remove_irq_from_queues(vcpu, p);
+-    vgic_init_pending_irq(p, INVALID_LPI);
++    vgic_init_pending_irq(p, INVALID_LPI, false);
+ 
+     spin_unlock_irqrestore(&vcpu->arch.vgic.lock, flags);
+ 
+@@ -840,24 +875,38 @@ static int its_handle_mapti(struct virt_its *its, uint64_t *cmdptr)
+     if ( !pirq )
+         goto out_remove_mapping;
+ 
+-    vgic_init_pending_irq(pirq, intid);
++    vgic_init_pending_irq(pirq, intid, vgic_has_directVLPI(its->d));
++
++    pirq->lpi_vcpu_id = vcpu->vcpu_id;
++
++    if ( pirq_is_tied_to_hw(pirq) )
++        /*
++         * If on GICv4, we could let the VLPI being directly injected
++         * to the guest. To achieve that, the VLPI must be mapped using
++         * the VMAPTI command.
++         */
++        if ( gicv4_assign_guest_event(its->d, its->doorbell_address, devid,
++                                      eventid, pirq) )
++            goto out_remove_mapping;
++
++    if ( pirq_is_tied_to_hw(pirq) )
++        set_bit(GIC_IRQ_GUEST_FORWARDED, &pirq->status);
++    else
++        /*
++         * Mark this LPI as new, so any older (now unmapped) LPI in any LR
++         * can be easily recognised as such.
++         */
++        set_bit(GIC_IRQ_GUEST_PRISTINE_LPI, &pirq->status);
+ 
+     /*
+      * Now read the guest's property table to initialize our cached state.
+      * We don't need the VGIC VCPU lock here, because the pending_irq isn't
+      * in the radix tree yet.
+      */
+-    ret = update_lpi_property(its->d, pirq);
++    ret = update_lpi_property(its->d, pirq, true);
+     if ( ret )
+         goto out_remove_host_entry;
+ 
+-    pirq->lpi_vcpu_id = vcpu->vcpu_id;
+-    /*
+-     * Mark this LPI as new, so any older (now unmapped) LPI in any LR
+-     * can be easily recognised as such.
+-     */
+-    set_bit(GIC_IRQ_GUEST_PRISTINE_LPI, &pirq->status);
+-
+     /*
+      * Now insert the pending_irq into the domain's LPI tree, so that
+      * it becomes live.
+@@ -915,6 +964,13 @@ static int its_handle_movi(struct virt_its *its, uint64_t *cmdptr)
+     if ( unlikely(!p) )
+         goto out_unlock;
+ 
++    if ( pirq_is_tied_to_hw(p) )
++    {
++        ret = gicv4_its_vlpi_move(p, nvcpu);
++        if ( ret )
++            goto out_unlock;
++    }
++
+     /*
+      * TODO: This relies on the VCPU being correct in the ITS tables.
+      * This can be fixed by either using a per-IRQ lock or by using
+diff --git a/xen/arch/arm/vgic-v3.c b/xen/arch/arm/vgic-v3.c
+index e91ee70771..e777451b18 100644
+--- a/xen/arch/arm/vgic-v3.c
++++ b/xen/arch/arm/vgic-v3.c
+@@ -30,6 +30,7 @@
+ #include <asm/current.h>
+ #include <asm/gic_v3_defs.h>
+ #include <asm/gic_v3_its.h>
++#include <asm/io.h>
+ #include <asm/mmio.h>
+ #include <asm/vgic.h>
+ #include <asm/vgic-emul.h>
+@@ -839,16 +840,22 @@ static int __vgic_v3_distr_common_mmio_write(const char *name, struct vcpu *v,
+     case VRANGE32(GICD_IPRIORITYR, GICD_IPRIORITYRN):
+     {
+         uint32_t *ipriorityr, priority;
++        int rank_nr;
+ 
+         if ( dabt.size != DABT_BYTE && dabt.size != DABT_WORD ) goto bad_width;
+         rank = vgic_rank_offset(v, 8, reg - GICD_IPRIORITYR, DABT_WORD);
+         if ( rank == NULL ) goto write_ignore;
++        rank_nr = REG_RANK_NR(8, (reg - GICD_IPRIORITYR) >> DABT_WORD);
+         vgic_lock_rank(v, rank, flags);
+         ipriorityr = &rank->ipriorityr[REG_RANK_INDEX(8, reg - GICD_IPRIORITYR,
+                                                       DABT_WORD)];
+         priority = ACCESS_ONCE(*ipriorityr);
+         vreg_reg32_update(&priority, r, info);
+         ACCESS_ONCE(*ipriorityr) = priority;
++        /* Is it HW-based VSGI? */
++        if ( (rank_nr == 0) && (rank->index < 16) &&
++             guest_support_nassgi(v->domain) )
++            its_sgi_prop_update(v, rank->index, priority);
+         vgic_unlock_rank(v, rank, flags);
+         return 1;
+     }
+@@ -892,6 +899,9 @@ static int vgic_v3_rdistr_sgi_mmio_read(struct vcpu *v, mmio_info_t *info,
+                                         uint32_t gicr_reg, register_t *r)
+ {
+     struct hsr_dabt dabt = info->dabt;
++    struct vgic_irq_rank *rank;
++    unsigned long flags;
++    int ret;
+ 
+     switch ( gicr_reg )
+     {
+@@ -909,8 +919,33 @@ static int vgic_v3_rdistr_sgi_mmio_read(struct vcpu *v, mmio_info_t *info,
+         return __vgic_v3_distr_common_mmio_read("vGICR: SGI", v, info,
+                                                 gicr_reg, r);
+ 
+-    /* Read the pending status of an SGI is via GICR is not supported */
++    /*
++     * Read the pending status of an SGI is via GICR is not supported,
++     * except with GICv4.1
++     */
+     case VREG32(GICR_ISPENDR0):
++    {
++        if ( guest_support_nassgi(v->domain) )
++        {
++            uint32_t *ipending = NULL;
++
++            if ( dabt.size != DABT_WORD )
++                goto bad_width;
++
++            rank = vgic_rank_offset(v, 1, gicr_reg - GICR_ISPENDR0, DABT_WORD);
++            if ( rank == NULL )
++                goto read_as_zero;
++            vgic_lock_rank(v, rank, flags);
++            ret = its_sgi_get_pending_state(v, ipending);
++            if ( ret )
++                goto bad_vsgi_read;
++            *r = vreg_reg32_extract(*ipending, info);
++            vgic_unlock_rank(v, rank, flags);
++            return 1;
++        }
++        else
++            goto read_as_zero;
++    }
+     case VREG32(GICR_ICPENDR0):
+         goto read_as_zero;
+ 
+@@ -962,6 +997,10 @@ read_reserved:
+     *r = 0;
+     return 1;
+ 
++bad_vsgi_read:
++    printk(XENLOG_G_ERR "%pv: vGICR: SGI: bad read r%d offset %#08x: %d\n",
++           v, dabt.reg, gicr_reg, ret);
++    return 0;
+ }
+ 
+ static int vgic_v3_rdistr_sgi_mmio_write(struct vcpu *v, mmio_info_t *info,
+@@ -1138,8 +1177,18 @@ static int vgic_v3_distr_mmio_read(struct vcpu *v, mmio_info_t *info,
+         *r = vreg_reg32_extract(GICV3_GICD_IIDR_VAL, info);
+         return 1;
+ 
+-    case VREG32(0x000C):
+-        goto read_reserved;
++    case VREG32(GICD_TYPER2):
++    {
++        uint32_t typer2 = 0;
++
++        if ( dabt.size != DABT_WORD ) goto bad_width;
++        if ( vgic_has_directVSGI(v->domain) )
++            typer2 = GICD_TYPER2_nASSGIcap;
++
++        *r = vreg_reg32_extract(typer2, info);
++
++        return 1;
++    }
+ 
+     case VREG32(GICD_STATUSR):
+         /*
+@@ -1303,6 +1352,7 @@ static int vgic_v3_distr_mmio_write(struct vcpu *v, mmio_info_t *info,
+     case VREG32(GICD_CTLR):
+     {
+         uint32_t ctlr = 0;
++        bool was_enabled, is_enabled, was_hwsgi, is_hwsgi;
+ 
+         if ( dabt.size != DABT_WORD ) goto bad_width;
+ 
+@@ -1310,7 +1360,31 @@ static int vgic_v3_distr_mmio_write(struct vcpu *v, mmio_info_t *info,
+ 
+         vreg_reg32_update(&ctlr, r, info);
+ 
+-        /* Only EnableGrp1A can be changed */
++        was_enabled = v->domain->arch.vgic.ctlr & GICD_CTLR_ENABLE_G1A;
++        is_enabled = ctlr & GICD_CTLR_ENABLE_G1A;
++
++        /* Not a GICv4.1? No HW SGIs */
++        if ( !vgic_has_directVSGI(v->domain) )
++            ctlr &= ~GICD_CTLR_nASSGIreq;
++
++        was_hwsgi = v->domain->arch.vgic.nassgireq;
++        /* Dist stays enabled? nASSGIreq is RO */
++        if ( was_enabled && is_enabled )
++        {
++            ctlr &= ~GICD_CTLR_nASSGIreq;
++            ctlr |= FIELD_PREP(GICD_CTLR_nASSGIreq, was_hwsgi);
++        }
++
++        is_hwsgi = ctlr & GICD_CTLR_nASSGIreq;
++        if ( is_hwsgi )
++            v->domain->arch.vgic.ctlr |= GICD_CTLR_nASSGIreq;
++        else
++            v->domain->arch.vgic.ctlr &= ~GICD_CTLR_nASSGIreq;
++        v->domain->arch.vgic.nassgireq = is_hwsgi;
++        /* Switching SGI type */
++        if ( was_hwsgi != is_hwsgi )
++            vgic_v4_configure_vsgis(v->domain);
++
+         if ( ctlr & GICD_CTLR_ENABLE_G1A )
+             v->domain->arch.vgic.ctlr |= GICD_CTLR_ENABLE_G1A;
+         else
+@@ -1328,8 +1402,9 @@ static int vgic_v3_distr_mmio_write(struct vcpu *v, mmio_info_t *info,
+         /* RO -- write ignored */
+         goto write_ignore_32;
+ 
+-    case VREG32(0x000C):
+-        goto write_reserved;
++    case VREG32(GICD_TYPER2):
++        /* write ignored */
++        goto write_ignore_32;
+ 
+     case VREG32(GICD_STATUSR):
+         /* RO -- write ignored */
+diff --git a/xen/arch/arm/vgic.c b/xen/arch/arm/vgic.c
+index 83386cf3d5..db06d0ea9b 100644
+--- a/xen/arch/arm/vgic.c
++++ b/xen/arch/arm/vgic.c
+@@ -31,6 +31,7 @@
+ 
+ #include <asm/mmio.h>
+ #include <asm/gic.h>
++#include <asm/gic_v3_defs.h>
+ #include <asm/vgic.h>
+ 
+ static inline struct vgic_irq_rank *vgic_get_rank(struct vcpu *v, int rank)
+@@ -62,7 +63,7 @@ struct vgic_irq_rank *vgic_rank_irq(struct vcpu *v, unsigned int irq)
+     return vgic_get_rank(v, rank);
+ }
+ 
+-void vgic_init_pending_irq(struct pending_irq *p, unsigned int virq)
++void vgic_init_pending_irq(struct pending_irq *p, unsigned int virq, bool hw)
+ {
+     /* The lpi_vcpu_id field must be big enough to hold a VCPU ID. */
+     BUILD_BUG_ON(BIT(sizeof(p->lpi_vcpu_id) * 8, UL) < MAX_VIRT_CPUS);
+@@ -72,6 +73,8 @@ void vgic_init_pending_irq(struct pending_irq *p, unsigned int virq)
+     INIT_LIST_HEAD(&p->lr_queue);
+     p->irq = virq;
+     p->lpi_vcpu_id = INVALID_VCPU_ID;
++    /* Whether virtual irq is tied to a HW one. */
++    p->hw = hw;
+ }
+ 
+ static void vgic_rank_init(struct vgic_irq_rank *rank, uint8_t index,
+@@ -100,6 +103,8 @@ int domain_vgic_register(struct domain *d, int *mmio_count)
+     {
+ #ifdef CONFIG_GICV3
+     case GIC_V3:
++    case GIC_V4:
++    case GIC_V4_1:
+         if ( vgic_v3_init(d, mmio_count) )
+            return -ENODEV;
+         break;
+@@ -150,7 +155,7 @@ int domain_vgic_init(struct domain *d, unsigned int nr_spis)
+         return -ENOMEM;
+ 
+     for (i=0; i<d->arch.vgic.nr_spis; i++)
+-        vgic_init_pending_irq(&d->arch.vgic.pending_irqs[i], i + 32);
++        vgic_init_pending_irq(&d->arch.vgic.pending_irqs[i], i + 32, false);
+ 
+     /* SPIs are routed to VCPU0 by default */
+     for ( i = 0; i < DOMAIN_NR_RANKS(d); i++ )
+@@ -169,6 +174,19 @@ int domain_vgic_init(struct domain *d, unsigned int nr_spis)
+     for ( i = 0; i < NR_GIC_SGI; i++ )
+         set_bit(i, d->arch.vgic.allocated_irqs);
+ 
++    if ( vgic_has_directVLPI(d) )
++    {
++        ret = vgic_v4_its_vm_init(d);
++        if ( ret )
++        {
++            printk(XENLOG_ERR "GICv4 its vm allocation failed\n");
++            return ret;
++        }
++        /* Enable HW-based VSGI if hardware supports */
++        d->arch.vgic.ctlr |= GICD_CTLR_nASSGIreq;
++        d->arch.vgic.nassgireq = true;
++    }
++
+     return 0;
+ }
+ 
+@@ -200,11 +218,14 @@ void domain_vgic_free(struct domain *d)
+     xfree(d->arch.vgic.shared_irqs);
+     xfree(d->arch.vgic.pending_irqs);
+     xfree(d->arch.vgic.allocated_irqs);
++
++    if ( vgic_has_directVLPI(d) )
++        vgic_v4_free_its_vm(d);
+ }
+ 
+ int vcpu_vgic_init(struct vcpu *v)
+ {
+-    int i;
++    int i, ret;
+ 
+     v->arch.vgic.private_irqs = xzalloc(struct vgic_irq_rank);
+     if ( v->arch.vgic.private_irqs == NULL )
+@@ -216,13 +237,47 @@ int vcpu_vgic_init(struct vcpu *v)
+     v->domain->arch.vgic.handler->vcpu_init(v);
+ 
+     memset(&v->arch.vgic.pending_irqs, 0, sizeof(v->arch.vgic.pending_irqs));
+-    for (i = 0; i < 32; i++)
+-        vgic_init_pending_irq(&v->arch.vgic.pending_irqs[i], i);
++    /* SGI */
++    for ( i = 0; i < VGIC_NR_SGIS; i++ )
++    {
++        if ( vgic_has_directVSGI(v->domain) )
++            /*
++             * With GICv4.1, every virtual SGI can be directly injected. So
++             * let's pretend that they are HW interrupts, tied to a host
++             * IRQ.
++             */
++            vgic_init_pending_irq(&v->arch.vgic.pending_irqs[i], i, true);
++        else
++            vgic_init_pending_irq(&v->arch.vgic.pending_irqs[i], i, false);
++    }
++    /* PPI */
++    for ( i = VGIC_NR_SGIS; i < 32; i++ )
++        vgic_init_pending_irq(&v->arch.vgic.pending_irqs[i], i, false);
+ 
+     INIT_LIST_HEAD(&v->arch.vgic.inflight_irqs);
+     INIT_LIST_HEAD(&v->arch.vgic.lr_pending);
+     spin_lock_init(&v->arch.vgic.lock);
+ 
++    if ( vgic_has_directVLPI(v->domain) )
++    {
++        ret = vgic_v4_its_vpe_init(v);
++        if ( ret )
++        {
++            printk(XENLOG_ERR "GICv4 its vpe allocation failed\n");
++            return ret;
++        }
++    }
++
++    if ( vgic_has_directVSGI(v->domain) )
++    {
++        ret = vgic_v4_configure_vcpu_sgi(v);
++        if ( ret )
++        {
++            printk(XENLOG_ERR "Failed to configure vsgi for v%u\n", v->vcpu_id);
++            return ret;
++        }
++    }
++
+     return 0;
+ }
+ 
+@@ -353,7 +408,16 @@ void vgic_disable_irqs(struct vcpu *v, uint32_t r, int n)
+         spin_lock_irqsave(&v_target->arch.vgic.lock, flags);
+         p = irq_to_pending(v_target, irq);
+         clear_bit(GIC_IRQ_GUEST_ENABLED, &p->status);
+-        gic_remove_from_lr_pending(v_target, p);
++        /* HW SGI? Ask the ITS to mask it */
++        if ( irq < 16 && pirq_is_tied_to_hw(p) )
++        {
++            if ( its_sgi_mask_irq(v_target, irq) )
++                printk(XENLOG_G_ERR
++                       "%pv: vSGI: failed to mask interrupt %u\n",
++                       v, irq);
++        }
++        else
++            gic_remove_from_lr_pending(v_target, p);
+         desc = p->desc;
+         spin_unlock_irqrestore(&v_target->arch.vgic.lock, flags);
+ 
+@@ -402,7 +466,15 @@ void vgic_enable_irqs(struct vcpu *v, uint32_t r, int n)
+         spin_lock_irqsave(&v_target->arch.vgic.lock, flags);
+         p = irq_to_pending(v_target, irq);
+         set_bit(GIC_IRQ_GUEST_ENABLED, &p->status);
+-        if ( !list_empty(&p->inflight) && !test_bit(GIC_IRQ_GUEST_VISIBLE, &p->status) )
++        /* HW SGI? Ask the ITS to unmask it */
++        if ( irq < 16 && pirq_is_tied_to_hw(p) )
++        {
++            if ( its_sgi_unmask_irq(v_target, irq) )
++                printk(XENLOG_G_ERR
++                       "%pv: vSGI: failed to unmask interrupt %u\n",
++                       v, irq);
++        }
++        else if ( !list_empty(&p->inflight) && !test_bit(GIC_IRQ_GUEST_VISIBLE, &p->status) )
+             gic_raise_guest_irq(v_target, irq, p->priority);
+         spin_unlock_irqrestore(&v_target->arch.vgic.lock, flags);
+         if ( p->desc != NULL )
+@@ -567,6 +639,9 @@ void vgic_remove_irq_from_queues(struct vcpu *v, struct pending_irq *p)
+ {
+     ASSERT(spin_is_locked(&v->arch.vgic.lock));
+ 
++    if ( pirq_is_tied_to_hw(p) )
++        return;
++
+     clear_bit(GIC_IRQ_GUEST_QUEUED, &p->status);
+     list_del_init(&p->inflight);
+     gic_remove_from_lr_pending(v, p);
+@@ -578,6 +653,7 @@ void vgic_inject_irq(struct domain *d, struct vcpu *v, unsigned int virq,
+     uint8_t priority;
+     struct pending_irq *iter, *n;
+     unsigned long flags;
++    int ret;
+ 
+     /*
+      * For edge triggered interrupts we always ignore a "falling edge".
+@@ -611,6 +687,30 @@ void vgic_inject_irq(struct domain *d, struct vcpu *v, unsigned int virq,
+         return;
+     }
+ 
++    /* HW SGI? Ask the ITS to inject it */
++    if ( virq <= 16 && pirq_is_tied_to_hw(n) )
++    {
++        /* the vsgi is enabled */
++        if ( test_bit(GIC_IRQ_GUEST_ENABLED, &n->status) )
++        {
++            ret = its_sgi_set_pending_state(v, virq, true);
++            if ( ret )
++            {
++                printk(XENLOG_G_ERR "%p: vSGI: failed to inject: %d\n", v, ret);
++                spin_unlock_irqrestore(&v->arch.vgic.lock, flags);
++                return;
++            }
++            priority = vgic_get_virq_priority(v, virq);
++            n->priority = priority;
++        }
++        else
++        {
++            spin_unlock_irqrestore(&v->arch.vgic.lock, flags);
++            return;
++        }
++        goto out;
++    }
++
+     set_bit(GIC_IRQ_GUEST_QUEUED, &n->status);
+ 
+     if ( !list_empty(&n->inflight) )
+@@ -718,6 +818,8 @@ unsigned int vgic_max_vcpus(unsigned int domctl_vgic_version)
+ 
+ #ifdef CONFIG_GICV3
+     case XEN_DOMCTL_CONFIG_GIC_V3:
++    case XEN_DOMCTL_CONFIG_GIC_V4:
++    case XEN_DOMCTL_CONFIG_GIC_V4_1:
+         return 4096;
+ #endif
+ 
+@@ -745,7 +847,15 @@ void vgic_check_inflight_irqs_pending(struct domain *d, struct vcpu *v,
+ 
+         p = irq_to_pending(v_target, irq);
+ 
+-        if ( p && !list_empty(&p->inflight) )
++        /* HW SGI? Ask the ITS to clear it */
++        if ( p && irq < 16 && pirq_is_tied_to_hw(p) )
++        {
++            if ( its_sgi_set_pending_state(v_target, irq, false) )
++                printk(XENLOG_G_ERR
++                       "%pv: vSGI: failed to clear pending interrupt %u\n",
++                       v, irq);
++        }
++        else if ( p && !list_empty(&p->inflight) )
+             printk(XENLOG_G_WARNING
+                    "%pv trying to clear pending interrupt %u.\n",
+                    v, irq);
+diff --git a/xen/arch/x86/include/asm/hvm/hvm.h b/xen/arch/x86/include/asm/hvm/hvm.h
+index 93254651f2..9198e46ea9 100644
+--- a/xen/arch/x86/include/asm/hvm/hvm.h
++++ b/xen/arch/x86/include/asm/hvm/hvm.h
+@@ -916,6 +916,8 @@ static inline void hvm_set_reg(struct vcpu *v, unsigned int reg, uint64_t val)
+ 
+ #endif  /* CONFIG_HVM */
+ 
++#define arch_vcpu_unblock(v) ((void)(v))
++
+ #endif /* __ASM_X86_HVM_HVM_H__ */
+ 
+ /*
+diff --git a/xen/common/sched/core.c b/xen/common/sched/core.c
+index 43132ff6e0..78869b29a1 100644
+--- a/xen/common/sched/core.c
++++ b/xen/common/sched/core.c
+@@ -992,6 +992,8 @@ void vcpu_unblock(struct vcpu *v)
+     if ( !test_and_clear_bit(_VPF_blocked, &v->pause_flags) )
+         return;
+ 
++    arch_vcpu_unblock(v);
++
+     /* Polling period ends when a VCPU is unblocked. */
+     if ( unlikely(v->poll_evtchn != 0) )
+     {
+@@ -1411,6 +1413,7 @@ void vcpu_block(void)
+     if ( local_events_need_delivery() )
+     {
+         clear_bit(_VPF_blocked, &v->pause_flags);
++        arch_vcpu_unblock(v);
+     }
+     else
+     {
+diff --git a/xen/include/public/arch-arm.h b/xen/include/public/arch-arm.h
+index db3396c3dd..e20ce2d7a4 100644
+--- a/xen/include/public/arch-arm.h
++++ b/xen/include/public/arch-arm.h
+@@ -293,6 +293,8 @@ DEFINE_XEN_GUEST_HANDLE(vcpu_guest_context_t);
+ #define XEN_DOMCTL_CONFIG_GIC_NATIVE    0
+ #define XEN_DOMCTL_CONFIG_GIC_V2        1
+ #define XEN_DOMCTL_CONFIG_GIC_V3        2
++#define XEN_DOMCTL_CONFIG_GIC_V4        3
++#define XEN_DOMCTL_CONFIG_GIC_V4_1      4
+ 
+ #define XEN_DOMCTL_CONFIG_TEE_NONE      0
+ #define XEN_DOMCTL_CONFIG_TEE_OPTEE     1
+-- 
+2.25.1
+

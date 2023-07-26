@@ -50,6 +50,8 @@ SRC_URI += "\
     file://0038-xen-arm-Allow-MPAM-v1.1-in-MSC-hardware-probing-proc.patch \
     file://0039-docs-tool-Add-the-mpam-parameter-in-xl-config-file.patch \
     file://0040-libs-light-Increase-hotplug-timeout.patch \
+    file://0041-xen-arm-PCI-devices-passthrough-on-Arm.patch \
+    file://0042-xen-arm-introduce-GICv4.1-on-ARM-platform.patch \
     "
 # /* cSpell:enable */
 
