@@ -114,7 +114,7 @@ uboot_version = "2023.01"
 linux_version = "6.1"
 linux_version_patch = "25"
 xen_version = "4.17"
-zephyr_version = "3.3.0"
+zephyr_version = "3.4.0"
 fvp_version = "0.0"
 actuation_version = "main"
 systemready_ir_acs_version = "1.0"
@@ -180,7 +180,6 @@ rst_prolog = f"""
 .. _U-Boot repository: https://source.denx.de/u-boot/u-boot/-/tree/v{uboot_version}
 .. _Xen repository: https://xenbits.xen.org/gitweb/?p=xen.git;a=tree;h=refs/heads/stable-{xen_version}
 .. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fpreempt-rt%2Fbase
-.. _Zephyr repository: https://github.com/zephyrproject-rtos/zephyr/tree/v{zephyr_version}
 .. _Device Tree specification: https://www.devicetree.org/
 .. _xl documentation: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.1.html
 .. _Arm Memory Partitioning and Monitoring: https://developer.arm.com/documentation/ddi0598/latest

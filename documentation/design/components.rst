@@ -443,17 +443,17 @@ The out-of-tree driver for virtual network over RPMsg is located at
 :kronos-repo:`components/safety_island/zephyr/src/drivers/ethernet`.
 
 The out-of-tree driver for MHUv3 device is located at
-:kronos-repo:`components/safety_island/zephyr/src/drivers/ipm`.
+:kronos-repo:`components/safety_island/zephyr/src/drivers/mbox`.
 
 Additional patches are located at
 :kronos-repo:`yocto/meta-kronos/recipes-kernel/zephyr-kernel/files/zephyr`
 related to:
 
  * MPU region configuration
- * zperf and networking fixes
- * A fix for SMP early stack initialization
- * FPU sharing fixes and workaround
+ * VLAN configuration and fixes
  * Working around the shell interfering with network performance
+ * zperf download bind capability
+ * SMSC91x driver promiscuous mode
 
 **********
 References
