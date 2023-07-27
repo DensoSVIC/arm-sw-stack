@@ -303,6 +303,14 @@ The stack offers several methods for users to configure MPAM for domains:
      [xen]
      options=(...) dom0_mpam=slc:0xf
 
+ * Users can also apply MPAM configuration for guests at guest creation time by
+   guest VM configuration file using an optional configuration ``mpam``. An
+   example is shown below:
+
+   .. code-block:: console
+
+     mpam = ['slc=0xf']
+
  * There is a set of sub-commands in "xl" to allow users to use MPAM at runtime.
    Users can use the ``xl psr-hwinfo`` command to query the system information
    of MPAM, and use ``xl psr-cat-set`` or ``xl psr-cat-show`` to configure or
