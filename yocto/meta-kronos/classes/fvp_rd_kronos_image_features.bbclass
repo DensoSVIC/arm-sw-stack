@@ -72,6 +72,7 @@ FEATURE_PACKAGES_COMMON = " \
 FEATURE_PACKAGES_baremetal = " \
     ${FEATURE_PACKAGES_COMMON} \
     podman \
+    packagegroup-ts-tests-psa \
     "
 
 FEATURE_PACKAGES_virtualization = " \
