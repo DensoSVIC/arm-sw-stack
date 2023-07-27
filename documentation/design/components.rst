@@ -27,6 +27,9 @@ The stack comprises of the following components:
   * - :ref:`design_components_trusted-firmware-a`
     - |Trusted Firmware-A version|
     - `Trusted Firmware-A repository`_
+  * - :ref:`design_components_op-tee`
+    - |OP-TEE version|
+    - `OP-TEE repository`_
   * - :ref:`design_components_u-boot`
     - |U-Boot version|
     - `U-Boot repository`_
@@ -186,6 +189,17 @@ Patches for the SCP-firmware are included at
 Primary Compute
 ***************
 
+.. _design_components_devicetree:
+
+Device Tree
+==================
+
+The RD-Kronos FVP device tree contains the hardware description for the Primary Compute.
+The CPUs, memory and devices are statically configured in the device tree. It is compiled
+by the Trusted Firmware-A Yocto recipe, bundled in the Trusted Firmware-A flash image at
+rest and used to configure U-Boot, Linux and Xen at runtime. It is located at
+:meta-arm-repo:`meta-arm-bsp/recipes-bsp/trusted-firmware-a/files/fvp-rd-kronos/rdkronos.dts`.
+
 .. _design_components_trusted-firmware-a:
 
 Trusted Firmware-A
@@ -223,6 +237,31 @@ to:
  * Implement the RD-Kronos platform port, based on RD-Fremont.
  * Compile the HW_CONFIG device tree and add it to the FIP image.
  * Extend BL2_AT_EL3 to load the FW_CONFIG for dynamic configuration.
+ * Add RD-Kronos support for OP-TEE SPMC.
+
+.. _design_components_op-tee:
+
+OP-TEE
+======
+
+`OP-TEE`_ is a Trusted Execution Environment (TEE) designed as companion to a
+non-secure Linux kernel running on Neoverse cores using the TrustZone
+technology. OP-TEE implements TEE Internal Core API v1.1.x which is the API
+exposed to Trusted Applications and the TEE Client API v1.0, which is the API
+describing how to communicate with a TEE.
+
+.. _design_components_op-tee_downstream_changes:
+
+Downstream Changes
+------------------
+
+Patch files can be found at:meta-arm-repo:`meta-arm-bsp/recipes-security/optee/files/optee-os/fvp-rd-kronos/`
+to:
+
+ * Implement the RD-Kronos platform port.
+ * OP-TEE binary is wrapped by fiptool as BL32 image. BL2 will load it into DRAM at a specific
+   address which is set by TF-A.
+ * Booting OP-TEE as SPMC running at SEL1.
 
 .. _design_components_u-boot:
 

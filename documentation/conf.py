@@ -118,6 +118,7 @@ zephyr_version = "3.4.0"
 fvp_version = "0.0"
 actuation_version = "main"
 systemready_ir_acs_version = "1.0"
+optee_version = "3.20.0"
 
 rst_prolog = f"""
 .. |kas version| replace:: {kas_version}
@@ -128,6 +129,7 @@ rst_prolog = f"""
 .. |SCP-firmware version| replace:: {scp_firmware_version}
 .. |SCP-firmware base version| replace:: {scp_firmware_base_version}
 .. |Trusted Firmware-A version| replace:: {trusted_firmware_a_version}
+.. |OP-TEE version| replace:: {optee_version}
 .. |U-Boot version| replace:: {uboot_version}
 .. |Xen version| replace:: {xen_version}
 .. |Linux version| replace:: {linux_version}.{linux_version_patch}
@@ -177,6 +179,7 @@ rst_prolog = f"""
 .. _Trusted Firmware-M repository: https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git/tree/?h={trusted_firmware_m_version}
 .. _SCP-firmware repository: https://github.com/ARM-software/SCP-firmware/tree/{scp_firmware_version}
 .. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/tree/?h=v{trusted_firmware_a_version}
+.. _OP-TEE repository: https://github.com/OP-TEE/optee_os/tree/{optee_version}
 .. _U-Boot repository: https://source.denx.de/u-boot/u-boot/-/tree/v{uboot_version}
 .. _Xen repository: https://xenbits.xen.org/gitweb/?p=xen.git;a=tree;h=refs/heads/stable-{xen_version}
 .. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fpreempt-rt%2Fbase
@@ -220,6 +223,7 @@ rst_prolog = f"""
 .. _Open vSwitch: https://www.openvswitch.org
 .. _Tmux Documentation: https://man7.org/linux/man-pages/man1/tmux.1.html
 .. _Ethernet Bridging API: https://docs.zephyrproject.org/apidoc/{zephyr_version}/group__eth__bridge.html
+.. _OP-TEE: https://optee.readthedocs.io/en/{optee_version}/
 """  # noqa: E501
 
 # URL to use for references to repository paths
