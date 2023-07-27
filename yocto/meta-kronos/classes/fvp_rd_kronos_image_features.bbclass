@@ -97,7 +97,11 @@ ACTUATION_PACKAGES ?= "actuation-player"
 FEATURE_PACKAGES_actuation = "${ACTUATION_PACKAGES}"
 FEATURE_PACKAGES_actuation:virtualization = ""
 
-EXTRA_IMAGEDEPENDS:append:actuation = " packet-analyzer-native"
+KRONOS_EXTRA_IMAGEDEPENDS = ""
+KRONOS_EXTRA_IMAGEDEPENDS:actuation = "packet-analyzer-native:do_addto_recipe_sysroot"
+
+EXTRA_IMAGEDEPENDS:append:baremetal = " ${KRONOS_EXTRA_IMAGEDEPENDS}"
+EXTRA_IMAGEDEPENDS:append:virtualization = " ${KRONOS_EXTRA_IMAGEDEPENDS}"
 
 FEATURE_PACKAGES_hipc-validation = "iperf"
 FEATURE_PACKAGES_hipc-validation:virtualization = ""

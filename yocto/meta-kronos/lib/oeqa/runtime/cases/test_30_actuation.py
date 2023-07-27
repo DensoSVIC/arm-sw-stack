@@ -54,18 +54,8 @@ class ActuationTest(OERuntimeTestCase):
                                timeout=150)
         self.target.expect(self.linux_console, self.linux_prompt, timeout=120)
 
-    def get_analyzer_path(self):
-        # Get packet analyzer package path
-        return os.path.join(self.td.get('COMPONENTS_DIR'),
-                            self.td.get('BUILD_ARCH'),
-                            'packet-analyzer-native', 'usr', 'bin',
-                            'actuation_packet_analyzer')
-
     def test_analyzer_help(self):
-        analyzer = 'packet_analyzer/start_analyzer.py'
-
-        host_output = pexpect.run(f'python3 {analyzer} -h',
-                                  cwd=self.get_analyzer_path(), timeout=10)
+        host_output = pexpect.run(f'start_analyzer -h', timeout=10)
         host_output = host_output.decode("utf-8", errors="replace").strip()
         self.logger.debug('host_output:')
         self.logger.debug(host_output)
@@ -81,10 +71,8 @@ class ActuationTest(OERuntimeTestCase):
         # localhost:FVP_ACTUATION_HOST_ANALYZER_PORT maps to 192.168.10.0:49152
         port = self.td.get('FVP_ACTUATION_HOST_ANALYZER_PORT')
         host = "localhost"
-        analyzer = 'packet_analyzer/start_analyzer.py'
-        cmd = f'python3 {analyzer} -L debug -p {port} -a {host} -c {command_f}'
-        proc = pexpect.spawn(cmd, cwd=self.get_analyzer_path(),
-                             logfile=self.host_log)
+        cmd = f'start_analyzer -L debug -p {port} -a {host} -c {command_f}'
+        proc = pexpect.spawn(cmd, logfile=self.host_log)
         proc.expect('Starting analyze, use Ctrl-C to stop the process',
                     timeout=10)
         self.target.expect(self.si_console,

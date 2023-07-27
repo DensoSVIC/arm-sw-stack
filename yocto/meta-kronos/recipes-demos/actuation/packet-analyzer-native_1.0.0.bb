@@ -17,13 +17,8 @@ SRC_URI = "${SRC_URI_ACTUATION};${BRANCH_ACTUATION}"
 SRCREV = "${SRCREV_ACTUATION}"
 S = "${WORKDIR}/git"
 
-inherit python3native native
+DEPENDS += "python3-setuptools-scm-native"
+inherit python_setuptools_build_meta native
 
+PEP517_SOURCE_PATH = "${S}/packet_analyzer"
 RDEPENDS:${PN} += "python3-numpy-native"
-
-do_configure[noexec] = "1"
-do_compile[noexec] = "1"
-do_install() {
-    install -d ${D}/${bindir}/actuation_packet_analyzer
-    cp -r ${S}/packet_analyzer ${D}/${bindir}/actuation_packet_analyzer
-}

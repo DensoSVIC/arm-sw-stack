@@ -358,8 +358,7 @@ in :ref:`user_guide_reproduce_actuation_demo`, start the Packet Analyzer:
 
       cd ~/kronos/
       # Start the Packet Analyzer
-      NATIVE_SYSROOT_BIN=build/tmp_baremetal/work/fvp_rd_kronos-poky-linux/baremetal-image/1.0-r0/recipe-sysroot-native/usr/bin
-      ${NATIVE_SYSROOT_BIN}/python3-native/python3 ${NATIVE_SYSROOT_BIN}/actuation_packet_analyzer/packet_analyzer/start_analyzer.py -L debug -a localhost -c ./data
+      kas shell -c "oe-run-native packet-analyzer-native start_analyzer -L debug -a localhost -c ./data"
 
    A message similar to the following should appear on the SI Cluster 0:
 
