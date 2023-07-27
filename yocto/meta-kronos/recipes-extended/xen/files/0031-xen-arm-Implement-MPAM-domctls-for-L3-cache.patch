@@ -36,7 +36,7 @@ index 04e12dcc7d..8c68ea5d03 100644
 +        {
 +            case XEN_DOMCTL_PSR_SET_L3_CBM:
 +            {
-+                struct xen_arch_domctl_mpam cfg;
++                struct xen_arch_domctl_mpam cfg = {0};
 +
 +                cfg.l3_cpbm = domctl->u.psr_alloc.data;
 +                mpam_sanitise_config(&cfg, false);

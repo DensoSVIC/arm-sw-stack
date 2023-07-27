@@ -28,7 +28,7 @@ index 8c68ea5d03..68d70d3eef 100644
                  return 0;
 +            case XEN_DOMCTL_PSR_SET_SLC_CBM:
 +            {
-+                struct xen_arch_domctl_mpam cfg;
++                struct xen_arch_domctl_mpam cfg = {0};
 +
 +                cfg.slc_cpbm = domctl->u.psr_alloc.data;
 +                mpam_sanitise_config(&cfg, false);
