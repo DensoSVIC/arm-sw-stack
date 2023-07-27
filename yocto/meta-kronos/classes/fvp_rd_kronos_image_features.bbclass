@@ -175,6 +175,9 @@ TEST_SUITES:remove:hipc-validation:virtualization = " \
     test_40_virtualization \
     "
 
+TEST_SUITES:remove:virtualization = " \
+    test_00_secure_partition \
+    "
 EXTRA_TESTIMAGE_RDEPENDS ?= ""
 EXTRA_TESTIMAGE_RDEPENDS:si0-ethernet0 = "iperf-native:do_populate_sysroot"
 EXTRA_TESTIMAGE_RDEPENDS:si0-bridge-ethernet0 = "iperf-native:do_populate_sysroot"

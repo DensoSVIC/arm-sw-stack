@@ -24,3 +24,6 @@ KERNEL_FEATURES:append = "\
     features/vswitch/vswitch.scc \
     features/xen/xen.scc \
     "
+
+# Currently, FFA is not supported in Xen, disable it
+KERNEL_FEATURES:append:virtualization = " features/ffa-tee/disable-ffa-tee.scc"
