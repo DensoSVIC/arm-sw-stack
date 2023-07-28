@@ -180,6 +180,24 @@ Image-Upload:
       --url "${ARTIFACTORY_BASE_URL}" --password "${ARTIFACTORY_KEY}" \
       "${ARTIFACTORY_IMAGE_BUILD_PATH}" "${CI_PIPELINE_ID}"
 
+fvp-summary-render:
+  needs: ["Image-Upload"]
+  rules:
+    - !reference [Image-Upload, rules]
+  image: ${MIRROR_DOCKER}/python:3.8
+  stage: Release
+  artifacts:
+    paths:
+      - update-report
+  script:
+    - rm -fr update-report
+    - pip3 install -r "${CI_PROJECT_DIR}/.gitlab/scripts/requirements.txt"
+    - |
+      python3 "${CI_PROJECT_DIR}/.gitlab/scripts/fvp-summary.py" \
+        -o "${CI_PROJECT_DIR}/update-report"
+  tags:
+    - arm64
+
 Image-Build-virtualization:
   extends: .kas_image_build_kronos
   variables:

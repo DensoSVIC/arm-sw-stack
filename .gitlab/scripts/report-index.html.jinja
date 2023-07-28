@@ -1,0 +1,48 @@
+{% extends "report-base.html.jinja" %}
+{% block title %}FVP RD Kronos Report{% endblock %}
+
+{% block content %}
+  <p>
+    Last passed build: {{ last_pass }}
+  </p>
+  <p>
+    Last failed build: {{ last_fail }}
+  </p>
+  <table class="table is-striped">
+    <thead>
+      <tr>
+        <th>Build</th>
+        <th>FVP version</th>
+        <th>FVP Override?</th>
+        <th>Run time</th>
+        <th>Pipeline URL</th>
+        <th>Commit SHA</th>
+      </tr>
+    </thead>
+    <style>
+      td {
+        text-align: center
+      }
+    </style>
+    <tbody>
+      {% for build, build_data in data.items() %}
+      <tr>
+        {% if build_data.pass %}
+          <td bgcolor= "#7BB274"><a href="{{ build_data.image_build_url }}">{{ build }}</a></td>
+        {% else %}
+          <td bgcolor= "#D3494E"><a href="{{ build_data.image_build_url }}">{{ build }}</a></td>
+        {% endif %}
+        <td><a href="{{  build_data.fvp_build_url }}">{{ build_data.fvp_pv }}</a></td>
+        {% if build_data.override %}
+          <td>Yes</td>
+        {% else %}
+          <td>No</td>
+        {% endif %}
+        <td>{{ build_data.datetime }}</td>
+        <td><a href="{{ build_data.pipeline_url }}">Pipeline</a></td>
+        <td><a href="{{ build_data.project_url }}/-/commit/{{ build_data.commit_sha }}">{{ build_data.commit_sha }}</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
