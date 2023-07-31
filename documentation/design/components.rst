@@ -129,19 +129,48 @@ The Power Control System Architecture (PCSA) [1]_ describes how systems can be
 built to provide microcontrollers to abstract various power, or other system
 management tasks, away from Application Processors (APs).
 
+The `System Control Processor (SCP) Firmware`_ provides a software reference
+implementation for the System Control Processor (SCP) and Local Power Controller
+(LCP) components.
+
+System Control Processor (SCP)
+==============================
+
 According to the PCSA, the System Control Processor (SCP), a dedicated
 processor, is used to abstract power and system management tasks away from
 application processors.
 
-To support a scalable power control solution in systems with very high core
-counts, a Local Power Controller (LCP) is introduced for each application core.
-The LCP is managed by the SCP. The main functionality of the LCP are: Per-core
-Dynamic Voltage Frequency Scaling (DVFS), Thermal management, Max Power
-Mitigation Mechanism (MPMM), Power limit enforcement and Sensor Data Collection.
+For the RD-Kronos platform, the SCP software is deployed on a Cortex-M7 CPU.
 
-The `System Control Processor (SCP) Firmware`_ provides a software reference
-implementation for the System Control Processor (SCP) and Local Power
-Controller (LCP) components.
+The functionality of the SCP includes:
+
+* Initialization of the system to enable application core boot
+* Runtime services:
+    * Power domain management
+    * System power management
+    * Performance domain management (Dynamic Voltage and Frequency Scaling)
+    * Clock management
+    * Sensor management
+    * Reset domain management
+    * Voltage domain management
+* System Control and Management Interface (SCMI, platform-side)
+
+Local Control Processor (LCP)
+=============================
+
+For the RD-Kronos platform, the Local Control Processor (LCP) software is
+deployed on Cortex-M55 CPUs.
+
+The LCP is introduced for each application core to support a scalable power
+control solution in systems with very high core counts by SCP management. Now,
+the main functionality of the LCP is Per-core Dynamic Voltage Frequency Scaling
+(DVFS).
+
+DVFS allows for setting the components’ clock frequency and voltage level. It is
+implemented in the `dvfs_handler` module of the SCP. Each time the `mhu3` module
+gets a specific interrupt (triggered by power allocation reasons such as locking
+the core in an off power mode for system power off) from AP side, the LCP will
+program the hardware registers with the given frequency and voltage values.
 
 MHUv3 Communication
 ===================
