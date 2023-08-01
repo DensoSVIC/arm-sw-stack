@@ -1,3 +1,4 @@
 dohq-artifactory==0.9.0
 pandas==1.5.3
-jinja2==2.10.1
+markupsafe==2.0.1
+jinja2==3.1.2
