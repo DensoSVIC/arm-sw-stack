@@ -172,7 +172,7 @@ Image-Upload:
     # Collect environment variables and attach them to the build
     - RECIPEINFO="${DEPLOY_DIR}/licenses/fvp-rd-kronos-native/recipeinfo"
     - |
-      jf rt build-collect-env
+      jf rt build-collect-env \
       "${ARTIFACTORY_IMAGE_BUILD_PATH}" "${CI_PIPELINE_ID}"
     # Publish build to Artifactory
     - |
