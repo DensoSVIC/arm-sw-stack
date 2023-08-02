@@ -19,20 +19,36 @@ config ARM_FVP_EULA_ACCEPT_CHOICE
 comment "Target Build Setup"
 
 choice
-    prompt "Reference Stack Type"
-    default REFERENCE_STACK_FULL
+    prompt "Use-Case"
+    default EXTRA_IMAGE_FEATURES_ACTUATION
 
-config REFERENCE_STACK_FULL
-    bool "Full Software Reference Stack"
+config EXTRA_IMAGE_FEATURES_ACTUATION
+    bool "Safety Island Actuation Demo"
 
-config REFERENCE_STACK_SYSTEMREADY
-    bool "Arm SystemReady IR Firmware Only"
+config EXTRA_IMAGE_FEATURES_HIPC
+    bool "Safety Island Communication Demo (using HIPC)"
+
+comment "Arm SystemReady IR Validation"
+
+config USE_CASE_IR_FIRMWARE
+    bool "Arm SystemReady IR Firmware Build"
+
+config USE_CASE_IR_ACS
+    bool "Arm SystemReady IR Architecture Compliance Suite (ACS) Tests"
+
+comment "Linux Distribution Installation (Debian and Fedora)"
+
+config USE_CASE_LINUX_DISTRO_DEBIAN
+    bool "Debian Linux Distro Installation"
+
+config USE_CASE_LINUX_DISTRO_FEDORA
+    bool "Fedora Linux Distro Installation"
 
 endchoice
 
 choice
-    depends on REFERENCE_STACK_FULL
-    prompt "Full Software Reference Stack Architecture"
+    depends on EXTRA_IMAGE_FEATURES_ACTUATION || EXTRA_IMAGE_FEATURES_HIPC
+    prompt "Reference Stack Architecture"
     default ARCHITECTURE_BAREMETAL
 
 config ARCHITECTURE_BAREMETAL
@@ -43,45 +59,13 @@ config ARCHITECTURE_VIRTUALIZATION
 
 endchoice
 
-choice
-    depends on REFERENCE_STACK_FULL
-    prompt "Extra Image Features"
-    default EXTRA_IMAGE_FEATURES_ACTUATION
-
-config EXTRA_IMAGE_FEATURES_ACTUATION
-    bool "Actuation Demo"
-
-config EXTRA_IMAGE_FEATURES_HIPC
-    bool "HIPC Validation"
-
-endchoice
-
 comment "Runtime Validation Setup"
-    depends on REFERENCE_STACK_FULL
+    depends on EXTRA_IMAGE_FEATURES_ACTUATION || EXTRA_IMAGE_FEATURES_HIPC
 
 config RUN_TESTS
-    depends on REFERENCE_STACK_FULL
-    bool "Run the tests automatically"
+    depends on EXTRA_IMAGE_FEATURES_ACTUATION || EXTRA_IMAGE_FEATURES_HIPC
+    bool "Run Automated Validation"
     default n
-
-choice
-    depends on REFERENCE_STACK_SYSTEMREADY
-    prompt "Arm SystemReady IR Firmware Validation"
-    default SYSTEMREADY_IR_ACS
-
-config SYSTEMREADY_FIRMWARE
-    bool "Firmware Build Only"
-
-config SYSTEMREADY_IR_ACS
-    bool "Architecture Compliance Suite (ACS) Tests"
-
-config SYSTEMREADY_LINUX_DISTRO_DEBIAN
-    bool "Debian Linux Distro Installation"
-
-config SYSTEMREADY_LINUX_DISTRO_FEDORA
-    bool "Fedora Linux Distro Installation"
-
-endchoice
 
 ##############
 # Set up Kas #
@@ -91,10 +75,10 @@ config KAS_INCLUDE_ARCHITECTURE
     string
     default "yocto/kas/virtualization.yml" if ARCHITECTURE_VIRTUALIZATION
     default "yocto/kas/baremetal.yml" if ARCHITECTURE_BAREMETAL
-    default "yocto/kas/arm-systemready-firmware.yml" if SYSTEMREADY_FIRMWARE
-    default "yocto/kas/arm-systemready-ir-acs.yml" if SYSTEMREADY_IR_ACS
-    default "yocto/kas/arm-systemready-linux-distros-debian.yml" if SYSTEMREADY_LINUX_DISTRO_DEBIAN
-    default "yocto/kas/arm-systemready-linux-distros-fedora.yml" if SYSTEMREADY_LINUX_DISTRO_FEDORA
+    default "yocto/kas/arm-systemready-firmware.yml" if USE_CASE_IR_FIRMWARE
+    default "yocto/kas/arm-systemready-ir-acs.yml" if USE_CASE_IR_ACS
+    default "yocto/kas/arm-systemready-linux-distros-debian.yml" if USE_CASE_LINUX_DISTRO_DEBIAN
+    default "yocto/kas/arm-systemready-linux-distros-fedora.yml" if USE_CASE_LINUX_DISTRO_FEDORA
 
 config KAS_INCLUDE_APPLICATION
     string

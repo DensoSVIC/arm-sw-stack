@@ -38,19 +38,40 @@ Use-Cases
 *********
 
 The solution contains all the instructions necessary to fetch and build the
-source as well as to download the required FVP and launch the following
-use-case examples:
-
- * Safety Island Actuation Demo
- * Heterogeneous Inter-processor Communication Validation
- * |Arm SystemReadyTM| IR Firmware Build
- * |Arm SystemReadyTM| IR Architecture Compliance Suite (ACS) Tests
- * Linux Distribution Installation (Debian and Fedora)
-
+source as well as to download the required FVP and launch the use-cases.
 Instructions for achieving these use-cases are given in the
 :ref:`Reproduce <user_guide/reproduce:Reproduce>` section of the User Guide,
 subject to relevant assumed technical knowledge as listed later in this
 introduction at `Documentation Overview`_.
+
+
+Safety Island Actuation Demo
+============================
+
+The Safety Island Actuation Demo consists of the |Arm SystemReadyTM| IR-aligned
+firmware along with Linux-based software on the Primary Compute and Zephyr
+application on the Safety Island to demonstrate automotive workloads.  Please
+refer :ref:`design_applications_actuation` for more information.
+
+Safety Island Communication Demo
+================================
+
+The Safety Island Communication Demo demonstrates the networking between the
+Primary Compute and the three Safety Island clusters. This is achieved via
+HIPC (Heterogeneous Inter-processor Communication). Please refer to
+:ref:`design_hipc` for more information on HIPC.
+
+|Arm SystemReadyTM| IR Validation
+=================================
+|Arm SystemReadyTM| is a compliance certification program based on a set of
+hardware and firmware standards that enable interoperability with generic
+off-the-shelf operating systems and hypervisors. 
+
+Linux Distribution Installation (Debian and Fedora)
+===================================================
+
+This use-case demonstrates the installation of two unmodified generic UEFI
+distribution images which fall under |Arm SystemReadyTM| requirements.
 
 
 .. _introduction_reference_software_stack_overview:

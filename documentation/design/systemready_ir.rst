@@ -146,7 +146,7 @@ bitbake testimage task.
 
 See :meta-arm-repo:`meta-arm-systemready/README.md` for more details.
 To run the tests, please refer to
-:ref:`reproduce_arm_systemready_ir_validation`.
+:ref:`user_guide_reproduce_arm_systemready_ir_acs`.
 
 .. _systemready_ir_linux_install:
 
@@ -163,4 +163,4 @@ and generate an empty disk as the target disk for the installation.
 
 See :meta-arm-repo:`meta-arm-systemready/README.md` for more details.
 To run the tests, please refer to
-:ref:`reproduce_arm_systemready_ir_validation`.
+:ref:`user_guide_reproduce_arm_systemready_ir_linux`.
