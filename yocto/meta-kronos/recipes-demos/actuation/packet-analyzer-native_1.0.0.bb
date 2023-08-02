@@ -12,13 +12,18 @@ LIC_FILES_CHKSUM = "file://license.rst;md5=e805dc5353977631b7881c7705a6c04a"
 
 require actuation-comon.inc
 
+DEPENDS += "python3-setuptools-scm-native"
+
 PV .= "+git${SRCPV}"
 SRC_URI = "${SRC_URI_ACTUATION};${BRANCH_ACTUATION}"
 SRCREV = "${SRCREV_ACTUATION}"
 S = "${WORKDIR}/git"
 
-DEPENDS += "python3-setuptools-scm-native"
 inherit python_setuptools_build_meta native
 
 PEP517_SOURCE_PATH = "${S}/packet_analyzer"
 RDEPENDS:${PN} += "python3-numpy-native"
+
+# Using addtask to reorder the dependency of addto_recipe_sysroot
+# nooelint: oelint.task.addnotaskbody
+addtask addto_recipe_sysroot after do_populate_sysroot before do_build
