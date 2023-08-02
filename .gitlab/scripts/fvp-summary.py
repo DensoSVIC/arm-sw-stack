@@ -58,7 +58,7 @@ class ArtifactoryHandler(object):
         json = r.json()
 
         return all(
-            job["status"] == "passed" or job["stage"] != "build"
+            job["status"] == "success" or job["stage"] != "Build"
             for job in json
         )
 
