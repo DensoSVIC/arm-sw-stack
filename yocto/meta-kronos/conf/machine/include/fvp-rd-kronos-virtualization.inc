@@ -4,6 +4,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+PREFERRED_PROVIDER_virtual/kernel = "linux-yocto"
+
 # Additional configuration for the fvp-rd-kronos with the "virtualization"
 # IMAGE_FEATURE
 
