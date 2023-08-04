@@ -1,0 +1,36 @@
+From 520ad46e99b9ec0946a0920f70e74b6fb65ba35a Mon Sep 17 00:00:00 2001
+From: Michael Zhao <michael.zhao@arm.com>
+Date: Wed, 19 Jul 2023 13:17:46 +0800
+Subject: [PATCH 2/5] Invoke SE driver in verifying X509 certificate
+
+Upstream-Status: Pending
+Signed-off-by: Michael Zhao <michael.zhao@arm.com>
+---
+ library/pk_wrap.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/library/pk_wrap.c b/library/pk_wrap.c
+index 3fe2c3e0d..bd8badfdf 100644
+--- a/library/pk_wrap.c
++++ b/library/pk_wrap.c
+@@ -225,6 +225,17 @@ static int rsa_verify_wrap(mbedtls_pk_context *pk, mbedtls_md_type_t md_alg,
+         return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
+     }
+ 
++#if defined(MBEDTLS_PSA_CRYPTO_SE_C)
++    /* For Secure Element driver demo only:
++     *   Set the key location to "secure element" to invoke the external
++     *   SE driver to import the key and verify the hash.
++     */
++    psa_set_key_lifetime(&attributes,
++        PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(
++            PSA_KEY_PERSISTENCE_VOLATILE,
++            PSA_KEY_LOCATION_PRIMARY_SECURE_ELEMENT));
++#endif /* MBEDTLS_PSA_CRYPTO_SE_C */
++
+     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_VERIFY_HASH);
+     psa_set_key_algorithm(&attributes, psa_alg_md);
+     psa_set_key_type(&attributes, PSA_KEY_TYPE_RSA_PUBLIC_KEY);
+-- 
+2.25.1
+

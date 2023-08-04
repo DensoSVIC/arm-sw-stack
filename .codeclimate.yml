@@ -106,5 +106,8 @@ plugins:
       - 'oelint.vars.specific'
       # This check does not support custom overrides
       - oelint.func.specific
+      # In some cases, we want to use SRC_URI from different domains,
+      # which makes this check fail. Disable it.
+      - oelint.vars.srcuridomains
     exclude_patterns:
       - "/public"

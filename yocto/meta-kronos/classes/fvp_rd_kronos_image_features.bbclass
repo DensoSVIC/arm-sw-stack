@@ -69,6 +69,7 @@ FEATURE_PACKAGES_baremetal = " \
     kernel-module-bridge \
     kernel-module-br-netfilter \
     packagegroup-ts-tests-psa \
+    parsec-mbedtls-demo \
     podman \
     "
 

@@ -1,0 +1,65 @@
+From 17a20d0041accb7115c0418c81aecd4304e97c77 Mon Sep 17 00:00:00 2001
+From: Michael Zhao <michael.zhao@arm.com>
+Date: Fri, 8 Sep 2023 10:31:02 +0800
+Subject: [PATCH 4/5] program: ssl: Make ssl_client1.c accept server IP address
+ parameter
+
+In some cases, ssl_server and ssl_client1 are not in the same host. Make
+ssl_client1 accept server ip address parameter. The default server IP
+address is localhost if no parameter is provided.
+
+To specify the server IP address, run instruction:
+./program/ssl/ssl_client1 <server_ip>
+
+Upstream-Status: Pending
+Signed-off-by: Michael Zhao <michael.zhao@arm.com>
+Signed-off-by: Jiamei Xie <jiamei.xie@arm.com>
+---
+ programs/ssl/ssl_client1.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/programs/ssl/ssl_client1.c b/programs/ssl/ssl_client1.c
+index 9acd2e820..cb24a628c 100644
+--- a/programs/ssl/ssl_client1.c
++++ b/programs/ssl/ssl_client1.c
+@@ -71,7 +71,7 @@ static void my_debug(void *ctx, int level,
+     fflush((FILE *) ctx);
+ }
+ 
+-int main(void)
++int main(int argc, char *argv[])
+ {
+     int ret = 1, len;
+     int exit_code = MBEDTLS_EXIT_FAILURE;
+@@ -86,6 +86,15 @@ int main(void)
+     mbedtls_ssl_config conf;
+     mbedtls_x509_crt cacert;
+ 
++    const char *server_addr = NULL;
++
++    /* Set server address */
++    if (argc > 1) {
++      server_addr = argv[1];
++    } else {
++      server_addr = SERVER_NAME;
++    }
++
+ #if defined(MBEDTLS_DEBUG_C)
+     mbedtls_debug_set_threshold(DEBUG_LEVEL);
+ #endif
+@@ -154,10 +163,10 @@ int main(void)
+     /*
+      * 1. Start the connection
+      */
+-    mbedtls_printf("  . Connecting to tcp/%s/%s...", SERVER_NAME, SERVER_PORT);
++    mbedtls_printf("  . Connecting to tcp/%s/%s...", server_addr, SERVER_PORT);
+     fflush(stdout);
+ 
+-    if ((ret = mbedtls_net_connect(&server_fd, SERVER_NAME,
++    if ((ret = mbedtls_net_connect(&server_fd, server_addr,
+                                    SERVER_PORT, MBEDTLS_NET_PROTO_TCP)) != 0) {
+         mbedtls_printf(" failed\n  ! mbedtls_net_connect returned %d\n\n", ret);
+         goto exit;
+-- 
+2.25.1
+

@@ -1,0 +1,37 @@
+From ec58eaaa37f41a0d7d43af1f8a45f4b6d5a1c4fc Mon Sep 17 00:00:00 2001
+From: Michael Zhao <michael.zhao@arm.com>
+Date: Wed, 19 Jul 2023 11:12:04 +0800
+Subject: [PATCH 1/5] Define key location for secure element
+
+Defined `PSA_KEY_LOCATION_PRIMARY_SECURE_ELEMENT` according to the PSA
+Crypto Specification section 9.3.4.
+
+Upstream-Status: Pending
+Signed-off-by: Michael Zhao <michael.zhao@arm.com>
+---
+ include/psa/crypto_values.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/include/psa/crypto_values.h b/include/psa/crypto_values.h
+index 580e3ae80..bc5c1ec7f 100644
+--- a/include/psa/crypto_values.h
++++ b/include/psa/crypto_values.h
+@@ -2388,6 +2388,15 @@
+  */
+ #define PSA_KEY_LOCATION_LOCAL_STORAGE          ((psa_key_location_t) 0x000000)
+ 
++/** The default secure element storage area for persistent keys.
++ *
++ * This storage location is available on systems that have one or more secure
++ * elements that are able to store keys.
++ *
++ * See ::psa_key_location_t for more information.
++ */
++#define PSA_KEY_LOCATION_PRIMARY_SECURE_ELEMENT ((psa_key_location_t) 0x000001)
++
+ #define PSA_KEY_LOCATION_VENDOR_FLAG            ((psa_key_location_t) 0x800000)
+ 
+ /* Note that key identifier values are embedded in the
+-- 
+2.25.1
+

@@ -1,0 +1,64 @@
+From 1c2a95a87f1e5e0e564208267eb9f03bcfa936d6 Mon Sep 17 00:00:00 2001
+From: Michael Zhao <michael.zhao@arm.com>
+Date: Sat, 22 Jul 2023 08:13:30 +0800
+Subject: [PATCH 3/5] program: ssl: Modify ssl_client1.c to register
+ parsec-se-driver
+
+Register parsec-se-driver to invoke Parsec service.
+
+Build instruction:
+./scripts/config.py set MBEDTLS_USE_PSA_CRYPTO
+./scripts/config.py set MBEDTLS_PSA_CRYPTO_SE_C
+LDFLAGS='-L/folder/of/parsec-se-driver.a -l:libparsec_se_driver.a \
+-lm -pthread -ldl' make programs/ssl/ssl_client1
+make programs/ssl/ssl_server
+
+Upstream-Status: Pending
+Signed-off-by: Michael Zhao <michael.zhao@arm.com>
+---
+ programs/ssl/ssl_client1.c | 22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
+
+diff --git a/programs/ssl/ssl_client1.c b/programs/ssl/ssl_client1.c
+index 259b8f930..9acd2e820 100644
+--- a/programs/ssl/ssl_client1.c
++++ b/programs/ssl/ssl_client1.c
+@@ -45,6 +45,13 @@ int main(void)
+ #include "mbedtls/error.h"
+ #include "test/certs.h"
+ 
++#if defined(MBEDTLS_USE_PSA_CRYPTO)
++#include "psa/crypto_se_driver.h"
++#if defined(MBEDTLS_PSA_CRYPTO_SE_C)
++extern psa_drv_se_t PARSEC_SE_DRIVER;
++#endif /* MBEDTLS_PSA_CRYPTO_SE_C */
++#endif /* MBEDTLS_USE_PSA_CRYPTO */
++
+ #include <string.h>
+ 
+ #define SERVER_PORT "4433"
+@@ -94,7 +101,20 @@ int main(void)
+     mbedtls_entropy_init(&entropy);
+ 
+ #if defined(MBEDTLS_USE_PSA_CRYPTO)
+-    psa_status_t status = psa_crypto_init();
++    psa_status_t status;
++
++#if defined(MBEDTLS_PSA_CRYPTO_SE_C)
++    status = psa_register_se_driver(
++                 (psa_key_location_t)PSA_KEY_LOCATION_PRIMARY_SECURE_ELEMENT,
++                 &PARSEC_SE_DRIVER);
++    if (status != PSA_SUCCESS) {
++        mbedtls_fprintf(stderr, "Failed to register PSA SE driver: %d\n",
++                        (int) status);
++        goto exit;
++    }
++#endif /* MBEDTLS_PSA_CRYPTO_SE_C */
++
++    status = psa_crypto_init();
+     if (status != PSA_SUCCESS) {
+         mbedtls_fprintf(stderr, "Failed to initialize PSA Crypto implementation: %d\n",
+                         (int) status);
+-- 
+2.25.1
+

@@ -60,6 +60,7 @@ BTCPUPOOLS
 btrfs
 BUFS
 BUILDIN
+buildpaths
 Buildroot
 buildsystem
 BUILDTOOL
@@ -238,6 +239,7 @@ iidr
 IMAGEDEPENDS
 imgtool
 importlib
+inappropriatemsg
 INCDIR
 includenotfound
 inclusivity
@@ -246,6 +248,7 @@ initdata
 Initialise
 initialised
 initialising
+insaneskip
 INTEN
 INTPARTID
 intpri
@@ -263,6 +266,7 @@ irqreturn
 IRQS
 irqsave
 Izuma
+jsonschema
 kcalloc
 kconf
 kconfig
@@ -415,6 +419,7 @@ physinfo
 physmap
 pkgconfig
 pkgs
+pkill
 POLLERR
 pollfd
 POLLIN
@@ -510,6 +515,7 @@ srcdir
 SRCPV
 SRCREV
 srcurichecksum
+srcuridomains
 SSBD
 sstate
 staticdev

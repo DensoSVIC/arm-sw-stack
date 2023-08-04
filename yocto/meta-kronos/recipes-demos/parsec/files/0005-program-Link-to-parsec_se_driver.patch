@@ -1,0 +1,28 @@
+From 9586e8d5be09f0de4f620a58d3890401f3dea2d2 Mon Sep 17 00:00:00 2001
+From: Peter Hoyes <Peter.Hoyes@arm.com>
+Date: Thu, 31 Aug 2023 22:48:29 +0100
+Subject: [PATCH 5/5] program: Link to parsec_se_driver
+
+Link to the Parsec Secure Element driver
+
+Upstream-Status: Pending
+Signed-off-by: Peter Hoyes <Peter.Hoyes@arm.com>
+---
+ programs/ssl/CMakeLists.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/programs/ssl/CMakeLists.txt b/programs/ssl/CMakeLists.txt
+index 280bbcf3d..5cdfae503 100644
+--- a/programs/ssl/CMakeLists.txt
++++ b/programs/ssl/CMakeLists.txt
+@@ -3,6 +3,7 @@ find_package(Threads)
+ 
+ set(libs
+     ${mbedtls_target}
++    parsec_se_driver
+ )
+ 
+ set(executables
+-- 
+2.25.1
+
