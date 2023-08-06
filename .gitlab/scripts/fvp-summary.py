@@ -85,8 +85,9 @@ class ArtifactoryHandler(object):
             lambda x: x["properties"]["buildInfo.env.CI_COMMIT_REF_SLUG"],
             axis=1
         )
+        # FVP might not be set if the build encounters an unexpected failure.
         df["fvp_pv"] = df.apply(
-            lambda x: x["properties"]["buildInfo.env.FVP_PV"], axis=1
+            lambda x: x["properties"].get("buildInfo.env.FVP_PV", ""), axis=1
         ).astype(str)
         df["pipeline_url"] = df.apply(
             lambda x: x["properties"]["buildInfo.env.CI_PIPELINE_URL"], axis=1
@@ -124,7 +125,10 @@ class ArtifactoryHandler(object):
         )
 
         df["artifact"] = df.apply(
-            lambda x: x["modules"][0]["artifacts"][0]["path"], axis=1
+            lambda x: ""
+            if pd.isna(x["modules"])
+            else x["modules"][0]["artifacts"][0]["path"],
+            axis=1,
         )
 
         df = df.filter(
@@ -176,7 +180,7 @@ class FVPData(object):
         images_df = self.artifactory_handler.get_kronos_image_builds()
         fvp_df = self.artifactory_handler.get_kronos_fvp_builds()
         builds_df = fvp_df.merge(
-            images_df, how="inner", left_on="fvp_pv", right_on="fvp_pv"
+            images_df, how="right", left_on="fvp_pv", right_on="fvp_pv"
         )
         builds_df = builds_df.sort_values(by=["datetime"], ascending=False)
         builds_df = builds_df.set_index("build_id")
