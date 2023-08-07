@@ -47,7 +47,8 @@ class DomUTest(OERuntimeTestCase):
             self.fail(f"Unable to check echo for command:\n'{cmd}'"
                       f"\nCommand line content: '{check_line}'")
 
-        self.target.expect(self.linux_console, self.linux_prompt, timeout=timeout)
+        self.target.expect(self.linux_console,
+                           self.linux_prompt, timeout=timeout)
         output = self.target.before(self.linux_console)
         output = output.decode("utf-8", errors="replace").strip()
 

@@ -14,7 +14,7 @@ from oeqa.runtime.cases.test_30_si0_ethernet0 import Ethernet0TestBase
 class BridgeTest(Ethernet0TestBase):
     @skipIfNotFeature('si0-bridge-ethernet0',
                       'Test requires si0-bridge-ethernet0 to be in'
-                       ' IMAGE_FEATURES')
+                      ' IMAGE_FEATURES')
     def test_si0_bridge_ethernet0(self):
         si_console = 'safety_island_c0'
         self.target.expect(si_console,

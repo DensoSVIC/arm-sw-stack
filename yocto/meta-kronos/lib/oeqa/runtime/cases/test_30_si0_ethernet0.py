@@ -58,9 +58,8 @@ class Ethernet0TestBase(OERuntimeTestCase):
             if match_id == 0:
                 _ = self.target.match(si_console)
                 passed = True
-            elif match_id == 2:
-                if passed:
-                    break
+            elif match_id == 2 and passed:
+                break
 
 
 class Si0Ethernet0Test(Ethernet0TestBase):
