@@ -223,10 +223,11 @@ Primary Compute
 Device Tree
 ==================
 
-The RD-Kronos FVP device tree contains the hardware description for the Primary Compute.
-The CPUs, memory and devices are statically configured in the device tree. It is compiled
-by the Trusted Firmware-A Yocto recipe, bundled in the Trusted Firmware-A flash image at
-rest and used to configure U-Boot, Linux and Xen at runtime. It is located at
+The RD-Kronos FVP device tree contains the hardware description for the Primary
+Compute. The CPUs, memory and devices are statically configured in the device
+tree. It is compiled by the Trusted Firmware-A Yocto recipe, bundled in the
+Trusted Firmware-A flash image at rest and used to configure U-Boot, Linux and
+Xen at runtime. It is located at
 :meta-arm-repo:`meta-arm-bsp/recipes-bsp/trusted-firmware-a/files/fvp-rd-kronos/rdkronos.dts`.
 
 .. _design_components_trusted-firmware-a:
@@ -289,8 +290,8 @@ Patch files can be found at
 to:
 
  * Implement the RD-Kronos platform port.
- * OP-TEE binary is wrapped by fiptool as BL32 image. BL2 will load it into DRAM at a specific
-   address which is set by TF-A.
+ * OP-TEE binary is wrapped by fiptool as BL32 image. BL2 will load it into DRAM
+   at a specific address which is set by TF-A.
  * Booting OP-TEE as SPMC running at SEL1.
 
 .. _design_components_u-boot:
