@@ -284,7 +284,8 @@ describing how to communicate with a TEE.
 Downstream Changes
 ------------------
 
-Patch files can be found at:meta-arm-repo:`meta-arm-bsp/recipes-security/optee/files/optee-os/fvp-rd-kronos/`
+Patch files can be found at
+:meta-arm-repo:`meta-arm-bsp/recipes-security/optee/files/optee-os/fvp-rd-kronos/`
 to:
 
  * Implement the RD-Kronos platform port.
