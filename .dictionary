@@ -186,6 +186,7 @@ ffch
 fileextrapaths
 FILESEXTRAPATHS
 filesystems
+fiptool
 fprintf
 fstype
 FSTYPES
@@ -329,6 +330,7 @@ MULCOL
 multilineident
 nameservice
 nativesdk
+Neoverse
 netback
 netdev
 NETIF
@@ -359,6 +361,7 @@ OPENAMP
 openembedded
 OPENMAP
 openvswitch
+optee
 outdir
 outorder
 ovrl
@@ -441,6 +444,7 @@ RXEN
 rxlen
 sbindir
 sched
+SCMI
 sendbits
 sendcontrol
 sendline
@@ -465,6 +469,7 @@ SOFTDEP
 sourceparams
 SOURCEPATH
 spinlock
+SPMC
 sram
 srcdir
 SRCPV
