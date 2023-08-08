@@ -10,30 +10,14 @@ HOMEPAGE = "https://safety-island-actuation-demo.docs.arm.com/"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://license.rst;md5=e805dc5353977631b7881c7705a6c04a"
 
-require actuation-comon.inc
+require actuation-pkgs.inc
 
-DEPENDS += "\
-    ament-cmake-auto-native \
-    ament-cmake-python-native \
-    ament-cmake-target-dependencies-native \
-    autoware-cmake-native \
-    cyclonedds-native \
-"
-
-PV .= "+git${SRCPV}"
-
-SRC_URI = "${SRC_URI_ACTUATION};${BRANCH_ACTUATION}"
-SRCREV = "${SRCREV_ACTUATION}"
-S = "${WORKDIR}/git"
-
-inherit python3native pkgconfig cmake
+DEPENDS += "cyclonedds-native"
 
 OECMAKE_SOURCEPATH = "${S}/actuation_packages/actuation_msgs"
 
 EXTRA_OECMAKE:append = "\
     -DBUILD_SHARED_LIBS=ON \
-    -DBUILD_TESTING=OFF \
-    -DROS_DISTRO=galactic \
 "
 
 FILES:${PN} += "${datadir}/*"

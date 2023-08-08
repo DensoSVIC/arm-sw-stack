@@ -125,6 +125,7 @@ DEFUN
 delaybeforesend
 delbr
 DENABLE
+dependsordered
 DEPLOYDIR
 destsuffix
 devad
@@ -384,6 +385,7 @@ phandle
 physinfo
 physmap
 pkgconfig
+pkgs
 POLLERR
 pollfd
 POLLIN
