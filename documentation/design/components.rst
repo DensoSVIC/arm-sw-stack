@@ -38,7 +38,7 @@ The stack comprises of the following components:
     - `Xen repository`_
   * - :ref:`design_components_linux`
     - |Linux version|
-    - `Linux repository`_
+    - `Linux repository`_ and `Linux preempt-rt repository`_
   * - :ref:`design_components_zephyr`
     - |Zephyr version|
     - `Zephyr repository`_
@@ -426,10 +426,16 @@ to:
 
 .. _design_components_linux:
 
-Linux Kernel (PREEMPT_RT)
-=========================
+Linux Kernel
+============
 
-The Linux kernel is a real-time kernel that uses the PREEMPT_RT patch.
+In the Baremetal Architecture, the Linux kernel is a real-time kernel that uses
+the `PREEMPT_RT patch`_. In the Virtualization Architecture, both Dom0 and DomU
+run a standard kernel.
+
+.. note::
+  Here, the "standard kernel" is a terminology compared to a real-time kernel,
+  a term borrowed from `Kernel Types`_ that are defined in the `Yocto Project`_.
 
 Remoteproc
 ----------

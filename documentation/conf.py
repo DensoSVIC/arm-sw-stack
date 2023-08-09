@@ -182,7 +182,9 @@ rst_prolog = f"""
 .. _OP-TEE repository: https://github.com/OP-TEE/optee_os/tree/{optee_version}
 .. _U-Boot repository: https://source.denx.de/u-boot/u-boot/-/tree/v{uboot_version}
 .. _Xen repository: https://xenbits.xen.org/gitweb/?p=xen.git;a=tree;h=refs/heads/stable-{xen_version}
-.. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fpreempt-rt%2Fbase
+.. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fbase
+.. _Linux preempt-rt repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fpreempt-rt%2Fbase
+.. _PREEMPT_RT patch: https://wiki.linuxfoundation.org/realtime/start
 .. _Device Tree specification: https://www.devicetree.org/
 .. _xl documentation: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.1.html
 .. _Arm Memory Partitioning and Monitoring: https://developer.arm.com/documentation/ddi0598/latest
@@ -206,6 +208,8 @@ rst_prolog = f"""
 .. _Arm Kronos Reference Design Technical Overview: https://developer.arm.com/documentation/107916/0100
 .. _Fast Models FVP Reference Guide: https://developer.arm.com/documentation/100966/latest
 .. _Cassini: https://cassini.docs.arm.com/en/{cassini_version}
+.. _Kernel Types: https://docs.yoctoproject.org/{yocto_doc_version}/kernel-dev/advanced.html#kernel-types
+.. _Yocto Project: https://docs.yoctoproject.org/{yocto_doc_version}/index.html
 .. _Yocto Project Quick Start: https://docs.yoctoproject.org/{yocto_doc_version}brief-yoctoprojectqs/index.html
 .. _Trusted Firmware-A (TF-A): https://trustedfirmware-a.readthedocs.io
 .. _Trusted Firmware-M (TF-M): https://tf-m-user-guide.trustedfirmware.org

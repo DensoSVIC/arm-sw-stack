@@ -65,7 +65,7 @@ HIPC (Heterogeneous Inter-processor Communication). Please refer to
 =================================
 |Arm SystemReadyTM| is a compliance certification program based on a set of
 hardware and firmware standards that enable interoperability with generic
-off-the-shelf operating systems and hypervisors. 
+off-the-shelf operating systems and hypervisors.
 
 Linux Distribution Installation (Debian and Fedora)
 ===================================================
@@ -121,11 +121,10 @@ The remaining software in the Primary Compute subsystem, based on the
 
 |
 
-In both architectures the Primary Compute (real-time Linux with PREEMPT_RT) can
-communicate with the Safety Island subsystem (Zephyr) via a bi-directional
-communication channel. The :ref:`design_applications_actuation` is integrated
-into the stack to show-case this Heterogeneous Inter-processor Communication
-(HIPC) between subsystems.
+In both architectures the Primary Compute (Linux) can communicate with the
+Safety Island subsystem (Zephyr) via a bi-directional communication channel. The
+:ref:`design_applications_actuation` is integrated into the stack to show-case
+this Heterogeneous Inter-processor Communication (HIPC) between subsystems.
 
 
 **********************
