@@ -334,6 +334,7 @@ nativesdk
 Neoverse
 netback
 netdev
+netfilter
 NETIF
 NETPORT
 networkd

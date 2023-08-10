@@ -71,8 +71,10 @@ FEATURE_PACKAGES_COMMON = " \
 
 FEATURE_PACKAGES_baremetal = " \
     ${FEATURE_PACKAGES_COMMON} \
-    podman \
+    kernel-module-bridge \
+    kernel-module-br-netfilter \
     packagegroup-ts-tests-psa \
+    podman \
     "
 
 FEATURE_PACKAGES_virtualization = " \
