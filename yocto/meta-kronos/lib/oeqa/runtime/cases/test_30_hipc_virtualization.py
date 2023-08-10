@@ -52,6 +52,30 @@ class HIPCTestDomU1(HIPCTestBase):
     def test_hipc_cluster2(self):
         super().test_hipc_cluster2()
 
+    def test_ping_cl0_cl1(self):
+        super().test_ping_cl0_cl1()
+
+    def test_ping_cl0_cl2(self):
+        super().test_ping_cl0_cl2()
+
+    def test_ping_cl1_cl2(self):
+        super().test_ping_cl1_cl2()
+
+    @OETestDepends(
+            ['test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl1'])
+    def test_hipc_cluster_cl0_cl1(self):
+        super().test_hipc_cluster_cl0_cl1()
+
+    @OETestDepends(
+            ['test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl2'])
+    def test_hipc_cluster_cl0_cl2(self):
+        super().test_hipc_cluster_cl0_cl2()
+
+    @OETestDepends(
+            ['test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl1_cl2'])
+    def test_hipc_cluster_cl1_cl2(self):
+        super().test_hipc_cluster_cl1_cl2()
+
 
 class HIPCTestDomU2(HIPCTestDomU1):
     domu_hostname = r'domu2'

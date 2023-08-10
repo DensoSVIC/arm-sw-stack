@@ -64,11 +64,17 @@ class HIPCTestBase(OERuntimeTestCase):
                            timeout=150)
 
     def ping(self, cl_addr, cl_console, peer_addr, vlan_id):
+
+        # For this test, 'vlan_id' must be one of the following valid values: 100, 200, or 300.
+        # If 'vlan_id' is set to -1, it will exclude all VLAN sub test cases. Additionally,
+        # if 'vlan_id' is set to -1, it will also disable the A <> R ping and enable R <> R
+
         self.target.sendline(cl_console)
         self.target.expect(cl_console, self.si_prompt, timeout=120)
 
         # Run connectivity test for VLAN settings
-        self.vlan_subtest(cl_console, peer_addr, vlan_id)
+        if vlan_id != -1:
+            self.vlan_subtest(cl_console, peer_addr, vlan_id)
 
         self.target.sendline(cl_console,
                              f'net ping {peer_addr} -c 10')
@@ -81,13 +87,34 @@ class HIPCTestBase(OERuntimeTestCase):
         self.target.sendline(cl_console)
         self.target.expect(cl_console, self.si_prompt, timeout=120)
 
-        self.target.sendline(self.linux_console, f'ping {cl_addr} -c 10')
-        for _ in range(0, 10):
-            self.target.expect(self.linux_console,
-                               rf'\d+ bytes from {re.escape(cl_addr)}: '
-                               r'seq=\d+ ttl=\d+ time=.* ms', timeout=120)
-        self.target.sendline(self.linux_console)
-        self.target.expect(self.linux_console, self.linux_prompt, timeout=120)
+        if vlan_id != -1:
+            self.target.sendline(self.linux_console, f'ping {cl_addr} -c 10')
+            for _ in range(0, 10):
+                self.target.expect(self.linux_console,
+                                rf'\d+ bytes from {re.escape(cl_addr)}: '
+                                r'seq=\d+ ttl=\d+ time=.* ms', timeout=120)
+            self.target.sendline(self.linux_console)
+            self.target.expect(self.linux_console, self.linux_prompt, timeout=120)
+
+    def check_error_messages(self, server, client):
+        # This function checks the console output between two expect
+        # function call.
+        # A list of error messages that are permitted to occur in either
+        # iperf or zperf
+        allowed_messages = [
+            b'net_tcp: context->tcp == NULL',
+        ]
+        linux_output = self.target.before(server)
+        matches = re.findall(br'(?:ERROR|WARN(ING)?): (.*)' b'\r\n',
+                                linux_output)
+        self.assertTrue(
+            all(match in allowed_messages for match in matches))
+
+        zephyr_output = self.target.before(client)
+        matches = re.findall(br'<(?:err|wrn)> (.*)' b'\r\n',
+                                zephyr_output)
+        self.assertTrue(
+            all(match in allowed_messages for match in matches))
 
     def hipc(self, cl_addr, cl_console, peer_addr):
         """
@@ -96,25 +123,6 @@ class HIPCTestBase(OERuntimeTestCase):
         transferred bytes(100K) to guarantee the zperf test is OK, but
         not checking the maximum throughput on the specific platform.
         """
-        def check_error_messages():
-            # This function checks the console output between two expect
-            # function call.
-            # A list of error messages that are permitted to occur in either
-            # iperf or zperf
-            allowed_messages = [
-                b'net_tcp: context->tcp == NULL',
-            ]
-            linux_output = self.target.before(self.linux_console)
-            matches = re.findall(br'(?:ERROR|WARN(ING)?): (.*)' b'\r\n',
-                                 linux_output)
-            self.assertTrue(
-                all(match in allowed_messages for match in matches))
-
-            zephyr_output = self.target.before(cl_console)
-            matches = re.findall(br'<(?:err|wrn)> (.*)' b'\r\n',
-                                 zephyr_output)
-            self.assertTrue(
-                all(match in allowed_messages for match in matches))
 
         def test_zephyr_udp_server(test_duration, connections_number=1):
             self.target.sendline(
@@ -139,7 +147,7 @@ class HIPCTestBase(OERuntimeTestCase):
                 self.target.expect(cl_console,
                                    r'nb packets outorder:\s*0\r\n',
                                    timeout=10)
-                check_error_messages()
+                self.check_error_messages(self.linux_console, cl_console)
 
             self.target.sendline(self.linux_console)
             self.target.expect(self.linux_console, self.linux_prompt,
@@ -157,7 +165,7 @@ class HIPCTestBase(OERuntimeTestCase):
             for _ in range(0, connections_number):
                 self.target.expect(cl_console, r'TCP session ended\r\n',
                                    timeout=session_end_timeout)
-                check_error_messages()
+                self.check_error_messages(self.linux_console, cl_console)
 
             self.target.sendline(self.linux_console)
             self.target.expect(self.linux_console, self.linux_prompt,
@@ -214,7 +222,7 @@ class HIPCTestBase(OERuntimeTestCase):
         # During this test, it can happen that error messages are shown before
         # the test ends, but the test itself is succeeding, check that no error
         # is found before the end of the test.
-        check_error_messages()
+        self.check_error_messages(self.linux_console, cl_console)
         self.target.expect(cl_console,
                            r'Num packets out order:\s*0\r\n',
                            timeout=120)
@@ -225,7 +233,7 @@ class HIPCTestBase(OERuntimeTestCase):
         self.target.expect(cl_console, self.si_prompt, timeout=120)
         self.target.sendline(self.linux_console)
         self.target.expect(self.linux_console, self.linux_prompt, timeout=120)
-        check_error_messages()
+        self.check_error_messages(self.linux_console, cl_console)
 
         # Zephyr as TCP client
         self.target.sendline(self.linux_console, 'iperf -s -P 1')
@@ -240,7 +248,7 @@ class HIPCTestBase(OERuntimeTestCase):
         # During this test, it can happen that error messages are shown before
         # the test ends, but the test itself is succeeding, check that no error
         # is found before the end of the test.
-        check_error_messages()
+        self.check_error_messages(self.linux_console, cl_console)
         self.assertGreater(int(self.target.match(cl_console)[1]), 10)
         self.target.expect(cl_console,
                            r'Num errors:\s*0 \(retry or fail\)',
@@ -249,7 +257,72 @@ class HIPCTestBase(OERuntimeTestCase):
         self.target.expect(cl_console, self.si_prompt, timeout=150)
         self.target.sendline(self.linux_console)
         self.target.expect(self.linux_console, self.linux_prompt, timeout=120)
-        check_error_messages()
+        self.check_error_messages(self.linux_console, cl_console)
+
+    def hipc_cluster(self, server_cl, client_cl, peer_addr):
+        """
+        In hipc_cluster test case, since the throughput of zperf on cluster depends
+        on host performance, we only check the minimum number of
+        transferred bytes(100K) to guarantee the zperf test is OK, but
+        not checking the maximum throughput on the specific platform.
+        """
+        test_duration = int(self.td.get('HIPC_PER_TEST_DURATION', 3))
+
+        # Cluster as TCP client
+        self.target.sendline(server_cl,
+                            f'zperf tcp download 5001 {peer_addr}')
+        self.target.expect(server_cl,
+                            'TCP server started on port 5001', timeout=120)
+        # zperf tcp upload <dest ip> <dest port> <duration> <packet size>
+        self.target.sendline(
+            client_cl,
+            f'zperf tcp upload {peer_addr} 5001 {test_duration} 1k 100K')
+        self.target.expect(client_cl, r'Num packets:\s*(\d+)\r\n',
+                           timeout=(300 * test_duration))
+        # During this test, it can happen that error messages are shown before
+        # the test ends, but the test itself is succeeding, check that no error
+        # is found before the end of the test.
+        self.check_error_messages(server_cl, client_cl)
+        self.assertGreater(int(self.target.match(client_cl)[1]), 10)
+        self.target.expect(client_cl,
+                           r'Num errors:\s*0 \(retry or fail\)',
+                           timeout=100)
+        self.target.sendline(client_cl)
+        self.target.expect(client_cl, self.si_prompt, timeout=150)
+        self.check_error_messages(server_cl, client_cl)
+
+        self.target.sendline(server_cl, 'zperf tcp download stop')
+        self.target.expect(server_cl, 'TCP server stopped', timeout=120)
+
+        # Cluster as UDP client
+        self.target.sendline(server_cl,
+                            f'zperf udp download 5001 {peer_addr}')
+        self.target.expect(server_cl,
+                            'UDP server started on port 5001', timeout=120)
+        # zperf udp upload <dest ip> <dest port> <duration> <packet size>
+        self.target.sendline(
+            client_cl,
+            f'zperf udp upload {peer_addr} 5001 {test_duration} 1k 100K')
+        self.target.expect(client_cl, r'Num packets:\s*(\d+)\s*\((\d+)\)\r\n',
+                           timeout=(300 * test_duration))
+        # During this test, it can happen that error messages are shown before
+        # the test ends, but the test itself is succeeding, check that no error
+        # is found before the end of the test.
+        self.check_error_messages(server_cl, client_cl)
+        self.assertGreater(int(self.target.match(client_cl)[1]), 10)
+        self.target.expect(client_cl,
+                           r'Num packets out order:\s*0\r\n',
+                           timeout=120)
+        self.target.expect(client_cl,
+                           r'Num packets lost:\s*0\r\n',
+                           timeout=120)
+        self.target.sendline(client_cl)
+        self.target.expect(client_cl, self.si_prompt, timeout=150)
+        self.check_error_messages(server_cl, client_cl)
+
+        self.target.sendline(server_cl, 'zperf udp download stop')
+        self.target.expect(server_cl, 'UDP server stopped', timeout=120)
+
 
     @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
     def test_ping_cluster0(self):
@@ -274,3 +347,24 @@ class HIPCTestBase(OERuntimeTestCase):
     @OETestDepends(['test_30_hipc.HIPCTestBase.test_ping_cluster2'])
     def test_hipc_cluster2(self):
         self.hipc(r'192.168.2.1', 'safety_island_c2', r'192.168.2.2')
+
+    def test_ping_cl0_cl1(self):
+        self.ping(r'192.168.3.1', 'safety_island_c0', r'192.168.3.2', -1)
+
+    def test_ping_cl0_cl2(self):
+        self.ping(r'192.168.4.1', 'safety_island_c0', r'192.168.4.2', -1)
+
+    def test_ping_cl1_cl2(self):
+        self.ping(r'192.168.5.1', 'safety_island_c1', r'192.168.5.2', -1)
+
+    @OETestDepends(['test_30_hipc.HIPCTestBase.test_ping_cl0_cl1'])
+    def test_hipc_cluster_cl0_cl1(self):
+        self.hipc_cluster('safety_island_c0', 'safety_island_c1', r'192.168.3.1')
+
+    @OETestDepends(['test_30_hipc.HIPCTestBase.test_ping_cl0_cl2'])
+    def test_hipc_cluster_cl0_cl2(self):
+        self.hipc_cluster('safety_island_c0', 'safety_island_c2', r'192.168.4.1')
+
+    @OETestDepends(['test_30_hipc.HIPCTestBase.test_ping_cl1_cl2'])
+    def test_hipc_cluster_cl1_cl2(self):
+        self.hipc_cluster('safety_island_c1', 'safety_island_c2', r'192.168.5.1')
