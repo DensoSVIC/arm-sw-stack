@@ -4,7 +4,16 @@
 #
 # SPDX-License-Identifier: MIT
 
-PACKAGECONFIG:fvp-rd-kronos = "MBED-CRYPTO"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
+
+# Reuse the patch in cassini to setup the provider as Trusted service in config.toml
+SRC_URI:append:fvp-rd-kronos := " ${@bb.utils.contains('IMAGE_FEATURES', 'baremetal', \
+                               'file://0001-cassini-bsp-Enable-parse-service-to-use-TS.patch', '', d)}"
+
+# Set the provider as Trusted service only for baremetal
+PACKAGECONFIG:fvp-rd-kronos = "${@bb.utils.contains('IMAGE_FEATURES', 'baremetal', \
+                               'TS', 'MBED-CRYPTO', d)}"
+
 PACKAGECONFIG:generic-arm64 = "MBED-CRYPTO"
 
 # Test fix will be included into the next parsec and parsec-tool release, so
