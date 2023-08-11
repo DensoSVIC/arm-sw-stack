@@ -564,6 +564,7 @@ WINDWR
 WINWD
 WORKDIR
 WORKQ
+WORKQUEUE
 writel
 writereg
 xenboot

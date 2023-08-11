@@ -15,7 +15,7 @@ from oeqa.utils.xen_utils import XenUtils
 class ActuationTest(OERuntimeTestCase):
     linux_console = 'default'
     hostname = r'.*'
-    si_console = 'safety_island_c0'
+    si_console = 'safety_island_c2'
     domu_hostname = r'domu1'
 
     @classmethod
@@ -47,10 +47,10 @@ class ActuationTest(OERuntimeTestCase):
                            r'Actuation Service initialized.',
                            timeout=30)
 
-        self.target.sendline(self.linux_console, 'ping 192.168.0.1 -c 10')
+        self.target.sendline(self.linux_console, 'ping 192.168.2.1 -c 10')
         for _ in range(0, 10):
             self.target.expect(self.linux_console,
-                               r'bytes from 192\.168\.0\.1',
+                               r'bytes from 192\.168\.2\.1',
                                timeout=150)
         self.target.expect(self.linux_console, self.linux_prompt, timeout=120)
 
@@ -68,7 +68,7 @@ class ActuationTest(OERuntimeTestCase):
         test_recordings = '/usr/share/actuation_player'
         proc_timeout = 500
 
-        # localhost:FVP_ACTUATION_HOST_ANALYZER_PORT maps to 192.168.10.0:49152
+        # localhost:FVP_ACTUATION_HOST_ANALYZER_PORT maps to 192.168.10.2:49152
         port = self.td.get('FVP_ACTUATION_HOST_ANALYZER_PORT')
         host = "localhost"
         cmd = f'start_analyzer -L debug -p {port} -a {host} -c {command_f}'

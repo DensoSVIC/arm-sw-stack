@@ -110,12 +110,12 @@ FEATURE_PACKAGES_hipc-validation:virtualization = ""
 
 require ${@bb.utils.contains('MACHINE', 'fvp-rd-kronos', 'conf/machine/include/fvp-rd-kronos-extras.inc', '', d)}
 
+ZEPHYR_APP_SAFETY_ISLAND_CL0 = "bridge"
 ZEPHYR_APP_SAFETY_ISLAND_CL0:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL0:si0-ethernet0 = "zperf"
-ZEPHYR_APP_SAFETY_ISLAND_CL0:si0-bridge-ethernet0 = "bridge"
-ZEPHYR_APP_SAFETY_ISLAND_CL0:actuation = "actuation"
 ZEPHYR_APP_SAFETY_ISLAND_CL1:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL1:si0-bridge-ethernet0 = "zperf"
+ZEPHYR_APP_SAFETY_ISLAND_CL2:actuation = "actuation"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:si0-bridge-ethernet0 = "zperf"
 
