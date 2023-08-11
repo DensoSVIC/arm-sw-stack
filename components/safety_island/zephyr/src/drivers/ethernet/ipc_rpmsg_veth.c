@@ -129,16 +129,20 @@ static void ipc_rpmsg_veth_iface_init(struct net_if *iface)
 				     ll_addr->len, NET_LINK_ETHERNET);
 	}
 
-	if (net_addr_pton(AF_INET, ctx->ipv4_addr, &addr)) {
-		LOG_ERR("Invalid IPv4 address: %s", ctx->ipv4_addr);
-	} else {
-		net_if_ipv4_addr_add(iface, &addr, NET_ADDR_MANUAL, 0);
+	if (strlen(ctx->ipv4_addr) > 0) {
+		if (net_addr_pton(AF_INET, ctx->ipv4_addr, &addr)) {
+			LOG_ERR("Invalid IPv4 address: %s", ctx->ipv4_addr);
+		} else {
+			net_if_ipv4_addr_add(iface, &addr, NET_ADDR_MANUAL, 0);
+		}
 	}
 
-	if (net_addr_pton(AF_INET, ctx->netmask, &addr)) {
-		LOG_ERR("Invalid netmask: %s", ctx->netmask);
-	} else {
-		net_if_ipv4_set_netmask(iface, &addr);
+	if (strlen(ctx->netmask) > 0) {
+		if (net_addr_pton(AF_INET, ctx->netmask, &addr)) {
+			LOG_ERR("Invalid netmask: %s", ctx->netmask);
+		} else {
+			net_if_ipv4_set_netmask(iface, &addr);
+		}
 	}
 }
 
