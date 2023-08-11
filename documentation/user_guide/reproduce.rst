@@ -88,7 +88,8 @@ via:
    access to the processing elements. Please refer to
    `Tmux Documentation`_ for more information on the usage of tmux. It is
    recommended to change the default ``history-limit`` by adding
-   ``set-option -g history-limit 3000` to ``~/.tmux.conf`` before starting tmux.
+   ``set-option -g history-limit 3000`` to ``~/.tmux.conf`` before starting
+   tmux.
 
 .. _user_guide_reproduce_build:
 
