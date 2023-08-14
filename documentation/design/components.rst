@@ -411,18 +411,65 @@ Limitations of MPAM support in Xen include:
  * The FVP only provides the programmer's view of MPAM. There is no functional
    behaviour change implemented.
 
+The `GICv4.1 - Direct injection of virtual interrupts`_ (GICv4.1) is enabled
+in Xen. GICv4.1 is an extension to GICv3 with extra direct vLPI and vSGI
+injection enabled. This feature allows users to describe to the ITS how physical
+events map to virtual interrupts in advance. If the vPE targeted by a virtual
+interrupt is running, the virtual interrupt can be forwarded without the need
+to first enter the Xen hypervisor. This can reduce the overhead associated with
+virtualized interrupts, by reducing the number of times the hypervisor is
+entered.
+
+With Xen Kconfig CONFIG_GICV4=y, the kronos platform will be automatically
+equipped with the capability of all GICv4.1 features.
+
+.. image:: ../images/xen_gicv4_1_structure.svg
+   :align: center
+
+|
+
+The stack offers the PCI AHCI SATA Disk for users to utilize GICv4.1 vLPI
+direct injection for domains:
+
+ * For Dom0, ``lspci`` shall show you the properly enabled PCI AHCI SATA Disk
+   ``ahci[0000:00:1f.0]`` details. Also, Non-zero ITS-MSI interrupts through
+   vLPI direct injection for ``ahci[0000:00:1f.0]`` shall be captured and seen
+   in ``/proc/interrupts``.
+
+  * For xl guest, users need to firstly passthrough PCI AHCI SATA Disk device
+    ``ahci[0000:00:1f.0]`` from Dom0 to the new xl guest, through xl command
+    ``xl pci-assignable-add 0000:00:1f.0`` before starting the xl guest.
+
+    The format of ``xl pci-assignable-add`` is:
+
+    .. code-block:: console
+
+      xl pci-assignable-add <SBDF for PCI Device>
+
+    In addition, the configuration for the new xl guest shall also include a
+    new line of ``pci = ['0000:00:1f.0']`` for enabling the PCI AHCI SATA Disk.
+    Now, users could run ``xl create -c $domu_config`` to boot the new xl
+    domain.
+    Later entering the new xl guest console, users could run ``lspci`` and
+    check whether the passthroughed PCI AHCI SATA Disk ``ahci[0000:00:00.0]``
+    is properly enabled.
+
 .. _design_components_xen_downstream_changes:
 
 Downstream Changes
 ------------------
-Patches for the Xen MPAM extension support at
-:kronos-repo:`yocto/meta-kronos/recipes-extended/xen/files/`
+Patches for the Xen MPAM extension support, PCI Device Passthrough, and GICv4.1
+Enablement at :kronos-repo:`yocto/meta-kronos/recipes-extended/xen/files/`
 to:
 
  * Discover MPAM CPU feature
  * Initialize MPAM at Xen boot time
  * Support MPAM in Xen tools to apply the domain MPAM configuration in
    userspace at runtime
+ * Support PCI Device Passthrough
+ * Discover GICv4.1 feature
+ * Initialize GICv4.1 at Xen boot time
+ * Support GICv4.1 features of vLPI and vSGI Direct Injection
 
 .. _design_components_linux:
 

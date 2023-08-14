@@ -13,6 +13,7 @@ addrlen
 addtask
 addto
 AEMV
+AHCI
 aidr
 ALIGNER
 ALIGNERR
@@ -143,6 +144,7 @@ domctls
 domid
 domu
 domus
+DOM0
 DOVERLAY
 DPLX
 DPYTHON
@@ -160,6 +162,7 @@ eigen
 EINVAL
 elfutils
 elif
+enablement
 endchoice
 endline
 endmenu
@@ -198,6 +201,8 @@ GENMASK
 gentimer
 gettext
 gicv
+GICv4
+GICv4.1
 gntalloc
 gntdev
 gnueabi
@@ -260,6 +265,7 @@ kfree
 kinfo
 kmeta
 knownissues
+kronos
 kzalloc
 LAYERDEPENDS
 LAYERDIR
@@ -378,6 +384,7 @@ pagetab
 pandoc
 PARTID
 partitionable
+Passthrough
 patchdir
 pcitopoinfo
 pclk
@@ -448,6 +455,7 @@ runstate
 rvdev
 RXEN
 rxlen
+SATA
 sbindir
 sched
 SCMI
@@ -553,6 +561,7 @@ virtio
 virtiorng
 virtqueue
 VLAN
+vLPI
 vmap
 vmid
 VMPIDR
@@ -561,6 +570,7 @@ vqid
 vring
 vrings
 vsctl
+vSGI
 vtpm
 WDOG
 WINDWR

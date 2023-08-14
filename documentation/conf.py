@@ -188,6 +188,7 @@ rst_prolog = f"""
 .. _Device Tree specification: https://www.devicetree.org/
 .. _xl documentation: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.1.html
 .. _Arm Memory Partitioning and Monitoring: https://developer.arm.com/documentation/ddi0598/latest
+.. _GICv4.1 - Direct injection of virtual interrupts: https://developer.arm.com/documentation/107627/0101/GICv4-1---Direct-injection-of-virtual-interrupts
 .. _Zephyr: https://docs.zephyrproject.org/{zephyr_version}/
 .. _zperf sample: https://docs.zephyrproject.org/{zephyr_version}/connectivity/networking/api/zperf.html
 .. _Safety Island Actuation Demo: https://safety-island-actuation-demo.docs.arm.com
