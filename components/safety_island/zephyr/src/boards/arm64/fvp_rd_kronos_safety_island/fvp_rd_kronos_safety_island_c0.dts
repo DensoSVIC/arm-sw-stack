@@ -59,10 +59,10 @@
 		#size-cells = <1>;
 		interrupt-parent = <&gic>;
 
-		gic: interrupt-controller@30000000 {
+		gic: interrupt-controller@30400000 {
 			compatible = "arm,gic";
-			reg = <0x0 0x30000000 0x10000>,
-			      <0x0 0x30080000 0x20000>;
+			reg = <0x0 0x30400000 0x10000>,
+			      <0x0 0x30440000 0x20000>;
 			interrupt-controller;
 			#interrupt-cells = <4>;
 			status = "okay";

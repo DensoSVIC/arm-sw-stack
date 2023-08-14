@@ -30,25 +30,25 @@
 		cpu@0 {
 			device_type = "cpu";
 			compatible = "arm,safety-island";
-			reg = <0>;
+			reg = <0x20000>;
 		};
 
 		cpu@1 {
 			device_type = "cpu";
 			compatible = "arm,safety-island";
-			reg = <0x0100>;
+			reg = <0x20100>;
 		};
 
 		cpu@2 {
 			device_type = "cpu";
 			compatible = "arm,safety-island";
-			reg = <0x0200>;
+			reg = <0x20200>;
 		};
 
 		cpu@3 {
 			device_type = "cpu";
 			compatible = "arm,safety-island";
-			reg = <0x0300>;
+			reg = <0x20300>;
 		};
 
 	};
@@ -77,10 +77,13 @@
 		#size-cells = <1>;
 		interrupt-parent = <&gic>;
 
-		gic: interrupt-controller@30400000 {
+		gic: interrupt-controller@30c00000 {
 			compatible = "arm,gic";
-			reg = <0x0 0x30400000 0x10000>,
-			      <0x0 0x30480000 0x100000>;
+			reg = <0x0 0x30c00000 0x10000>,
+			      <0x0 0x30ca0000 0x20000>,
+			      <0x0 0x30cc0000 0x20000>,
+			      <0x0 0x30ce0000 0x20000>,
+			      <0x0 0x30d00000 0x20000>;
 			interrupt-controller;
 			#interrupt-cells = <4>;
 			status = "okay";
