@@ -24,6 +24,7 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0014-net-gptp-Invert-priority-of-outgoing-packets.patch;patchdir=zephyr \
     file://zephyr/0015-net-ethernet-Don-t-use-VLAN-tag-on-gPTP-messages.patch;patchdir=zephyr \
     file://zephyr/0016-net-gptp-Create-a-stack-size-Kconfig-option.patch;patchdir=zephyr \
+    file://zephyr/0017-drivers-gic-Add-multiple-GIC-redistributors-regions-.patch;patchdir=zephyr \
     "
 # /* cSpell:enable */
 

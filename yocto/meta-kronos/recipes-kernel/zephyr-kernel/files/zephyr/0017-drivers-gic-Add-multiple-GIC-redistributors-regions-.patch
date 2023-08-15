@@ -1,0 +1,125 @@
+From 8609282903e88bc37321bb4e4720778f3b13c12c Mon Sep 17 00:00:00 2001
+From: Wei Chen <wei.chen@arm.com>
+Date: Tue, 15 Aug 2023 20:23:13 +0800
+Subject: [PATCH] drivers: gic: Add multiple GIC redistributors regions support
+
+For GIC multiple views feature support, all GIC Re-distributor's
+GICR_TYPER.last will be set. Because configuration view-0 can
+assign non-contiguous CPUs to views other than 0, in this case
+the GIC Redistributors' registers won't seem contiguous.
+
+So the GIC driver should cope with multiple sets of redistributors
+like multi-chip scenarios. In this patch we add multiple GIC
+redistributor regions support in GIC redistributor iteration.
+
+Upstream-Status: Inappropriate
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+Signed-off-by: Robbie Cao <robbie.cao@arm.com>
+---
+ drivers/interrupt_controller/intc_gicv3.c     | 61 ++++++++++++++++---
+ .../interrupt_controller/intc_gicv3_priv.h    |  6 +-
+ 2 files changed, 53 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/interrupt_controller/intc_gicv3.c b/drivers/interrupt_controller/intc_gicv3.c
+index ec92103be6..b4e1343429 100644
+--- a/drivers/interrupt_controller/intc_gicv3.c
++++ b/drivers/interrupt_controller/intc_gicv3.c
+@@ -16,6 +16,43 @@
+ 
+ #include <string.h>
+ 
++/*
++ * Structure to save GIC Re-distributor info
++ */
++struct redist_region {
++	mem_addr_t base;
++	mem_addr_t size;
++};
++
++/* DT_NUM_REGS in GIC node includes one line for GICD regs. */
++#define DT_REDIST_REG_NUM (DT_NUM_REGS(DT_INST(0, arm_gic)) - 1)
++
++/*
++ * GIC Re-distributor info table for multiple regions
++ */
++static struct redist_region gic_rdist_regions[] = {
++	{
++		DT_REG_ADDR_BY_IDX(DT_INST(0, arm_gic), 1),
++		DT_REG_SIZE_BY_IDX(DT_INST(0, arm_gic), 1)
++	},
++#if (DT_REDIST_REG_NUM >= 2)
++	{
++		DT_REG_ADDR_BY_IDX(DT_INST(0, arm_gic), 2),
++		DT_REG_SIZE_BY_IDX(DT_INST(0, arm_gic), 2)
++	},
++#endif
++#if (DT_REDIST_REG_NUM >= 4)
++	{
++		DT_REG_ADDR_BY_IDX(DT_INST(0, arm_gic), 3),
++		DT_REG_SIZE_BY_IDX(DT_INST(0, arm_gic), 3)
++	},
++	{
++		DT_REG_ADDR_BY_IDX(DT_INST(0, arm_gic), 4),
++		DT_REG_SIZE_BY_IDX(DT_INST(0, arm_gic), 4)
++	},
++#endif
++};
++
+ /* Redistributor base addresses for each core */
+ mem_addr_t gic_rdists[CONFIG_MP_MAX_NUM_CPUS];
+ 
+@@ -545,19 +582,23 @@ static inline uint64_t arm_gic_get_typer(mem_addr_t addr)
+ static mem_addr_t arm_gic_iterate_rdists(void)
+ {
+ 	uint64_t aff = arm_gic_mpidr_to_affinity(GET_MPIDR());
++	uint32_t idx;
+ 
+-	for (mem_addr_t rdist_addr = GIC_RDIST_BASE;
+-		rdist_addr < GIC_RDIST_BASE + GIC_RDIST_SIZE;
+-		rdist_addr += 0x20000) {
+-		uint64_t val = arm_gic_get_typer(rdist_addr + GICR_TYPER);
+-		uint64_t gicr_aff = GICR_TYPER_AFFINITY_VALUE_GET(val);
++	for (idx = 0; idx < ARRAY_SIZE(gic_rdist_regions); idx++) {
++		mem_addr_t addr = gic_rdist_regions[idx].base;
++		mem_addr_t end = addr + gic_rdist_regions[idx].size;
+ 
+-		if (arm_gic_aff_matching(gicr_aff, aff)) {
+-			return rdist_addr;
+-		}
++		for (; addr < end; addr += GIC_RDIST_SIZE) {
++			uint64_t val = arm_gic_get_typer(addr + GICR_TYPER);
++			uint64_t gicr_aff = GICR_TYPER_AFFINITY_VALUE_GET(val);
++
++			if (arm_gic_aff_matching(gicr_aff, aff)) {
++				return addr;
++			}
+ 
+-		if (GICR_TYPER_LAST_GET(val) == 1) {
+-			return (mem_addr_t)NULL;
++			if (GICR_TYPER_LAST_GET(val) == 1) {
++				break;
++			}
+ 		}
+ 	}
+ 
+diff --git a/drivers/interrupt_controller/intc_gicv3_priv.h b/drivers/interrupt_controller/intc_gicv3_priv.h
+index e0347ed357..c0651495ed 100644
+--- a/drivers/interrupt_controller/intc_gicv3_priv.h
++++ b/drivers/interrupt_controller/intc_gicv3_priv.h
+@@ -26,11 +26,9 @@
+ #define GIC_BASER_SHARE_OUTER		0x2UL /* Outer Shareable */
+ 
+ /*
+- * GIC Register Interface Base Addresses
++ * GICv3 RDIST size is 0x20000 defined in spec
+  */
+-
+-#define GIC_RDIST_BASE	DT_REG_ADDR_BY_IDX(DT_INST(0, arm_gic), 1)
+-#define GIC_RDIST_SIZE	DT_REG_SIZE_BY_IDX(DT_INST(0, arm_gic), 1)
++#define GIC_RDIST_SIZE	0x20000UL
+ 
+ /* SGI base is at 64K offset from Redistributor */
+ #define GICR_SGI_BASE_OFF		0x10000
+-- 
+2.25.1
+
