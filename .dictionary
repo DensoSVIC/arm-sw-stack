@@ -226,6 +226,7 @@ ifdef
 ifndef
 iidr
 IMAGEDEPENDS
+imgtool
 importlib
 includenotfound
 inclusivity
@@ -292,6 +293,7 @@ MBWUMON
 mbwumonidr
 mcdepends
 MCLK
+mcuboot
 mdbcw
 MDCR
 MDIO
@@ -431,6 +433,7 @@ resm
 rmem
 ROOTFS
 rootwait
+ROTPK
 rpcr
 rpdev
 rpmsg

@@ -17,27 +17,86 @@ RSS-oriented Boot Flow
 The :ref:`design_components_rss` is the root of the trust chain. It is the
 first booting element when the system is powered up.
 
-The RSS, implemented in Trusted Firmware-M (TF-M), has 3 boot stages. The
-images for each stage are stored in different media:
+The RSS, implemented in Trusted Firmware-M (TF-M), has 3 boot stages: BL1_1,
+BL1_2 and BL2. When the platform is released from reset, BL1_1 boots from RSS
+ROM. BL1_1 provisions the BL1_2 image into the One Time Programmable (OTP)
+flash, and transfers the execution to BL1_2. BL1_2 loads and authenticates the
+BL2 image, and transfers the execution to the BL2. BL2, which is implemented
+based on `MCUboot`_, loads and authenticates all images of the other components:
+SCP, Safety Island, LCP and AP. In the following text, the images of these
+components are named host images.
 
-* RSS BL1 (corresponds to TF-M BL11) is in ROM
-* RSS BL2 (TF-M BL12) is in OTP
-* RSS BL3 (TF-M BL2) is in NVM flash
+The RSS uses a NVM flash to store the images of various components, including:
 
-The NVM flash contains not only RSS BL3, but also other images that are booted
-by the RSS. The images currently included in the flash are:
+* RSS BL2 image
+* RSS Runtime image
+* SCP RAM Firmware (SCP RAMFW) image
+* LCP RAM Firmware (LCP RAMFW) image
+* Safety Island Cluster 0 (SI CL0) image
+* Safety Island Cluster 1 (SI CL1) image
+* Safety Island Cluster 2 (SI CL2) image
+* Application Processor BL2 (AP BL2) image
 
-* RSS BL3
-* RSS Runtime
-* SCP RAM Firmware (SCP RAMFW)
-* LCP RAM Firmware (LCP RAMFW)
-* Safety Island Cluster 0 (SI CL0)
-* Safety Island Cluster 1 (SI CL1)
-* Safety Island Cluster 2 (SI CL2)
-* Application Processor BL2 (AP BL2)
+Trust Chain
+===========
 
-:ref:`design_components_scp-firmware` has been extended to additionally
-synchronize power control with the loading of images by the RSS.
+To make the platform secure, it is critical to protect each booting component
+from the execution of malicious code. This is implemented by building a trust
+chain where each step in the execution chain authenticates the next step before
+execution.
+
+The authentication of the images is done with hash (SHA-256) and digital
+signature (RSA-3072) validation.
+
+Image Signing
+=============
+
+A RSA private key is stored in TF-M's source code repository for testing, it is
+in file ``bl2/ext/mcuboot/root-RSA-3072.pem``. The private key is used to sign
+the host images that are loaded by RSS BL2.
+
+In the Yocto build stage of the Kronos platform, a shell function
+``sign_host_image()`` is used to sign the images, which can be found at
+:meta-arm-repo:`meta-arm/classes/tfm_sign_image.bbclass`.
+Then the signed images are written to the NVM flash.
+
+Image Authentication
+====================
+
+A public key is derived from the private key for authenticating the signed
+host images. The public key is also known as the Root of Trust Public Key
+(ROTPK). It is also written in the NVM flash in the build stage. The hash of the
+public key is written in file ``dm_dummy_provisioning_data.c`` of the source
+code folder ``platform/ext/target/arm/rss/common/provisioning/bundle_dm/``.
+
+During the boot process, the hash of the public key is provisioned into the OTP
+by BL1_1. More details on the provisioning can be found in the
+`RSS provisioning`_ page. Once the provisioning stage has been completed, the
+OTP contents cannot be updated.
+
+BL2 reads the public key from the NVM flash and validates the public key against
+the hash that has been provisioned in the OTP. Then BL2 uses the public key to
+authenticate the host images.
+
+Key Customization
+=================
+
+The default private key used in the Kronos platform should only be used for test
+purposes. Since this private key is widely distributed, it should never be used
+for production. To replace the default key, the manufacturer needs to:
+
+* Generate a new RSA key
+* Replace the default private key ``bl2/ext/mcuboot/root-RSA-3072.pem`` with
+  the new private key
+* Generate the hash of the public key and replace the definition of
+  ``ASSEMBLY_AND_TEST_PROV_DATA_KIND_0`` in ``dm_dummy_provisioning_data.c``
+  with the hash value.
+
+For detail of how to generate the private key and the hash of the public key,
+please refer to the documentation of `imgtool`_ which is provided by MCUboot.
+
+Boot Flow
+=========
 
 The following diagram illustrates the boot flow that originates from the RSS.
 
@@ -50,31 +109,35 @@ The following diagram illustrates the boot flow that originates from the RSS.
 
 Major steps of the boot flow:
 
-1. RSS BL1 begins executing in place from ROM when the system is powered up. It:
+1. RSS BL1_1 begins executing in place from ROM when the system is powered up.
+   It:
 
-   * Copies RSS BL2 from OTP to SRAM
-   * Verifies RSS BL2 against the hash stored in OTP
-   * Jumps to RSS BL2, if the hash verification has succeeded
+   * Provisions RSS BL1_2 and various keys and other data from the provisioning
+     bundle to OTP
+   * Copies the RSS BL1_2 image from OTP to SRAM
+   * Validates RSS BL1_2 against the hash stored in OTP
+   * Transfers the execution to RSS BL1_2
 
-2. RSS BL2:
+2. RSS BL1_2:
 
-   * Copies RSS BL3 image from flash into SRAM
-   * Verifies RSS BL3 image using asymmetric cryptography
-   * Jumps to RSS BL3, if the image was successfully verified
+   * Copies the encrypted RSS BL2 image from flash into SRAM
+   * Decrypts the RSS BL2 image
+   * Transfers the execution to RSS BL2
 
-3. RSS BL3:
+3. RSS BL2:
 
-   * Copies SCP RAMFW from flash to SCP SRAM and verifies the image
-   * Resets the SCP
-   * Copies SI CL0 from flash to SI LLRAM and verifies the image
+   * Copies the SCP RAMFW image from flash to SCP SRAM and authenticates the
+     image
+   * Releases the SCP out of reset
+   * Copies the SI CL0 image from flash to SI LLRAM and authenticates the image
    * Notifies the SCP to power on the SI CL0
-   * Copies SI CL1 from flash to SI LLRAM and verifies the image
+   * Copies the SI CL1 image from flash to SI LLRAM and authenticates the image
    * Notifies the SCP to power on the SI CL1
-   * Copies SI CL2 from flash to SI LLRAM and verifies the image
+   * Copies the SI CL2 image from flash to SI LLRAM and authenticates the image
    * Notifies the SCP to power on the SI CL2
-   * Copies LCP from flash to LCP SRAM and verifies the image
-   * Release the LCP from reset
-   * Copies AP BL2 from flash to AP SRAM and verifies the image
+   * Copies the LCP image from flash to LCP SRAM and authenticates the image
+   * Releases the LCP from reset
+   * Copies the AP BL2 image from flash to AP SRAM and authenticates the image
    * Notifies the SCP to power on the AP
 
 .. _design_boot_process_primary_compute_boot_flow:
@@ -97,11 +160,12 @@ The Primary Compute boot flow follows the following steps:
 
 1. AP BL2:
 
-   * Copies AP BL31 and BL33 from flash to SRAM and DRAM
+   * Copies AP BL31, BL32 and BL33 from flash to SRAM and DRAM
    * Jumps to AP BL31
 
-2. AP BL31 starts AP BL33 (U-Boot)
-3. AP BL33 loads GRUB2 from the boot partition
-4. Grub loads and boots either Linux (Baremetal Architecture) or Xen
+2. AP BL31 starts AP BL32 (OP-TEE)
+3. AP BL31 starts AP BL33 (U-Boot)
+4. AP BL33 loads GRUB2 from the boot partition
+5. Grub loads and boots either Linux (Baremetal Architecture) or Xen
    (Virtualization Architecture) from the boot partition, depending on the Grub
    configuration
