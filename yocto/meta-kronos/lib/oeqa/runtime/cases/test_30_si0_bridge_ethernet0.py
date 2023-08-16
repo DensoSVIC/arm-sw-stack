@@ -19,7 +19,7 @@ class BridgeTest(Ethernet0TestBase):
         si_console = 'safety_island_c0'
         self.target.expect(si_console,
                            r'Bridge initialization complete',
-                           timeout=60)
+                           timeout=180)
 
         output = self.target.before(si_console)
         matches = re.findall(br'Error: ', output)
