@@ -15,3 +15,4 @@ Applications
 
    actuation
    bridge
+   parsec_enabled_tls

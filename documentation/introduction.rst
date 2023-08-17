@@ -64,6 +64,18 @@ The Safety Island Communication Demo demonstrates the networking between:
 This is achieved via HIPC (Heterogeneous Inter-processor Communication).
 Please refer to :ref:`design_hipc` for more information on HIPC.
 
+Parsec-enabled TLS Demo
+=======================
+
+The Parsec-enabled TLS demo illustrates a HTTPS session where a Transport
+Layer Security (TLS) connection is established, and simple webpage is
+transferred. The TLS session consists of both symmetric and asymmetric
+cryptographic operations. The symmetric operations are executed by Mbed TLS
+in Linux userspace on the Primary Compute. The asymmetric operations are
+carried out by `Parsec`_. While the backend of the Parsec service is based on
+RSS cryptographic runtime service. Please refer
+:ref:`design_applications_parsec_enabled_tls` for more information.
+
 |Arm SystemReadyTM| IR Validation
 =================================
 |Arm SystemReadyTM| is a compliance certification program based on a set of

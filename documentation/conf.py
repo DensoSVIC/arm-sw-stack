@@ -242,6 +242,10 @@ rst_prolog = f"""
 .. _PSA Certified Secure Storage API: https://arm-software.github.io/psa-api/storage
 .. _Parsec: https://parallaxsecond.github.io/parsec-book/index.html
 .. _Arm Firmware Framework for Arm A-profile: https://developer.arm.com/documentation/den0077/latest
+.. _Mbed TLS repository: https://github.com/Mbed-TLS/mbedtls/tree/development
+.. _Mbed TLS: https://mbed-tls.readthedocs.io/en/latest/
+.. _Parsec Secure Element Driver: https://github.com/parallaxsecond/parsec-se-driver
+.. _se-proxy: https://trusted-services.readthedocs.io/en/latest/deployments/secure-partitions.html?#se-proxy
 """  # noqa: E501
 
 # URL to use for references to repository paths

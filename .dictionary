@@ -111,6 +111,7 @@ curbank
 CYCLONEDDS
 DAST
 datadir
+Datagram
 datalen
 datap
 dateutil
@@ -151,6 +152,7 @@ DPLX
 DPYTHON
 DROS
 drvdata
+DTLS
 dtsi
 dunfell
 DVFS
@@ -275,6 +277,9 @@ libc
 libcpp
 libdir
 libeigen
+libmbedcrypto
+libmbedtls
+libmbedx
 libts
 libxc
 libxenutil
@@ -413,6 +418,7 @@ postinst
 POSTPROCESS
 postsmp
 prefuncs
+premaster
 presmp
 printstats
 PRIO
