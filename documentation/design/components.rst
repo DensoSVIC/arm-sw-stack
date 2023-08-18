@@ -125,6 +125,29 @@ Runtime
 The RSS Runtime provides Crypto Service, PS Service and ITS Service as described
 above. See :ref:`design_secure_services` for more details.
 
+.. _design_components_rss_gic_multiple_views:
+
+GIC Multiple Views
+==================
+
+The GIC has a new optional feature which is intended to be used in mixed
+criticality systems. This feature provides multiple programming views which
+can be used by multiple operating systems.
+
+|
+
+.. image:: ../images/rss_gic_multiple_view.png
+   :align: center
+
+|
+
+For the RD-Kronos platform, Safety Island GIC provides 4 programming views:
+
+* View-0: Used by RSS to configure View-1/2/3 for Safety Island Cluster-0/1/2.
+* View-1: Used by Operating System on Safety Island Cluster-0.
+* View-2: Used by Operating System on Safety Island Cluster-1.
+* View-3: Used by Operating System on Safety Island Cluster-2.
+
 .. _design_components_rss_downstream_changes:
 
 Downstream Changes
@@ -139,6 +162,7 @@ to:
 * Load and boot the Safety Island.
 * Load and boot the LCP.
 * Load and boot the AP.
+* Configure GIC View-1/2/3 for Safety Island.
 * Support the runtime services listed above.
 
 .. _design_components_scp-firmware:
