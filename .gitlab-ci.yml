@@ -27,3 +27,4 @@ include:
   - local: '.gitlab/ci/docs-build.yml'
   - local: '.gitlab/ci/kronos-build.yml'
   - local: '.gitlab/ci/yocto-qa.yml'
+  - local: '.gitlab/ci/static-analysis.yml'
