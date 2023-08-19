@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
-# Copyright (c) 2023 Arm Limited or its affiliates. All rights reserved.
+# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
 
