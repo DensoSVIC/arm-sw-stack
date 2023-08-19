@@ -97,7 +97,6 @@
       # Logs
       - $KAS_WORK_DIR/build/bitbake-cookerdaemon.log
       - $KAS_WORK_DIR/build/tmp*/log
-      - $KAS_WORK_DIR/build/tmp*/work/*/*/*/pseudo/pseudo.log
       - $KAS_WORK_DIR/build/tmp*/work/*/*/*/temp/log.*
       - $KAS_WORK_DIR/build/tmp*/work/*/*/*/testimage
       - $KAS_WORK_DIR/build/tmp*/deploy/licenses/fvp-rd-kronos-native
