@@ -184,3 +184,25 @@ The tested configuration is:
 
 UDP is not tested because the user networking of the FVP does not provide
 port forwarding for UDP traffic.
+
+.. _validation_parsec_enabled_tls_demo:
+
+Integration Tests validating the Parsec-enabled TLS Demo
+================================================================
+
+The ``test_parsec_demo`` integration test in
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_40_parsec.py`
+verifies the functionality of the crypto service provided by Parsec and the
+RSS. The test is only enabled when the use case is ``Safety Island Actuation
+Demo`` and the "Baremetal Architecture" is selected.
+
+The test invokes a TLS server and client application. The client consumes the
+Parsec service for asymmetric crypto operations. Parsec is configured with
+Trusted Services as the backend which further invokes the crypto service from
+the hardware isolated RSS.
+
+The test is performed under the following configuration:
+
+ * The TLS server operates on the Primary Compute.
+ * The TLS client operates within a container that resides on the Primary
+   Compute.
