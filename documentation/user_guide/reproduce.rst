@@ -337,9 +337,9 @@ The instructions can be run on both the Baremetal and Virtualization
 architectures and an assumption has been made that the FVP has been launched
 as indicated under :ref:`reproduce_run`.
 
-The Safety Island (SI) Cluster 0 terminal running the Actuation Service is
-available via the tmux window titled ``terminal_uart_si_cluster0``. For ease of
-navigation, we recommend joining the SI Cluster 0 terminal to Primary Compute
+The Safety Island (SI) Cluster 2 terminal running the Actuation Service is
+available via the tmux window titled ``terminal_uart_si_cluster2``. For ease of
+navigation, we recommend joining the SI Cluster 2 terminal to Primary Compute
 terminal and to create a tmux window attached to Primary Compute terminal in
 order to issue commands on the host machine. User can navigate through the panes
 by pressing ``Ctrl-b`` and arrow keys. Follow the steps below to achieve the
@@ -349,8 +349,8 @@ same:
    titled ``terminal_ns_uart0``.
 2. Press ``Ctrl-b %`` to add a new tmux window which will be used to issue
    commands on the host machine.
-3. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_uart_si_cluster0``
-   followed by pressing ``Enter`` key to join the SI Cluster 0 terminal to
+3. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_uart_si_cluster2``
+   followed by pressing ``Enter`` key to join the SI Cluster 2 terminal to
    Primary Compute terminal
 
 Please refer to the following image for an example re-arrangement of tmux
@@ -378,7 +378,6 @@ Baremetal Architecture
 
       64 bytes from 192.168.0.1 seq=0 ttl=64 time=0.151 ms
 
-
 2. From the tmux window started for the host machine
 in :ref:`user_guide_reproduce_actuation_demo`, start the Packet Analyzer:
 
@@ -388,7 +387,7 @@ in :ref:`user_guide_reproduce_actuation_demo`, start the Packet Analyzer:
       # Start the Packet Analyzer
       kas shell -c "oe-run-native packet-analyzer-native start_analyzer -L debug -a localhost -c ./data"
 
-   A message similar to the following should appear on the SI Cluster 0:
+   A message similar to the following should appear on the SI Cluster 2:
 
    .. code-block:: shell
 
@@ -410,7 +409,7 @@ in :ref:`user_guide_reproduce_actuation_demo`, start the Packet Analyzer:
 
       actuation_player -p /usr/share/actuation_player/
 
-   A message similar to the following should appear on the SI Cluster 0:
+   A message similar to the following should appear on the SI Cluster 2:
 
    .. code-block:: shell
 

@@ -15,7 +15,7 @@ Introduction
 ************
 
 The Actuation Service is a software application running on the Safety Island
-Cluster 0 that receives inputs from the Primary Compute and generates control
+Cluster 2 that receives inputs from the Primary Compute and generates control
 commands that can be passed to an actuation system. A reference implementation
 is provided by the `Safety Island Actuation Demo`_. The software running on the
 Primary Compute is an Autoware pipeline and the Actuation Service takes the form

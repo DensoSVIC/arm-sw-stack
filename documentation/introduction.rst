@@ -51,7 +51,7 @@ Safety Island Actuation Demo
 The Safety Island Actuation Demo consists of the |Arm SystemReadyTM| IR-aligned
 firmware along with Linux-based software on the Primary Compute and Zephyr
 application on the Safety Island to demonstrate automotive workloads.  Please
-refer :ref:`design_applications_actuation` for more information.
+refer to :ref:`design_applications_actuation` for more information.
 
 Safety Island Communication Demo
 ================================
