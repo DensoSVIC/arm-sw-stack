@@ -72,6 +72,7 @@ CCAP
 ccsidr
 cdev
 CFLAGS
+CHACHA
 chainloader
 chans
 chinfo
@@ -160,6 +161,7 @@ earlycon
 earlyprintk
 EBBR
 EBUSY
+ECDH
 EFAULT
 eigen
 EINVAL
@@ -300,6 +302,7 @@ maxcpus
 maxdepth
 MAXSIZE
 MBED
+mbedtls
 mbox
 mboxes
 mbwu

@@ -483,6 +483,85 @@ automatically using the automated HIPC test suite (see
 :ref:`reproduce_run-time_integration_tests` below and the test descriptions in
 :ref:`validation_run-time_integration_tests`).
 
+.. _user_guide_reproduce_parsec_enabled_tls_demo:
+
+Parsec-enabled TLS Demo
+-----------------------
+
+The demo is always available when the ``Baremetal Architecture`` is selected.
+
+For the below instructions, an assumption has been made that the FVP has been
+launched as indicated under the
+:ref:`reproduce_run` section.
+
+The demo consists of a TLS server and a TLS client. Please refer to
+:ref:`design_applications_parsec_enabled_tls` for more information on
+this application.
+
+Run ``ssl_server`` from the Primary Compute in the background and press *Enter*
+key to continue:
+
+   .. code-block:: shell
+
+      ssl_server &
+
+A message similar to the following should appear:
+
+   .. code-block:: shell
+
+        . Seeding the random number generator... ok
+        . Loading the server cert. and key... ok
+        . Bind on https://localhost:4433/ ... ok
+        . Setting up the SSL data.... ok
+        . Waiting for a remote connection ...
+
+The TLS client can take an optional parameter as the TLS server IP address. The
+default value of the parameter is ``localhost``.
+
+Run ``ssl_client1`` from the Primary Compute in a container:
+
+   .. code-block:: shell
+
+      docker run  --rm -v /run/parsec/parsec.sock:/run/parsec/parsec.sock -v /usr/bin/ssl_client1:/usr/bin/ssl_client1 --network host docker.io/library/ubuntu:22.04 ssl_client1
+
+A message similar to the following should appear:
+
+   .. code-block:: shell
+
+        . Seeding the random number generator... ok
+        . Loading the CA root certificate ... ok (0 skipped)
+        . Connecting to tcp/localhost/4433... ok
+        . Setting up the SSL/TLS structure... ok
+        . Performing the SSL/TLS handshake...ssl_client.c:0263: got supported group(001d)
+      ssl_client.c:0263: got supported group(0017)
+      ssl_client.c:0263: got supported group(0018)
+      ssl_client.c:0263: got supported group(001e)
+      ssl_client.c:0263: got supported group(0019)
+      ssl_client.c:0263: got supported group(001a)
+      ssl_client.c:0263: got supported group(001b)
+      ssl_client.c:0263: got supported group(001c)
+      ssl_client.c:0263: got supported group(0100)
+      ssl_client.c:0263: got supported group(0101)
+      ssl_client.c:0263: got supported group(0102)
+      ssl_client.c:0263: got supported group(0103)
+      ssl_client.c:0263: got supported group(0104)
+      ssl_tls12_client.c:2782: Perform PSA-based ECDH computation.
+       ok
+        . Verifying peer X.509 certificate... ok
+        > Write to server: 18 bytes written
+
+      GET / HTTP/1.0
+
+        < Read from server: 156 bytes read
+
+      HTTP/1.0 200 OK
+      Content-Type: text/html
+
+      <h2>mbed TLS Test Server</h2>
+      <p>Successful connection using: TLS-ECDHE-RSA-WITH-CHACHA20-POLY1305-SHA256</p>
+      ssl_msg.c:3948: mbedtls_ssl_handle_message_type() returned -30848 (-0x7880)
+      ssl_msg.c:5507: mbedtls_ssl_read_record() returned -30848 (-0x7880)
+
 .. _user_guide_reproduce_IR_validation:
 
 |Arm SystemReadyTM| IR Validation
