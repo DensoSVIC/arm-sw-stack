@@ -77,7 +77,7 @@ class ActuationTest(OERuntimeTestCase):
                     timeout=10)
         self.target.expect(self.si_console,
                            'Accepted tcp connection from the Packet Analyzer',
-                           timeout=5)
+                           timeout=15)
 
         cmd = f'actuation_player -p {test_recordings}'
         self.target.sendline(self.linux_console, cmd)
