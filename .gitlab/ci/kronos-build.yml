@@ -183,6 +183,7 @@ Image-Upload:
 fvp-summary-render:
   image: ${MIRROR_DOCKER}/python:3.8
   stage: Release
+  dependencies: []
   artifacts:
     paths:
       - update-report
