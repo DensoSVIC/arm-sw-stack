@@ -82,7 +82,7 @@ for debugging.
           **test_linux_login**).
 
        * test_hipc_cluster
-          The test verifies Heterogeneous InterProcessor Communication (HIPC)
+          The test verifies Heterogeneous Inter Processor Communication (HIPC)
           between the Safety Island (using ``zperf``) and the Primary Compute
           (using ``iperf``).
           The tested configurations are:
@@ -91,6 +91,17 @@ for debugging.
                Compute as a client (UDP/TCP).
              * The Safety Island as an iperf client (UDP/TCP) and the Primary
                Compute as a server (UDP/TCP).
+
+          This test depends on **test_ping_cluster**.
+
+       * test_hipc_cluster_cl{M}_cl{N}
+          The test verifies Heterogeneous Inter Processor Communication (HIPC)
+          between the Safety Island Clusters (using ``zperf``) where M and
+          N are the clusters number.
+          The tested configurations are:
+
+             * The Safety Island Cluster {M} as an Zperf server (UDP/TCP)
+               and the Safety Island Cluster {N} as a Zperf client (UDP/TCP).
 
           This test depends on **test_ping_cluster**.
 

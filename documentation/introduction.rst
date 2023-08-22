@@ -56,10 +56,13 @@ refer to :ref:`design_applications_actuation` for more information.
 Safety Island Communication Demo
 ================================
 
-The Safety Island Communication Demo demonstrates the networking between the
-Primary Compute and the three Safety Island clusters. This is achieved via
-HIPC (Heterogeneous Inter-processor Communication). Please refer to
-:ref:`design_hipc` for more information on HIPC.
+The Safety Island Communication Demo demonstrates the networking between:
+
+  * Primary Compute and the three Safety Island clusters.
+  * Safety Island clusters.
+
+This is achieved via HIPC (Heterogeneous Inter-processor Communication).
+Please refer to :ref:`design_hipc` for more information on HIPC.
 
 |Arm SystemReadyTM| IR Validation
 =================================

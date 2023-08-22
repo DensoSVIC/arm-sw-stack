@@ -544,8 +544,8 @@ MHUv3
 The Arm Message Handling Unit Version 3 (MHUv3) is a mailbox controller for
 inter-processor communication. In the Kronos FVP, there are MHUv3 devices
 on-chip for signaling between Armv9-A and Safety Island clusters, using the
-doorbell protocol. A driver is added into the Zephyr inter-processor mailbox
-framework to support this device.
+doorbell protocol. A driver is added into the Zephyr mailbox framework to
+support this device.
 
 Virtual Network over RPMsg
 --------------------------
@@ -553,6 +553,13 @@ Virtual Network over RPMsg
 A ``veth_rpmsg`` driver is added for network socket based communication between
 Armv9-A and Safety Island clusters. It implements an RPMsg backend by the OpenAMP
 library and an adaptation layer for converting RPMsg data to network data.
+
+Virtual Network over IPC RPMsg Static Vrings
+--------------------------------------------
+
+A ``ipc_rpmsg_veth`` driver is added for network socket based communication
+between Safety Island clusters. It implements virtual network device based
+on IPC RPMsg Static Vrings.
 
 Zperf sample
 ------------

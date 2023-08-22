@@ -232,6 +232,7 @@ rst_prolog = f"""
 .. _RSS provisioning: https://tf-m-user-guide.trustedfirmware.org/platform/arm/rss/rss_provisioning.html
 .. _imgtool: https://github.com/mcu-tools/mcuboot/blob/main/docs/imgtool.md
 .. _MCUboot: https://github.com/mcu-tools/mcuboot
+.. _IPC service: https://docs.zephyrproject.org/{zephyr_version}/services/ipc/ipc_service/ipc_service.html
 """  # noqa: E501
 
 # URL to use for references to repository paths

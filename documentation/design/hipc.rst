@@ -18,7 +18,17 @@ The Kronos FVP contains Armv9-A (Primary Compute) and Armv8-R64 (Safety Island)
 heterogeneous processing elements which share data via the Message Handling
 Unit (MHUv3) and shared Dynamic Random-Access Memory (DRAM). The MHUv3 is a
 mailbox controller used for signal transmission and the shared memory is used
-for data exchange.
+for data exchange. Safety Island clusters also share data via the Message
+Handling Unit (MHUv3) and shared Dynamic Random-Access Memory (DRAM).
+
+The HIPC demonstrates the networking between:
+
+  * Primary Compute and the three Safety Island clusters.
+  * Safety Island clusters.
+
+**************************************************************************
+Communication between Primary Compute and Safety Island clusters
+**************************************************************************
 
 Safety Island Remoteproc Driver
 ===============================
@@ -126,6 +136,25 @@ the baremetal architecture.
 There are some issues and limitations of the virtual network device over RPMsg.
 Please refer to the changelog :ref:`changelog_knownissues` and
 :ref:`changelog_limitations` section.
+
+************************************************
+Communication between the Safety Island clusters
+************************************************
+
+Virtual Network Device over IPC Static Vrings
+=============================================
+
+Zephyr `IPC Service`_  based virtual network devices are added to each cluster
+to provide communication between clusters via BSD sockets. The backend used for
+the IPC service is RPMSg static vrings. The IPC RPMsg Static Vrings backend is
+implemented on top of virtio based RPMsg communication.
+
+|
+
+.. image:: ../images/hipc_inter_si_communication_design.svg
+   :align: center
+
+|
 
 ****************
 Network Topology
