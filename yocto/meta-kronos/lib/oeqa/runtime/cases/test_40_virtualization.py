@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 import re
-from oeqa.core.decorator.data import skipIfNotInDataVar
+from oeqa.core.decorator.data import skipIfNotInDataVar, skipIfDataVar
 from oeqa.core.decorator.depends import OETestDepends
 from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.runtime.decorator.package import OEHasPackage
@@ -121,6 +121,7 @@ class ParsecDomU2Test(DomU2Test, ParsecTest):
 class PtestRunnerDom0Test(OERuntimeTestCase):
     @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
     @OEHasPackage(['ptest-runner'])
+    @skipIfDataVar('FREQUENCY', 'adhoc', 'Skip ptest-runner in adhoc builds')
     def test_ptestrunner(self):
         # Run ptest-runner
         status, _ = self.target.run('ptest-runner', timeout=1200)

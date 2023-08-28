@@ -16,6 +16,7 @@ env:
   SRC_URI_ACTUATION:
   SRCREV_ACTUATION:
   TESTIMAGE_AUTO: "1"
+  FREQUENCY:
 
 local_conf_header:
   ci: |
