@@ -25,9 +25,6 @@ OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
                     'actuation', ':actuation', '', d)}"
 
 OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
-                    'si0-ethernet0', ':si0-ethernet0', '', d)}"
-
-OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
                     'si0-bridge-ethernet0', ':si0-bridge-ethernet0', '', d)}"
 
 # This bbclass handles, via the EXTRA_IMAGE_FEATURES variable, the following
@@ -39,7 +36,6 @@ IMAGE_FEATURES[validitems] += " \
     virtualization \
     domu \
     actuation \
-    si0-ethernet0 \
     si0-bridge-ethernet0 \
     "
 
@@ -48,10 +44,9 @@ DOMU_INSTANCES ?= "2"
 IMAGE_FEATURES_CONFLICTS_baremetal = "virtualization domu"
 IMAGE_FEATURES_CONFLICTS_virtualization = "baremetal domu"
 IMAGE_FEATURES_CONFLICTS_domu = "baremetal virtualization"
-IMAGE_FEATURES_CONFLICTS_hipc-validation = "si0-ethernet0 si0-bridge-ethernet0 actuation"
-IMAGE_FEATURES_CONFLICTS_actuation = "si0-ethernet0 si0-bridge-ethernet0 hipc-validation"
-IMAGE_FEATURES_CONFLICTS_si0-ethernet0 = "hipc-validation actuation si0-bridge-ethernet0"
-IMAGE_FEATURES_CONFLICTS_si0-bridge-ethernet0 = "hipc-validation actuation si0-ethernet0"
+IMAGE_FEATURES_CONFLICTS_hipc-validation = "si0-bridge-ethernet0 actuation"
+IMAGE_FEATURES_CONFLICTS_actuation = "si0-bridge-ethernet0 hipc-validation"
+IMAGE_FEATURES_CONFLICTS_si0-bridge-ethernet0 = "hipc-validation actuation"
 
 FEATURE_PACKAGES_COMMON = " \
     arm-si-rproc-mod \
@@ -112,7 +107,6 @@ require ${@bb.utils.contains('MACHINE', 'fvp-rd-kronos', 'conf/machine/include/f
 
 ZEPHYR_APP_SAFETY_ISLAND_CL0 = "bridge"
 ZEPHYR_APP_SAFETY_ISLAND_CL0:hipc-validation = "zperf"
-ZEPHYR_APP_SAFETY_ISLAND_CL0:si0-ethernet0 = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL1:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL1:si0-bridge-ethernet0 = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:actuation = "actuation"
@@ -137,12 +131,6 @@ TEST_SUITES_EXTRA:hipc-validation:virtualization = " \
     test_30_hipc_virtualization \
     "
 
-TEST_SUITES_EXTRA:si0-ethernet0 = " \
-    test_30_si0_ethernet0 \
-    test_10_safety_island_c1 \
-    test_10_safety_island_c2 \
-    "
-
 TEST_SUITES_EXTRA:si0-bridge-ethernet0 = " test_30_si0_bridge_ethernet0"
 
 TEST_SUITES_EXTRA:append:virtualization = " \
@@ -154,15 +142,6 @@ TEST_SUITES:append = " \
     test_40_parsec \
     ${TEST_SUITES_EXTRA} \
 "
-
-TEST_SUITES:remove:si0-ethernet0 = "\
-    test_00_lcp \
-    test_00_trusted_firmware_a \
-    test_10_linuxboot \
-    test_20_bsp \
-    test_10_linuxlogin \
-    test_40_parsec \
-    "
 
 TEST_SUITES:remove:si0-bridge-ethernet0 = "\
     test_00_lcp \
@@ -186,7 +165,6 @@ TEST_SUITES:remove:virtualization = " \
     test_00_secure_partition \
     "
 EXTRA_TESTIMAGE_RDEPENDS ?= ""
-EXTRA_TESTIMAGE_RDEPENDS:si0-ethernet0 = "iperf-native:do_populate_sysroot"
 EXTRA_TESTIMAGE_RDEPENDS:si0-bridge-ethernet0 = "iperf-native:do_populate_sysroot"
 
 do_testimage[rdepends] += "${EXTRA_TESTIMAGE_RDEPENDS}"
