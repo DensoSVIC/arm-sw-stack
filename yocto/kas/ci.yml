@@ -28,3 +28,5 @@ local_conf_header:
     BB_PRESSURE_MAX_IO = "1"
     INHERIT += "rm_work"
     RM_WORK_EXCLUDE_ITEMS:append = " testimage"
+    TEST_OVERALL_TIMEOUT = "${@40*60 if d.getVar('FREQUENCY') == 'adhoc' \
+      else ''}"
