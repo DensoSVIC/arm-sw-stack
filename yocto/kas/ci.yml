@@ -15,7 +15,10 @@ env:
   ARTIFACTORY_KEY:
   SRC_URI_ACTUATION:
   SRCREV_ACTUATION:
-  TESTIMAGE_AUTO: "1"
+  TESTIMAGE_AUTO: "${@ '1' if '${BUILD_ARCH}' == 'x86_64' \
+    or '${FREQUENCY}' != 'adhoc' \
+    or bb.utils.contains('EXTRA_IMAGE_FEATURES', 'baremetal', True, False, d) \
+    else ''}"
   FREQUENCY:
 
 local_conf_header:
