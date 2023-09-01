@@ -89,6 +89,7 @@ CMDS
 cmdtable
 comon
 COMPAT
+condvar
 configfile
 configu
 contex

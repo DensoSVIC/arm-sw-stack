@@ -13,6 +13,7 @@
 #include <linux/interrupt.h>
 #include <linux/kernel.h>
 #include <linux/mailbox_client.h>
+#include <linux/mailbox_controller.h>
 #include <linux/module.h>
 #include <linux/of_address.h>
 #include <linux/of_platform.h>
@@ -209,14 +210,12 @@ static void arm_si_rproc_kick(struct rproc *rproc, int vqid)
 	dev_dbg(&rproc->dev, "kick (vqid:%d mbox:%s)\n", vqid,
 		ch->mbox[i].name);
 
-	/*
-	 * TODO: convert dev_dbg to dev_err when mbox_send_message
-	 * start passing every time.
-	 */
-	err = mbox_send_message(ch->mbox[i].chan, (void *)&vqid);
-	if (err < 0)
-		dev_dbg(&rproc->dev, "%s: failed (%s, err:%d)\n",
-			__func__, ch->mbox[i].name, err);
+	if (ch->mbox[i].chan->msg_count < MBOX_TX_QUEUE_LEN) {
+		err = mbox_send_message(ch->mbox[i].chan, (void *)&vqid);
+		if (err < 0)
+			dev_err(&rproc->dev, "%s: failed (%s, err:%d)\n",
+				__func__, ch->mbox[i].name, err);
+	}
 }
 
 /**
@@ -537,7 +536,7 @@ static int arm_si_rproc_detach(struct rproc *rproc)
 	if (ch->mbox[idx].chan) {
 		ret = mbox_send_message(ch->mbox[idx].chan, NULL);
 		if (ret < 0)
-			dev_dbg(&rproc->dev, "%s: failed (%s, err:%d)\n",
+			dev_err(&rproc->dev, "%s: failed (%s, err:%d)\n",
 				__func__, ch->mbox[idx].name, ret);
 	}
 
@@ -590,7 +589,7 @@ static struct arm_si_channel *arm_si_add_rproc_core(struct device *cdev)
 		init_completion(&ch->ack);
 		ret = mbox_send_message(ch->mbox[idx].chan, NULL);
 		if (ret < 0)
-			dev_dbg(&rproc->dev, "%s: failed (%s, err:%d)\n",
+			dev_err(&rproc->dev, "%s: failed (%s, err:%d)\n",
 				__func__, ch->mbox[idx].name, ret);
 
 		if (!wait_for_completion_timeout(&ch->ack,
