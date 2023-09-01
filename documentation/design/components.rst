@@ -589,7 +589,6 @@ Additional patches are located at
 :kronos-repo:`yocto/meta-kronos/recipes-kernel/linux/files` related to:
 
  * Making virtio rpmsg buffer size configurable
- * Making mailbox transmit queue size configurable
  * Disable remoteproc virtio rpmsg to use DMA API in Xen guest
  * Adding MHUv3 driver
 
