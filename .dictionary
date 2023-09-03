@@ -238,6 +238,7 @@ iidr
 IMAGEDEPENDS
 imgtool
 importlib
+INCDIR
 includenotfound
 inclusivity
 inet
@@ -261,6 +262,7 @@ irqrestore
 irqreturn
 IRQS
 irqsave
+Izuma
 kcalloc
 kconf
 kconfig
@@ -282,6 +284,7 @@ libeigen
 libmbedcrypto
 libmbedtls
 libmbedx
+libparsec
 libts
 libxc
 libxenutil
@@ -395,6 +398,7 @@ PACKAGECONFIG
 packagegroup
 pagetab
 pandoc
+parallaxsecond
 PARTID
 partitionable
 Partitioner
@@ -508,6 +512,7 @@ SRCREV
 srcurichecksum
 SSBD
 sstate
+staticdev
 stdbool
 stoptasks
 strchr
