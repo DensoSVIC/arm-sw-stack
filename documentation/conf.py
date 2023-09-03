@@ -233,6 +233,15 @@ rst_prolog = f"""
 .. _imgtool: https://github.com/mcu-tools/mcuboot/blob/main/docs/imgtool.md
 .. _MCUboot: https://github.com/mcu-tools/mcuboot
 .. _IPC service: https://docs.zephyrproject.org/{zephyr_version}/services/ipc/ipc_service/ipc_service.html
+.. _TF-M Secure Services: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/index.html
+.. _SE Proxy SP: https://trusted-services.readthedocs.io/en/latest/deployments/secure-partitions.html#se-proxy
+.. _libts: https://trusted-services.readthedocs.io/en/latest/deployments/libraries.html#libts
+.. _Trusted Services: https://trusted-services.readthedocs.io/en/latest/index.html
+.. _PSA Certified APIs: https://arm-software.github.io/psa-api
+.. _PSA Certified Crypto API: https://arm-software.github.io/psa-api/crypto
+.. _PSA Certified Secure Storage API: https://arm-software.github.io/psa-api/storage
+.. _Parsec: https://parallaxsecond.github.io/parsec-book/index.html
+.. _Arm Firmware Framework for Arm A-profile: https://developer.arm.com/documentation/den0077/latest
 """  # noqa: E501
 
 # URL to use for references to repository paths

@@ -274,6 +274,7 @@ libc
 libcpp
 libdir
 libeigen
+libts
 libxc
 libxenutil
 libxl
@@ -529,6 +530,7 @@ toctree
 TOOLNG
 topdir
 TRAPMPAM
+TrustZone
 trysend
 txdone
 TXENA

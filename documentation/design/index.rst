@@ -15,6 +15,7 @@ Solution Design
 
    boot_process
    hipc
+   secure_services
    components
    applications/index
    integration
