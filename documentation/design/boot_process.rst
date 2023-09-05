@@ -18,13 +18,18 @@ The :ref:`design_components_rss` is the root of the trust chain. It is the
 first booting element when the system is powered up.
 
 The RSS, implemented in Trusted Firmware-M (TF-M), has 3 boot stages: BL1_1,
-BL1_2 and BL2. When the platform is released from reset, BL1_1 boots from RSS
-ROM. BL1_1 provisions the BL1_2 image into the One Time Programmable (OTP)
-flash, and transfers the execution to BL1_2. BL1_2 loads and authenticates the
-BL2 image, and transfers the execution to the BL2. BL2, which is implemented
-based on `MCUboot`_, loads and authenticates all images of the other components:
-SCP, Safety Island, LCP and AP. In the following text, the images of these
-components are named host images.
+BL1_2 and BL2. When the platform is released from reset, the following steps
+occur:
+
+1. BL1_1 boots from RSS ROM.
+2. BL1_1 provisions the BL1_2 image into the One Time Programmable (OTP) flash,
+   and transfers the execution to BL1_2.
+3. BL1_2 loads and authenticates the BL2 image, and transfers the execution to
+   BL2.
+4. BL2, which is implemented based on `MCUboot`_, loads and authenticates all
+   images of the other components: SCP, Safety Island, LCP and AP.
+
+The sequence is shown in the RSS-oriented Boot Flow diagram below.
 
 The RSS uses a NVM flash to store the images of various components, including:
 
@@ -60,8 +65,8 @@ In the Yocto build stage of the Kronos platform, a shell function
 :meta-arm-repo:`meta-arm/classes/tfm_sign_image.bbclass`.
 Then the signed images are written to the NVM flash.
 
-Image Authentication
-====================
+System Provisioning and Image Authentication
+============================================
 
 A public key is derived from the private key for authenticating the signed
 host images. The public key is also known as the Root of Trust Public Key
@@ -69,8 +74,8 @@ host images. The public key is also known as the Root of Trust Public Key
 public key is written in file ``dm_dummy_provisioning_data.c`` of the source
 code folder ``platform/ext/target/arm/rss/common/provisioning/bundle_dm/``.
 
-During the boot process, the hash of the public key is provisioned into the OTP
-by BL1_1. More details on the provisioning can be found in the
+During the system's first boot, the hash of the public key is provisioned into
+the OTP by BL1_1. More details on the provisioning can be found in the
 `RSS provisioning`_ page. Once the provisioning stage has been completed, the
 OTP contents cannot be updated.
 
@@ -112,15 +117,15 @@ Major steps of the boot flow:
 1. RSS BL1_1 begins executing in place from ROM when the system is powered up.
    It:
 
-   * Provisions RSS BL1_2 and various keys and other data from the provisioning
-     bundle to OTP
-   * Copies the RSS BL1_2 image from OTP to SRAM
-   * Validates RSS BL1_2 against the hash stored in OTP
+   * (This step only happens on the system's first boot) Provisions RSS BL1_2
+     and various keys and other data from the provisioning bundle to the OTP
+   * Copies the RSS BL1_2 image from the OTP to the SRAM
+   * Validates RSS BL1_2 against the hash stored in the OTP
    * Transfers the execution to RSS BL1_2
 
 2. RSS BL1_2:
 
-   * Copies the encrypted RSS BL2 image from flash into SRAM
+   * Copies the encrypted RSS BL2 image from flash into the SRAM
    * Decrypts the RSS BL2 image
    * Transfers the execution to RSS BL2
 
