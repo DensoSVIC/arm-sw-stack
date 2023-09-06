@@ -103,22 +103,26 @@ yocto_doc_version = yocto_version + "/"
 cassini_version = yocto_version + "-dev"
 kronos_version = "main"
 kas_version = "3.3"
-trusted_firmware_m_version = "bd8c7c9c40e522d4db10d4b45412f7a56eb5dae7"
+trusted_firmware_m_version = "35ac80c8581d483da7d18cb8bcd20aaed096550c"
 # /* cspell:disable-next-line */
-trusted_firmware_m_base_version = "master branch post v1.7.0"
+trusted_firmware_m_base_version = "master branch post v1.8.0"
 scp_firmware_version = "f71f34237365b2c4b54be798aba79b740dcc4020"
 # /* cspell:disable-next-line */
 scp_firmware_base_version = "master branch post v2.11.0"
 trusted_firmware_a_version = "2.8.0"
-uboot_version = "2023.01"
+uboot_version = "2023.07.02"
 linux_version = "6.1"
-linux_version_patch = "25"
+linux_version_patch = "46"
 xen_version = "4.17"
 zephyr_version = "3.4.0"
 fvp_version = "0.0"
 actuation_version = "main"
 systemready_ir_acs_version = "1.0"
 optee_version = "3.20.0"
+trusted_services_version = "08b3d39471f4914186bd23793dc920e83b0e3197"
+trusted_services_base_version = "integration branch"
+mbedtls_version = "63a21f4cda8b3d21fe5f85e6efc62d924b492757"
+mbedtls_base_version = "3.4.0"
 
 rst_prolog = f"""
 .. |kas version| replace:: {kas_version}
@@ -130,6 +134,10 @@ rst_prolog = f"""
 .. |SCP-firmware base version| replace:: {scp_firmware_base_version}
 .. |Trusted Firmware-A version| replace:: {trusted_firmware_a_version}
 .. |OP-TEE version| replace:: {optee_version}
+.. |Trusted Services version| replace:: {trusted_services_version}
+.. |Trusted Services base version| replace:: {trusted_services_base_version}
+.. |Mbed TLS version| replace:: {mbedtls_version}
+.. |Mbed TLS base version| replace:: {mbedtls_base_version}
 .. |U-Boot version| replace:: {uboot_version}
 .. |Xen version| replace:: {xen_version}
 .. |Linux version| replace:: {linux_version}.{linux_version_patch}
@@ -180,6 +188,8 @@ rst_prolog = f"""
 .. _SCP-firmware repository: https://github.com/ARM-software/SCP-firmware/tree/{scp_firmware_version}
 .. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/tree/?h=v{trusted_firmware_a_version}
 .. _OP-TEE repository: https://github.com/OP-TEE/optee_os/tree/{optee_version}
+.. _Trusted Services repository: https://git.trustedfirmware.org/TS/trusted-services.git/tree/?h=integration&id={trusted_services_version}
+.. _Mbed TLS repository: https://github.com/Mbed-TLS/mbedtls/tree/{mbedtls_version}
 .. _U-Boot repository: https://source.denx.de/u-boot/u-boot/-/tree/v{uboot_version}
 .. _Xen repository: https://xenbits.xen.org/gitweb/?p=xen.git;a=tree;h=refs/heads/stable-{xen_version}
 .. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fbase
@@ -241,7 +251,6 @@ rst_prolog = f"""
 .. _PSA Secure Storage API: https://arm-software.github.io/psa-api/storage
 .. _Parsec: https://parallaxsecond.github.io/parsec-book/index.html
 .. _Arm Firmware Framework for Arm A-profile: https://developer.arm.com/documentation/den0077/latest
-.. _Mbed TLS repository: https://github.com/Mbed-TLS/mbedtls/tree/development
 .. _Mbed TLS: https://mbed-tls.readthedocs.io/en/latest/
 .. _Parsec Secure Element Driver: https://github.com/parallaxsecond/parsec-se-driver
 .. _se-proxy: https://trusted-services.readthedocs.io/en/latest/deployments/secure-partitions.html?#se-proxy

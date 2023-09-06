@@ -37,6 +37,12 @@ Components versions used in the Reference Stack:
   * - Trusted Firmware-A
     - |Trusted Firmware-A version|
     - `Trusted Firmware-A repository`_
+  * - OP-TEE
+    - |OP-TEE version|
+    - `OP-TEE repository`_
+  * - Trusted Services
+    - |Trusted Services version| (based on |Trusted Services base version|)
+    - `Trusted Services repository`_
   * - U-Boot
     - |U-Boot version|
     - `U-Boot repository`_
@@ -52,6 +58,9 @@ Components versions used in the Reference Stack:
   * - Safety Island Actuation Demo
     - |Actuation version|
     - `Actuation repository`_
+  * - Mbed TLS
+    - |Mbed TLS version| (based on |Mbed TLS base version|)
+    - `Mbed TLS repository`_
 
 Third-party Yocto layers used to build the Reference Stack:
 

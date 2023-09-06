@@ -13,14 +13,16 @@ system that introduces the concept of a high-performance Application
 Processor (Primary Compute) system augmented with an |Cortex|-R based
 Safety Island, for scenarios where additional system safety monitoring is
 required. The Reference Design additionally includes a Runtime Security
-Subsystem (RSS) used for the secure boot of the system elements.
+Subsystem (RSS) used for the secure boot of the system elements and the runtime
+secure services.
 
 Together, this FVP model and software stack allow for the exploration of
 baremetal and XEN hypervisor hosted Linux instances, Primary Compute to/from
 Safety Island communication mechanisms (for both baremetal and virtualized
 scenarios), and boot flows coordinated via a system root of trust. The Primary
-Compute firmware stack of Trusted Firmware-A and U-Boot is also aligned with
-the technologies and goals of the |Arm SystemReadyTM| IR program.
+Compute firmware stack of Trusted Firmware-A, U-Boot, OP-TEE and Trusted
+Services is also aligned with the technologies and goals of the
+|Arm SystemReadyTM| IR program.
 
 Further technical details of the Kronos Reference Design FVP can be found at
 `Arm Kronos Reference Design Technical Overview`_, with an
@@ -101,13 +103,15 @@ together form the proposed solution, including:
 
 
   * The `Runtime Security Subsystem (RSS)`_ runs an instance of Trusted
-    Firmware-M which offers boot services.
+    Firmware-M which offers boot service, cryptography service and protected
+    storage service.
 
   * The Safety Island subsystem runs three instances of the Zephyr real-time
     operating system (RTOS).
 
-  * The firmware for the Primary Compute uses Trusted Firmware-A and U-Boot.
-    These are configured to be aligned with `Arm SystemReady IR`_.
+  * The firmware for the Primary Compute uses Trusted Firmware-A, U-Boot, OP-TEE
+    and Trusted Services. These are configured to be aligned with
+    `Arm SystemReady IR`_.
 
 The remaining software in the Primary Compute subsystem, based on the
 `Cassini`_  distribution, is available in two main architectures:
@@ -158,19 +162,21 @@ to have a certain understanding of the following technologies:
 
   * Arm Firmware:
 
+    * `OP-TEE`_
+
     * `Runtime Security Subsystem (RSS)`_
 
     * `System Control Processor (SCP) Firmware`_
 
     * `Trusted Firmware-A (TF-A)`_
 
-    * `Trusted Firmware-M (TF-M)`_
+    * `Trusted Services`_
 
   * `U-boot`_
 
-  * `Zephyr`_
-
   * `Xen Hypervisor`_
+
+  * `Zephyr`_
 
 
 Documentation Structure
