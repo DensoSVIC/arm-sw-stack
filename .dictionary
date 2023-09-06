@@ -139,12 +139,12 @@ diskmon
 distro
 distros
 docutils
+DOM0
 domctl
 domctls
 domid
 domu
 domus
-DOM0
 DOVERLAY
 DPLX
 DPYTHON
@@ -386,6 +386,7 @@ PARTID
 partitionable
 Passthrough
 patchdir
+PCIDEV
 pcitopoinfo
 pclk
 PCSA
@@ -456,6 +457,7 @@ rvdev
 RXEN
 rxlen
 SATA
+SBDF
 sbindir
 sched
 SCMI

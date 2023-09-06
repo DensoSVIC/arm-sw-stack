@@ -451,7 +451,7 @@ direct injection for domains:
     Now, users could run ``xl create -c $domu_config`` to boot the new xl
     domain.
     Later entering the new xl guest console, users could run ``lspci`` and
-    check whether the passthroughed PCI AHCI SATA Disk ``ahci[0000:00:00.0]``
+    check whether the passthrough PCI AHCI SATA Disk ``ahci[0000:00:00.0]``
     is properly enabled.
 
 .. _design_components_xen_downstream_changes:
