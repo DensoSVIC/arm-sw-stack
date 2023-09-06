@@ -1,20 +1,23 @@
-From 86b33b6af5bedd57e5a9143d02844b92dcfe9c6b Mon Sep 17 00:00:00 2001
+From f76b1cb789534a7de8696b926b68b79608718d78 Mon Sep 17 00:00:00 2001
 From: Anton Antonov <Anton.Antonov@arm.com>
 Date: Mon, 21 Aug 2023 15:34:46 +0100
 Subject: [PATCH] Bump ASN1 crates dependencies
-
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+​
 picky-asn1 0.7.2 contains a fix for occasional incorrect ASN1 Integer builds:
 https://github.com/Devolutions/picky-rs/pull/209
-
+​
 Fixes: https://github.com/parallaxsecond/parsec-tool/issues/101
-
+​
 Signed-off-by: Anton Antonov <Anton.Antonov@arm.com>
 Upstream-Status: Backport [https://github.com/parallaxsecond/parsec-tool/pull/102]
 ---
  Cargo.lock | 14 +++++++-------
  Cargo.toml |  6 +++---
  2 files changed, 10 insertions(+), 10 deletions(-)
-
+​
 diff --git a/Cargo.lock b/Cargo.lock
 index ae39874..97189b7 100644
 --- a/Cargo.lock
@@ -59,15 +62,21 @@ index ae39874..97189b7 100644
   "picky-asn1",
   "picky-asn1-der",
 diff --git a/Cargo.toml b/Cargo.toml
-68c68
-< version = "0.3.0"
----
-> version = "0.7.2"
-71c71
-< version = "0.2.4"
----
-> version = "0.4.0"
-74c74
-< version = "0.6.1"
----
-> version = "0.11.0"
+index 9eb4b74..348df75 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -22,9 +22,9 @@ env_logger = "0.8.2"
+ oid = { version = "0.2", features = ["serde_support"] }
+ pem = "1.1.0"
+ base64 = "0.13.0"
+-picky-asn1 = "0.3.0"
+-picky-asn1-der = "0.2.4"
+-picky-asn1-x509 = "0.6.1"
++picky-asn1 = "0.7.2"
++picky-asn1-der = "0.4.0"
++picky-asn1-x509 = "0.11.0"
+ serde = "1.0.123"
+ sha2 = "0.9.9"
+ log = "0.4.14"
+-- 
+2.25.1
