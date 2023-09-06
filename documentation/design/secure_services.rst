@@ -15,13 +15,13 @@ Introduction
 ************
 
 The Arm Kronos Reference Software Stack provides the implementation of 2 kinds
-of secure services defined by `PSA Certified APIs`_:
+of secure services defined by following specifications:
 
-* `PSA Certified Crypto API`_: The API provides a portable programming interface
+* `PSA Cryptography API`_: The API provides a portable programming interface
   to cryptographic operations, and key storage functionality on a wide range of
   hardware.
 
-* `PSA Certified Secure Storage API`_: The API provides key/value storage
+* `PSA Secure Storage API`_: The API provides key/value storage
   interfaces for use with device-protected storage. The Secure Storage API
   describes two interfaces for storage:
 
@@ -29,8 +29,8 @@ of secure services defined by `PSA Certified APIs`_:
       the Platform Root of Trust (PRoT). For now the ITS API is not supported.
     * Protected Storage (PS) API: An interface for external protected storage.
 
-The secure services is implemented by leveraging TrustZone technology in the
-host system and the RSS, the hardware isolated secure enclave.
+The secure services is implemented by leveraging `TrustZone`_ technology in the
+Primary Compute and the RSS, the hardware isolated secure enclave.
 
 ************
 Architecture
@@ -62,10 +62,10 @@ libts
 =====
 
 In Linux userspace, the secure services is provided in the form of `libts`_ API.
-``libts`` is an userspace library that is provided by `Trusted Services`_ for
-handling service discovery and RPC messaging. ``libts`` entirely decouples
-client applications from details of where a service provider is deployed and how
-to communicate with it.
+``libts`` is a library that is provided by `Trusted Services`_ for handling
+service discovery and Remote Procedure Call (RPC) messaging. ``libts`` entirely
+decouples client applications from details of where a service provider is
+deployed and how to communicate with it.
 
 The client application sends operation requests and receives responses by
 calling the ``libts`` API. ``libts`` communicates with the Secure Partition (SP)
@@ -77,7 +77,7 @@ SE Proxy SP
 ===========
 
 The `SE Proxy SP`_ (Secure Enclave Proxy Secure Partition) is a proxy partition
-managed by OP-TEE. It provides access to services hosted by the RSS.
+managed by `OP-TEE`_. It provides access to services hosted by the RSS.
 
 The ``SE Proxy SP`` receives secure service operation requests from the
 non-secure world, translates the request parameters to IPC calls, and invokes

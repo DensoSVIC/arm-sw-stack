@@ -237,15 +237,15 @@ rst_prolog = f"""
 .. _SE Proxy SP: https://trusted-services.readthedocs.io/en/latest/deployments/secure-partitions.html#se-proxy
 .. _libts: https://trusted-services.readthedocs.io/en/latest/deployments/libraries.html#libts
 .. _Trusted Services: https://trusted-services.readthedocs.io/en/latest/index.html
-.. _PSA Certified APIs: https://arm-software.github.io/psa-api
-.. _PSA Certified Crypto API: https://arm-software.github.io/psa-api/crypto
-.. _PSA Certified Secure Storage API: https://arm-software.github.io/psa-api/storage
+.. _PSA Cryptography API: https://arm-software.github.io/psa-api/crypto
+.. _PSA Secure Storage API: https://arm-software.github.io/psa-api/storage
 .. _Parsec: https://parallaxsecond.github.io/parsec-book/index.html
 .. _Arm Firmware Framework for Arm A-profile: https://developer.arm.com/documentation/den0077/latest
 .. _Mbed TLS repository: https://github.com/Mbed-TLS/mbedtls/tree/development
 .. _Mbed TLS: https://mbed-tls.readthedocs.io/en/latest/
 .. _Parsec Secure Element Driver: https://github.com/parallaxsecond/parsec-se-driver
 .. _se-proxy: https://trusted-services.readthedocs.io/en/latest/deployments/secure-partitions.html?#se-proxy
+.. _TrustZone: https://www.arm.com/technologies/trustzone-for-cortex-a/tee-reference-documentation
 """  # noqa: E501
 
 # URL to use for references to repository paths
