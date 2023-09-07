@@ -70,8 +70,8 @@ Please refer to :ref:`design_hipc` for more information on HIPC.
 hardware and firmware standards that enable interoperability with generic
 off-the-shelf operating systems and hypervisors.
 
-Linux Distribution Installation (Debian and Fedora)
-===================================================
+Linux Distribution Installation (Debian and openSUSE)
+=====================================================
 
 This use-case demonstrates the installation of two unmodified generic UEFI
 distribution images which fall under |Arm SystemReadyTM| requirements.

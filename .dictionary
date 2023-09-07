@@ -57,6 +57,7 @@ brctl
 brext
 brsi
 BTCPUPOOLS
+btrfs
 BUFS
 BUILDIN
 Buildroot
@@ -278,6 +279,7 @@ libts
 libxc
 libxenutil
 libxl
+Licence
 licenseremotefile
 Linaro
 linuxboot
@@ -319,6 +321,7 @@ mickledore
 microcontrollers
 migr
 miibus
+Mitigations
 mkdirhier
 mmaa
 mmcblk
@@ -361,6 +364,7 @@ NOTFOUND
 notifyid
 NRDY
 numpy
+NVRAM
 OBJS
 ODDFRM
 OECMAKE
@@ -385,6 +389,7 @@ pagetab
 pandoc
 PARTID
 partitionable
+Partitioner
 Passthrough
 patchdir
 PCIDEV
@@ -507,6 +512,7 @@ stty
 subcomponents
 subdir
 subsys
+subvolume
 sufix
 suggestedvar
 swiotlb
@@ -556,6 +562,7 @@ vcpus
 vdev
 veth
 vexpress
+vfat
 vfpv
 VGIC
 vifname
@@ -593,6 +600,7 @@ xenlight
 XENLOG
 xenstore
 Xentool
+Xfce
 xsdomid
 xzalloc
 Yanqin

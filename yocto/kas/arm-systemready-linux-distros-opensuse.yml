@@ -10,7 +10,7 @@ header:
     - repo: meta-arm
       file: kas/fvp-rd-kronos.yml
     - repo: meta-arm
-      file: kas/arm-systemready-linux-distros-fedora.yml
+      file: kas/arm-systemready-linux-distros-opensuse.yml
 
 repos:
   meta-arm:

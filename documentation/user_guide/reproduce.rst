@@ -225,15 +225,15 @@ running the |Arm SystemReadyTM| IR ACS tests.
 
 .. _user_guide_reproduce_sr_ir_linux_build:
 
-Linux Distribution Installation (Debian and Fedora)
-===================================================
+Linux Distribution Installation (Debian and openSUSE)
+=====================================================
 
 To build the |Arm SystemReadyTM| IR Linux distros installation tests:
 
 1. Choose ``Debian Linux Distro Installation`` or
-   ``Fedora Linux Distro Installation`` under
-   ``Linux Distribution Installation (Debian and Fedora)`` from the ``Use-Case``
-   menu.
+   ``openSUSE Linux Distro Installation`` under
+   ``Linux Distribution Installation (Debian and openSUSE)`` from the
+   ``Use-Case`` menu.
 2. Then choose ``Save & Build``.
 
 .. image:: ../images/kronos_reference_stack_build_config_sr_distro.png
@@ -251,7 +251,7 @@ Run
 ***
 
 This section describes how to run the ``Reference Stack`` and the
-``Debian / Fedora Distro Installation`` images generated during
+``Debian / openSUSE Distro Installation`` images generated during
 :ref:`user_guide_reproduce_build` on its FVP and connect to the Primary Compute
 to manually execute commands and in this way try out the different Use-Cases
 Kronos offers.
@@ -313,8 +313,8 @@ further details.
 
 .. _user_guide_reproduce_sr_ir_linux_run:
 
-Linux Distribution Installation (Debian and Fedora)
-===================================================
+Linux Distribution Installation (Debian and openSUSE)
+=====================================================
 
 Run the following command to start the installation:
 
@@ -561,8 +561,8 @@ ACS tests are set up and how they work in the Reference Stack.
 
 .. _user_guide_reproduce_arm_systemready_ir_linux:
 
-Linux Distribution Installation (Debian and Fedora)
----------------------------------------------------
+Linux Distribution Installation (Debian and openSUSE)
+-----------------------------------------------------
 
 The |Arm SystemReadyTM| IR must boot at least two unmodified generic UEFI
 distribution images from an ISO image. To test the installation of a Linux
@@ -571,9 +571,9 @@ distribution, follow the steps listed in
 :ref:`user_guide_reproduce_sr_ir_linux_run` to start the installation.
 
 This Software Stack currently supports two Linux distributions: `Debian Stable`_
-and `Fedora Server`_. To install Debian, you can refer to the
+and `openSUSE Leap`_. To install Debian, you can refer to the
 `Debian GNU/Linux Installation Guide`_. Similarly, you can refer to the
-`Fedora Installation Guide`_ for the installation of Fedora.
+`openSUSE Installation Guide`_ for the installation of openSUSE.
 
 .. note::
 
@@ -581,7 +581,7 @@ and `Fedora Server`_. To install Debian, you can refer to the
   example, some necessary selections or confirmations, entering the user and
   password, etc.
 
-  The whole installation process takes a long time (possibly up to 24 hours, or
+  The whole installation process takes a long time (possibly up to 10 hours, or
   even longer).
 
   We suggest that when running the Linux distribution installations the FVP is
@@ -700,145 +700,256 @@ installation process and how to solve them:
   phase, you will need to wait some time to finish the remaining tasks,
   and then it will automatically reboot into the installed OS.
 
-Fedora
-^^^^^^
+openSUSE
+^^^^^^^^
 
-Here are some tips for installing Fedora:
+The whole process of installing openSUSE will take about 6 hours. Below are the
+main steps and tips for installing openSUSE.
 
-1. It needs a little long time to wait GRUB to load installer kernel and initrd.
-2. Once the installer has started, enter ``2`` to choose ``Use text mode``.
+1. After the installer starts, it will take about 10 minutes to reach the
+   ``Language, Keyboard and Licence Agreement`` tab. Select ``Next`` to
+   continue.
 
-   .. code-block:: console
+   .. tip::
 
-      Starting installer, one moment...
-      anaconda 38.23.4-2.fc38 for Fedora 38 started.
-       * installation log files are stored in /tmp during the installation
-       * shell is available on TTY2 and in second TMUX pane (ctrl+b, then press 2)
-       * when reporting a bug add logs from /tmp as separate text/plain attachments
+      Use ``Tab`` to cycle through options, and ``Enter`` to confirm.
 
-      X or window manager startup failed, falling back to text mode.
-      ================================================================================
-      ================================================================================
-      X was unable to start on your machine. Would you like to start VNC to connect to
-      this computer from another computer and perform a graphical installation or
-      continue with a text mode installation?
+2. After ``System Probing`` success, select ``No`` for ``Online Repositories``.
 
-      1) Start VNC
-      2) Use text mode
+   .. code-block:: none
 
-      Please make a selection from the above ['c' to continue, 'h' to help, 'q' to
-      quit, 'r' to refresh]: 2
+     System Probing
 
-3. When reaching the installation menu, you will see several items marked as
-   ``!`` and you will need to enter the corresponding numbers to make the
-   necessary selections or configurations.
+      x   Probe USB devices
+      x   Probe FireWire devices
+      x   Probe hard disks
+      x   Search for system files
+      x   Initialize software manager
 
-   .. code-block:: console
+           ┌───────────────────────────────────────────────────────┐
+           │ Online Repositories                                   │
+           │ Enabling the online repositories during installation  │
+           │ gives you access to all software that does not fit on │
+           │ the installation media anymore. Additionally, those   │
+           │ repositories might contain updated software packages. │
+           │                                                       │
+           │ Activate online repositories now?                     │
+           │                                                       │
+           │                      [Yes] [No]                       │
+           └───────────────────────────────────────────────────────┘
 
-      ================================================================================
-      ================================================================================
-      Installation
+3. Select ``Server`` for ``System Role``, then select ``Next`` to continue.
 
-      1) [x] Language settings                 2) [x] Time settings
-             (English (United States))                (America/Chicago timezone)
-      3) [!] Installation source               4) [!] Software selection
-             (Setting up installation                 (Processing...)
-             source...)
-      5) [!] Installation Destination          6) [x] Network configuration
-             (Processing...)                          (Connected: eth0)
-      7) [!] Root password                     8) [!] User creation
-             (Root account is disabled)               (No user will be created)
+   .. code-block:: none
 
-      Please make a selection from the above ['b' to begin installation, 'h' to help,
-      'q' to quit, 'r' to refresh]:
+     System Role                                               [Release Notes...]
+     System Roles are predefined use cases which tailor the system
+     for the selected scenario.
 
-   For ``3) [!] Installation source``, enter ``3``, then ``1`` to select
-   ``CD/DVD``.
+     ┌──────────────────────────────────────────────────────────────────────────┐
+     │( ) Desktop with KDE Plasma                                               │
+     │    Graphical system with KDE Plasma as desktop environment. Suitable for │
+     │    Workstations, Desktops and Laptops.                                   │
+     │                                                                          │
+     │( ) Desktop with GNOME                                                    │
+     │    Graphical system with GNOME as desktop environment. Suitable for      │
+     │    Workstations, Desktops and Laptops.                                   │
+     │                                                                          │
+     │( ) Desktop with Xfce                                                     │
+     │    Graphical system with Xfce as desktop environment. Suitable for       │
+     │    Workstations, Desktops and Laptops.                                   │
+     │                                                                          │
+     │( ) Generic Desktop                                                       │
+     │    Graphical system with reduced package set. Intended as base for a     │
+     │    customized software selection.                                        │
+     │                                                                          │
+     │(x) Server                                                                │
+     │    Small set of packages suitable for servers with a text mode interface.│
+     │                                                                          │
+     │( ) Transactional Server                                                  │
+     │    Like the Server role but uses a read-only root filesystem to provide  │
+     │    atomic, automatic updates of a system without interfering with the    │
+     │    running system.                                                       │
+     └──────────────────────────────────────────────────────────────────────────┘
+     [Help]                 [Back]                 [Abort]                 [Next]
 
-   .. code-block:: console
+4. Select ``Next`` to accept the ``Suggested Partitioning`` and continue.
 
-      ================================================================================
-      ================================================================================
-      Installation source
+   .. code-block:: none
 
-      Choose an installation source type.
-      1) CD/DVD
-      2) local ISO file
-      3) Network
+     Suggested Partitioning                                    [Release Notes...]
 
-      Please make a selection from the above ['c' to continue, 'h' to help, 'q' to
-      quit, 'r' to refresh]: 1
+     ┌──────────────────────────────────────────────────────────────────────────┐
+     │Initial layout proposed after adjusting the Guided Setup settings:        │
+     │                                                                          │
+     │ *  do not enable snapshots for /                                         │
+     │ *  do not propose swap                                                   │
+     │                                                                          │
+     │Changes to partitioning:                                                  │
+     │                                                                          │
+     │ *  Create GPT on /dev/vda                                                │
+     │ *  Create partition /dev/vda1 (128.00 MiB) for /boot/efi with vfat       │
+     │ *  Create partition /dev/vda2 (5.87 GiB) for / with btrfs                │
+     │ *  9 subvolume actions (see details)                                     │
+     └──────────────────────────────────────────────────────────────────────────┘
+                                   [Guided Setup]
+                                [Expert Partitioner↓]
 
-   For ``4) [!] Software selection``, enter ``4``, then ``c`` to continue.
+     [Help]                 [Back]                 [Abort]                 [Next]
 
-   For ``5) [!] Installation Destination``, enter ``5``, then ``c`` to select
-   the default options.
 
-   For ``6) [!] Network configuration``, it will automatically change to ``x``.
+5. ``Create New User``, then select ``Next`` to continue.
 
-   For ``7) [!] Root password``, follow the prompts to enter the password and
-   confirm.
+   .. code-block:: none
 
-   After entering root password, ``8) [ ] User creation`` becomes optional and
-   can be skipped.
+      (x) Create New User
+           User's Full Name
+           ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+           Username
+           ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+           Password
+           ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+           Confirm Password
+           ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+           [x] Use this password for system administrator
+           [ ] Automatic Login
 
-   When all the items marked with ``!`` become ``x``, it's time to  enter ``b``
-   to start the installation.
+      ( ) Skip User Creation
 
-   .. code-block:: console
+      [Help]           [Back]           [Abort]           [Next]
 
-      ================================================================================
-      ================================================================================
-      Installation
+6. If you're warned with ``The password is too simple``, it's fine to ignore and
+   select ``Yes`` to continue.
 
-      1) [x] Language settings                 2) [x] Time settings
-             (English (United States))                (America/Chicago timezone)
-      3) [x] Installation source               4) [x] Software selection
-             (Local media)                            (Fedora Server Edition)
-      5) [x] Installation Destination          6) [x] Network configuration
-             (Automatic partitioning                  (Connected: eth0)
-             selected)
-      7) [x] Root password                     8) [ ] User creation
-             (Root password is set)                   (No user will be created)
+   .. code-block:: none
 
-      Please make a selection from the above ['b' to begin installation, 'h' to help,
-      'q' to quit, 'r' to refresh]: b
+       ┌────────────────────────────────────────────────────────┐
+       │ The password is too simple:                            │
+       │ it is based on a dictionary word.                      │
+       │                                                        │
+       │ You have used only lowercase letters for the password. │
+       │                                                        │
+       │ Really use this password?                              │
+       │                                                        │
+       │                       [Yes] [No]                       │
+       └────────────────────────────────────────────────────────┘
 
-4. The installer will be stuck at ``Configuring kernel-core.aarch64`` for a long
-   time.
-5. Wait serval hours, the installer will verify the installed packages and
-   continue to install bootloader.
-6. The following error occurred while installing the boot loader. Ignore the
-   error by responding ``yes`` and continue.
+7. After ``Analyzing your system...``, a summary of installation settings will
+   be given. Select ``Install`` to accept and continue.
 
-   .. code-block:: console
+   .. code-block:: none
 
-      Installing boot loader
-      ================================================================================
-      ================================================================================
-      Question
+     Installation Settings                            [Release Notes...]
+     Click a headline to make changes or use the "Change..." menu below.
+     ┌──────────────────────────────────────────────────────────────────────────┐
+     │Booting                                                                   │
+     │                                                                          │
+     │ *  Boot Loader Type: GRUB2 EFI                                           │
+     │ *  Secure Boot: enabled (disable)                                        │
+     │ *  Update NVRAM: enabled (disable)                                       │
+     │                                                                          │
+     │Software                                                                  │
+     │                                                                          │
+     │ *  Product: openSUSE Leap 15.4                                           │
+     │ *  Patterns:                                                             │
+     │     +  Help and Support Documentation                                    │
+     │     +  Minimal Base System                                               │
+     │     +  Enhanced Base System                                              │
+     │     +  AppArmor                                                          │
+     │     +  YaST Base Utilities                                               │
+     │     +  Software Management                                               │
+     │     +  Minimal Appliance Base                                            │
+     │ *  Size of Packages to Install: 1.7 GiB                                  │
+     │                                                                          │
+     │Default systemd target                                                    │
+     │                                                                          │
+     │ *  Text mode                                                             │
+     │                                                                          │
+     │System                                                                    │
+     │                                                                          │
+     │ *  System and Hardware Settings                                          │
+     │                                                                          │
+     │Security                                                                  │
+     │                                                                          │
+     │ *  CPU Mitigations: Auto                                                 │
+     │ *  Firewall will be enabled (disable)                                    │
+     │ *  SSH service will be enabled (disable)                                 │
+     │ *  SSH port will be open (block)                                         │
+     │ *  Major Linux Security Module: AppArmor                                 │
+     │ *  PolicyKit Default Privileges: Default                                 │
+     │                                                                          │
+     │Network Configuration                                                     │
+     │                                                                          │
+     │ *  Interfaces                                                            │
+     │     +  Configured with DHCP: eth0                                        │
+     │ *  Hostname / DNS                                                        │
+     │     +  Hostname: Set by DHCP                                             │
+     │ *  Routing                                                               │
+     │     +  IP Forwarding for IPv4: off                                       │
+     │     +  IP Forwarding for IPv6: off                                       │
+     │                                                                          │
+     │ *  Using wicked (switch to NetworkManager, disable services)             │
+     │                                                                          │
+     └──────────────────────────────────────────────────────────────────────────┘
+                                    [Change...↓]
+     [Help]                [Back]                [Abort]                [Install]
 
-      The following error occurred while installing the boot loader. The system will
-      not be bootable. Would you like to ignore this and continue with installation?
+8. Confirm Installation, select ``Install`` to continue.
 
-      Failed to set new efi boot target. This is most likely a kernel or firmware bug.
+   .. code-block:: none
 
-      Please respond 'yes' or 'no': yes
+     ┌──────────────────────────────────────────────────────┐
+     │ ┌──────────────────────────────────────────────────┐ │
+     │ │Confirm Installation                              │ │
+     │ │                                                  │ │
+     │ │Information required for the base installation is │ │
+     │ │now complete.                                     │ │
+     │ │                                                  │ │
+     │ │If you continue now, partitions on your hard disk │ │
+     │ │will be modified according to the installation    │ │
+     │ │settings in the previous dialogs.                 │ │
+     │ │                                                  │ │
+     │ │Go back and check the settings if you are unsure. │ │
+     │ │                                                  │ │
+     │ │                                                  │ │
+     │ │                                                  │ │
+     │ └──────────────────────────────────────────────────┘ │
+     │                                                      │
+     │                   [Install] [Back]                   │
+     └──────────────────────────────────────────────────────┘
 
-      [anaconda]1:main* 2:shell  3:log  4:storage-log >Switch tab: Alt+Tab | Help: F1
+9. The installation will start after you select ``Install`` to continue, and it
+   will take several hours. In the installation process,
 
-7. It may need more then 24 hours to complete the installation.
-8. Force restart the FVP, and boot the installed OS.
+   * ``Installing Packages...`` takes about 3 hours.
+   * ``Save configuration`` takes about 5 minutes.
+   * ``Save installation settings`` takes about 30 minutes.
+   * ``Install boot manager`` takes about 20 minutes.
+   * ``Prepare system for initial boot`` takes about 5 minutes.
+   * Then the system will reboot automatically in 10s, you can select ``OK`` to
+     reboot immediately.
 
-   .. note::
+     .. code-block:: none
 
-      To restart the FVP, press ``Ctrl-]`` and type ``quit`` on all the tmux
-      terminals started by the FVP, press ``Ctrl-c`` to stop the FVP process,
-      and then run
-      ``kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"``
-      again.
+       ┌──────────────────────────────────────────────────────────────┐
+       │ ┌──────────────────────────────────────────────────────────┐ │
+       │ │The system will reboot now...                             │ │
+       │ │                                                          │ │
+       │ │                                                          │ │
+       │ │                                                          │ │
+       │ │                                                          │ │
+       │ │                                                          │ │
+       │ │                                                          │ │
+       │ │                                                          │ │
+       │ └──────────────────────────────────────────────────────────┘ │
+       │                              10                              │
+       │                                                              │
+       │                                                              │
+       │                         [OK] [Stop]                          │
+       └──────────────────────────────────────────────────────────────┘
 
-9. Users can login the Linux shell about 20 minutes after restart.
+10. The reboot process takes about 20 minutes. Then you can login the Linux
+    shell with the user created in Step 5.
 
 .. _reproduce_run-time_integration_tests:
 

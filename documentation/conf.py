@@ -222,8 +222,8 @@ rst_prolog = f"""
 .. _Zephyr repository: https://github.com/zephyrproject-rtos/zephyr/tree/v{zephyr_version}
 .. _Debian Stable: https://www.debian.org/releases/stable/
 .. _Debian GNU/Linux Installation Guide: https://www.debian.org/releases/bullseye/arm64/
-.. _Fedora Server: https://fedoraproject.org/server/download/
-.. _Fedora Installation Guide: https://docs.fedoraproject.org/en-US/fedora/latest/getting-started/
+.. _openSUSE Leap: https://download.opensuse.org/distribution/leap/
+.. _openSUSE Installation Guide: https://doc.opensuse.org/documentation/leap/startup/html/book-startup/part-basics.html
 .. _Trusted Firmware-M Secure boot documentation: https://tf-m-user-guide.trustedfirmware.org/design_docs/booting/tfm_secure_boot.html
 .. _Open vSwitch: https://www.openvswitch.org
 .. _Tmux Documentation: https://man7.org/linux/man-pages/man1/tmux.1.html
