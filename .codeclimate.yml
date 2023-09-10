@@ -54,6 +54,7 @@ plugins:
       - "MIT"
     external_works_licenses:
       - "MIT"
+      - "BSD-3-Clause"
     exclude_patterns:
       - GITIGNORE_CONTENTS
       - "*.cfg"

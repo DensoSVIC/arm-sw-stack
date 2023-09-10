@@ -88,6 +88,7 @@ cmdline
 CMDQ
 CMDS
 cmdtable
+comms
 COMPAT
 condvar
 configfile
@@ -419,6 +420,7 @@ oper
 optee
 outdir
 outorder
+outvec
 overriden
 ovrl
 OVRN

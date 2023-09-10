@@ -1,0 +1,76 @@
+/*
+ * Based on: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/tree/include/lib/psa/psa/client.h?h=v2.9.0
+ * In open-source project: TF-A/trusted-firmware-a
+ *
+ * Original file: SPDX-FileCopyrightText: <text>Copyright 2018-2021 Arm Limited
+ * and/or its affiliates <open-source-office@arm.com></text>
+ * Modifications: SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited
+ * and/or its affiliates <open-source-office@arm.com></text>
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * Changes: None
+ */
+
+#ifndef PSA_CLIENT_H
+#define PSA_CLIENT_H
+
+#include <stddef.h>
+#include <stdint.h>
+
+#include "error.h"
+
+#ifndef IOVEC_LEN
+#define IOVEC_LEN(arr) ((uint32_t)ARRAY_SIZE(arr))
+#endif
+/*********************** PSA Client Macros and Types *************************/
+/**
+ * The version of the PSA Framework API that is being used to build the calling
+ * firmware. Only part of features of FF-M v1.1 have been implemented. FF-M v1.1
+ * is compatible with v1.0.
+ */
+#define PSA_FRAMEWORK_VERSION       (0x0101u)
+/**
+ * Return value from psa_version() if the requested RoT Service is not present
+ * in the system.
+ */
+#define PSA_VERSION_NONE            (0u)
+/**
+ * The zero-value null handle can be assigned to variables used in clients and
+ * RoT Services, indicating that there is no current connection or message.
+ */
+#define PSA_NULL_HANDLE             ((psa_handle_t)0)
+/**
+ * Tests whether a handle value returned by psa_connect() is valid.
+ */
+#define PSA_HANDLE_IS_VALID(handle) ((psa_handle_t)(handle) > 0)
+/**
+ * Converts the handle value returned from a failed call psa_connect() into
+ * an error code.
+ */
+#define PSA_HANDLE_TO_ERROR(handle) ((psa_status_t)(handle))
+/**
+ * Maximum number of input and output vectors for a request to psa_call().
+ */
+#define PSA_MAX_IOVEC               (4u)
+/**
+ * An IPC message type that indicates a generic client request.
+ */
+#define PSA_IPC_CALL                (0)
+typedef int32_t psa_handle_t;
+/**
+ * A read-only input memory region provided to an RoT Service.
+ */
+struct psa_invec {
+	const void *base; /*!< the start address of the memory buffer */
+	size_t len;       /*!< the size in bytes                      */
+};
+/**
+ * A writable output memory region provided to an RoT Service.
+ */
+struct psa_outvec {
+	void *base; /*!< the start address of the memory buffer */
+	size_t len; /*!< the size in bytes                      */
+};
+
+#endif /* PSA_CLIENT_H */
