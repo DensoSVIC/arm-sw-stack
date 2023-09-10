@@ -116,6 +116,22 @@
 			status = "disabled";
 		};
 
+		rss_cl2_mbox_tx: mhuv3@2ae00000 {
+			compatible = "arm,mhuv3-tx";
+			#mbox-cells = <1>;
+			reg = <0x0 0x2ae00000 0x1000>;
+			status = "disabled";
+		};
+
+		rss_cl2_mbox_rx: mhuv3@2ae10000 {
+			compatible = "arm,mhuv3-rx";
+			#mbox-cells = <1>;
+			reg = <0x0 0x2ae10000 0x1000>;
+			interrupts = <GIC_SPI 36 IRQ_TYPE_LEVEL IRQ_DEFAULT_PRIORITY>;
+			interrupt-names = "rx";
+			status = "disabled";
+		};
+
 		cl2_cl0_mbox_tx: mhuv3@2af80000 {
 			compatible = "arm,mhuv3-tx";
 			#mbox-cells = <1>;
