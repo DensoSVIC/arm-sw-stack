@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+description: IPC PSA backend binding
+
+compatible: "arm,ipc-psa"
+
+include: base.yaml
+
+properties:
+  tx-region:
+    description: phandle to the shared memory region used for data transmission
+    required: true
+    type: phandle
+
+  rx-region:
+    description: phandle to the shared memory region used for data reception
+    required: true
+    type: phandle
+
+  mboxes:
+    description: phandle to the MBOX controller (TX and RX are required)
+    required: true
+
+  mbox-names:
+    description: MBOX channel names (must be called "tx" and "rx")
+    required: true
