@@ -61,7 +61,7 @@ Current Status
 **************
 
 This Reference Stack has the testing capability to check for |Arm SystemReadyTM|
-alignment. Please refer to :ref:`reproduce_run-time_integration_tests` to
+alignment. Please refer to :ref:`user_guide_reproduce_arm_systemready_ir_acs` to
 see how to run the |Arm SystemReadyTM| IR `ACS`_ tests in this Reference Stack.
 
 The |Arm SystemReadyTM| IR ACS tests of the Reference Stack use a set of
@@ -84,11 +84,15 @@ The Reference Stack is currently known to have the following non-alignments:
 * Reference stack
 
     1. Kronos software implementation does not currently support capsule
-       updates, so the UpdateCapsule() method is currently being invoked with
-       invalid parameters (CapsuleCount - 0).
-    2. Kronos system does not have an EFI System Partition, which will lead to
-       "Failed to persist EFI variables" and several SetVariable/GetVariable
-       runtime services failure.
+       updates, so the ``UpdateCapsule()`` method is currently being invoked
+       with invalid parameters (``CapsuleCount - 0``).
+    2. Kronos system does not have an EFI System Partition, and EFI variables
+       are stored in the Protected Storage Service provided by the RSS. However,
+       the current FVP version does not provide a reliable reset, and a forced
+       restart is used during the ACS test, which will result in 'Failed to
+       persist EFI variables', which in turn will cause the BootServicesTest
+       case ``BS.ExitBootServices - ConsistencyTestCheckpoint1`` and several
+       RuntimeServicesTest ``SetVariable``/``GetVariable`` cases fail.
     3. U-Boot uses the 'removable storage' method to boot the EFI payload and
        the EFI boot manager is not configured/used.
 
@@ -99,15 +103,18 @@ The Reference Stack is currently known to have the following non-alignments:
     2. Known limitations of EFI implementation which are noted as 'Explicit
        justification in a future revision of EBBR is pending' by
        `edk2-test-parser`_.
-    3. The UpdateCapsule() method does not currently support certain
+    3. The ``UpdateCapsule()`` method does not currently support certain
        invocations with invalid parameters.
 
 * Model - FVP
 
     1. Platform-specific limitations, which are noted as excluded in the
        `EBBR Specification - Required Platform Specific Elements`_.
-    2. AES, SHA1 and SHA2 instructions are marked as unavailable in the FVP
-       ID_AA64ISAR0_EL1.
+    2. ``AES``, ``SHA1`` and ``SHA2`` instructions are marked as unavailable in
+       the FVP ``ID_AA64ISAR0_EL1``.
+    3. The unreliability of the reset function needs a workaround in the test
+       methodology, which leads to the failure of several
+       ``SetVariable``/``GetVariable`` cases, as described above.
 
 * Test environment
 
