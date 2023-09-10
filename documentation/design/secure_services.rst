@@ -14,11 +14,12 @@ Secure Services
 Introduction
 ************
 
-The Arm Kronos Reference Software Stack provides the implementation of 2 kinds
-of secure services defined by following specifications:
+The Reference Software Stack provides the implementation of `Crypto Service`_
+and `Secure Storage Service`_ via the SE Proxy secure partition. These services
+are aligned to the following specifications:
 
-* `PSA Cryptography API`_: The API provides a portable programming interface
-  to cryptographic operations, and key storage functionality on a wide range of
+* `PSA Crypto API`_: The API provides a portable programming interface to
+  cryptographic operations, and key storage functionality on a wide range of
   hardware.
 
 * `PSA Secure Storage API`_: The API provides key/value storage
@@ -29,8 +30,13 @@ of secure services defined by following specifications:
       the Platform Root of Trust (PRoT). For now the ITS API is not supported.
     * Protected Storage (PS) API: An interface for external protected storage.
 
-The secure services is implemented by leveraging `TrustZone`_ technology in the
-Primary Compute and the RSS, the hardware isolated secure enclave.
+The Reference Software Stack also provides the implementation of
+`UEFI SMM Services`_ via the SMM Gateway secure partition to support UEFI System
+Management Mode (SMM).
+
+These secure services are provided by the `Trusted Services`_ project, and
+implemented by leveraging the `TrustZone`_ technology in the Primary Compute and
+the hardware-isolated secure enclave in the RSS.
 
 ************
 Architecture
@@ -83,6 +89,21 @@ The ``SE Proxy SP`` receives secure service operation requests from the
 non-secure world, translates the request parameters to IPC calls, and invokes
 the runtime services provided by the RSS. The IPC is carried by shared memory
 and MHUv3 doorbell communication between the AP and the RSS.
+
+SMM Gateway SP
+==============
+
+The `SMM Gateway SP`_ (System Management Mode Gateway Secure Partition) serves
+as a gateway for the variable storage required by the implementation of UEFI
+Boot Services and Runtime Services APIs. These UEFI variables are stored in the
+Protected Storage Service provided by the RSS.
+
+The above diagram presents the data flow to store UEFI variables. The U-Boot
+implementation of the UEFI subsystem uses the FF-A driver to communicate with
+the `UEFI SMM Services`_ in the `SMM Gateway SP`_. The backend of the SMM
+services uses the Protected Storage proxy from the `SE Proxy SP`_. From there
+on, the Protected Storage calls are forwarded to the secure enclave as explained
+above.
 
 RSS Secure Firmware
 ===================
