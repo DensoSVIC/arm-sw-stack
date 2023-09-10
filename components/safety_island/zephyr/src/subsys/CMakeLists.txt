@@ -7,3 +7,4 @@
 add_subdirectory_ifdef(CONFIG_FAULT_MGMT fault_mgmt)
 add_subdirectory_ifdef(CONFIG_PSA ipc/psa_service)
 add_subdirectory_ifdef(CONFIG_PSA ipc/psa_service/rss_comms)
+add_subdirectory_ifdef(CONFIG_PSA ipc/psa_service/psa)

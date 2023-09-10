@@ -4,8 +4,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-menu "Subsystems"
-rsource "fault_mgmt/Kconfig"
-rsource "ipc/psa_service/Kconfig"
-rsource "ipc/psa_service/psa/Kconfig"
-endmenu
+zephyr_library()
+
+zephyr_library_sources_ifdef(CONFIG_PSA_INTERNAL_TRUSTED_STORAGE internal_trusted_storage.c)
