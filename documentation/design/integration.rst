@@ -8,10 +8,8 @@
 Integration
 ###########
 
-The Arm Kronos Reference Software Stack uses the Yocto Project build framework
-to build, integrate and validate the
-:ref:`Use-Cases <introduction_use_cases>`
-.
+The Reference Software Stack uses the Yocto Project build framework to build,
+integrate and validate the :ref:`Use-Cases <introduction_use_cases>`.
 
 The Yocto Project version used by the Reference Stack is |yocto version|.
 
@@ -24,9 +22,9 @@ implements the ``fvp-rd-kronos`` bitbake ``MACHINE`` definition to enable the
 Reference Stack to run on the Arm Kronos Reference Design FVP (FVP_RD_Kronos).
 Based on the `Cassini`_ distribution. It also contains a set of bitbake
 bbclasses, recipes and libraries to build, integrate, and validate the
-:ref:`design_applications_actuation` with both the **Baremetal** and
+:ref:`introduction_use_cases` with either or both the **Baremetal** and
 **Virtualization** Reference Stack Architectures as described in
-:ref:`Reference Stack Overview 
+:ref:`Reference Stack Overview
 <introduction_reference_software_stack_overview>`.
 
 The layer source code can be found at :kronos-repo:`yocto/meta-kronos`.
@@ -54,8 +52,8 @@ the Reference Stack.
 
 |
 
-Note that the ``meta-arm-systemready`` layer is only required when building for
-the |Arm SystemReadyTM| IR ACS tests.
+**Note** that the ``meta-arm-systemready`` layer is only required when building
+for the |Arm SystemReadyTM| IR ACS tests.
 
 The layer dependency sources and their revisions for the ``kronos`` repository
 (|kronos repository|) |layer dependency statement| are:

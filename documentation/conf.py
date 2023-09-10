@@ -166,7 +166,7 @@ rst_prolog = f"""
 .. |meta-zephyr branch| replace:: {yocto_version}
 .. |poky branch| replace:: {yocto_version}
 .. |meta-arm revision| replace:: HEAD
-.. |meta-cassini revision| replace:: HEAD
+.. |meta-cassini revision| replace:: c9c1a57f1fce6e2f21edfef30962e74382c8639c
 .. |meta-clang revision| replace:: HEAD
 .. |meta-openembedded revision| replace:: HEAD
 .. |meta-security revision| replace:: HEAD
