@@ -68,6 +68,13 @@ for debugging.
        The test waits for the Primary Compute to log that it is entering the
        normal world as defined in the RSS boot process.
 
+    * OP-TEE
+       The script that implements the test is
+       :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/test_00_secure_partition.py`.
+       The test waits for the Primary Compute to log that OP-TEE loads the
+       required SPs (Secure Partitions) and primary CPU switches to normal world
+       boot.
+
     * HIPC
        The scripts that implement the tests are
        :kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_hipc.py` and
@@ -136,6 +143,25 @@ The BSP Tests consist of a series of device tests that can be found in
 * watchdog
    Checks that the watchdog device and its correct driver are available and
    accessible via the filesystem.
+
+.. _design_trusted_services_tests:
+
+Trusted Services Tests
+======================
+
+The meta-arm Yocto layer provides Trusted Service OEQA tests which can be used
+for automated `Trusted Services Test Executables`_. The script that implements
+the test is
+:meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/trusted_services.py`.
+
+Currently, only the following test cases for `psa-api-test` (from
+the `PSA Arch Tests`_ project) are supported:
+
+* ts-psa-crypto-api-test
+   Used for PSA API conformance testing for `PSA Crypto API`_.
+
+* ts-psa-ps-api-test
+   Used for PSA API conformance testing for `PSA Secure Storage API`_.
 
 Integration Tests Implementation
 ================================

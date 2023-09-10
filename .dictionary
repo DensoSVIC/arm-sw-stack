@@ -21,6 +21,7 @@ allarch
 ALLOC
 alsa
 ANEG
+armffa
 armlmd
 armv
 Artifactory
@@ -495,6 +496,7 @@ shpool
 SHRAM
 SIMD
 slirp
+SMCC
 smmu
 SMMUs
 smmuv
