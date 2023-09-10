@@ -18,7 +18,7 @@ The stack comprises of the following components:
   * - Component
     - Version
     - Source
-  * - Trusted Firmware-M (:ref:`design_components_rss`)
+  * - :ref:`design_components_rss` (Trusted Firmware-M)
     - |Trusted Firmware-M version| (based on |Trusted Firmware-M base version|)
     - `Trusted Firmware-M repository`_
   * - :ref:`design_components_scp-firmware`
@@ -30,6 +30,9 @@ The stack comprises of the following components:
   * - :ref:`design_components_op-tee`
     - |OP-TEE version|
     - `OP-TEE repository`_
+  * - :ref:`design_components_trusted-services`
+    - |Trusted Services version| (based on |Trusted Services base version|)
+    - `Trusted Services repository`_
   * - :ref:`design_components_u-boot`
     - |U-Boot version|
     - `U-Boot repository`_
@@ -58,9 +61,24 @@ The RSS serves as the Root of Trust for the system, offering critical platform
 security services and holding and protecting the most sensitive assets in the
 system.
 
-In the current software stack, the RSS offers the secure boot service only,
-further details of which can be found in the `Trusted Firmware-M Secure boot
-documentation`_.
+In the current software stack, the RSS offers:
+
+* Secure boot, further details of which can be found in the `TF-M Secure boot`_
+  documentation.
+* Crypto Service, which provides an implementation of the `PSA Crypto API`_ in a
+  PSA RoT secure partition, further details of which can be found in the
+  `TF-M Crypto Service`_ documentation.
+* Internal Trusted Storage (ITS) Service, which is a PSA RoT Service for storing
+  the most security-critical device data (e.g. cryptographic keys) in internal
+  storage that is trusted to provide data confidentiality and authenticity.
+  Further details can be found in the `TF-M Internal Trusted Storage Service`_
+  documentation.
+* Protected Storage (PS) Service, which is an Application RoT service that
+  allows larger data sets to be stored securely in external flash, with the
+  option for encryption, authentication and rollback protection to protect the
+  data-at-rest. It provides an implementation of the `PSA Secure Storage API`_
+  in a PSA RoT secure partition. Further details can be found in the
+  `TF-M Internal Trusted Storage Service`_ documentation.
 
 The RSS internally consists of 3 boot loaders and a runtime. The following
 diagram illustrates the high-level software structure of the RSS and some
@@ -72,6 +90,9 @@ relevant external components.
    :align: center
 
 |
+
+The :ref:`design_secure_services` section provides more details of the RSS
+Runtime and the relevant components.
 
 Boot Loaders
 ============
@@ -102,8 +123,13 @@ RSS Runtime and starts it.
 Runtime
 =======
 
-The RSS Runtime will provide services of PSA Crypto and Attestation in the form
-of APIs in the future.
+The RSS Runtime provides the following services as described above:
+
+* PSA Crypto, in the form of APIs
+* PSA Secure Storage, in the form of APIs
+* Internal Trusted Storage
+
+See :ref:`design_secure_services` for more details.
 
 .. _design_components_rss_downstream_changes:
 
@@ -111,13 +137,15 @@ Downstream Changes
 ==================
 
 Patches for the RSS are included at
-:meta-arm-repo:`meta-arm-bsp/recipes-bsp/trusted-firmware-m/fvp-rd-kronos/` to:
+:meta-arm-repo:`meta-arm-bsp/recipes-bsp/trusted-firmware-m/files/fvp-rd-kronos/`
+to:
 
- * Implement the RD-Kronos platform port, based on RD-Fremont.
- * Load and boot the SCP.
- * Load and boot the Safety Island.
- * Load and boot the LCP.
- * Load and boot the AP.
+* Implement the RD-Kronos platform port, based on RD-Fremont.
+* Load and boot the SCP.
+* Load and boot the Safety Island.
+* Load and boot the LCP.
+* Load and boot the AP.
+* Support the runtime services listed above.
 
 .. _design_components_scp-firmware:
 
@@ -208,11 +236,11 @@ Downstream Changes
 Patches for the SCP-firmware are included at
 :meta-arm-repo:`meta-arm-bsp/recipes-bsp/scp-firmware/files/fvp-rd-kronos/` to:
 
- * Implement the RD-Kronos platform port, based on RD-Fremont.
- * Communicate with RSS via MHUv3 to conduct the boot flow.
- * Power on Safety Island.
- * Reset LCP.
- * Power on AP.
+* Implement the RD-Kronos platform port, based on RD-Fremont.
+* Communicate with RSS via MHUv3 to conduct the boot flow.
+* Power on Safety Island.
+* Reset LCP.
+* Power on AP.
 
 ***************
 Primary Compute
@@ -244,10 +272,12 @@ role typically performed by BL1). BL2 is responsible for loading the subsequent
 boot stages and their configuration files from the FIP flash image. This flash
 image contains:
 
- * BL31
- * BL33 (:ref:`design_components_u-boot`)
- * The HW_CONFIG device tree
- * The TB_FW_CONFIG device tree
+* BL31
+* BL32 (:ref:`design_components_op-tee`)
+* BL33 (:ref:`design_components_u-boot`)
+* The HW_CONFIG device tree
+* The TB_FW_CONFIG device tree
+* The TOS_FW_CONFIG device tree
 
 The device tree for the Primary Compute of the RD-Kronos FVP is compiled by
 Trusted Firmware-A, bundled in the Primary Compute flash image (as the
@@ -264,10 +294,19 @@ Patch files can be found at
 :meta-arm-repo:`meta-arm-bsp/recipes-bsp/trusted-firmware-a/files/fvp-rd-kronos/`
 to:
 
- * Implement the RD-Kronos platform port, based on RD-Fremont.
- * Compile the HW_CONFIG device tree and add it to the FIP image.
- * Extend BL2_AT_EL3 to load the FW_CONFIG for dynamic configuration.
- * Add RD-Kronos support for OP-TEE SPMC.
+* Implement the RD-Kronos platform port, based on RD-Fremont.
+* Compile the HW_CONFIG device tree and add it to the FIP image.
+* Extend BL2_AT_EL3 to load the FW_CONFIG for dynamic configuration.
+* Support for the OP-TEE SPMC on the RD-Kronos platform.
+* Add the following devicetree nodes to the RD-Kronos platform.
+
+  * PL180 MMC
+  * PCIe controller
+  * SMMUv3
+  * HIPC
+
+* Assign the shared buffer for the Management Mode (MM) communication between
+  U-Boot and OP-TEE.
 
 .. _design_components_op-tee:
 
@@ -275,7 +314,7 @@ OP-TEE
 ======
 
 `OP-TEE`_ is a Trusted Execution Environment (TEE) designed as companion to a
-non-secure Linux kernel running on Neoverse cores using the TrustZone
+non-secure Linux kernel running on Neoverse cores using the `TrustZone`_
 technology. OP-TEE implements TEE Internal Core API v1.1.x which is the API
 exposed to Trusted Applications and the TEE Client API v1.0, which is the API
 describing how to communicate with a TEE.
@@ -289,10 +328,43 @@ Patch files can be found at
 :meta-arm-repo:`meta-arm-bsp/recipes-security/optee/files/optee-os/fvp-rd-kronos/`
 to:
 
- * Implement the RD-Kronos platform port.
- * OP-TEE binary is wrapped by fiptool as BL32 image. BL2 will load it into DRAM
-   at a specific address which is set by TF-A.
- * Booting OP-TEE as SPMC running at SEL1.
+* Implement the RD-Kronos platform port.
+* OP-TEE binary is wrapped by fiptool as BL32 image. BL2 will load it into DRAM
+  at a specific address which is set by TF-A.
+* Booting OP-TEE as SPMC running at SEL1.
+
+.. _design_components_trusted-services:
+
+Trusted Services
+================
+
+The `Trusted Services`_ project provides a framework for developing and
+deploying device root-of-trust services for A-profile devices. Alternative
+secure processing environments are supported to accommodate the diverse range
+of isolation technologies available to system integrators.
+
+The Reference Software Stack implements the following secure services on top of
+the Trusted Services framework:
+
+* `Crypto Service`_
+* `Secure Storage Service`_
+* `UEFI SMM Services`_
+
+See :ref:`design_secure_services` for more information.
+
+.. _design_components_trusted-services_downstream_changes:
+
+Downstream Changes
+------------------
+
+Patch files can be found at
+:meta-arm-repo:`meta-arm-bsp/recipes-security/trusted-services/fvp-rd-kronos/`
+to:
+
+* Implement the RD-Kronos platform port.
+* Support MHUv3 doorbell communication.
+* Support RSS communication protocol.
+* Support crypto and secure storage backends for the RD-Kronos platform.
 
 .. _design_components_u-boot:
 
@@ -305,6 +377,12 @@ Trusted Firmware-A and provides UEFI services to UEFI applications like Linux
 and Xen. The device tree is used to configure U-Boot at runtime, minimizing the
 need for platform-specific configuration.
 
+In the current software stack, the U-Boot implementation of the UEFI subsystem
+uses the FF-A (`Arm Firmware Framework for Arm A-profile`_) driver to
+communicate with the `UEFI SMM Services`_ in the secure world to store and read
+UEFI variables that are stored in the Protected Storage Service provided by the
+RSS.
+
 .. _design_components_u-boot_downstream_changes:
 
 Downstream Changes
@@ -315,11 +393,16 @@ files can be found at
 :meta-arm-repo:`meta-arm-bsp/recipes-bsp/u-boot/u-boot/fvp-rd-kronos/`
 to:
 
- * Consume the device tree using register x1, the TF-A default.
- * Provide a minimal, generic defconfig for FVPs, vexpress_fvp_defconfig.
- * Enable the real-time clock for the VExpress64 boards by default.
- * Use OF_HAS_PRIOR_STAGE for the BASE_FVP configuration, to indicate the
-   origin of the device tree.
+* Enable VIRTIO_MMIO and RTC_PL031 in the base model.
+* Set max mmc block count to the limitation of PL180.
+* Add MMC card to the BOOT_TARGET_DEVICES of FVP to support the scenarios of
+  Linux/FreeBSD Distros installation.
+* Move sev() and wfe() definitions to common Arm header file.
+* Modify pending callback to test if transmit FIFO is empty in PL01x driver.
+* Add support for SMCCCv1.2 x0-x17 registers.
+* Introduce Arm FF-A support.
+* Introduce armffa command.
+* Add MM communication support using FF-A transport.
 
 .. _design_components_xen:
 

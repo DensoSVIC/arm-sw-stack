@@ -121,6 +121,7 @@ systemready_ir_acs_version = "1.0"
 optee_version = "3.20.0"
 trusted_services_version = "08b3d39471f4914186bd23793dc920e83b0e3197"
 trusted_services_base_version = "integration branch"
+trusted_services_doc_version = "integration"
 mbedtls_version = "63a21f4cda8b3d21fe5f85e6efc62d924b492757"
 mbedtls_base_version = "3.4.0"
 
@@ -188,7 +189,7 @@ rst_prolog = f"""
 .. _SCP-firmware repository: https://github.com/ARM-software/SCP-firmware/tree/{scp_firmware_version}
 .. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/tree/?h=v{trusted_firmware_a_version}
 .. _OP-TEE repository: https://github.com/OP-TEE/optee_os/tree/{optee_version}
-.. _Trusted Services repository: https://git.trustedfirmware.org/TS/trusted-services.git/tree/?h=integration&id={trusted_services_version}
+.. _Trusted Services repository: https://git.trustedfirmware.org/TS/trusted-services.git/tree/?h={trusted_services_version}
 .. _Mbed TLS repository: https://github.com/Mbed-TLS/mbedtls/tree/{mbedtls_version}
 .. _U-Boot repository: https://source.denx.de/u-boot/u-boot/-/tree/v{uboot_version}
 .. _Xen repository: https://xenbits.xen.org/gitweb/?p=xen.git;a=tree;h=refs/heads/stable-{xen_version}
@@ -234,7 +235,9 @@ rst_prolog = f"""
 .. _Debian GNU/Linux Installation Guide: https://www.debian.org/releases/bullseye/arm64/
 .. _openSUSE Leap: https://download.opensuse.org/distribution/leap/
 .. _openSUSE Installation Guide: https://doc.opensuse.org/documentation/leap/startup/html/book-startup/part-basics.html
-.. _Trusted Firmware-M Secure boot documentation: https://tf-m-user-guide.trustedfirmware.org/design_docs/booting/tfm_secure_boot.html
+.. _TF-M Secure boot: https://tf-m-user-guide.trustedfirmware.org/design_docs/booting/tfm_secure_boot.html
+.. _TF-M Crypto Service: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/tfm_crypto_design.html
+.. _TF-M Internal Trusted Storage Service: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/tfm_its_service.html
 .. _Open vSwitch: https://www.openvswitch.org
 .. _Tmux Documentation: https://man7.org/linux/man-pages/man1/tmux.1.html
 .. _Ethernet Bridging API: https://docs.zephyrproject.org/apidoc/{zephyr_version}/group__eth__bridge.html
@@ -245,16 +248,21 @@ rst_prolog = f"""
 .. _IPC service: https://docs.zephyrproject.org/{zephyr_version}/services/ipc/ipc_service/ipc_service.html
 .. _TF-M Secure Services: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/index.html
 .. _SE Proxy SP: https://trusted-services.readthedocs.io/en/latest/deployments/secure-partitions.html#se-proxy
-.. _libts: https://trusted-services.readthedocs.io/en/latest/deployments/libraries.html#libts
-.. _Trusted Services: https://trusted-services.readthedocs.io/en/latest/index.html
-.. _PSA Cryptography API: https://arm-software.github.io/psa-api/crypto
+.. _SMM Gateway SP: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/secure-partitions.html#smm-gateway
+.. _libts: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/libraries.html#libts
+.. _Trusted Services: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/index.html
+.. _Crypto Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/crypto-service-description.html
+.. _Secure Storage Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/secure-storage-service-description.html
+.. _UEFI SMM Services: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/uefi-smm-services.html
 .. _PSA Secure Storage API: https://arm-software.github.io/psa-api/storage
+.. _PSA Crypto API: https://arm-software.github.io/psa-api/crypto
 .. _Parsec: https://parallaxsecond.github.io/parsec-book/index.html
 .. _Arm Firmware Framework for Arm A-profile: https://developer.arm.com/documentation/den0077/latest
 .. _Mbed TLS: https://mbed-tls.readthedocs.io/en/latest/
 .. _Parsec Secure Element Driver: https://github.com/parallaxsecond/parsec-se-driver
-.. _se-proxy: https://trusted-services.readthedocs.io/en/latest/deployments/secure-partitions.html?#se-proxy
 .. _TrustZone: https://www.arm.com/technologies/trustzone-for-cortex-a/tee-reference-documentation
+.. _Trusted Services Test Executables: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/test-executables.html
+.. _PSA Arch Tests: https://github.com/ARM-software/psa-arch-tests
 """  # noqa: E501
 
 # URL to use for references to repository paths
