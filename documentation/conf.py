@@ -90,179 +90,181 @@ autosectionlabel_prefix_document = True
 autosectionlabel_maxdepth = 1
 
 # -- Options for copybutton --------------------------------------------------
-copybutton_prompt_text = r'\$ '
-copybutton_prompt_is_regexp = True
-copybutton_remove_prompts = True
-copybutton_only_copy_prompt_lines = True
 copybutton_copy_empty_lines = False
 copybutton_line_continuation_character = "\\"
+copybutton_only_copy_prompt_lines = True
+copybutton_prompt_is_regexp = True
+copybutton_prompt_text = r'\$ '
+copybutton_remove_prompts = True
+
+# The variable yocto_version needs to come first because
+# there are variables that refer to it later.
+yocto_version = "mickledore"
 
 # Common variables for rst_prolog
-yocto_version = "mickledore"
-yocto_doc_version = yocto_version + "/"
+actuation_version = "main"
 cassini_version = yocto_version + "-dev"
-kronos_version = "main"
+fvp_version = "0.0"
 kas_version = "3.3"
-trusted_firmware_m_version = "35ac80c8581d483da7d18cb8bcd20aaed096550c"
-# /* cspell:disable-next-line */
-trusted_firmware_m_base_version = "master branch post v1.8.0"
-scp_firmware_version = "f71f34237365b2c4b54be798aba79b740dcc4020"
-# /* cspell:disable-next-line */
-scp_firmware_base_version = "master branch post v2.11.0"
-trusted_firmware_a_version = "2.8.0"
-uboot_version = "2023.07.02"
+kronos_version = "main"
 linux_version = "6.1"
 linux_version_patch = "46"
-xen_version = "4.17"
-zephyr_version = "3.4.0"
-fvp_version = "0.0"
-actuation_version = "main"
-systemready_ir_acs_version = "1.0"
+mbedtls_base_version = "3.4.0"
+mbedtls_version = "63a21f4cda8b3d21fe5f85e6efc62d924b492757"
 optee_version = "3.20.0"
-trusted_services_version = "08b3d39471f4914186bd23793dc920e83b0e3197"
+# /* cspell:disable-next-line */
+scp_firmware_base_version = "master branch post v2.11.0"
+scp_firmware_version = "f71f34237365b2c4b54be798aba79b740dcc4020"
+systemready_ir_acs_version = "1.0"
+trusted_firmware_a_version = "2.8.0"
+# /* cspell:disable-next-line */
+trusted_firmware_m_base_version = "master branch post v1.8.0"
+trusted_firmware_m_version = "35ac80c8581d483da7d18cb8bcd20aaed096550c"
 trusted_services_base_version = "integration branch"
 trusted_services_doc_version = "integration"
-mbedtls_version = "63a21f4cda8b3d21fe5f85e6efc62d924b492757"
-mbedtls_base_version = "3.4.0"
+trusted_services_version = "08b3d39471f4914186bd23793dc920e83b0e3197"
+uboot_version = "2023.07.02"
+xen_version = "4.17"
+yocto_doc_version = yocto_version + "/"
+zephyr_version = "3.4.0"
 
 rst_prolog = f"""
-.. |kas version| replace:: {kas_version}
+.. |Actuation version| replace:: {actuation_version}
+.. |Arm SystemReadyTM| replace:: Arm SystemReady\\ :sup:`TM`
 .. |Arm| replace:: Arm\\ :sup:`®`
 .. |Cortex| replace:: Arm\\ :sup:`®` Cortex\\ :sup:`®`
-.. |Trusted Firmware-M version| replace:: {trusted_firmware_m_version}
-.. |Trusted Firmware-M base version| replace:: {trusted_firmware_m_base_version}
-.. |SCP-firmware version| replace:: {scp_firmware_version}
-.. |SCP-firmware base version| replace:: {scp_firmware_base_version}
-.. |Trusted Firmware-A version| replace:: {trusted_firmware_a_version}
-.. |OP-TEE version| replace:: {optee_version}
-.. |Trusted Services version| replace:: {trusted_services_version}
-.. |Trusted Services base version| replace:: {trusted_services_base_version}
-.. |Mbed TLS version| replace:: {mbedtls_version}
+.. |FVP_RD_Kronos version| replace:: {fvp_version}
+.. |Linux version| replace:: {linux_version}.{linux_version_patch}
 .. |Mbed TLS base version| replace:: {mbedtls_base_version}
+.. |Mbed TLS version| replace:: {mbedtls_version}
+.. |OP-TEE version| replace:: {optee_version}
+.. |SCP-firmware base version| replace:: {scp_firmware_base_version}
+.. |SCP-firmware version| replace:: {scp_firmware_version}
+.. |SystemReady IR ACS version| replace:: {systemready_ir_acs_version}
+.. |Trusted Firmware-A version| replace:: {trusted_firmware_a_version}
+.. |Trusted Firmware-M base version| replace:: {trusted_firmware_m_base_version}
+.. |Trusted Firmware-M version| replace:: {trusted_firmware_m_version}
+.. |Trusted Services base version| replace:: {trusted_services_base_version}
+.. |Trusted Services version| replace:: {trusted_services_version}
 .. |U-Boot version| replace:: {uboot_version}
 .. |Xen version| replace:: {xen_version}
-.. |Linux version| replace:: {linux_version}.{linux_version_patch}
-.. |Arm SystemReadyTM| replace:: Arm SystemReady\\ :sup:`TM`
-.. |kronos repository| replace:: https://gitlab.arm.com/automotive-and-industrial/kronos/kronos
-.. |kronos remote| replace:: https://git.gitlab.arm.com/automotive-and-industrial/kronos/kronos.git
-.. |kronos version| replace:: {kronos_version}
 .. |Zephyr version| replace:: {zephyr_version}
-.. |yocto version| replace:: {yocto_version}
+.. |kas version| replace:: {kas_version}
+.. |kronos remote| replace:: https://git.gitlab.arm.com/automotive-and-industrial/kronos/kronos.git
+.. |kronos repository| replace:: https://gitlab.arm.com/automotive-and-industrial/kronos/kronos
+.. |kronos version| replace:: {kronos_version}
 .. |layer dependency statement| replace:: {kronos_version} branch
-.. |meta-arm repository| replace:: https://git.yoctoproject.org/git/meta-arm
-.. |meta-cassini repository| replace:: https://gitlab.com/Linaro/cassini/meta-cassini
-.. |meta-clang repository| replace:: https://github.com/kraj/meta-clang
-.. |meta-openembedded repository| replace:: https://git.openembedded.org/meta-openembedded
-.. |meta-security repository| replace:: https://git.yoctoproject.org/git/meta-security
-.. |meta-virtualization repository| replace:: https://git.yoctoproject.org/git/meta-virtualization
-.. |meta-zephyr repository| replace:: https://git.yoctoproject.org/git/meta-zephyr
-.. |poky repository| replace:: https://git.yoctoproject.org/git/poky
 .. |meta-arm branch| replace:: {yocto_version}
-.. |meta-cassini branch| replace:: {cassini_version}
-.. |meta-clang branch| replace:: {yocto_version}
-.. |meta-openembedded branch| replace:: {yocto_version}
-.. |meta-security branch| replace:: {yocto_version}
-.. |meta-virtualization branch| replace:: {yocto_version}
-.. |meta-zephyr branch| replace:: {yocto_version}
-.. |poky branch| replace:: {yocto_version}
+.. |meta-arm repository| replace:: https://git.yoctoproject.org/git/meta-arm
 .. |meta-arm revision| replace:: HEAD
+.. |meta-cassini branch| replace:: {cassini_version}
+.. |meta-cassini repository| replace:: https://gitlab.com/Linaro/cassini/meta-cassini
 .. |meta-cassini revision| replace:: c9c1a57f1fce6e2f21edfef30962e74382c8639c
+.. |meta-clang branch| replace:: {yocto_version}
+.. |meta-clang repository| replace:: https://github.com/kraj/meta-clang
 .. |meta-clang revision| replace:: HEAD
+.. |meta-openembedded branch| replace:: {yocto_version}
+.. |meta-openembedded repository| replace:: https://git.openembedded.org/meta-openembedded
 .. |meta-openembedded revision| replace:: HEAD
+.. |meta-security branch| replace:: {yocto_version}
+.. |meta-security repository| replace:: https://git.yoctoproject.org/git/meta-security
 .. |meta-security revision| replace:: HEAD
+.. |meta-virtualization branch| replace:: {yocto_version}
+.. |meta-virtualization repository| replace:: https://git.yoctoproject.org/git/meta-virtualization
 .. |meta-virtualization revision| replace:: HEAD
+.. |meta-zephyr branch| replace:: {yocto_version}
+.. |meta-zephyr repository| replace:: https://git.yoctoproject.org/git/meta-zephyr
 .. |meta-zephyr revision| replace:: HEAD
+.. |poky branch| replace:: {yocto_version}
+.. |poky repository| replace:: https://git.yoctoproject.org/git/poky
 .. |poky revision| replace:: HEAD
-.. |FVP_RD_Kronos version| replace:: {fvp_version}
-.. |Actuation version| replace:: {actuation_version}
-.. |SystemReady IR ACS version| replace:: {systemready_ir_acs_version}
+.. |yocto version| replace:: {yocto_version}
 
-.. _kas build tool: https://kas.readthedocs.io/en/{kas_version}/userguide.html
-.. _kas menu tool: https://kas.readthedocs.io/en/{kas_version}/userguide.html#module-kas.plugins.menu
-.. _how to install the essential packages: https://docs.yoctoproject.org/{yocto_doc_version}singleindex.html#required-packages-for-the-build-host
-.. _kas Dependencies & installation: https://kas.readthedocs.io/en/{kas_version}/userguide.html#dependencies-installation
-.. _EULA: https://developer.arm.com/downloads/-/arm-ecosystem-fvps/eula
-.. _Writing New Tests: https://docs.yoctoproject.org/{yocto_doc_version}dev-manual/runtime-testing.html#writing-new-tests
-.. _testimage.bbclass: https://docs.yoctoproject.org/{yocto_doc_version}ref-manual/classes.html#testimage-bbclass
-.. _OEQA FVP: https://git.yoctoproject.org/meta-arm/tree/documentation/oeqa-fvp.md?h={yocto_version}
-.. _Trusted Firmware-M repository: https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git/tree/?h={trusted_firmware_m_version}
-.. _SCP-firmware repository: https://github.com/ARM-software/SCP-firmware/tree/{scp_firmware_version}
-.. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/tree/?h=v{trusted_firmware_a_version}
-.. _OP-TEE repository: https://github.com/OP-TEE/optee_os/tree/{optee_version}
-.. _Trusted Services repository: https://git.trustedfirmware.org/TS/trusted-services.git/tree/?h={trusted_services_version}
-.. _Mbed TLS repository: https://github.com/Mbed-TLS/mbedtls/tree/{mbedtls_version}
-.. _U-Boot repository: https://source.denx.de/u-boot/u-boot/-/tree/v{uboot_version}
-.. _Xen repository: https://xenbits.xen.org/gitweb/?p=xen.git;a=tree;h=refs/heads/stable-{xen_version}
-.. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fbase
-.. _Linux preempt-rt repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fpreempt-rt%2Fbase
-.. _PREEMPT_RT patch: https://wiki.linuxfoundation.org/realtime/start
-.. _Device Tree specification: https://www.devicetree.org/
-.. _xl documentation: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.1.html
-.. _Arm Memory Partitioning and Monitoring: https://developer.arm.com/documentation/ddi0598/latest
-.. _GICv4.1 - Direct injection of virtual interrupts: https://developer.arm.com/documentation/107627/0101/GICv4-1---Direct-injection-of-virtual-interrupts
-.. _Zephyr: https://docs.zephyrproject.org/{zephyr_version}/
-.. _zperf sample: https://docs.zephyrproject.org/{zephyr_version}/connectivity/networking/api/zperf.html
-.. _Safety Island Actuation Demo: https://safety-island-actuation-demo.docs.arm.com
 .. _ACS: https://developer.arm.com/Architectures/Architectural%20Compliance%20Suite
-.. _Arm SystemReady: https://www.arm.com/architecture/system-architectures/systemready-certification-program
-.. _Arm SystemReady program: https://www.arm.com/architecture/system-architectures/systemready-certification-program
-.. _Arm SystemReady IR: https://www.arm.com/architecture/system-architectures/systemready-certification-program/ir
-.. _Base System Architecture (BSA): https://developer.arm.com/documentation/den0094/latest
-.. _Embedded Base Boot Requirements (EBBR): https://developer.arm.com/architectures/platform-design/embedded-systems
-.. _Base Boot Requirements (BBR): https://developer.arm.com/documentation/den0044/latest
-.. _Device Tree specification: https://www.devicetree.org/
-.. _EBBR Specification - UEFI Runtime Services: https://arm-software.github.io/ebbr/index.html#uefi-runtime-services
-.. _EBBR Specification - Required Platform Specific Elements: https://arm-software.github.io/ebbr/index.html#required-platform-specific-elements
-.. _edk2-test-parser: https://gitlab.arm.com/systemready/edk2-test-parser/-/blob/ir1/EBBR.yaml
-.. _Runtime Security Subsystem (RSS): https://tf-m-user-guide.trustedfirmware.org/platform/arm/rss/readme.html
-.. _Arm Confidential Compute Architecture: https://www.arm.com/architecture/security-features/arm-confidential-compute-architecture
-.. _System Control Processor (SCP) Firmware: https://developer.arm.com/tools-and-software/open-source-software/%20firmware/scp-firmware
-.. _Arm Kronos Reference Design Technical Overview: https://developer.arm.com/documentation/107916/0100
-.. _Fast Models FVP Reference Guide: https://developer.arm.com/documentation/100966/latest
-.. _Cassini: https://cassini.docs.arm.com/en/{cassini_version}
-.. _Kernel Types: https://docs.yoctoproject.org/{yocto_doc_version}/kernel-dev/advanced.html#kernel-types
-.. _Yocto Project: https://docs.yoctoproject.org/{yocto_doc_version}/index.html
-.. _Yocto Project Quick Start: https://docs.yoctoproject.org/{yocto_doc_version}brief-yoctoprojectqs/index.html
-.. _Trusted Firmware-A (TF-A): https://trustedfirmware-a.readthedocs.io
-.. _Trusted Firmware-M (TF-M): https://tf-m-user-guide.trustedfirmware.org
-.. _U-boot: https://u-boot.readthedocs.io
-.. _Xen Hypervisor: https://xenproject.org/help/documentation
-.. _GitLab Issues: https://gitlab.arm.com/automotive-and-industrial/kronos/kronos/-/issues
-.. _FVP download: https://developer.arm.com
 .. _Actuation repository: https://gitlab.arm.com/automotive-and-industrial/safety-island/actuation-demo/-/tree/{actuation_version}
-.. _Zephyr repository: https://github.com/zephyrproject-rtos/zephyr/tree/v{zephyr_version}
-.. _Debian Stable: https://www.debian.org/releases/stable/
+.. _Arm Confidential Compute Architecture: https://www.arm.com/architecture/security-features/arm-confidential-compute-architecture
+.. _Arm Firmware Framework for Arm A-profile: https://developer.arm.com/documentation/den0077/latest
+.. _Arm Kronos Reference Design Technical Overview: https://developer.arm.com/documentation/107916/0100
+.. _Arm Memory Partitioning and Monitoring: https://developer.arm.com/documentation/ddi0598/latest
+.. _Arm SystemReady IR: https://www.arm.com/architecture/system-architectures/systemready-certification-program/ir
+.. _Arm SystemReady program: https://www.arm.com/architecture/system-architectures/systemready-certification-program
+.. _Arm SystemReady: https://www.arm.com/architecture/system-architectures/systemready-certification-program
+.. _Base Boot Requirements (BBR): https://developer.arm.com/documentation/den0044/latest
+.. _Base System Architecture (BSA): https://developer.arm.com/documentation/den0094/latest
+.. _Cassini: https://cassini.docs.arm.com/en/{cassini_version}
+.. _Crypto Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/crypto-service-description.html
 .. _Debian GNU/Linux Installation Guide: https://www.debian.org/releases/bullseye/arm64/
-.. _openSUSE Leap: https://download.opensuse.org/distribution/leap/
-.. _openSUSE Installation Guide: https://doc.opensuse.org/documentation/leap/startup/html/book-startup/part-basics.html
-.. _TF-M Secure boot: https://tf-m-user-guide.trustedfirmware.org/design_docs/booting/tfm_secure_boot.html
-.. _TF-M Crypto Service: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/tfm_crypto_design.html
-.. _TF-M Internal Trusted Storage Service: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/tfm_its_service.html
-.. _Open vSwitch: https://www.openvswitch.org
-.. _Tmux Documentation: https://man7.org/linux/man-pages/man1/tmux.1.html
+.. _Debian Stable: https://www.debian.org/releases/stable/
+.. _Device Tree specification: https://www.devicetree.org/
+.. _EBBR Specification - Required Platform Specific Elements: https://arm-software.github.io/ebbr/index.html#required-platform-specific-elements
+.. _EBBR Specification - UEFI Runtime Services: https://arm-software.github.io/ebbr/index.html#uefi-runtime-services
+.. _EULA: https://developer.arm.com/downloads/-/arm-ecosystem-fvps/eula
+.. _Embedded Base Boot Requirements (EBBR): https://developer.arm.com/architectures/platform-design/embedded-systems
 .. _Ethernet Bridging API: https://docs.zephyrproject.org/apidoc/{zephyr_version}/group__eth__bridge.html
-.. _OP-TEE: https://optee.readthedocs.io/en/{optee_version}/
-.. _RSS provisioning: https://tf-m-user-guide.trustedfirmware.org/platform/arm/rss/rss_provisioning.html
-.. _imgtool: https://github.com/mcu-tools/mcuboot/blob/main/docs/imgtool.md
-.. _MCUboot: https://github.com/mcu-tools/mcuboot
+.. _FVP download: https://developer.arm.com
+.. _Fast Models FVP Reference Guide: https://developer.arm.com/documentation/100966/latest
+.. _GICv4.1 - Direct injection of virtual interrupts: https://developer.arm.com/documentation/107627/0101/GICv4-1---Direct-injection-of-virtual-interrupts
+.. _GitLab Issues: https://gitlab.arm.com/automotive-and-industrial/kronos/kronos/-/issues
 .. _IPC service: https://docs.zephyrproject.org/{zephyr_version}/services/ipc/ipc_service/ipc_service.html
-.. _TF-M Secure Services: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/index.html
+.. _Kernel Types: https://docs.yoctoproject.org/{yocto_doc_version}/kernel-dev/advanced.html#kernel-types
+.. _Linux preempt-rt repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fpreempt-rt%2Fbase
+.. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fbase
+.. _MCUboot: https://github.com/mcu-tools/mcuboot
+.. _Mbed TLS repository: https://github.com/Mbed-TLS/mbedtls/tree/{mbedtls_version}
+.. _Mbed TLS: https://mbed-tls.readthedocs.io/en/latest/
+.. _OEQA FVP: https://git.yoctoproject.org/meta-arm/tree/documentation/oeqa-fvp.md?h={yocto_version}
+.. _OP-TEE repository: https://github.com/OP-TEE/optee_os/tree/{optee_version}
+.. _OP-TEE: https://optee.readthedocs.io/en/{optee_version}/
+.. _Open vSwitch: https://www.openvswitch.org
+.. _PREEMPT_RT patch: https://wiki.linuxfoundation.org/realtime/start
+.. _PSA Arch Tests: https://github.com/ARM-software/psa-arch-tests
+.. _PSA Crypto API: https://arm-software.github.io/psa-api/crypto
+.. _PSA Secure Storage API: https://arm-software.github.io/psa-api/storage
+.. _Parsec Secure Element Driver: https://github.com/parallaxsecond/parsec-se-driver
+.. _Parsec: https://parallaxsecond.github.io/parsec-book/index.html
+.. _RSS provisioning: https://tf-m-user-guide.trustedfirmware.org/platform/arm/rss/rss_provisioning.html
+.. _Runtime Security Subsystem (RSS): https://tf-m-user-guide.trustedfirmware.org/platform/arm/rss/readme.html
+.. _SCP-firmware repository: https://github.com/ARM-software/SCP-firmware/tree/{scp_firmware_version}
 .. _SE Proxy SP: https://trusted-services.readthedocs.io/en/latest/deployments/secure-partitions.html#se-proxy
 .. _SMM Gateway SP: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/secure-partitions.html#smm-gateway
-.. _libts: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/libraries.html#libts
-.. _Trusted Services: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/index.html
-.. _Crypto Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/crypto-service-description.html
+.. _Safety Island Actuation Demo: https://safety-island-actuation-demo.docs.arm.com
 .. _Secure Storage Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/secure-storage-service-description.html
-.. _UEFI SMM Services: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/uefi-smm-services.html
-.. _PSA Secure Storage API: https://arm-software.github.io/psa-api/storage
-.. _PSA Crypto API: https://arm-software.github.io/psa-api/crypto
-.. _Parsec: https://parallaxsecond.github.io/parsec-book/index.html
-.. _Arm Firmware Framework for Arm A-profile: https://developer.arm.com/documentation/den0077/latest
-.. _Mbed TLS: https://mbed-tls.readthedocs.io/en/latest/
-.. _Parsec Secure Element Driver: https://github.com/parallaxsecond/parsec-se-driver
+.. _System Control Processor (SCP) Firmware: https://developer.arm.com/tools-and-software/open-source-software/%20firmware/scp-firmware
+.. _TF-M Crypto Service: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/tfm_crypto_design.html
+.. _TF-M Internal Trusted Storage Service: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/tfm_its_service.html
+.. _TF-M Secure Services: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/index.html
+.. _TF-M Secure boot: https://tf-m-user-guide.trustedfirmware.org/design_docs/booting/tfm_secure_boot.html
+.. _Tmux Documentation: https://man7.org/linux/man-pages/man1/tmux.1.html
 .. _TrustZone: https://www.arm.com/technologies/trustzone-for-cortex-a/tee-reference-documentation
+.. _Trusted Firmware-A (TF-A): https://trustedfirmware-a.readthedocs.io
+.. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/tree/?h=v{trusted_firmware_a_version}
+.. _Trusted Firmware-M (TF-M): https://tf-m-user-guide.trustedfirmware.org
+.. _Trusted Firmware-M repository: https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git/tree/?h={trusted_firmware_m_version}
 .. _Trusted Services Test Executables: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/test-executables.html
-.. _PSA Arch Tests: https://github.com/ARM-software/psa-arch-tests
+.. _Trusted Services repository: https://git.trustedfirmware.org/TS/trusted-services.git/tree/?h={trusted_services_version}
+.. _Trusted Services: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/index.html
+.. _U-Boot repository: https://source.denx.de/u-boot/u-boot/-/tree/v{uboot_version}
+.. _U-boot: https://u-boot.readthedocs.io
+.. _UEFI SMM Services: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/uefi-smm-services.html
+.. _Writing New Tests: https://docs.yoctoproject.org/{yocto_doc_version}dev-manual/runtime-testing.html#writing-new-tests
+.. _Xen Hypervisor: https://xenproject.org/help/documentation
+.. _Xen repository: https://xenbits.xen.org/gitweb/?p=xen.git;a=tree;h=refs/heads/stable-{xen_version}
+.. _Yocto Project Quick Start: https://docs.yoctoproject.org/{yocto_doc_version}brief-yoctoprojectqs/index.html
+.. _Yocto Project: https://docs.yoctoproject.org/{yocto_doc_version}/index.html
+.. _Zephyr repository: https://github.com/zephyrproject-rtos/zephyr/tree/v{zephyr_version}
+.. _Zephyr: https://docs.zephyrproject.org/{zephyr_version}/
+.. _edk2-test-parser: https://gitlab.arm.com/systemready/edk2-test-parser/-/blob/ir1/EBBR.yaml
+.. _how to install the essential packages: https://docs.yoctoproject.org/{yocto_doc_version}singleindex.html#required-packages-for-the-build-host
+.. _imgtool: https://github.com/mcu-tools/mcuboot/blob/main/docs/imgtool.md
+.. _kas Dependencies & installation: https://kas.readthedocs.io/en/{kas_version}/userguide.html#dependencies-installation
+.. _kas build tool: https://kas.readthedocs.io/en/{kas_version}/userguide.html
+.. _kas menu tool: https://kas.readthedocs.io/en/{kas_version}/userguide.html#module-kas.plugins.menu
+.. _libts: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/libraries.html#libts
+.. _openSUSE Installation Guide: https://doc.opensuse.org/documentation/leap/startup/html/book-startup/part-basics.html
+.. _openSUSE Leap: https://download.opensuse.org/distribution/leap/
+.. _testimage.bbclass: https://docs.yoctoproject.org/{yocto_doc_version}ref-manual/classes.html#testimage-bbclass
+.. _xl documentation: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.1.html
+.. _zperf sample: https://docs.zephyrproject.org/{zephyr_version}/connectivity/networking/api/zperf.html
 """  # noqa: E501
 
 # URL to use for references to repository paths
