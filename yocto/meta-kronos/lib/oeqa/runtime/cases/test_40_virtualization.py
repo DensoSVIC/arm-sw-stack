@@ -10,6 +10,7 @@ from oeqa.core.decorator.depends import OETestDepends
 from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.runtime.decorator.package import OEHasPackage
 from oeqa.runtime.cases.test_20_bsp import BspTest
+from oeqa.runtime.cases.test_40_gicv4_1 import GICv4Test
 from oeqa.runtime.cases.test_40_parsec import ParsecTest
 from oeqa.utils.xen_utils import XenUtils
 
@@ -117,6 +118,9 @@ class ParsecDomU1Test(DomU1Test, ParsecTest):
 class ParsecDomU2Test(DomU2Test, ParsecTest):
     pass
 
+# Passthrough PCI AHCI SATA disk to DomU1
+class GICv4DomU1Test(DomU1Test, GICv4Test):
+    pass
 
 class PtestRunnerDom0Test(OERuntimeTestCase):
     @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
