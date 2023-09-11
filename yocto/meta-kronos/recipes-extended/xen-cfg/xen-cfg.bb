@@ -26,6 +26,9 @@ do_install[noexec] = "1"
 # Set Dom0 VCPU affinity and MPAM SLC config
 EXTRA_XEN_CMDLINE_CONFIG ?= "maxcpus=4 dom0_max_vcpus=1 dom0_vcpus_pin dom0_mpam=slc:0xf iommu=yes"
 
+# Set Dom0 Static passthrough PCI AHCI SATA disk assignment
+EXTRA_PCI_PASSTHROUGH_CONFIG ?= "xen-pciback.hide=(${DOMU1_PCI_ID})"
+
 do_deploy() {
     cat << EOF > ${WORKDIR}/xen.cfg
 [global]
@@ -33,7 +36,7 @@ default=xen
 
 [xen]
 options=noreboot dom0_mem=1024M ${EXTRA_XEN_CMDLINE_CONFIG}
-kernel=Image console=hvc0 earlycon=xenboot root=/dev/vda2 rootwait
+kernel=Image console=hvc0 earlycon=xenboot root=/dev/vda2 rootwait ${EXTRA_PCI_PASSTHROUGH_CONFIG}
 EOF
     cp ${WORKDIR}/xen.cfg ${DEPLOYDIR}/xen.cfg
 }

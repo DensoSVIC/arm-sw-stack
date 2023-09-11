@@ -4349,7 +4349,7 @@ index 79e64d9af8..5ae1f85e9f 100644
  #include <asm/hsr.h>
  
 -#define MAX_IO_HANDLER  16
-+#define MAX_IO_HANDLER  32
++#define MAX_IO_HANDLER  64
  
  enum instr_decode_state
  {

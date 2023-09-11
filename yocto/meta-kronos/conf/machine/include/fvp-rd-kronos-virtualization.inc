@@ -26,3 +26,8 @@ SERIAL_CONSOLES = "115200;hvc0"
 # Set WKS_FILE for Xen. Xen will use ${GRUB_CFG_FILE} as configfile
 WKS_FILE = "fvp-rd-kronos-xen-efi-disk.wks.in"
 
+# Provide Passthrough PCI AHCI SATA disk with an empty image
+PCI_IMAGE_NAME = "xen-pci-test-image"
+DOMU1_PCI_ID ?= "0000:00:1f.0"
+FVP_CONFIG[pcie_group_0.pcie4.pcie_rc.ahci0.ahci.image_path] = "${DEPLOY_DIR_IMAGE}/${PCI_IMAGE_NAME}.wic"
+EXTRA_IMAGEDEPENDS += "${PCI_IMAGE_NAME}:do_deploy"
