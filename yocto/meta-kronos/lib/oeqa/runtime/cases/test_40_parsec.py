@@ -31,14 +31,19 @@ class ParsecTest(OERuntimeTestCase):
                       ' virtualization')
     def test_parsec_demo(self):
         try:
+            self.mirror_docker = (self.td.get('MIRROR_DOCKER') or
+                                  'docker.io/library')
+
             status, output = self.run_cmd('ssl_server &', timeout=120)
             self.assertEqual(status, 0, msg='ssl_server failed to start.\n %s'
                              % output)
-            status, output = self.run_cmd('docker run --rm \
+            status, output = self.run_cmd(f'docker run --rm \
                     -v /run/parsec/parsec.sock:/run/parsec/parsec.sock \
                     -v /usr/bin/ssl_client1:/usr/bin/ssl_client1 \
                     --network host \
-                    docker.io/library/ubuntu:22.04 ssl_client1', timeout=240)
+                    {self.mirror_docker}/ubuntu:22.04 \
+                    ssl_client1', \
+                    timeout=240)
             self.assertEqual(status, 0, msg='ssl_client1 failed.\n %s'
                              % output)
         finally:
