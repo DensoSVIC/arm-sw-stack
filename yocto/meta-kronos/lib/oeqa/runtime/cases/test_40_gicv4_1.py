@@ -25,21 +25,21 @@ class GICv4Test(OERuntimeTestCase):
         status, output = self.run_cmd('cat /proc/interrupts', timeout=300)
         self.assertEqual(status, 0,
                          msg='GICv4.1 tests failed on read /proc/interrupts.\n %s' % output)
-        #Loop through each line
+        # Loop through each line
         for _, line in enumerate(output.splitlines()):
-            # search the one for ahci[0000:00:00.0]
+            # Search the one for ahci[0000:00:00.0]
             if r'ahci[0000:00:00.0]' in line:
-                # sum the 2rd element(CPU0) and 3rd element(CPU1) to
+                # Sum the 2rd element(CPU0) and 3rd element(CPU1) to
                 # calculate the number of MSI-X interrupts from
-                # ahci[0000:00:00.0] captured at domain boottime
+                # ahci[0000:00:00.0] captured at domain boot-time
                 self.assertGreater(int(line.split()[1]) + int(line.split()[2]), 0)
                 self.logger.debug('vlpi_line:')
                 self.logger.debug(line)
-            # search the one for IPI0(Rescheduling interrupts)
+            # Search the one for IPI0(Rescheduling interrupts)
             elif r'IPI0:' in line:
-                # sum the 2rd element(CPU0) and 3rd element(CPU1) to
+                # Sum the 2rd element(CPU0) and 3rd element(CPU1) to
                 # calculate the number of IPI0 interrupts captured at
-                # domain boottime
+                # domain boot-time
                 self.assertGreater(int(line.split()[1]) + int(line.split()[2]), 0)
                 self.logger.debug('ipi0_line:')
                 self.logger.debug(line)

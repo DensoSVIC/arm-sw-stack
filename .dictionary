@@ -409,6 +409,7 @@ partitionable
 Partitioner
 Passthrough
 patchdir
+pciback
 PCIDEV
 pcitopoinfo
 pclk
