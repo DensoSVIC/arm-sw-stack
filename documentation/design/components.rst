@@ -503,7 +503,7 @@ to first enter the Xen hypervisor. This can reduce the overhead associated with
 virtualized interrupts, by reducing the number of times the hypervisor is
 entered.
 
-With Xen Kconfig CONFIG_GICV4=y, the kronos platform will be automatically
+With Xen Kconfig ``CONFIG_GICV4=y``, the kronos platform will be automatically
 equipped with the capability of all GICv4.1 features.
 
 .. image:: ../images/xen_gicv4_1_structure.svg
@@ -512,30 +512,21 @@ equipped with the capability of all GICv4.1 features.
 |
 
 The stack offers the PCI AHCI SATA Disk for users to utilize GICv4.1 vLPI
-direct injection for domains:
+direct injection for DomU1:
 
- * For Dom0, ``lspci`` shall show you the properly enabled PCI AHCI SATA Disk
-   ``ahci[0000:00:1f.0]`` details. Also, Non-zero ITS-MSI interrupts through
-   vLPI direct injection for ``ahci[0000:00:1f.0]`` shall be captured and seen
-   in ``/proc/interrupts``.
-
-  * For xl guest, users need to firstly passthrough PCI AHCI SATA Disk device
-    ``ahci[0000:00:1f.0]`` from Dom0 to the new xl guest, through xl command
-    ``xl pci-assignable-add 0000:00:1f.0`` before starting the xl guest.
-
-    The format of ``xl pci-assignable-add`` is:
+  * Attach PCI AHCI SATA disk ``ahci[0000:00:1f.0]`` to DomU1 with static
+    PCI passthrough method, by adding the following to the Dom0 Linux kernel
+    command line:
 
     .. code-block:: console
 
-      xl pci-assignable-add <SBDF for PCI Device>
+      xen-pciback.hide=(0000:00:1f.0)
 
-    In addition, the configuration for the new xl guest shall also include a
-    new line of ``pci = ['0000:00:1f.0']`` for enabling the PCI AHCI SATA Disk.
-    Now, users could run ``xl create -c $domu_config`` to boot the new xl
-    domain.
-    Later entering the new xl guest console, users could run ``lspci`` and
-    check whether the passthrough PCI AHCI SATA Disk ``ahci[0000:00:00.0]``
-    is properly enabled.
+    In addition, the configuration for DomU1 shall also include a new line
+    of ``pci = ['0000:00:1f.0']`` for enabling the PCI AHCI SATA disk.
+
+For GICv4.1 vLPI/vSGI validation, please refer to
+:ref:`validation_gicv4_1_demo`.
 
 .. _design_components_xen_downstream_changes:
 

@@ -232,3 +232,30 @@ The test is performed under the following configuration:
  * The TLS server operates on the Primary Compute.
  * The TLS client operates within a container that resides on the Primary
    Compute.
+
+.. _validation_gicv4_1_demo:
+
+Integration Tests validating the GICv4.1 vLPI/vSGI Direct Injection Demo
+========================================================================
+
+The ``test_gicv4_1`` integration test in
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_40_gicv4_1.py`
+verifies the functionality of GICv4.1 vLPI/vSGI direct injection. The test is
+only enabled when the use case is ``Safety Island Actuation Demo`` and the
+"Virtualization Architecture" is selected.
+
+The test consists of the following aspects and will only be run on DomU1:
+
+  * PCI AHCI SATA disk ``ahci[0000:00:1f.0]`` has already been assigned to
+    DomU1 with static PCI passthrough method.
+  * Using ``lspci`` command to check if PCI AHCI SATA disk is properly
+    probed.
+  * Inspecting ``/proc/interrupts`` and reading non-zero MSI-X interrupts
+    from ``ahci[0000:00:00.0]`` captured at domain boot-time to validate
+    the functionality of GICv4.1 vLPI direct injection.
+  * Inspecting ``/proc/interrupts`` and reading non-zero IPI0 interrupts
+    captured at domain boot-time to validate the functionality of
+    GICv4.1 vSGI direct injection.
+
+The testing of interrupt injection is not currently validated for run time
+operations, e.g. file system actions or data transfer.
