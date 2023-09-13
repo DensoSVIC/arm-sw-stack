@@ -1,0 +1,30 @@
+From 2cf724da4b2013ebdefaa7e15199a150b41163ce Mon Sep 17 00:00:00 2001
+From: Jiamei Xie <jiamei.xie@arm.com>
+Date: Wed, 13 Sep 2023 15:38:57 +0800
+Subject: [PATCH] program: ssl: Lower DEBUG_LEVEL for ssl_client1 program
+
+The 'ssl_client1' program was generating excessive output. This commit
+lowers the DEBUG_LEVEL to 0 to reduce verbosity.
+
+Upstream-Status: Inappropriate
+Signed-off-by: Jiamei Xie <jiamei.xie@arm.com>
+---
+ programs/ssl/ssl_client1.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/programs/ssl/ssl_client1.c b/programs/ssl/ssl_client1.c
+index cb24a628c..b9589013f 100644
+--- a/programs/ssl/ssl_client1.c
++++ b/programs/ssl/ssl_client1.c
+@@ -58,7 +58,7 @@ extern psa_drv_se_t PARSEC_SE_DRIVER;
+ #define SERVER_NAME "localhost"
+ #define GET_REQUEST "GET / HTTP/1.0\r\n\r\n"
+ 
+-#define DEBUG_LEVEL 1
++#define DEBUG_LEVEL 0
+ 
+ 
+ static void my_debug(void *ctx, int level,
+-- 
+2.25.1
+

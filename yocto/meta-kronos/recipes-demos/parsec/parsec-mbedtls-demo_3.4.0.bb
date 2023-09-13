@@ -27,6 +27,7 @@ SRC_URI = "git://github.com/Mbed-TLS/mbedtls.git;protocol=https;branch=developme
            file://0003-program-ssl-Modify-ssl_client1.c-to-register-parsec-.patch \
            file://0004-program-ssl-Make-ssl_client1.c-accept-server-IP-addr.patch \
            file://0005-program-Link-to-parsec_se_driver.patch \
+           file://0006-program-ssl-Lower-DEBUG_LEVEL-for-ssl_client1.patch \
            "
 
 SRCREV = "63a21f4cda8b3d21fe5f85e6efc62d924b492757"
