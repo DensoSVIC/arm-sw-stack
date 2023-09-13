@@ -532,21 +532,7 @@ A message similar to the following should appear:
         . Loading the CA root certificate ... ok (0 skipped)
         . Connecting to tcp/localhost/4433... ok
         . Setting up the SSL/TLS structure... ok
-        . Performing the SSL/TLS handshake...ssl_client.c:0263: got supported group(001d)
-      ssl_client.c:0263: got supported group(0017)
-      ssl_client.c:0263: got supported group(0018)
-      ssl_client.c:0263: got supported group(001e)
-      ssl_client.c:0263: got supported group(0019)
-      ssl_client.c:0263: got supported group(001a)
-      ssl_client.c:0263: got supported group(001b)
-      ssl_client.c:0263: got supported group(001c)
-      ssl_client.c:0263: got supported group(0100)
-      ssl_client.c:0263: got supported group(0101)
-      ssl_client.c:0263: got supported group(0102)
-      ssl_client.c:0263: got supported group(0103)
-      ssl_client.c:0263: got supported group(0104)
-      ssl_tls12_client.c:2782: Perform PSA-based ECDH computation.
-       ok
+        . Performing the SSL/TLS handshake... ok
         . Verifying peer X.509 certificate... ok
         > Write to server: 18 bytes written
 
@@ -559,8 +545,7 @@ A message similar to the following should appear:
 
       <h2>mbed TLS Test Server</h2>
       <p>Successful connection using: TLS-ECDHE-RSA-WITH-CHACHA20-POLY1305-SHA256</p>
-      ssl_msg.c:3948: mbedtls_ssl_handle_message_type() returned -30848 (-0x7880)
-      ssl_msg.c:5507: mbedtls_ssl_read_record() returned -30848 (-0x7880)
+
 
 .. _user_guide_reproduce_IR_validation:
 
