@@ -18,6 +18,8 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0005-net-zperf-Add-support-for-bind-to-host-option-for-tc.patch;patchdir=zephyr \
     file://zephyr/0006-drivers-eth_smsc91x-Implement-promiscuous-mode.patch;patchdir=zephyr \
     file://zephyr/0007-net-sockets-Fix-connected-datagram-socket-packet-fil.patch;patchdir=zephyr \
+    file://zephyr/0008-kernel-poll-Lock-all-calls-to-signal_poll_event.patch;patchdir=zephyr \
+    file://zephyr/0009-net-sockets-Keep-lock-when-notifying-condvar.patch;patchdir=zephyr \
     "
 # /* cSpell:enable */
 

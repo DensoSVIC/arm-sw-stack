@@ -1,0 +1,47 @@
+From 4f92159c8fd781200d791ff2f5ea4b6aad87f581 Mon Sep 17 00:00:00 2001
+From: Ambroise Vincent <ambroise.vincent@arm.com>
+Date: Mon, 11 Sep 2023 15:54:51 +0100
+Subject: [PATCH] kernel: poll: Lock all calls to signal_poll_event
+
+The signal_poll_event function was previously called without the poll
+lock held. This created a race condition between a thread calling k_poll
+to wait for an event and another thread signalling for this same event.
+This resulted in the waiting thread to stay pending and the handle to it
+getting removed from the notifyq, meaning it couldn't get woken up
+again.
+
+Signed-off-by: Ambroise Vincent <ambroise.vincent@arm.com>
+Upstream-Status: Backport [main: 995eeda266fe450a93ef876c9a135450caadf890]
+---
+ kernel/poll.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/kernel/poll.c b/kernel/poll.c
+index d3b313f04b..e9794c3a15 100644
+--- a/kernel/poll.c
++++ b/kernel/poll.c
+@@ -1,5 +1,6 @@
+ /*
+  * Copyright (c) 2017 Wind River Systems, Inc.
++ * Copyright (c) 2023 Arm Limited (or its affiliates). All rights reserved.
+  *
+  * SPDX-License-Identifier: Apache-2.0
+  */
+@@ -470,11 +471,14 @@ static int signal_poll_event(struct k_poll_event *event, uint32_t state)
+ void z_handle_obj_poll_events(sys_dlist_t *events, uint32_t state)
+ {
+ 	struct k_poll_event *poll_event;
++	k_spinlock_key_t key = k_spin_lock(&lock);
+ 
+ 	poll_event = (struct k_poll_event *)sys_dlist_get(events);
+ 	if (poll_event != NULL) {
+ 		(void) signal_poll_event(poll_event, state);
+ 	}
++
++	k_spin_unlock(&lock, key);
+ }
+ 
+ void z_impl_k_poll_signal_init(struct k_poll_signal *sig)
+-- 
+2.25.1
+
