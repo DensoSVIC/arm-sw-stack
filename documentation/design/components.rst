@@ -293,7 +293,7 @@ to:
 * Compile the HW_CONFIG device tree and add it to the FIP image.
 * Extend BL2_AT_EL3 to load the FW_CONFIG for dynamic configuration.
 * Support for the OP-TEE SPMC on the RD-Kronos platform.
-* Add the following devicetree nodes to the RD-Kronos platform.
+* Add the following device tree nodes to the RD-Kronos platform.
 
   * PL180 MMC
   * PCIe controller
