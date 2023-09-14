@@ -66,8 +66,8 @@ In the current software stack, the RSS offers:
 * Secure boot, further details of which can be found in the `TF-M Secure boot`_
   documentation.
 * Crypto Service, which provides an implementation of the `PSA Crypto API`_ in a
-  PSA RoT secure partition, further details of which can be found in the
-  `TF-M Crypto Service`_ documentation.
+  PSA Root of Trust (RoT) secure partition, further details of which can be
+  found in the `TF-M Crypto Service`_ documentation.
 * Internal Trusted Storage (ITS) Service, which is a PSA RoT Service for storing
   the most security-critical device data (e.g. cryptographic keys) in internal
   storage that is trusted to provide data confidentiality and authenticity.
@@ -123,13 +123,8 @@ RSS Runtime and starts it.
 Runtime
 =======
 
-The RSS Runtime provides the following services as described above:
-
-* PSA Crypto, in the form of APIs
-* PSA Secure Storage, in the form of APIs
-* Internal Trusted Storage
-
-See :ref:`design_secure_services` for more details.
+The RSS Runtime provides Crypto Service, PS Service and ITS Service as described
+above. See :ref:`design_secure_services` for more details.
 
 .. _design_components_rss_downstream_changes:
 
