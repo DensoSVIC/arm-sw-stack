@@ -1,0 +1,39 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig FAULT_MGMT
+	bool "Fault management"
+	select FAULT_MGMT_ARM_FMU
+	help
+	  Enable the fault management subsystem
+
+if FAULT_MGMT
+
+config FAULT_MGMT_STACK_SIZE
+	int "Fault management stack size"
+	default 1024
+
+config FAULT_MGMT_QUEUE_SIZE_CRITICAL
+	int "Fault management receive queue size for critical faults"
+	default 64
+
+config FAULT_MGMT_QUEUE_SIZE_NON_CRITICAL
+	int "Fault management receive queue size for non-critical faults"
+	default 64
+
+config FAULT_MGMT_THREAD_PRIORITY_CRITICAL
+	int "Fault management thread priority for critical fault processing"
+	default 10
+
+config FAULT_MGMT_THREAD_PRIORITY_NON_CRITICAL
+	int "Fault management thread priority for non-critical fault processing"
+	default 5
+
+module = FAULT_MGMT
+module-str = Fault management
+source "subsys/logging/Kconfig.template.log_config"
+
+endif

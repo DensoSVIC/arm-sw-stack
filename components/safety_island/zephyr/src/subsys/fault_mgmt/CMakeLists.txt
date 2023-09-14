@@ -4,7 +4,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-zephyr_include_directories(include)
+zephyr_library()
 
-add_subdirectory(drivers)
-add_subdirectory(subsys)
+zephyr_library_sources(fault_mgmt.c)

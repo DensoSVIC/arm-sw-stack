@@ -4,7 +4,4 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-zephyr_include_directories(include)
-
-add_subdirectory(drivers)
-add_subdirectory(subsys)
+add_subdirectory_ifdef(CONFIG_FAULT_MGMT fault_mgmt)
