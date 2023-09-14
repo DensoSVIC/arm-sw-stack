@@ -84,11 +84,12 @@ The following components are involved in the demo:
     The `Parsec Secure Element Driver`_ is an external driver for the Crypto
     Library of Mbed TLS. The driver implements a secure element by using the
     Parsec service. It delegates the crypto API calls to Parsec. The calls are
-    further handled by the SE Proxy SP in the secure world of Primary Compute
-    and finally handled by the RSS crypto service.
+    further handled by the Secure Enclave Proxy Secure Partition (SE Proxy SP)
+    in the secure world of Primary Compute and finally handled by the RSS crypto
+    service.
 
 For more information of how the operations are handled by Parsec service, the SE
-Proxy SP and the RSS, please refer :ref:`design_secure_services`.
+Proxy SP and the RSS, please refer to :ref:`design_secure_services`.
 
 TLS Handshake
 =============
@@ -165,3 +166,8 @@ following APIs from the RSS for the asymmetric crypto operations:
 
     * The API destroys a key. The TLS client application destroys the public
       key imported by ``psa_import_key``.
+
+Validations
+===========
+
+See :ref:`validation_parsec_enabled_tls_demo`.
