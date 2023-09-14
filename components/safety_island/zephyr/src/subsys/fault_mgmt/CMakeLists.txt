@@ -7,3 +7,4 @@
 zephyr_library()
 
 zephyr_library_sources(fault_mgmt.c)
+zephyr_library_sources_ifdef(CONFIG_FAULT_MGMT_SHELL fault_mgmt_shell.c)

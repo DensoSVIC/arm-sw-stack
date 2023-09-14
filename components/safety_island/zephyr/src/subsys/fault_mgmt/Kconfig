@@ -32,6 +32,13 @@ config FAULT_MGMT_THREAD_PRIORITY_NON_CRITICAL
 	int "Fault management thread priority for non-critical fault processing"
 	default 5
 
+config FAULT_MGMT_SHELL
+	bool "Fault management shell"
+	select SHELL
+	help
+	  Activate shell module that provides commands to manually inspect and
+	  control the Arm fault management subsystem.
+
 module = FAULT_MGMT
 module-str = Fault management
 source "subsys/logging/Kconfig.template.log_config"

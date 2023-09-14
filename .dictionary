@@ -156,6 +156,7 @@ DPLX
 DPYTHON
 DROS
 drvdata
+dsub
 DTLS
 dtsi
 dunfell
@@ -543,8 +544,10 @@ STRIDEM
 strlen
 strncmp
 strsep
+strtobool
 struct
 stty
+subcmd
 subcomponents
 subdir
 subsys
