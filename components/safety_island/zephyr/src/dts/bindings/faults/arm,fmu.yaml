@@ -1,9 +1,14 @@
-#
 # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: Apache-2.0
+---
+description: ARM FMU (Fault Management Unit)
 
-zephyr_include_directories(include)
+compatible: "arm,fmu"
 
-add_subdirectory(drivers)
+include: base.yaml
+
+properties:
+  reg:
+    required: true

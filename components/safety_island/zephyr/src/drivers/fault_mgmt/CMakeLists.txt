@@ -4,6 +4,5 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-zephyr_include_directories(include)
-
-add_subdirectory(drivers)
+zephyr_library()
+zephyr_library_sources_ifdef(CONFIG_FAULT_MGMT_ARM_FMU fault_mgmt_arm_fmu.c)

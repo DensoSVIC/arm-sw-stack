@@ -20,6 +20,7 @@ ALIGNERR
 allarch
 ALLOC
 alsa
+AMBA
 ANEG
 armffa
 armlmd
@@ -185,6 +186,9 @@ EPHSR
 eptdev
 ERCV
 ERRCODE
+errgsr
+errgsrs
+erriidr
 errno
 etherdev
 ethpc
@@ -198,6 +202,8 @@ fileextrapaths
 FILESEXTRAPATHS
 filesystems
 fiptool
+fmu
+fmus
 fprintf
 fstype
 FSTYPES
@@ -233,6 +239,7 @@ hypercall
 iceoryx
 IDLC
 idxs
+ierr
 iface
 ifdef
 ifndef
@@ -332,6 +339,7 @@ memr
 memset
 menuconfig
 menuentry
+mgmt
 mhuv
 mickledore
 microcontrollers
@@ -417,6 +425,7 @@ PCSA
 pdbcw
 pdev
 phandle
+phandles
 physinfo
 physmap
 pkgconfig
@@ -500,6 +509,8 @@ SHRAM
 SIMD
 slirp
 SMCC
+smen
+smerr
 smmu
 SMMUs
 smmuv
