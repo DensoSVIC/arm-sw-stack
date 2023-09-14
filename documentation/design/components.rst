@@ -153,8 +153,8 @@ built to provide microcontrollers to abstract various power, or other system
 management tasks, away from Application Processors (APs).
 
 The `System Control Processor (SCP) Firmware`_ provides a software reference
-implementation for the System Control Processor (SCP) and Local Power Controller
-(LCP) components.
+implementation for the System Control Processor (SCP) and Local Control
+Processor (LCP) components.
 
 System Control Processor (SCP)
 ==============================
