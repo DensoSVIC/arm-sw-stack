@@ -141,7 +141,3 @@ possible causes are listed here:
  * In the zperf TCP testing case, if the application layer does not process the
    packet buffer in time after the connection is closed,
    ``net_tcp: context->tcp == NULL`` will be logged.
- * The Zephyr FPU sharing functionality sometimes fails to restore the SIMD
-   registers to their previous state, leading to the Actuation Demo Zephyr
-   application to occasionally output wrong commands. A workaround is in place
-   to fix this.
