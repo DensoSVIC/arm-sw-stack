@@ -117,6 +117,7 @@ require ${@bb.utils.contains('MACHINE', 'fvp-rd-kronos', 'conf/machine/include/f
 
 ZEPHYR_APP_SAFETY_ISLAND_CL0 = "bridge"
 ZEPHYR_APP_SAFETY_ISLAND_CL0:hipc-validation = "zperf"
+ZEPHYR_APP_SAFETY_ISLAND_CL1 = "fault-mgmt"
 ZEPHYR_APP_SAFETY_ISLAND_CL1:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL1:si0-bridge-ethernet0 = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:actuation = "actuation"
