@@ -12,6 +12,8 @@
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include "fvp_rd_kronos_safety_island_device_mem.dtsi"
 
+#define IRQ_CRITICAL_PRIORITY 0x50
+
 / {
 	#address-cells = <2>;
 	#size-cells = <1>;
@@ -133,6 +135,15 @@
 			reg = <0x0 0x2af70000 0x1000>;
 			interrupts = <GIC_SPI 91 IRQ_TYPE_LEVEL IRQ_DEFAULT_PRIORITY>;
 			interrupt-names = "rx";
+			status = "disabled";
+		};
+
+		system_fmu: fmu@2a510000 {
+			compatible = "arm,fmu";
+			reg = <0x0 0x2a510000 0x1000>;
+			interrupts = <GIC_SPI 128 IRQ_TYPE_LEVEL IRQ_CRITICAL_PRIORITY>,
+					<GIC_SPI 134 IRQ_TYPE_LEVEL IRQ_DEFAULT_PRIORITY>;
+			interrupt-names = "critical", "non_critical";
 			status = "disabled";
 		};
 	};
