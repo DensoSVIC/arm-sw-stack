@@ -29,7 +29,8 @@ occur:
 4. BL2, which is implemented based on `MCUboot`_, loads and authenticates all
    images of the other components: SCP, Safety Island, LCP and AP.
 
-The sequence is shown in the RSS-oriented Boot Flow diagram below.
+The sequence is shown in the RSS-oriented Boot Flow diagram of below
+:ref:`design_boot_process_boot_flow` section.
 
 The RSS uses a NVM flash to store the images of various components, including:
 
@@ -100,6 +101,8 @@ for production. To replace the default key, the manufacturer needs to:
 For detail of how to generate the private key and the hash of the public key,
 please refer to the documentation of `imgtool`_ which is provided by MCUboot.
 
+.. _design_boot_process_boot_flow:
+
 Boot Flow
 =========
 
@@ -114,9 +117,9 @@ The following diagram illustrates the boot flow that originates from the RSS.
 
 Major steps of the boot flow:
 
-1. RSS BL1_1 begins executing in place from ROM when the system is powered up.
-   It:
+1. RSS BL1_1:
 
+   * Begins executing in place from ROM when the system is powered up
    * (This step only happens on the system's first boot) Provisions RSS BL1_2
      and various keys and other data from the provisioning bundle to the OTP
    * Copies the RSS BL1_2 image from the OTP to the SRAM
@@ -141,7 +144,7 @@ Major steps of the boot flow:
    * Copies the SI CL2 image from flash to SI LLRAM and authenticates the image
    * Notifies the SCP to power on the SI CL2
    * Copies the LCP image from flash to LCP SRAM and authenticates the image
-   * Releases the LCP from reset
+   * Releases the LCP out of reset
    * Copies the AP BL2 image from flash to AP SRAM and authenticates the image
    * Notifies the SCP to power on the AP
 
