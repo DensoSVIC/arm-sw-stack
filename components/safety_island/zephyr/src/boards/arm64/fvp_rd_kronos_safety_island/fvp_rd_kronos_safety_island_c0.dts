@@ -72,7 +72,7 @@
 			compatible = "arm,pl011";
 			reg = <0x0 0x2a400000 0x10000>;
 			status = "disabled";
-			interrupts = <GIC_SPI 8 0 IRQ_TYPE_LEVEL>;
+			interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL IRQ_DEFAULT_PRIORITY>;
 			interrupt-names = "irq_0";
 			clocks = <&uartclk>;
 		};
@@ -93,7 +93,7 @@
 			compatible = "arm,mhuv3-rx";
 			#mbox-cells = <1>;
 			reg = <0x0 0x2a930000 0x1000>;
-			interrupts = <GIC_SPI 60 0 IRQ_TYPE_LEVEL>;
+			interrupts = <GIC_SPI 60 IRQ_TYPE_LEVEL IRQ_DEFAULT_PRIORITY>;
 			interrupt-names = "rx";
 			status = "disabled";
 		};
@@ -109,7 +109,7 @@
 			compatible = "arm,mhuv3-rx";
 			#mbox-cells = <1>;
 			reg = <0x0 0x2af10000 0x1000>;
-			interrupts = <GIC_SPI 85 0 IRQ_TYPE_LEVEL>;
+			interrupts = <GIC_SPI 85 IRQ_TYPE_LEVEL IRQ_DEFAULT_PRIORITY>;
 			interrupt-names = "rx";
 			status = "disabled";
 		};
@@ -125,7 +125,7 @@
 			compatible = "arm,mhuv3-rx";
 			#mbox-cells = <1>;
 			reg = <0x0 0x2af30000 0x1000>;
-			interrupts = <GIC_SPI 89 0 IRQ_TYPE_LEVEL>;
+			interrupts = <GIC_SPI 89 IRQ_TYPE_LEVEL IRQ_DEFAULT_PRIORITY>;
 			interrupt-names = "rx";
 			status = "disabled";
 		};
@@ -134,7 +134,7 @@
 			interrupt-parent = <&gic>;
 			compatible = "smsc,lan91c111";
 			reg = <0x0 0x8100000 0x100000>;
-			interrupts = <GIC_SPI 105 0 IRQ_TYPE_LEVEL>;
+			interrupts = <GIC_SPI 105 IRQ_TYPE_LEVEL IRQ_DEFAULT_PRIORITY>;
 			status = "disabled";
 
 			phy: phy {
