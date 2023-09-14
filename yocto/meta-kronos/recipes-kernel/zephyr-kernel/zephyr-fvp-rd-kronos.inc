@@ -4,10 +4,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-FILESEXTRAPATHS:prepend := "\
-${THISDIR}/files:\
-${KRONOS_REPO_DIRECTORY}/components/safety_island/zephyr:\
-"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 # /* cSpell:disable */
 SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
@@ -26,6 +23,6 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
 SRC_URI += "${SRC_URI_ZEPHYR_EXTRA_PATCHES}"
 
 # Add the safety_island Zephyr module
-SRC_URI:append = " file://src"
-ZEPHYR_SAFETY_ISLAND_MODULE = "${WORKDIR}/src"
+ZEPHYR_SAFETY_ISLAND_MODULE = "${KRONOS_REPO_DIRECTORY}/components/safety_island/zephyr/src"
 ZEPHYR_MODULES:append = "${ZEPHYR_SAFETY_ISLAND_MODULE}\;"
+do_configure[file-checksums] += "${ZEPHYR_SAFETY_ISLAND_MODULE}:True"
