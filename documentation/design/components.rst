@@ -324,9 +324,7 @@ Patch files can be found at
 to:
 
 * Implement the RD-Kronos platform port.
-* OP-TEE binary is wrapped by fiptool as BL32 image. BL2 will load it into DRAM
-  at a specific address which is set by TF-A.
-* Booting OP-TEE as SPMC running at SEL1.
+* Boot OP-TEE as SPMC running at SEL1.
 
 .. _design_components_trusted-services:
 
