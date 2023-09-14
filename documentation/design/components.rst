@@ -578,10 +578,10 @@ The arm_si_rproc and rpmsg_net drivers can be found at
 Additional patches are located at
 :kronos-repo:`yocto/meta-kronos/recipes-kernel/linux/files` related to:
 
- * Make virtio rpmsg buffer size configurable
- * Make mailbox transmit queue size configurable
- * Disable remoteproc virtio rpmsg to use DMA api in Xen guest
- * Add MHUv3 driver
+ * Making virtio rpmsg buffer size configurable
+ * Making mailbox transmit queue size configurable
+ * Disabling remoteproc virtio rpmsg to use DMA api in Xen guest
+ * Adding MHUv3 driver
 
 *************
 Safety Island
@@ -654,11 +654,12 @@ Additional patches are located at
 :kronos-repo:`yocto/meta-kronos/recipes-kernel/zephyr-kernel/files/zephyr`
 related to:
 
- * MPU region configuration
- * VLAN configuration and fixes
+ * Configuring the MPU region
+ * Configuring and fixing VLAN
  * Working around the shell interfering with network performance
- * zperf download bind capability
- * SMSC91x driver promiscuous mode
+ * Adding zperf download bind capability
+ * Adding SMSC91x driver promiscuous mode
+ * Fixing connected datagram socket packet filtering
 
 **********
 References
