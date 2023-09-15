@@ -351,7 +351,7 @@ same:
    commands on the host machine.
 3. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_uart_si_cluster2``
    followed by pressing ``Enter`` key to join the SI Cluster 2 terminal to
-   Primary Compute terminal
+   Primary Compute terminal.
 
 Please refer to the following image for an example re-arrangement of tmux
 windows.
@@ -459,14 +459,7 @@ Virtualization Architecture
 
       xl console domu1
 
-2. Follow the instructions as for the Baremetal Architecture above, with the
-   difference of setting the value of ``NATIVE_SYSROOT_BIN`` to the following
-   instead:
-
-   .. code-block:: shell
-
-      NATIVE_SYSROOT_BIN=build/tmp_virtualization/work/fvp_rd_kronos-poky-linux/virtualization-image/1.0-r0/recipe-sysroot-native/usr/bin
-
+2. Follow the instructions as for the Baremetal Architecture above.
 
 3. To leave the DomU1 console, type ``Ctrl-]`` and enter ``send esc``.
 
