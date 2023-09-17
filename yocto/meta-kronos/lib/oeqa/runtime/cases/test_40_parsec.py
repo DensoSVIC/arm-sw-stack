@@ -50,3 +50,8 @@ class ParsecTest(OERuntimeTestCase):
             status, output = self.run_cmd('pkill ssl_server', timeout=30)
             self.assertEqual(status, 0, msg='ssl_server failed to stop.\n %s'
                              % output)
+
+            # Synchronize cached writes to persistent storage
+            status, output = self.run_cmd('sync', timeout=120)
+            self.assertEqual(status, 0, msg='Synchronizing caches failed.\n %s'
+                             % output)
