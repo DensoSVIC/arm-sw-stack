@@ -546,6 +546,13 @@ A message similar to the following should appear:
       <h2>mbed TLS Test Server</h2>
       <p>Successful connection using: TLS-ECDHE-RSA-WITH-CHACHA20-POLY1305-SHA256</p>
 
+After the test, stop the TLS server and synchronize the container image to the
+persistent storage:
+
+   .. code-block:: shell
+
+      pkill ssl_server
+      sync
 
 .. _user_guide_reproduce_IR_validation:
 
