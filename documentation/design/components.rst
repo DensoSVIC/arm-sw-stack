@@ -671,6 +671,7 @@ related to:
  * Adding zperf download bind capability
  * Adding SMSC91x driver promiscuous mode
  * Fixing connected datagram socket packet filtering
+ * Fixing race conditions in poll and condvar
 
 **********
 References
