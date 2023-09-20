@@ -29,8 +29,8 @@ Components
 
 The bridge is a Zephyr application making use of its `Ethernet Bridging API`_.
 
-It is not VLAN-aware, as neither the external network nor the IPC networks are
-VLAN-enabled.
+It is not VLAN-aware, as none of the traffic on the bridged networks (the
+external network and all the inter-cluster networks) is VLAN-tagged.
 
 The current Zephyr bridge functionality does not feature a learning process,
 which means that incoming packets on a registered interface are sent to all
