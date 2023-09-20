@@ -156,6 +156,8 @@ implemented on top of virtio based RPMsg communication.
 
 |
 
+.. _hipc_network_topology:
+
 ****************
 Network Topology
 ****************

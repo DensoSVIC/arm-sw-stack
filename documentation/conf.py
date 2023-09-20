@@ -265,6 +265,10 @@ rst_prolog = f"""
 .. _testimage.bbclass: https://docs.yoctoproject.org/{yocto_doc_version}ref-manual/classes.html#testimage-bbclass
 .. _xl documentation: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.1.html
 .. _zperf sample: https://docs.zephyrproject.org/{zephyr_version}/connectivity/networking/api/zperf.html
+.. _Autoware: https://autowarefoundation.github.io/autoware-documentation
+.. _Pure Pursuit: https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/pure-pursuit.html
+.. _Data Distribution Service: https://www.dds-foundation.org/what-is-dds-3
+.. _CycloneDDS: https://cyclonedds.io/docs/cyclonedds/latest/about_dds/eclipse_cyclone_dds.html
 """  # noqa: E501
 
 # URL to use for references to repository paths
