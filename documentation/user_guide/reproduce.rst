@@ -491,8 +491,8 @@ The demo consists of a TLS server and a TLS client. Please refer to
 :ref:`design_applications_parsec_enabled_tls` for more information on
 this application.
 
-Run ``ssl_server`` from the Primary Compute in the background and press *Enter*
-key to continue:
+Run ``ssl_server`` from the Primary Compute in the background and press
+``Enter`` key to continue:
 
    .. code-block:: shell
 
