@@ -40,9 +40,10 @@ The following components are involved in the demo:
 
 * TLS Server
 
-    The TLS server application listens to the ``4433`` port for the connection
-    from the client application. After the TLS connection is established, the
-    server will send a simple ``Hello`` webpage when the client makes a request.
+    The TLS client application, running from inside a container, connects to
+    the server at the ``4433`` port for the TLS connection. After the TLS
+    connection is established, the server will send a simple ``Hello`` webpage
+    when the client makes a request.
 
     The server application is provided by Mbed TLS. The source code can be
     found at ``program/ssl/ssl_server.c`` of `Mbed TLS repository`_.
@@ -50,8 +51,8 @@ The following components are involved in the demo:
 * TLS Client
 
     The TLS client application connects to the server at the ``4433`` port for
-    the TLS connection. The client application calls the TLS API provided by
-    Mbed TLS for the TLS connection.
+    the TLS connection. It is deployed in a container environment. The client
+    application calls the TLS API provided by Mbed TLS for the TLS connection.
 
     The source code of the client application is based on the example program
     ``program/ssl/ssl_client1.c`` of `Mbed TLS repository`_, with some
@@ -167,7 +168,7 @@ following APIs from the RSS for the asymmetric crypto operations:
     * The API destroys a key. The TLS client application destroys the public
       key imported by ``psa_import_key``.
 
-Validations
-===========
+Validation
+==========
 
 See :ref:`validation_parsec_enabled_tls_demo`.
