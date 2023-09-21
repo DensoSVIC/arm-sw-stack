@@ -404,11 +404,21 @@ has direct access to hardware. From the Dom0 the hypervisor can be managed
 and unprivileged domains (DomU) can be launched.
 Xen is only included in the Virtualization Reference Stack Architecture.
 
+.. _design_components_xen_boot_flow:
+
+Boot Flow
+---------
+
 On starting up, the GRUB2 configuration uses the "chainloader" command to
 instruct the UEFI services provider (U-boot) to load and run Xen as an EFI
 application. Further, Xen reads its configuration (``xen.cfg``) from the boot
 partition of the virtio disk containing the boot arguments for Xen and Dom0
 to start the whole system.
+
+.. _design_components_xen_mpam:
+
+MPAM
+----
 
 The `Arm Memory Partitioning and Monitoring`_ (MPAM) extension is enabled in
 Xen. MPAM is an optional extension to |Arm| 8.4-A and later versions. It
@@ -480,6 +490,10 @@ Limitations of MPAM support in Xen include:
  * The FVP only provides the programmer's view of MPAM. There is no functional
    behaviour change implemented.
 
+.. _design_components_xen_gicv4_1:
+
+GICv4.1
+-------
 
 The `GICv4.1 - Direct injection of virtual interrupts`_ (GICv4.1) is enabled
 in Xen. GICv4.1 is an extension to GICv3 with extra direct vLPI (Virtual
