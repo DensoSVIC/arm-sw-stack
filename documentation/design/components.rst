@@ -256,27 +256,21 @@ Xen at runtime. It is located at
 Trusted Firmware-A
 ==================
 
-Trusted Firmware-A is the initial bootloader on the Primary Compute.
+`Trusted Firmware-A (TF-A)`_ is the initial bootloader on the Primary Compute.
 
 For RD-Kronos, the initial TF-A boot stage is BL2, which runs from a known
 address at EL3, using the ``BL2_AT_EL3`` compilation option. This option has
-been extended for RD-Kronos to load the FW_CONFIG for dynamic configuration (a
-role typically performed by BL1). BL2 is responsible for loading the subsequent
-boot stages and their configuration files from the FIP flash image. This flash
-image contains:
+been extended for RD-Kronos to load the ``FW_CONFIG`` for dynamic configuration
+(a role typically performed by BL1). BL2 is responsible for loading the
+subsequent boot stages and their configuration files from the flash containing
+the FIP image, which contains:
 
 * BL31
 * BL32 (:ref:`design_components_op-tee`)
 * BL33 (:ref:`design_components_u-boot`)
-* The HW_CONFIG device tree
-* The TB_FW_CONFIG device tree
-* The TOS_FW_CONFIG device tree
-
-The device tree for the Primary Compute of the RD-Kronos FVP is compiled by
-Trusted Firmware-A, bundled in the Primary Compute flash image (as the
-HW_CONFIG) at rest and used to configure :ref:`design_components_u-boot`, Linux
-and Xen at runtime. It is located at
-:meta-arm-repo:`meta-arm-bsp/recipes-bsp/trusted-firmware-a/files/fvp-rd-kronos/rdkronos.dts`.
+* The ``HW_CONFIG`` device tree
+* The ``TB_FW_CONFIG`` device tree
+* The ``TOS_FW_CONFIG`` device tree
 
 .. _design_components_trusted-firmware-a_downstream_changes:
 
