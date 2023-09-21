@@ -149,7 +149,7 @@ SCP-firmware
 
 The Power Control System Architecture (PCSA) [1]_ describes how systems can be
 built to provide microcontrollers to abstract various power, or other system
-management tasks, away from Application Processors (APs).
+management tasks, away from Primary Compute (PC).
 
 The `System Control Processor (SCP) Firmware`_ provides a software reference
 implementation for the System Control Processor (SCP) and Local Control
@@ -158,15 +158,11 @@ Processor (LCP) components.
 System Control Processor (SCP)
 ==============================
 
-According to the PCSA, the System Control Processor (SCP), a dedicated
-processor, is used to abstract power and system management tasks away from
-application processors.
-
 For the RD-Kronos platform, the SCP software is deployed on a Cortex-M7 CPU.
 
 The functionality of the SCP includes:
 
-* Initialization of the system to enable application core boot
+* Initialization of the system to manage Primary Compute (PC) boot
 * Runtime services:
     * Power domain management
     * System power management
@@ -202,21 +198,21 @@ MHUv3 Communication
 
 There are MHUv3 devices between the |Cortex|-M core where the RSS runs and the
 |Cortex|-M core where SCP-firmware runs. In the transport layer of MHUv3,
-Doorbell signals are exchanged between the RSS and SCP-firmware.
+doorbell signals are exchanged between the RSS and SCP.
 
 For RD-Fremont platform, MHUv3 signals are sent:
 
-* From SCP-firmware to the RSS to indicate that SCP-firmware has booted
-  successfully
-* From the RSS to SCP-firmware to indicate the LCP and AP is ready to boot
+* From SCP to the RSS to indicate that SCP has booted successfully
+* From the RSS to SCP to indicate the LCP and Primary Compute (PC) is ready
+  to boot
 
 For RD-Kronos platform, the MHUv3 communication is extended for booting Safety
-Island (SI). The RSS sends a Doorbell signal to SCP-firmware to notify that the
+Island (SI) clusters. The RSS sends a doorbell signal to SCP to notify that the
 image of a Safety Island cluster has been loaded to LLRAM and the cluster is
 ready to boot.
 
 The following diagram illustrates the MHUv3 communication sequence between
-the RSS and SCP-firmware.
+the RSS and SCP.
 
 |
 
@@ -230,14 +226,14 @@ the RSS and SCP-firmware.
 Downstream Changes
 ==================
 
-Patches for the SCP-firmware are included at
+Patches for the SCP are included at
 :meta-arm-repo:`meta-arm-bsp/recipes-bsp/scp-firmware/files/fvp-rd-kronos/` to:
 
 * Implement the RD-Kronos platform port, based on RD-Fremont.
 * Communicate with RSS via MHUv3 to conduct the boot flow.
 * Power on Safety Island.
 * Reset LCP.
-* Power on AP.
+* Power on PC.
 
 ***************
 Primary Compute

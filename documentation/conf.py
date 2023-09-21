@@ -229,7 +229,7 @@ rst_prolog = f"""
 .. _SMM Gateway SP: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/secure-partitions.html#smm-gateway
 .. _Safety Island Actuation Demo: https://safety-island-actuation-demo.docs.arm.com
 .. _Secure Storage Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/secure-storage-service-description.html
-.. _System Control Processor (SCP) Firmware: https://developer.arm.com/tools-and-software/open-source-software/%20firmware/scp-firmware
+.. _System Control Processor (SCP) Firmware: https://developer.arm.com/Tools%20and%20Software/SCP%20Firmware
 .. _TF-M Crypto Service: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/tfm_crypto_design.html
 .. _TF-M Internal Trusted Storage Service: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/tfm_its_service.html
 .. _TF-M Secure Services: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/index.html
