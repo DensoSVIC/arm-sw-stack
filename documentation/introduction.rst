@@ -14,7 +14,7 @@ Processor (Primary Compute) system augmented with an |Cortex|-R based
 Safety Island, for scenarios where additional system safety monitoring is
 required. The Reference Design additionally includes a Runtime Security
 Subsystem (RSS) used for the secure boot of the system elements and the runtime
-secure services.
+Secure Services.
 
 Together, this FVP model and software stack allow for the exploration of
 baremetal and XEN hypervisor hosted Linux instances, Primary Compute to/from
@@ -47,6 +47,7 @@ source as well as to download the required FVP and launch the
 subject to relevant assumed technical knowledge as listed later in this
 introduction at `Documentation Overview`_.
 
+Following are the main Use-Cases implemented by the Reference Stack.
 
 Safety Island Actuation Demo
 ============================
@@ -59,12 +60,12 @@ refer to :ref:`design_applications_actuation` for more information.
 Safety Island Communication Demo
 ================================
 
-The Safety Island Communication Demo demonstrates the networking between:
+The Safety Island Communication Demo demonstrates via HIPC (Heterogeneous
+Inter-processor Communication), the networking between:
 
   * Primary Compute and the three Safety Island clusters.
   * Safety Island clusters.
 
-This is achieved via HIPC (Heterogeneous Inter-processor Communication).
 Please refer to :ref:`design_hipc` for more information on HIPC.
 
 Parsec-enabled TLS Demo
@@ -76,21 +77,22 @@ transferred. The TLS session consists of both symmetric and asymmetric
 cryptographic operations. The symmetric operations are executed by Mbed TLS
 in Linux userspace on the Primary Compute. The asymmetric operations are
 carried out by `Parsec`_. While the backend of the Parsec service is based on
-RSS cryptographic runtime service. Please refer
+RSS cryptographic runtime service. Please refer to
 :ref:`design_applications_parsec_enabled_tls` for more information.
 
 |Arm SystemReadyTM| IR Validation
 =================================
 |Arm SystemReadyTM| is a compliance certification program based on a set of
 hardware and firmware standards that enable interoperability with generic
-off-the-shelf operating systems and hypervisors.
+off-the-shelf operating systems and hypervisors. Please refer to
+:ref:`design_systemready_ir` for more information.
 
-Linux Distribution Installation (Debian and openSUSE)
-=====================================================
 
-This use-case demonstrates the installation of two unmodified generic UEFI
-distribution images which fall under |Arm SystemReadyTM| requirements.
+Linux Distribution Installation
+===============================
 
+Demonstrates the installation of two unmodified generic UEFI distribution
+images, Debian and openSUSE, fulfilling |Arm SystemReadyTM| requirements.
 
 .. _introduction_reference_software_stack_overview:
 
@@ -104,8 +106,7 @@ together form the proposed solution, including:
 
 
   * The `Runtime Security Subsystem (RSS)`_ runs an instance of Trusted
-    Firmware-M which offers boot service, cryptography service and protected
-    storage service.
+    Firmware-M, which offers boot, cryptography, and protected storage services.
 
   * The Safety Island subsystem runs three instances of the Zephyr real-time
     operating system (RTOS).
@@ -119,9 +120,8 @@ The remaining software in the Primary Compute subsystem, based on the
 
   **Baremetal Architecture**
 
-  The system boots a simple single rich operating system (real-time Linux with
-  PREEMPT_RT).
-
+  The Primary Compute boots a single rich operating system (real-time Linux with
+  PREEMPT_RT patches).
 
 .. image:: images/kronos_baremetal_high_level_arch.svg
    :align: center
@@ -130,11 +130,10 @@ The remaining software in the Primary Compute subsystem, based on the
 
   **Virtualization Architecture**
 
-    The system boots into a type-1 hypervisor (Xen) making use of Arm's hardware
-    virtualization support. There are three isolated, resource managed virtual
-    machines: Dom0 (privileged domain) and DomU1 and DomU2 (unprivileged
+    The Primary Compute boots into a type-1 hypervisor (Xen) using Arm’s
+    hardware virtualization support. There are three isolated, resource-managed
+    virtual machines: Dom0 (privileged domain) and DomU1 and DomU2 (unprivileged
     domains).
-
 
 .. image:: images/kronos_virtualization_high_level_arch.svg
    :align: center
