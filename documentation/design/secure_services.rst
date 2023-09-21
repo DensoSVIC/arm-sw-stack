@@ -27,23 +27,26 @@ are aligned to the following specifications:
   describes two interfaces for storage:
 
     * Internal Trusted Storage (ITS) API: An interface for storage provided by
-      the Platform Root of Trust (PRoT). For now the ITS API is not supported.
+      the Platform Root of Trust (PRoT). For now the ITS API is not supported by
+      the Reference Stack.
     * Protected Storage (PS) API: An interface for external protected storage.
 
 The Reference Software Stack also provides the implementation of
 `UEFI SMM Services`_ via the SMM Gateway secure partition to support UEFI System
 Management Mode (SMM).
 
-These secure services are provided by the `Trusted Services`_ project, and
+These Secure Services are provided by the `Trusted Services`_ project, and
 implemented by leveraging the `TrustZone`_ technology in the Primary Compute and
 the hardware-isolated secure enclave in the RSS.
+
+.. _design_secure_services_architecture:
 
 ************
 Architecture
 ************
 
 The following diagram illustrates the components and data flow that implement
-the secure services.
+the Secure Services.
 
 |
 
@@ -67,17 +70,17 @@ invokes the RSS for cryptographic services.
 libts
 =====
 
-In Linux userspace, the secure services is provided in the form of `libts`_ API.
-``libts`` is a library that is provided by `Trusted Services`_ for handling
+In Linux userspace, the Secure Services are provided in the form of `libts`_
+API. ``libts`` is a library that is provided by `Trusted Services`_ for handling
 service discovery and Remote Procedure Call (RPC) messaging. ``libts`` entirely
 decouples client applications from details of where a service provider is
 deployed and how to communicate with it.
 
 The client application sends operation requests and receives responses by
-calling the ``libts`` API. ``libts`` communicates with the Secure Partition (SP)
-running in the secure world. The communication between ``libts`` and the secure
-world SP is carried by the `Arm Firmware Framework for Arm A-profile`_ (FF-A)
-call which is supported by Linux kernel and Trusted Firmware-A.
+calling the ``libts`` API. ``libts`` communicates with the `Secure Partition`_
+(SP) running in the secure world. The communication between ``libts`` and the
+secure world SP is carried by the `Arm Firmware Framework for Arm A-profile`_
+(FF-A) call which is supported by Linux kernel and Trusted Firmware-A.
 
 SE Proxy SP
 ===========
@@ -85,20 +88,21 @@ SE Proxy SP
 The `SE Proxy SP`_ (Secure Enclave Proxy Secure Partition) is a proxy partition
 managed by `OP-TEE`_. It provides access to services hosted by the RSS.
 
-The ``SE Proxy SP`` receives secure service operation requests from the
-non-secure world, translates the request parameters to IPC calls, and invokes
-the runtime services provided by the RSS. The IPC is carried by shared memory
-and MHUv3 doorbell communication between the AP and the RSS.
+The ``SE Proxy SP`` receives secure service operation requests from the normal
+world, translates the request parameters to IPC calls, and invokes the runtime
+services provided by the RSS. The IPC is carried by shared memory and MHUv3
+doorbell communication between the Primary Compute and the RSS.
 
 SMM Gateway SP
 ==============
 
 The `SMM Gateway SP`_ (System Management Mode Gateway Secure Partition) serves
 as a gateway for the variable storage required by the implementation of UEFI
-Boot Services and Runtime Services APIs. These UEFI variables are stored in the
-Protected Storage Service provided by the RSS.
+Boot and Runtime Services APIs. These UEFI variables are stored in the Protected
+Storage Service provided by the RSS.
 
-The above diagram presents the data flow to store UEFI variables. The U-Boot
+The data flow to store UEFI variables is presented in the diagram at the
+beginning of the :ref:`design_secure_services_architecture` section. The U-Boot
 implementation of the UEFI subsystem uses the FF-A driver to communicate with
 the `UEFI SMM Services`_ in the `SMM Gateway SP`_. The backend of the SMM
 services uses the Protected Storage proxy from the `SE Proxy SP`_. From there
@@ -108,6 +112,6 @@ above.
 RSS Secure Firmware
 ===================
 
-The secure services are finally served by the ``RSS Secure Firmware``. For more
-information about how the secure services work in the RSS, please read the
+The Secure Services are finally served by the ``RSS Secure Firmware``. For more
+information about how the Secure Services work in the RSS, please read the
 `TF-M Secure Services`_ page.
