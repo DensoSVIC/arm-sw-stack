@@ -20,11 +20,11 @@ meta-kronos Yocto Layer
 The ``meta-kronos`` layer primarily depends on the ``meta-arm-bsp`` layer which
 implements the ``fvp-rd-kronos`` bitbake ``MACHINE`` definition to enable the
 Reference Stack to run on the Arm Kronos Reference Design FVP (FVP_RD_Kronos).
-Based on the `Cassini`_ distribution. It also contains a set of bitbake
-bbclasses, recipes and libraries to build, integrate, and validate the
-:ref:`introduction_use_cases` with either or both the **Baremetal** and
-**Virtualization** Reference Stack Architectures as described in
-:ref:`Reference Stack Overview
+The layer ``meta-kronos`` is based on the `Cassini`_ distribution. It also
+contains a set of bitbake bbclasses, recipes and libraries to build, integrate,
+and validate the :ref:`introduction_use_cases` with either or both the
+**Baremetal** and **Virtualization** Reference Stack Architectures as described
+in :ref:`Reference Stack Overview
 <introduction_reference_software_stack_overview>`.
 
 The layer source code can be found at :kronos-repo:`yocto/meta-kronos`.
@@ -34,10 +34,7 @@ Yocto Build Configuration
 
 A set of ``yaml`` configuration files (found at :kronos-repo:`yocto/kas`) for
 the `kas build tool`_ is provided to support bitbake layer fetching, project
-configuration and executing the build and validation. The description of the
-kas configuration files can be found in the
-:ref:`Reproduce <user_guide/reproduce:Reproduce>` section of the User Guide.
-
+configuration and executing the build and validation.
 
 Yocto Layers Dependency
 =======================
