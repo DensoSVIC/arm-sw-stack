@@ -40,8 +40,9 @@ Use-Cases
 *********
 
 The solution contains all the instructions necessary to fetch and build the
-source as well as to download the required FVP and launch the use-cases.
-Instructions for achieving these use-cases are given in the
+source as well as to download the required FVP and launch the
+:ref:`Use-Cases <introduction_use_cases>`. Instructions for achieving these
+:ref:`Use-Cases <introduction_use_cases>` are given in the
 :ref:`Reproduce <user_guide/reproduce:Reproduce>` section of the User Guide,
 subject to relevant assumed technical knowledge as listed later in this
 introduction at `Documentation Overview`_.

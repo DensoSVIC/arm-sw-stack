@@ -124,7 +124,7 @@ interfaces are added to an Open vSwitch virtual switch along with an RPmsg
 virtual interface to communicate with the Safety Island.
 
 Dom0 has a communication channel with the Safety Island which is the same as
-the baremetal architecture.
+the Baremetal Architecture.
 
 |
 
@@ -199,7 +199,7 @@ See :ref:`design_applications_bridge` for more information.
 Baremetal Architecture
 ======================
 
-This diagram shows the network topology for the baremetal architecture. ethsi{N}
+This diagram shows the network topology for the Baremetal Architecture. ethsi{N}
 is the name of the RPMsg-based virtual interfaces that are connected to Safety
 Island Cluster{N}, where N is the cluster number. For example, the ethsi0
 interfaces are connected to Safety Island Cluster 0. Similarly, ethpc is the

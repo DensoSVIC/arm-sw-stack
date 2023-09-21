@@ -16,8 +16,8 @@ Introduction
 ************
 
 This Reference Stack uses the `kas menu tool`_ to configure and customize the
-different use cases via a set of configuration options provided in the
-configuration menu.
+different :ref:`Use-Cases <introduction_use_cases>` via a set of configuration
+options provided in the configuration menu.
 
 .. note::
   All command examples on this page can be copied by clicking the copy button.
@@ -117,14 +117,16 @@ To run the configuration menu:
 
 .. image:: ../images/kronos_reference_stack_build_config.png
    :align: center
+   :width: 60 %
 
 |
 
 Safety Island Actuation Demo
 ============================
 
-The demo can be run on the Baremetal Architecture or Virtualization Architecture
-that boots Xen with 2 guests.
+The :ref:`design_applications_actuation` can be run on the Baremetal
+Architecture or Virtualization Architecture that boots Xen with
+2 guests.
 
 .. note::
   The Safety Island Actuation Demo is built as part of the default deployment.
@@ -132,27 +134,27 @@ that boots Xen with 2 guests.
 Baremetal Architecture
 ----------------------
 
-To build a baremetal image:
+To build a Baremetal Architecture image:
 
 1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
 2. Choose ``Baremetal`` from the ``Reference Stack Architecture`` menu.
 3. Then choose ``Save & Build``.
 
-Validation tests can be run on the baremetal images.
+Validation tests can be run on the Baremetal Architecture images.
 See :ref:`reproduce_run-time_integration_tests` for more details on running
 run-time validation tests.
 
 Virtualization Architecture
 ---------------------------
 
-To build a virtualization image:
+To build a Virtualization Architecture image:
 
 1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
 2. Choose ``Virtualization`` from the ``Reference Stack Architecture`` menu.
 3. Then choose ``Save & Build``.
 
-As with the baremetal guidance above, the Reference Stack virtualization
-image can also run validation tests.
+As with the Baremetal Architecture guidance above, the Reference Stack
+Virtualization Architecture image can also run validation tests.
 See :ref:`reproduce_run-time_integration_tests` for more details on running
 run-time validation tests.
 
@@ -165,29 +167,29 @@ Architecture.
 Baremetal Architecture
 ----------------------
 
-To build a baremetal image:
+To build a Baremetal Architecture image:
 
 1. Select ``Safety Island Communication Demo (using HIPC)`` from the
    ``Use-Case`` menu.
 2. Choose ``Baremetal`` from the ``Reference Stack Architecture`` menu.
 3. Then choose ``Save & Build``.
 
-Validation tests can be run on the baremetal images.
+Validation tests can be run on the Baremetal Architecture images.
 See :ref:`reproduce_run-time_integration_tests` for more details on running
 run-time validation tests.
 
 Virtualization Architecture
 ---------------------------
 
-To build a virtualization image:
+To build a Virtualization Architecture image:
 
 1. Select ``Safety Island Communication Demo (using HIPC)`` from the
    ``Use-Case`` menu.
 2. Choose ``Virtualization`` from the ``Reference Stack Architecture`` menu.
 3. Then choose ``Save & Build``.
 
-As with the baremetal guidance above, the Reference Stack virtualization
-image can also run validation tests.
+As with the Baremetal Architecture guidance above, the Reference Stack
+Virtualization Architecture image can also run validation tests.
 See :ref:`reproduce_run-time_integration_tests` for more details on running
 run-time validation tests.
 
@@ -198,15 +200,15 @@ run-time validation tests.
 --------------------------------------
 
 The Arm SystemReady IR Firmware Build option just builds the
-|Arm SystemReadyTM| IR-aligned firmware. Optionally, additional artifacts can
-be built to validate the firmware.
+|Arm SystemReadyTM| IR-aligned firmware.
 
 .. image:: ../images/kronos_reference_stack_build_config_sr_ir.png
    :align: center
+   :width: 60 %
 
 |
 
-To build the |Arm SystemReadyTM| firmware image:
+To build the |Arm SystemReadyTM| IR-aligned firmware image:
 
 1. Select ``Arm SystemReady IR Firmware Build`` under
    ``Arm SystemReady IR Validation`` from the ``Use-Case`` menu.
@@ -241,6 +243,7 @@ To build the |Arm SystemReadyTM| IR Linux distros installation tests:
 
 .. image:: ../images/kronos_reference_stack_build_config_sr_distro.png
    :align: center
+   :width: 60 %
 
 |
 
@@ -253,17 +256,18 @@ running the Linux distros installation tests.
 Run
 ***
 
-This section describes how to run the ``Reference Stack`` and the
-``Debian / openSUSE Distro Installation`` images generated during
-:ref:`user_guide_reproduce_build` on its FVP and connect to the Primary Compute
-to manually execute commands and in this way try out the different Use-Cases
-Kronos offers.
+This section describes how to run the Reference Stack and the
+Debian and openSUSE Distro Installation images generated during
+:ref:`user_guide_reproduce_build` on its FVP. It also explains
+how to connect to the Primary Compute to manually execute commands,
+allowing users to explore the different
+:ref:`Use-Cases <introduction_use_cases>` Kronos offers.
 
-The ``runfvp`` tool that invokes the Kronos FVP creates one tmux window per
-processing element. The default window displayed will be that of the Primary
-Compute titled ``terminal_ns_uart0``. User may press ``Ctrl-b w`` to see the
-list of tmux windows and use arrow keys to navigate through the windows and
-press ``Enter`` to select any processing element terminal.
+The ``runfvp`` tool that invokes the Kronos FVP creates one tmux terminal
+window per processing element. The default window displayed will be that of the
+Primary Compute titled ``terminal_ns_uart0``. User may press ``Ctrl-b w`` to
+see the list of tmux windows and use arrow keys to navigate through the windows
+and press ``Enter`` to select any processing element terminal.
 
 The Reference Stack running on the Primary Compute can be logged into as
 ``root`` user without password in the Linux terminal.
@@ -302,8 +306,8 @@ To start the FVP and connect to the Primary Compute terminal (running Linux):
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
 The user should wait for the system to boot and for the Linux prompt to appear.
-On a virtualization image, this will access Dom0. Use the ``xl`` tool to log
-in to the DomU1:
+On a Virtualization Architecture image, this will access Dom0. Use the ``xl``
+tool to log in to the DomU1:
 
 .. code-block:: console
 
@@ -337,19 +341,20 @@ Safety Island Actuation Demo
 ----------------------------
 
 The instructions can be run on both the Baremetal and Virtualization
-architectures and an assumption has been made that the FVP has been launched
-as indicated under :ref:`reproduce_run`.
+Architectures and an assumption has been made that the FVP has been launched
+as indicated under :ref:`reproduce_run`. See the `Safety Island Actuation
+Demo`_ for further details.
 
 The Safety Island (SI) Cluster 2 terminal running the Actuation Service is
 available via the tmux window titled ``terminal_uart_si_cluster2``. For ease of
 navigation, we recommend joining the SI Cluster 2 terminal to Primary Compute
 terminal and to create a tmux window attached to Primary Compute terminal in
 order to issue commands on the host machine. User can navigate through the panes
-by pressing ``Ctrl-b`` and arrow keys. Follow the steps below to achieve the
-same:
+by pressing ``Ctrl-b`` and arrow keys followed by the ``Enter`` key. Follow the
+steps below to achieve the same:
 
-1. Press ``Ctrl-b w`` from the tmux session and navigate to the tmux window
-   titled ``terminal_ns_uart0``.
+1. Press ``Ctrl-b w`` from the tmux session, navigate to the tmux window titled
+   ``terminal_ns_uart0`` followed by pressing ``Enter`` key.
 2. Press ``Ctrl-b %`` to add a new tmux window which will be used to issue
    commands on the host machine.
 3. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_uart_si_cluster2``
@@ -389,6 +394,14 @@ in :ref:`user_guide_reproduce_actuation_demo`, start the Packet Analyzer:
       cd ~/kronos/
       # Start the Packet Analyzer
       kas shell -c "oe-run-native packet-analyzer-native start_analyzer -L debug -a localhost -c ./data"
+
+   The following messages are expected from the host terminal:
+
+   .. code-block:: shell
+
+      INFO : analyzer_client.py/_connect_to: Starting analyze, use Ctrl-C to stop the process.
+      INFO : analyzer_client.py/_connect_to: Attempting a connect to (localhost : 49152)
+      INFO : analyzer_client.py/_connect_to: Successfully connected to (localhost : 49152)
 
    A message similar to the following should appear on the SI Cluster 2:
 
@@ -445,13 +458,14 @@ in :ref:`user_guide_reproduce_actuation_demo`, start the Packet Analyzer:
     Chain ID   Result
     0          AnalyzerResult.SUCCESS
 
-4. In order to shutdown the FVP and terminate the emulation, perform a shutdown
-   of the Primary Compute by issuing a ``shutdown now`` on the Primary Compute.
-   Once the shutdown process is complete, close the tmux windows created by the
-   ``runfvp`` tool by pressing ``Ctrl-]`` and typing ``quit``. Close the tmux
-   window started for the host machine in
-   :ref:`user_guide_reproduce_actuation_demo` by pressing ``Ctrl-d``. Press
-   ``Ctrl-c`` to stop the FVP process.
+4. To shutdown the FVP and terminate the emulation, follow the below steps:
+
+    * Issue a ``shutdown now`` on the Primary Compute.
+    * Once the shutdown process is complete, close the tmux windows created by
+      the ``runfvp`` tool by pressing ``Ctrl-]`` and typing ``quit``.
+    * Close the tmux window started for the host machine in
+      :ref:`user_guide_reproduce_actuation_demo` by pressing ``Ctrl-d``.
+    * Press ``Ctrl-c`` to stop the FVP process.
 
 Virtualization Architecture
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -471,11 +485,11 @@ Virtualization Architecture
 Safety Island Communication Demo
 --------------------------------
 
-The Safety Island Communication Demo uses HIPC (Heterogeneous Inter-processor
-Communication) to validate networking between the Primary Compute and the three
-Safety Island clusters. Please refer to :ref:`design_hipc` for more information
-on HIPC. ``ping`` and ``iperf`` tools are installed and can be executed
-automatically using the automated HIPC test suite (see
+The Safety Island Communication Demo uses :ref:`HIPC (Heterogeneous
+Inter-processor Communication) <design/hipc:Heterogeneous Inter-processor
+Communication (HIPC)>` to validate networking between the Primary Compute and
+the three Safety Island clusters. ``ping`` and ``iperf`` tools are installed and
+can be executed automatically using the automated HIPC test suite (see
 :ref:`reproduce_run-time_integration_tests` below and the test descriptions in
 :ref:`validation_run-time_integration_tests`).
 
@@ -494,8 +508,8 @@ The demo consists of a TLS server and a TLS client. Please refer to
 :ref:`design_applications_parsec_enabled_tls` for more information on
 this application.
 
-Run ``ssl_server`` from the Primary Compute in the background and press
-``Enter`` key to continue:
+Run ``ssl_server`` from the Primary Compute terminal in the background and
+press ``Enter`` key to continue:
 
    .. code-block:: shell
 
@@ -514,7 +528,7 @@ A message similar to the following should appear:
 The TLS client can take an optional parameter as the TLS server IP address. The
 default value of the parameter is ``localhost``.
 
-Run ``ssl_client1`` from the Primary Compute in a container:
+Run ``ssl_client1`` from the Primary Compute terminal in a container:
 
    .. code-block:: shell
 
@@ -550,6 +564,15 @@ persistent storage:
       pkill ssl_server
       sync
 
+To shutdown the FVP and terminate the emulation, follow the below steps:
+
+  * Issue a ``shutdown now`` on the Primary Compute.
+  * Once the shutdown process is complete, close the tmux windows created by
+    the ``runfvp`` tool by pressing ``Ctrl-]`` and typing ``quit``.
+  * Close the tmux window started for the host machine in
+    :ref:`user_guide_reproduce_actuation_demo` by pressing ``Ctrl-d``.
+  * Press ``Ctrl-c`` to stop the FVP process.
+
 .. _user_guide_reproduce_IR_validation:
 
 |Arm SystemReadyTM| IR Validation
@@ -570,11 +593,11 @@ directory ``build/tmp/deploy/images/fvp-rd-kronos``.
 The ACS for the |Arm SystemReadyTM| IR certification is delivered through a live
 OS image, which enables the basic automation to run the tests.
 
-Follow the steps listed in :ref:`user_guide_reproduce_sr_ir_acs`, the system
+Following the steps listed in :ref:`user_guide_reproduce_sr_ir_acs`, the system
 will boot with the ACS live OS image and the ACS tests will run automatically
 after the system boots.
 
-The previous tests take around 9 hours to complete. A similar output to the
+This process takes around 9 hours to complete. A similar output to the
 following is printed out:
 
 .. code-block:: console
@@ -631,9 +654,9 @@ ACS tests are set up and how they work in the Reference Stack.
 Linux Distribution Installation (Debian and openSUSE)
 -----------------------------------------------------
 
-The |Arm SystemReadyTM| IR must boot at least two unmodified generic UEFI
-distribution images from an ISO image. To test the installation of a Linux
-distribution, follow the steps listed in
+The |Arm SystemReadyTM| IR-aligned firmware must boot at least two unmodified
+generic UEFI distribution images from an ISO image. To test the installation of
+a Linux distribution, follow the steps listed in
 :ref:`user_guide_reproduce_sr_ir_linux_build` to build and
 :ref:`user_guide_reproduce_sr_ir_linux_run` to start the installation.
 
@@ -666,6 +689,12 @@ Debian
 ^^^^^^
 
 The whole process of installing Debian will probably take about 5 hours.
+
+The install process begins when you see something like the below picture:
+
+    .. image:: ../images/sr-ir-linux-distro-debian-install-grub-3.png
+       :align: center
+       :width: 60 %
 
 The following are problems that have been encountered during the Debian
 installation process and how to solve them:
@@ -713,9 +742,9 @@ installation process and how to solve them:
 
   When the installation reaches the ``Install the GRUB boot loader`` phase,
   there will be an error ``Unable to install GRUB in dummy``.
-  This is because on EBBR platform, UEFI SetVariable() is not required at
+  This is because on EBBR platform, ``UEFI SetVariable()`` is not required at
   runtime (however, it is required at boot time), and Kronos happens to not
-  support UEFI SetVariable() yet.
+  support ``UEFI SetVariable()`` yet.
 
   .. image:: ../images/sr-ir-linux-distro-debian-install-grub-0.png
      :align: center
@@ -772,6 +801,11 @@ installation process and how to solve them:
   When the installation reaches the final ``Finishing the installation``
   phase, you will need to wait some time to finish the remaining tasks,
   and then it will automatically reboot into the installed OS.
+
+* Terminate the FVP
+
+  Press ``Ctrl-b 1`` to switch to the FVP running terminal, then press
+  ``Ctrl-c`` to terminate the FVP simulation.
 
 openSUSE
 ^^^^^^^^
@@ -855,6 +889,9 @@ main steps and tips for installing openSUSE.
 11. The reboot process takes about 20 minutes. Then you can login the Linux
     shell with the user created in Step 6.
 
+11. Press ``Ctrl-b 1`` to switch to the FVP running terminal, then press
+    ``Ctrl-c`` to terminate the FVP simulation.
+
 .. _reproduce_run-time_integration_tests:
 
 ********************
@@ -872,7 +909,8 @@ The following validation tests can be performed on the Reference Stack:
 
       For the ``Safety Island Actuation Demo`` selected as ``Use-Case``, a
       similar output to the following is printed out. The complete test suit
-      takes around 16 minutes to complete.
+      takes around 16 minutes to complete. See :ref:`validation_actuation_demo`
+      for more details.
 
       .. code-block:: console
 
@@ -911,7 +949,8 @@ The following validation tests can be performed on the Reference Stack:
 
       For the ``Safety Island Communication Demo (using HIPC)`` selected as
       ``Use-Case``, a similar output to the following is printed out. The
-      complete test suit takes around 14 minutes to complete.
+      complete test suit takes around 14 minutes to complete. See
+      :ref:`validation_zephyr_bridge` for more details.
 
       .. code-block:: console
 
@@ -952,7 +991,8 @@ The following validation tests can be performed on the Reference Stack:
 
       For the ``Safety Island Actuation Demo`` selected as ``Use-Case``, a
       similar output to the following is printed out. The complete test suit
-      takes around 41 minutes to complete.
+      takes around 41 minutes to complete. See :ref:`validation_actuation_demo`
+      for more details.
 
       .. code-block:: console
 
@@ -1014,7 +1054,8 @@ The following validation tests can be performed on the Reference Stack:
 
       For the ``Safety Island Communication Demo (using HIPC)`` selected as
       ``Use-Case``, a similar output to the following is printed out. The
-      complete test suit takes around 36 minutes to complete.
+      complete test suit takes around 36 minutes to complete. See
+      :ref:`validation_zephyr_bridge` for more details.
 
       .. code-block:: console
 
