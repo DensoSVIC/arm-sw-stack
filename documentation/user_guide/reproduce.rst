@@ -766,7 +766,7 @@ installation process and how to solve them:
 
 * Finishing the installation
 
-  When the installation has reached the final ``Finishing the installation``
+  When the installation reaches the final ``Finishing the installation``
   phase, you will need to wait some time to finish the remaining tasks,
   and then it will automatically reboot into the installed OS.
 
