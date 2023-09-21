@@ -10,7 +10,7 @@
 Components
 ##########
 
-The stack comprises of the following components:
+The Reference Stack comprises of the following main components:
 
 .. list-table::
   :header-rows: 1
@@ -52,10 +52,8 @@ The stack comprises of the following components:
 RSS
 ***
 
-The `Runtime Security Subsystem (RSS)`_ is a security subsystem fulfilling the
-requirements of the `Arm Confidential Compute Architecture`_ (CCA). The RSS
-additionally adds an isolated environment to provide platform security services
-that are outside of the scope of the CCA Platform Security Domain.
+The `Runtime Security Subsystem (RSS)`_ is a security subsystem, which
+additionally adds an isolated environment to provide platform security services.
 
 The RSS serves as the Root of Trust for the system, offering critical platform
 security services and holding and protecting the most sensitive assets in the
@@ -69,10 +67,11 @@ In the current software stack, the RSS offers:
   PSA Root of Trust (RoT) secure partition, further details of which can be
   found in the `TF-M Crypto Service`_ documentation.
 * Internal Trusted Storage (ITS) Service, which is a PSA RoT Service for storing
-  the most security-critical device data (e.g. cryptographic keys) in internal
-  storage that is trusted to provide data confidentiality and authenticity.
-  Further details can be found in the `TF-M Internal Trusted Storage Service`_
-  documentation.
+  the most security-critical device data in internal storage that is trusted to
+  provide data confidentiality and authenticity. Further details can be found in
+  the `TF-M Internal Trusted Storage Service`_ documentation. Now the Reference
+  Stack only uses ITS service to store cryptographic keys for RSS internally,
+  not provided for external usage.
 * Protected Storage (PS) Service, which is an Application RoT service that
   allows larger data sets to be stored securely in external flash, with the
   option for encryption, authentication and rollback protection to protect the
