@@ -38,6 +38,7 @@ System Requirements
   * Ubuntu Desktop or Server 20.04 Linux distribution
   * At least 300GiB of free disk for the download and builds
   * At least 32GiB of RAM memory
+  * At least 8GiB of swap memory
 
 
 Install Dependencies
