@@ -45,7 +45,9 @@ Install Dependencies
 ====================
 
   * Please follow the Yocto Project documentation on
-    `how to install the essential packages`_ required for the build host.
+    `how to install the essential packages`_ required for the build host. The
+    packages needed to build the Yocto Project documentation manuals are not
+    required.
 
   * Install the kas tool and its optional dependency (to use the "menu" plugin):
 

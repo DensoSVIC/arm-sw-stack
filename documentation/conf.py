@@ -254,7 +254,7 @@ rst_prolog = f"""
 .. _Zephyr repository: https://github.com/zephyrproject-rtos/zephyr/tree/v{zephyr_version}
 .. _Zephyr: https://docs.zephyrproject.org/{zephyr_version}/
 .. _edk2-test-parser: https://gitlab.arm.com/systemready/edk2-test-parser/-/blob/ir1/EBBR.yaml
-.. _how to install the essential packages: https://docs.yoctoproject.org/{yocto_doc_version}singleindex.html#required-packages-for-the-build-host
+.. _how to install the essential packages: https://docs.yoctoproject.org/{yocto_doc_version}/singleindex.html#ubuntu-and-debian
 .. _imgtool: https://github.com/mcu-tools/mcuboot/blob/main/docs/imgtool.md
 .. _kas Dependencies & installation: https://kas.readthedocs.io/en/{kas_version}/userguide.html#dependencies-installation
 .. _kas build tool: https://kas.readthedocs.io/en/{kas_version}/userguide.html
