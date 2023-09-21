@@ -260,7 +260,7 @@ The ``runfvp`` tool that invokes the Kronos FVP creates one tmux window per
 processing element. The default window displayed will be that of the Primary
 Compute titled ``terminal_ns_uart0``. User may press ``Ctrl-b w`` to see the
 list of tmux windows and use arrow keys to navigate through the windows and
-press then ``Enter`` to select any processing element terminal.
+press ``Enter`` to select any processing element terminal.
 
 The Reference Stack running on the Primary Compute can be logged into as
 ``root`` user without password in the Linux terminal.
