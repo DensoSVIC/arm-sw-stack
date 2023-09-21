@@ -147,7 +147,7 @@ For example, the file
 
 .. _validation_actuation_demo:
 
-Integration Tests validating the Safety Island Actuation Demo
+Integration Tests Validating the Safety Island Actuation Demo
 =============================================================
 
 The ``test_player_to_analyzer`` integration test in
@@ -197,7 +197,7 @@ are run for each Xen guests created.
 
 .. _validation_zephyr_bridge:
 
-Integration Tests validating the Safety Island Cluster 0 Bridge
+Integration Tests Validating the Safety Island Cluster 0 Bridge
 ===============================================================
 
 The ``test_si{N}_bridge_ethernet0`` integration tests in
@@ -212,7 +212,7 @@ port forwarding for UDP traffic.
 
 .. _validation_parsec_enabled_tls_demo:
 
-Integration Tests validating the Parsec-enabled TLS Demo
+Integration Tests Validating the Parsec-enabled TLS Demo
 ================================================================
 
 The ``test_parsec_demo`` integration test in
@@ -232,10 +232,43 @@ The test is performed under the following configuration:
  * The TLS client operates within a container that resides on the Primary
    Compute.
 
+.. _validation_xen:
+
+Integration Tests Validating Xen
+================================
+
+The ``test_ptestrunner`` integration test in
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_40_virtualization.py`
+uses ``ptest-runner`` to execute ``01-xendomains.bats`` BATS
+(Bash Automated Test System) tests in
+:kronos-repo:`yocto/meta-kronos/recipes-test/xen/files/tests/01-xendomains.bats`,
+
+DomUs lifecycle management
+--------------------------
+
+The ``01-xendomains.bats`` BATS test verifies DomU lifecycle management,
+including status checking, destroy and restart.
+
+MPAM
+----
+
+The MPAM cache partitioning functionality is verified by the
+``01-xendomains.bats`` BATS tests from the following aspects:
+
+* Verify if the Dom0 Cache Portion Bitmap (CPBM) value is consistent with the
+  pre-set value from the Xen command line.
+* Verify if the CPBM values for DomU1 and DomU2 are consistent with the
+  pre-set value from the Xen guest configuration files.
+* Verify if user can modify the domain CPBM values by the ``xl`` sub-commands
+  in :ref:`design_components_xen_mpam`.
+
 .. _validation_gicv4_1_demo:
 
-Integration Tests validating the GICv4.1 vLPI/vSGI Direct Injection Demo
-========================================================================
+GICv4.1 vLPI/vSGI Direct Injection Demo
+---------------------------------------
+
+The ``01-xendomains.bats`` BATS test verifies GICv4.1 feature enablement,
+through pre-set keyword capture in Xen and Dom0 Linux boot log.
 
 The ``test_gicv4_1`` integration test in
 :kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_40_gicv4_1.py`
