@@ -158,10 +158,10 @@ The Primary Compute is the Application Processor in the Kronos Reference
 Design. The purpose of its firmware is to provide an |Arm SystemReadyTM|
 IR-aligned interface to Linux. |Arm SystemReadyTM| IR compatible systems are
 required to follow the `Device Tree specification`_, so the
-:ref:`design_components_u-boot` bootloader is used in the normal world,
+:ref:`design_components_u-boot` bootloader is used in the Normal world,
 which provides the UEFI implementation and exposes the device tree to Linux.
 
-:ref:`design_components_trusted-firmware-a` provides the initial, secure-world
+:ref:`design_components_trusted-firmware-a` provides the initial, Secure world
 firmware, which consists of BL2, BL31 and BL32. BL33 is provided by U-Boot.
 
 The Primary Compute boot flow follows the following steps:

@@ -86,7 +86,7 @@ The following components are involved in the demo:
     Library of Mbed TLS. The driver implements a secure element by using the
     Parsec service. It delegates the crypto API calls to Parsec. The calls are
     further handled by the Secure Enclave Proxy Secure Partition (SE Proxy SP)
-    in the secure world of Primary Compute and finally handled by the RSS crypto
+    in the Secure world of Primary Compute and finally handled by the RSS crypto
     service.
 
 For more information of how the operations are handled by Parsec service, the SE

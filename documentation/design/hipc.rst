@@ -184,7 +184,7 @@ following VLAN identifiers:
  * VLAN **200**: Traffic from/to **Cluster 1**
  * VLAN **300**: Traffic from/to **Cluster 2**
 
-External connection
+External Connection
 ===================
 
 The Safety Island has a single network interface leading outside of the Kronos

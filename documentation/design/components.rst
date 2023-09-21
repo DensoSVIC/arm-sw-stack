@@ -329,7 +329,7 @@ deploying device root-of-trust services for A-profile devices. Alternative
 secure processing environments are supported to accommodate the diverse range
 of isolation technologies available to system integrators.
 
-The Reference Software Stack implements the following secure services on top of
+The Reference Software Stack implements the following Secure Services on top of
 the Trusted Services framework:
 
 * `Crypto Service`_
@@ -365,7 +365,7 @@ need for platform-specific configuration.
 
 In the current software stack, the U-Boot implementation of the UEFI subsystem
 uses the FF-A (`Arm Firmware Framework for Arm A-profile`_) driver to
-communicate with the `UEFI SMM Services`_ in the secure world to store and read
+communicate with the `UEFI SMM Services`_ in the Secure world to store and read
 UEFI variables that are stored in the Protected Storage Service provided by the
 RSS.
 

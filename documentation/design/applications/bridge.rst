@@ -58,7 +58,7 @@ application.
 The network interface to the Primary Compute can respond to ICMP *echo requests*
 but has no functional use.
 
-Validations
-===========
+Validation
+==========
 
 See :ref:`validation_zephyr_bridge`.

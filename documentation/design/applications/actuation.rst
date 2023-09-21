@@ -112,7 +112,7 @@ Actuation Service <> Packet Analyzer
 BSD socket (TCP Protocol) is used in order to send the Control Commands from the
 "Actuation Service" to the "Packet Analyzer".
 
-Validations
-===========
+Validation
+==========
 
 Please refer to the Actuation Demo validations :ref:`validation_actuation_demo`

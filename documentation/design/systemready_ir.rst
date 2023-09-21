@@ -4,6 +4,8 @@
  #
  # SPDX-License-Identifier: MIT
 
+.. _design_systemready_ir:
+
 ######################
 |Arm SystemReadyTM| IR
 ######################
@@ -92,7 +94,7 @@ The Reference Stack is currently known to have the following non-alignments:
        restart is used during the ACS test, which will result in 'Failed to
        persist EFI variables', which in turn will cause the BootServicesTest
        case ``BS.ExitBootServices - ConsistencyTestCheckpoint1`` and several
-       RuntimeServicesTest ``SetVariable``/``GetVariable`` cases fail.
+       RuntimeServicesTest ``SetVariable``/``GetVariable`` cases to fail.
     3. U-Boot uses the 'removable storage' method to boot the EFI payload and
        the EFI boot manager is not configured/used.
 

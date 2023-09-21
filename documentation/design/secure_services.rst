@@ -63,7 +63,7 @@ to provide a common API to hardware security and cryptographic services in a
 platform-agnostic way. This abstraction layer keeps workloads decoupled from
 physical platform details.
 
-``Parsec`` is configured to use Trusted Services in the secure world as its
+``Parsec`` is configured to use Trusted Services in the Secure world as its
 backend. ``Parsec`` service calls the API provided by ``libts`` which further
 invokes the RSS for cryptographic services.
 
@@ -78,8 +78,8 @@ deployed and how to communicate with it.
 
 The client application sends operation requests and receives responses by
 calling the ``libts`` API. ``libts`` communicates with the `Secure Partition`_
-(SP) running in the secure world. The communication between ``libts`` and the
-secure world SP is carried by the `Arm Firmware Framework for Arm A-profile`_
+(SP) running in the Secure world. The communication between ``libts`` and the
+Secure world SP is carried by the `Arm Firmware Framework for Arm A-profile`_
 (FF-A) call which is supported by Linux kernel and Trusted Firmware-A.
 
 SE Proxy SP
@@ -88,7 +88,7 @@ SE Proxy SP
 The `SE Proxy SP`_ (Secure Enclave Proxy Secure Partition) is a proxy partition
 managed by `OP-TEE`_. It provides access to services hosted by the RSS.
 
-The ``SE Proxy SP`` receives secure service operation requests from the normal
+The ``SE Proxy SP`` receives secure service operation requests from the Normal
 world, translates the request parameters to IPC calls, and invokes the runtime
 services provided by the RSS. The IPC is carried by shared memory and MHUv3
 doorbell communication between the Primary Compute and the RSS.

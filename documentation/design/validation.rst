@@ -67,13 +67,13 @@ for debugging.
        The script that implements the test is
        :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/test_00_trusted_firmware_a.py`.
        The test waits for the Primary Compute to log that it is entering the
-       normal world as defined in the RSS boot process.
+       Normal world as defined in the RSS boot process.
 
     * OP-TEE
        The script that implements the test is
        :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/test_00_secure_partition.py`.
        The test waits for the Primary Compute to log that OP-TEE loads the
-       required SPs (Secure Partitions) and primary CPU switches to normal world
+       required SPs (Secure Partitions) and primary CPU switches to Normal world
        boot.
 
 .. _design_bsp_tests:
