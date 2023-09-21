@@ -215,6 +215,7 @@ rst_prolog = f"""
 .. _OEQA FVP: https://git.yoctoproject.org/meta-arm/tree/documentation/oeqa-fvp.md?h={yocto_version}
 .. _OP-TEE repository: https://github.com/OP-TEE/optee_os/tree/{optee_version}
 .. _OP-TEE: https://optee.readthedocs.io/en/{optee_version}/
+.. _OP-TEE API Specification: https://globalplatform.org/specs-library/?filter-committee=tee
 .. _Open vSwitch: https://www.openvswitch.org
 .. _PREEMPT_RT patch: https://wiki.linuxfoundation.org/realtime/start
 .. _PSA Arch Tests: https://github.com/ARM-software/psa-arch-tests
