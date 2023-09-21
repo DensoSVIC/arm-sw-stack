@@ -669,36 +669,40 @@ installation process and how to solve them:
 
 * Detect and mount installation media
 
-    1. After the installer starts, it will prompt
-       ``No device for installation media was detected.`` in the
-       ``Detect and mount installation media`` tab.
-       Choose ``No`` to continue.
+  1. After the installer starts, it will prompt
+     ``No device for installation media was detected.`` in the
+     ``Detect and mount installation media`` tab.
+     Choose ``No`` to continue.
 
-    .. image:: ../images/sr-ir-linux-distro-debian-install-media-0.png
-       :align: center
-
-|
-
-    2. Choose ``Yes`` to Manually select a module and device for installation
-       media.
-
-    .. image:: ../images/sr-ir-linux-distro-debian-install-media-1.png
-       :align: center
+  .. image:: ../images/sr-ir-linux-distro-debian-install-media-0.png
+     :align: center
+     :width: 60 %
 
 |
 
-    3. Choose ``none`` to continue.
+  2. Choose ``Yes`` to Manually select a module and device for installation
+     media.
 
-    .. image:: ../images/sr-ir-linux-distro-debian-install-media-2.png
-       :align: center
+  .. image:: ../images/sr-ir-linux-distro-debian-install-media-1.png
+     :align: center
+     :width: 60 %
 
 |
 
-    4. Input ``/dev/mmcblk0`` as the device file for accessing the installation
-       media.
+  3. Choose ``none`` to continue.
 
-    .. image:: ../images/sr-ir-linux-distro-debian-install-media-3.png
-       :align: center
+  .. image:: ../images/sr-ir-linux-distro-debian-install-media-2.png
+     :align: center
+     :width: 60 %
+
+|
+
+  4. Input ``/dev/mmcblk0`` as the device file for accessing the installation
+     media.
+
+  .. image:: ../images/sr-ir-linux-distro-debian-install-media-3.png
+     :align: center
+     :width: 60 %
 
 |
 
@@ -710,8 +714,9 @@ installation process and how to solve them:
   runtime (however, it is required at boot time), and Kronos happens to not
   support UEFI SetVariable() yet.
 
-    .. image:: ../images/sr-ir-linux-distro-debian-install-grub-0.png
-       :align: center
+  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-0.png
+     :align: center
+     :width: 60 %
 
 |
 
@@ -753,8 +758,9 @@ installation process and how to solve them:
   installer again, then select ``Continue without boot loader`` in the
   ``Debian installer main menu`` and continue.
 
-    .. image:: ../images/sr-ir-linux-distro-debian-install-grub-1.png
-       :align: center
+  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-1.png
+     :align: center
+     :width: 60 %
 
 |
 
@@ -770,250 +776,81 @@ openSUSE
 The whole process of installing openSUSE will take about 6 hours. Below are the
 main steps and tips for installing openSUSE.
 
-1. After the installer starts, it will take about 10 minutes to reach the
-   ``Language, Keyboard and Licence Agreement`` tab. Select ``Next`` to
-   continue.
+1. After the installer starts, select ``Installation`` to start installation
+   process.
+
+   .. image:: ../images/sr-ir-linux-distro-opensuse-install-installation.png
+      :align: center
+      :width: 60 %
+
+2. It will take about 10 minutes to reach the ``Language, Keyboard and Licence
+   Agreement`` tab. Select ``Next`` to continue.
 
    .. tip::
 
       Use ``Tab`` to cycle through options, and ``Enter`` to confirm.
 
-2. After ``System Probing`` success, select ``No`` for ``Online Repositories``.
+3. After ``System Probing`` success, select ``No`` for ``Online Repositories``.
 
-   .. code-block:: none
+   .. image:: ../images/sr-ir-linux-distro-opensuse-install-online-repositories.png
+      :align: center
+      :width: 60 %
 
-     System Probing
+4. Select ``Server`` for ``System Role``, then select ``Next`` to continue.
 
-      x   Probe USB devices
-      x   Probe FireWire devices
-      x   Probe hard disks
-      x   Search for system files
-      x   Initialize software manager
+   .. image:: ../images/sr-ir-linux-distro-opensuse-install-system-role.png
+      :align: center
+      :width: 60 %
 
-           ┌───────────────────────────────────────────────────────┐
-           │ Online Repositories                                   │
-           │ Enabling the online repositories during installation  │
-           │ gives you access to all software that does not fit on │
-           │ the installation media anymore. Additionally, those   │
-           │ repositories might contain updated software packages. │
-           │                                                       │
-           │ Activate online repositories now?                     │
-           │                                                       │
-           │                      [Yes] [No]                       │
-           └───────────────────────────────────────────────────────┘
+5. Select ``Next`` to accept the ``Suggested Partitioning`` and continue.
 
-3. Select ``Server`` for ``System Role``, then select ``Next`` to continue.
+   .. image:: ../images/sr-ir-linux-distro-opensuse-install-suggested-partitioning.png
+      :align: center
+      :width: 60 %
 
-   .. code-block:: none
+6. ``Create New User``, then select ``Next`` to continue.
 
-     System Role                                               [Release Notes...]
-     System Roles are predefined use cases which tailor the system
-     for the selected scenario.
+   .. image:: ../images/sr-ir-linux-distro-opensuse-install-create-new-user.png
+      :align: center
+      :width: 60 %
 
-     ┌──────────────────────────────────────────────────────────────────────────┐
-     │( ) Desktop with KDE Plasma                                               │
-     │    Graphical system with KDE Plasma as desktop environment. Suitable for │
-     │    Workstations, Desktops and Laptops.                                   │
-     │                                                                          │
-     │( ) Desktop with GNOME                                                    │
-     │    Graphical system with GNOME as desktop environment. Suitable for      │
-     │    Workstations, Desktops and Laptops.                                   │
-     │                                                                          │
-     │( ) Desktop with Xfce                                                     │
-     │    Graphical system with Xfce as desktop environment. Suitable for       │
-     │    Workstations, Desktops and Laptops.                                   │
-     │                                                                          │
-     │( ) Generic Desktop                                                       │
-     │    Graphical system with reduced package set. Intended as base for a     │
-     │    customized software selection.                                        │
-     │                                                                          │
-     │(x) Server                                                                │
-     │    Small set of packages suitable for servers with a text mode interface.│
-     │                                                                          │
-     │( ) Transactional Server                                                  │
-     │    Like the Server role but uses a read-only root filesystem to provide  │
-     │    atomic, automatic updates of a system without interfering with the    │
-     │    running system.                                                       │
-     └──────────────────────────────────────────────────────────────────────────┘
-     [Help]                 [Back]                 [Abort]                 [Next]
-
-4. Select ``Next`` to accept the ``Suggested Partitioning`` and continue.
-
-   .. code-block:: none
-
-     Suggested Partitioning                                    [Release Notes...]
-
-     ┌──────────────────────────────────────────────────────────────────────────┐
-     │Initial layout proposed after adjusting the Guided Setup settings:        │
-     │                                                                          │
-     │ *  do not enable snapshots for /                                         │
-     │ *  do not propose swap                                                   │
-     │                                                                          │
-     │Changes to partitioning:                                                  │
-     │                                                                          │
-     │ *  Create GPT on /dev/vda                                                │
-     │ *  Create partition /dev/vda1 (128.00 MiB) for /boot/efi with vfat       │
-     │ *  Create partition /dev/vda2 (5.87 GiB) for / with btrfs                │
-     │ *  9 subvolume actions (see details)                                     │
-     └──────────────────────────────────────────────────────────────────────────┘
-                                   [Guided Setup]
-                                [Expert Partitioner↓]
-
-     [Help]                 [Back]                 [Abort]                 [Next]
-
-
-5. ``Create New User``, then select ``Next`` to continue.
-
-   .. code-block:: none
-
-      (x) Create New User
-           User's Full Name
-           ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-           Username
-           ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-           Password
-           ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-           Confirm Password
-           ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-           [x] Use this password for system administrator
-           [ ] Automatic Login
-
-      ( ) Skip User Creation
-
-      [Help]           [Back]           [Abort]           [Next]
-
-6. If you're warned with ``The password is too simple``, it's fine to ignore and
+7. If you're warned with ``The password is too simple``, it's fine to ignore and
    select ``Yes`` to continue.
 
-   .. code-block:: none
+   .. image:: ../images/sr-ir-linux-distro-opensuse-install-password-too-simple.png
+      :align: center
+      :width: 60 %
 
-       ┌────────────────────────────────────────────────────────┐
-       │ The password is too simple:                            │
-       │ it is based on a dictionary word.                      │
-       │                                                        │
-       │ You have used only lowercase letters for the password. │
-       │                                                        │
-       │ Really use this password?                              │
-       │                                                        │
-       │                       [Yes] [No]                       │
-       └────────────────────────────────────────────────────────┘
-
-7. After ``Analyzing your system...``, a summary of installation settings will
+8. After ``Analyzing your system...``, a summary of installation settings will
    be given. Select ``Install`` to accept and continue.
 
-   .. code-block:: none
+   .. image:: ../images/sr-ir-linux-distro-opensuse-install-installation-settings.png
+      :align: center
+      :width: 60 %
 
-     Installation Settings                            [Release Notes...]
-     Click a headline to make changes or use the "Change..." menu below.
-     ┌──────────────────────────────────────────────────────────────────────────┐
-     │Booting                                                                   │
-     │                                                                          │
-     │ *  Boot Loader Type: GRUB2 EFI                                           │
-     │ *  Secure Boot: enabled (disable)                                        │
-     │ *  Update NVRAM: enabled (disable)                                       │
-     │                                                                          │
-     │Software                                                                  │
-     │                                                                          │
-     │ *  Product: openSUSE Leap 15.4                                           │
-     │ *  Patterns:                                                             │
-     │     +  Help and Support Documentation                                    │
-     │     +  Minimal Base System                                               │
-     │     +  Enhanced Base System                                              │
-     │     +  AppArmor                                                          │
-     │     +  YaST Base Utilities                                               │
-     │     +  Software Management                                               │
-     │     +  Minimal Appliance Base                                            │
-     │ *  Size of Packages to Install: 1.7 GiB                                  │
-     │                                                                          │
-     │Default systemd target                                                    │
-     │                                                                          │
-     │ *  Text mode                                                             │
-     │                                                                          │
-     │System                                                                    │
-     │                                                                          │
-     │ *  System and Hardware Settings                                          │
-     │                                                                          │
-     │Security                                                                  │
-     │                                                                          │
-     │ *  CPU Mitigations: Auto                                                 │
-     │ *  Firewall will be enabled (disable)                                    │
-     │ *  SSH service will be enabled (disable)                                 │
-     │ *  SSH port will be open (block)                                         │
-     │ *  Major Linux Security Module: AppArmor                                 │
-     │ *  PolicyKit Default Privileges: Default                                 │
-     │                                                                          │
-     │Network Configuration                                                     │
-     │                                                                          │
-     │ *  Interfaces                                                            │
-     │     +  Configured with DHCP: eth0                                        │
-     │ *  Hostname / DNS                                                        │
-     │     +  Hostname: Set by DHCP                                             │
-     │ *  Routing                                                               │
-     │     +  IP Forwarding for IPv4: off                                       │
-     │     +  IP Forwarding for IPv6: off                                       │
-     │                                                                          │
-     │ *  Using wicked (switch to NetworkManager, disable services)             │
-     │                                                                          │
-     └──────────────────────────────────────────────────────────────────────────┘
-                                    [Change...↓]
-     [Help]                [Back]                [Abort]                [Install]
+9. Confirm Installation, select ``Install`` to continue.
 
-8. Confirm Installation, select ``Install`` to continue.
+   .. image:: ../images/sr-ir-linux-distro-opensuse-install-confirm-installation.png
+      :align: center
+      :width: 60 %
 
-   .. code-block:: none
+10. The installation will start after you select ``Install`` to continue, and it
+    will take several hours. In the installation process,
 
-     ┌──────────────────────────────────────────────────────┐
-     │ ┌──────────────────────────────────────────────────┐ │
-     │ │Confirm Installation                              │ │
-     │ │                                                  │ │
-     │ │Information required for the base installation is │ │
-     │ │now complete.                                     │ │
-     │ │                                                  │ │
-     │ │If you continue now, partitions on your hard disk │ │
-     │ │will be modified according to the installation    │ │
-     │ │settings in the previous dialogs.                 │ │
-     │ │                                                  │ │
-     │ │Go back and check the settings if you are unsure. │ │
-     │ │                                                  │ │
-     │ │                                                  │ │
-     │ │                                                  │ │
-     │ └──────────────────────────────────────────────────┘ │
-     │                                                      │
-     │                   [Install] [Back]                   │
-     └──────────────────────────────────────────────────────┘
+    * ``Installing Packages...`` takes about 3 hours.
+    * ``Save configuration`` takes about 5 minutes.
+    * ``Save installation settings`` takes about 30 minutes.
+    * ``Install boot manager`` takes about 20 minutes.
+    * ``Prepare system for initial boot`` takes about 5 minutes.
+    * Then the system will reboot automatically in 10s, you can select ``OK`` to
+      reboot immediately.
 
-9. The installation will start after you select ``Install`` to continue, and it
-   will take several hours. In the installation process,
+    .. image:: ../images/sr-ir-linux-distro-opensuse-install-reboot.png
+       :align: center
+       :width: 60 %
 
-   * ``Installing Packages...`` takes about 3 hours.
-   * ``Save configuration`` takes about 5 minutes.
-   * ``Save installation settings`` takes about 30 minutes.
-   * ``Install boot manager`` takes about 20 minutes.
-   * ``Prepare system for initial boot`` takes about 5 minutes.
-   * Then the system will reboot automatically in 10s, you can select ``OK`` to
-     reboot immediately.
-
-     .. code-block:: none
-
-       ┌──────────────────────────────────────────────────────────────┐
-       │ ┌──────────────────────────────────────────────────────────┐ │
-       │ │The system will reboot now...                             │ │
-       │ │                                                          │ │
-       │ │                                                          │ │
-       │ │                                                          │ │
-       │ │                                                          │ │
-       │ │                                                          │ │
-       │ │                                                          │ │
-       │ │                                                          │ │
-       │ └──────────────────────────────────────────────────────────┘ │
-       │                              10                              │
-       │                                                              │
-       │                                                              │
-       │                         [OK] [Stop]                          │
-       └──────────────────────────────────────────────────────────────┘
-
-10. The reboot process takes about 20 minutes. Then you can login the Linux
-    shell with the user created in Step 5.
+11. The reboot process takes about 20 minutes. Then you can login the Linux
+    shell with the user created in Step 6.
 
 .. _reproduce_run-time_integration_tests:
 
