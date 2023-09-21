@@ -57,9 +57,9 @@ signature (RSA-3072) validation.
 Image Signing
 =============
 
-A RSA private key is stored in TF-M's source code repository for testing, it is
-in file ``bl2/ext/mcuboot/root-RSA-3072.pem``. The private key is used to sign
-the host images that are loaded by RSS BL2.
+A RSA private key is stored in TF-M's source code repository (the
+``bl2/ext/mcuboot/root-RSA-3072.pem`` file) for testing. The private key is used
+to sign the images listed above that RSS BL2 loads.
 
 In the Yocto build stage of the Kronos platform, a shell function
 ``sign_host_image()`` is used to sign the images, which can be found at
@@ -70,10 +70,10 @@ System Provisioning and Image Authentication
 ============================================
 
 A public key is derived from the private key for authenticating the signed
-host images. The public key is also known as the Root of Trust Public Key
-(ROTPK). It is also written in the NVM flash in the build stage. The hash of the
-public key is written in file ``dm_dummy_provisioning_data.c`` of the source
-code folder ``platform/ext/target/arm/rss/common/provisioning/bundle_dm/``.
+images. The public key is also known as the Root of Trust Public Key (ROTPK). It
+is also written in the NVM flash in the build stage. The hash of the public key
+is written in the ``dm_dummy_provisioning_data.c`` file of the TF-M source code
+folder ``platform/ext/target/arm/rss/common/provisioning/bundle_dm/``.
 
 During the system's first boot, the hash of the public key is provisioned into
 the OTP by BL1_1. More details on the provisioning can be found in the
@@ -82,16 +82,16 @@ OTP contents cannot be updated.
 
 BL2 reads the public key from the NVM flash and validates the public key against
 the hash that has been provisioned in the OTP. Then BL2 uses the public key to
-authenticate the host images.
+authenticate the images.
 
 Key Customization
 =================
 
 The default private key used in the Kronos platform should only be used for test
 purposes. Since this private key is widely distributed, it should never be used
-for production. To replace the default key, the manufacturer needs to:
+for production. To replace the default key, the user needs to:
 
-* Generate a new RSA key
+* Generate a new RSA key pair
 * Replace the default private key ``bl2/ext/mcuboot/root-RSA-3072.pem`` with
   the new private key
 * Generate the hash of the public key and replace the definition of
@@ -155,10 +155,10 @@ Primary Compute Boot Flow
 *************************
 
 The Primary Compute is the Application Processor in the Kronos Reference
-Design. The purpose of its firmware is to provide an |Arm SystemReadyTM| IR
-aligned interface to Linux. |Arm SystemReadyTM| IR compatible systems are
+Design. The purpose of its firmware is to provide an |Arm SystemReadyTM|
+IR-aligned interface to Linux. |Arm SystemReadyTM| IR compatible systems are
 required to follow the `Device Tree specification`_, so the
-:ref:`design_components_u-boot` bootloader is used in the non-secure world,
+:ref:`design_components_u-boot` bootloader is used in the normal world,
 which provides the UEFI implementation and exposes the device tree to Linux.
 
 :ref:`design_components_trusted-firmware-a` provides the initial, secure-world
