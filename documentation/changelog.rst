@@ -17,7 +17,7 @@ New Features
 
 Implementation of the :ref:`Use-Cases <introduction_use_cases>`.
 
-Components versions used in the Reference Stack:
+The main components versions used in the Reference Stack:
 
 .. list-table::
   :header-rows: 1
@@ -116,9 +116,13 @@ Initial version.
 
 Limitations
 ===========
+
  * In the HIPC, the iperf parameter "-l/--length" should be less than 1473 (IP
    and UDP overhead) in the case of Zephyr running as a UDP server since it does
    not support IP fragmentation.
+ * `PSA Secure Storage API`_ defines two interfaces for storages: Internal
+   Trusted Storage (ITS) API and Protected Storage (PS) API. For now the
+   Reference Stack supports the PS API only.
 
 Resolved and Known Issues
 =========================
