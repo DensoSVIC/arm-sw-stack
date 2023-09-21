@@ -127,6 +127,8 @@ uboot_version = "2023.07.02"
 xen_version = "4.17"
 yocto_doc_version = yocto_version + "/"
 zephyr_version = "3.4.0"
+psa_crypto_api_version = "1.1"
+psa_storage_api_version = "1.0"
 
 rst_prolog = f"""
 .. |Actuation version| replace:: {actuation_version}
@@ -191,7 +193,7 @@ rst_prolog = f"""
 .. _Arm SystemReady: https://www.arm.com/architecture/system-architectures/systemready-certification-program
 .. _Base Boot Requirements (BBR): https://developer.arm.com/documentation/den0044/latest
 .. _Base System Architecture (BSA): https://developer.arm.com/documentation/den0094/latest
-.. _Cassini: https://cassini.docs.arm.com/en/{cassini_version}
+.. _Cassini: https://cassini.readthedocs.io/en/{cassini_version}
 .. _Crypto Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/crypto-service-description.html
 .. _Debian GNU/Linux Installation Guide: https://www.debian.org/releases/bullseye/arm64/
 .. _Debian Stable: https://www.debian.org/releases/stable/
@@ -209,7 +211,7 @@ rst_prolog = f"""
 .. _Kernel Types: https://docs.yoctoproject.org/{yocto_doc_version}/kernel-dev/advanced.html#kernel-types
 .. _Linux preempt-rt repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fpreempt-rt%2Fbase
 .. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fbase
-.. _MCUboot: https://github.com/mcu-tools/mcuboot
+.. _MCUboot: https://docs.mcuboot.com/
 .. _Mbed TLS repository: https://github.com/Mbed-TLS/mbedtls/tree/{mbedtls_version}
 .. _Mbed TLS: https://mbed-tls.readthedocs.io/en/latest/
 .. _OEQA FVP: https://git.yoctoproject.org/meta-arm/tree/documentation/oeqa-fvp.md?h={yocto_version}
@@ -219,8 +221,8 @@ rst_prolog = f"""
 .. _Open vSwitch: https://www.openvswitch.org
 .. _PREEMPT_RT patch: https://wiki.linuxfoundation.org/realtime/start
 .. _PSA Arch Tests: https://github.com/ARM-software/psa-arch-tests
-.. _PSA Crypto API: https://arm-software.github.io/psa-api/crypto
-.. _PSA Secure Storage API: https://arm-software.github.io/psa-api/storage
+.. _PSA Crypto API: https://arm-software.github.io/psa-api/crypto/{psa_crypto_api_version}
+.. _PSA Secure Storage API: https://arm-software.github.io/psa-api/storage/{psa_storage_api_version}
 .. _Parsec Secure Element Driver: https://github.com/parallaxsecond/parsec-se-driver
 .. _Parsec: https://parallaxsecond.github.io/parsec-book/index.html
 .. _RSS provisioning: https://tf-m-user-guide.trustedfirmware.org/platform/arm/rss/rss_provisioning.html
@@ -270,6 +272,7 @@ rst_prolog = f"""
 .. _Pure Pursuit: https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/pure-pursuit.html
 .. _Data Distribution Service: https://www.dds-foundation.org/what-is-dds-3
 .. _CycloneDDS: https://cyclonedds.io/docs/cyclonedds/latest/about_dds/eclipse_cyclone_dds.html
+.. _Secure Partition: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/environments/secure-partitions/index.html
 """  # noqa: E501
 
 # URL to use for references to repository paths
