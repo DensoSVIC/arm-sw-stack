@@ -194,7 +194,7 @@ run-time validation tests.
 |Arm SystemReadyTM| IR Firmware Build
 --------------------------------------
 
-The |Arm SystemReadyTM| IR Firmware Only option just builds the
+The Arm SystemReady IR Firmware Build option just builds the
 |Arm SystemReadyTM| IR-aligned firmware. Optionally, additional artifacts can
 be built to validate the firmware.
 
