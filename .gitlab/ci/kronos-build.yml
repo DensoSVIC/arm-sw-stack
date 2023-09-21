@@ -124,6 +124,11 @@ Image-Build-baremetal-si0-bridge-ethernet0:
   variables:
     KAS_CONFIGS: baremetal/si0-bridge-ethernet0
 
+Image-Build-baremetal-cam:
+  extends: .kas_image_build_kronos
+  variables:
+    KAS_CONFIGS: baremetal/cam
+
 Image-Build-baremetal-hipc-validation:
   extends: .kas_image_build_kronos
   variables:

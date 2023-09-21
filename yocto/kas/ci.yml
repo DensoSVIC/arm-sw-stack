@@ -16,6 +16,8 @@ env:
   MIRROR_DOCKER:
   SRC_URI_ACTUATION:
   SRCREV_ACTUATION:
+  SRC_URI_CAM:
+  SRCREV_CAM:
   TESTIMAGE_AUTO: "${@ '1' if '${BUILD_ARCH}' == 'x86_64' \
     or '${FREQUENCY}' != 'adhoc' \
     or bb.utils.contains('EXTRA_IMAGE_FEATURES', 'baremetal', True, False, d) \

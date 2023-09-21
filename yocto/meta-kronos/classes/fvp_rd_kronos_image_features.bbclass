@@ -25,6 +25,9 @@ OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
                     'actuation', ':actuation', '', d)}"
 
 OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
+                    'cam', ':cam', '', d)}"
+
+OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
                     'si0-bridge-ethernet0', ':si0-bridge-ethernet0', '', d)}"
 
 # This bbclass handles, via the EXTRA_IMAGE_FEATURES variable, the following
@@ -37,16 +40,19 @@ IMAGE_FEATURES[validitems] += " \
     domu \
     actuation \
     si0-bridge-ethernet0 \
+    cam \
     "
 
 DOMU_INSTANCES ?= "2"
 
 IMAGE_FEATURES_CONFLICTS_baremetal = "virtualization domu"
-IMAGE_FEATURES_CONFLICTS_virtualization = "baremetal domu"
-IMAGE_FEATURES_CONFLICTS_domu = "baremetal virtualization"
-IMAGE_FEATURES_CONFLICTS_hipc-validation = "si0-bridge-ethernet0 actuation"
-IMAGE_FEATURES_CONFLICTS_actuation = "si0-bridge-ethernet0 hipc-validation"
-IMAGE_FEATURES_CONFLICTS_si0-bridge-ethernet0 = "hipc-validation actuation"
+IMAGE_FEATURES_CONFLICTS_virtualization = "baremetal domu cam"
+IMAGE_FEATURES_CONFLICTS_domu = "baremetal virtualization cam"
+IMAGE_FEATURES_CONFLICTS_hipc-validation = "si0-bridge-ethernet0 actuation cam"
+IMAGE_FEATURES_CONFLICTS_actuation = "si0-bridge-ethernet0 hipc-validation cam"
+IMAGE_FEATURES_CONFLICTS_si0-bridge-ethernet0 = "hipc-validation actuation cam"
+IMAGE_FEATURES_CONFLICTS_cam = \
+    "si0-bridge-ethernet0 hipc-validation actuation virtualization domu"
 
 FEATURE_PACKAGES_COMMON = " \
     arm-si-rproc-mod \
@@ -95,6 +101,9 @@ ACTUATION_PACKAGES ?= "actuation-player"
 FEATURE_PACKAGES_actuation = "${ACTUATION_PACKAGES}"
 FEATURE_PACKAGES_actuation:virtualization = ""
 
+CAM_PACKAGES ?= "cam-demo"
+FEATURE_PACKAGES_cam = "${CAM_PACKAGES}"
+
 KRONOS_EXTRA_IMAGEDEPENDS = ""
 KRONOS_EXTRA_IMAGEDEPENDS:actuation = "packet-analyzer-native:do_addto_recipe_sysroot"
 
@@ -133,6 +142,8 @@ TEST_SUITES_EXTRA:hipc-validation:virtualization = " \
     "
 
 TEST_SUITES_EXTRA:si0-bridge-ethernet0 = " test_30_si0_bridge_ethernet0"
+
+TEST_SUITES_EXTRA:cam = ""
 
 TEST_SUITES_EXTRA:append:virtualization = " \
     test_40_virtualization \
