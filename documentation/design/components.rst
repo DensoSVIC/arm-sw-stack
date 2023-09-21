@@ -357,8 +357,8 @@ to:
 U-Boot
 ======
 
-U-Boot is the non-secure world second-stage bootloader (BL33 in TF-A) on the
-Primary Compute. It consumes the HW_CONFIG device tree provided by
+U-Boot is the Normal world second-stage bootloader (BL33 in TF-A) on the
+Primary Compute. It consumes the ``HW_CONFIG`` device tree provided by
 Trusted Firmware-A and provides UEFI services to UEFI applications like Linux
 and Xen. The device tree is used to configure U-Boot at runtime, minimizing the
 need for platform-specific configuration.
@@ -402,15 +402,16 @@ scheduling of all virtual machines (domains), and for launching the most
 privileged domain (Dom0) - the only virtual machine which by default
 has direct access to hardware. From the Dom0 the hypervisor can be managed
 and unprivileged domains (DomU) can be launched.
+Xen is only included in the Virtualization Reference Stack Architecture.
 
 On starting up, the GRUB2 configuration uses the "chainloader" command to
 instruct the UEFI services provider (U-boot) to load and run Xen as an EFI
-application. Further Xen reads its configuration (xen.cfg) from the boot
+application. Further, Xen reads its configuration (``xen.cfg``) from the boot
 partition of the virtio disk containing the boot arguments for Xen and Dom0
 to start the whole system.
 
 The `Arm Memory Partitioning and Monitoring`_ (MPAM) extension is enabled in
-Xen. MPAM is an optional extension to Armv8.4 and later versions. It
+Xen. MPAM is an optional extension to Arm®8.4-A and later versions. It
 defines a method that software can utilize to apportion and monitor the
 performance-giving resources (usually cache and memory bandwidth) of the
 memory system. Domains can be assigned with dedicated system level cache (SLC)
@@ -470,26 +471,28 @@ The stack offers several methods for users to configure MPAM for domains:
    More detailed information of the sub-commands, please refer to the ``--help``
    of each sub-command respectively.
 
-Xen is only included in the Virtualization Reference Stack Architecture.
 Limitations of MPAM support in Xen include:
 
  * Currently, MPAM support in Xen is available for the system level cache (SLC)
    partitioning only.
- * In the Virtualization Reference Stack Architecture, DomU MPAM settings can
-   only be manipulated by xl after the DomU has been created and started.
+ * DomU MPAM settings can only be manipulated by xl after the DomU has been
+   created and started.
  * The FVP only provides the programmer's view of MPAM. There is no functional
    behaviour change implemented.
 
+
 The `GICv4.1 - Direct injection of virtual interrupts`_ (GICv4.1) is enabled
-in Xen. GICv4.1 is an extension to GICv3 with extra direct vLPI and vSGI
-injection enabled. This feature allows users to describe to the ITS how physical
-events map to virtual interrupts in advance. If the vPE targeted by a virtual
+in Xen. GICv4.1 is an extension to GICv3 with extra direct vLPI (Virtual
+Locality-specific Peripheral Interrupt) and vSGI (Virtual Software-generated
+Interrupt) injection enabled. This feature allows users to describe to the ITS
+(Interrupt Translation Service) how physical events map to virtual interrupts
+in advance. If the vPE (Virtual Processing Element) targeted by a virtual
 interrupt is running, the virtual interrupt can be forwarded without the need
 to first enter the Xen hypervisor. This can reduce the overhead associated with
 virtualized interrupts, by reducing the number of times the hypervisor is
 entered.
 
-With Xen Kconfig ``CONFIG_GICV4=y``, the kronos platform will be automatically
+With Xen Kconfig ``CONFIG_GICV4=y``, the Kronos platform will be automatically
 equipped with the capability of all GICv4.1 features.
 
 .. image:: ../images/xen_gicv4_1_structure.svg
