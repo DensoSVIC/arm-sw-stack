@@ -18,10 +18,10 @@ The Kronos FVP contains Armv9-A (Primary Compute) and Armv8-R64 (Safety Island)
 heterogeneous processing elements which share data via the Message Handling
 Unit (MHUv3) and shared Dynamic Random-Access Memory (DRAM). The MHUv3 is a
 mailbox controller used for signal transmission and the shared memory is used
-for data exchange. Safety Island clusters also share data via the Message
-Handling Unit (MHUv3) and shared Dynamic Random-Access Memory (DRAM).
+for data exchange. Safety Island clusters also share data via the MHUv3 and
+shared DRAM.
 
-The HIPC demonstrates the networking between:
+The HIPC demonstrates the communication between:
 
   * Primary Compute and the three Safety Island clusters.
   * Safety Island clusters.
@@ -30,32 +30,12 @@ The HIPC demonstrates the networking between:
 Communication between Primary Compute and Safety Island clusters
 **************************************************************************
 
-Safety Island Remoteproc Driver
-===============================
-The remoteproc framework allows different platforms/architectures to control
-(power on/off, load firmware) remote processors while abstracting the hardware
-differences, so the entire driver doesn't need to be duplicated. The remoteproc
-platform driver is added to the RD-Kronos stack to add support for communication
-between PC (Primary Compute) and SI (Safety Island) clusters.
+|
 
-In the Kronos FVP, Linux running in the Primary Compute, regards the Safety
-Island clusters as its remote processors. The Kronos FVP Safety Island has
-three clusters. Each cluster will behave as an independent entity and has its
-own resources to establish the connection to the Primary Compute.
+.. image:: ../images/hipc_baremetal_design.svg
+   :align: center
 
-These clusters cannot be booted by the Primary Compute processor because they
-need to monitor the other hardware including the Primary Compute. Therefore,
-the initial status of the clusters in the driver is ``RPROC_DETACHED``, which
-means the cluster has been booted independently from the Primary Compute
-processor. This driver implements the notification handler using an MHUv3-based
-mailbox, which notifies other cores when new messages are sent to the virtual
-queue.
-
-The memory regions of the resource table, vrings and message buffers are
-configured in the device tree bindings for each cluster. The driver will parse
-the device tree node for each cluster and will add each cluster to the
-remoteproc framework. Each cluster has its own resource table, vrings and
-message buffers that will be used as a base for communication.
+|
 
 RPMsg Protocol
 ==============
@@ -100,28 +80,52 @@ limitation, the skb buffer may be dropped during processing for congestion
 control or by the protocol layers. At this time, network statistics will
 increase the dropped packet counter.
 
-As shown in the following diagram each Safety Island cluster has its own shared
+As shown in the above diagram each Safety Island cluster has its own shared
 memory and MHUv3 device to communicate with the Primary Compute. Each shared
 memory instance has a resource table, vring and message buffer that are used to
 transfer/receive information between the Primary Compute and the Safety Island.
 On the Primary Compute, the Safety Island remoteproc driver and RPMsg based
 virtual interface driver are added to communicate with the Safety Island.
 
-|
+RPMsg-net driver on the Primary Compute and Veth-RPMsg on the Safety Island
+clusters implement the virtual ethernet device that is base for communication
+between Primary Compute and Safety Island clusters.
 
-.. image:: ../images/hipc_baremetal_design.svg
-   :align: center
+Safety Island Remoteproc Driver
+===============================
+The remoteproc framework allows different platforms/architectures to control
+(power on/off, load firmware) remote processors while abstracting the hardware
+differences, so the entire driver doesn't need to be duplicated. The remoteproc
+platform driver is added to the RD-Kronos stack to provide support for
+communication between Primary Compute and Safety Island clusters.
 
-|
+In the Kronos FVP, Linux running in the Primary Compute, regards the Safety
+Island clusters as its remote processors. The Kronos FVP Safety Island has
+three clusters. Each cluster behaves as an independent entity and has its
+own resources to establish the connection to the Primary Compute.
+
+These clusters cannot be booted by the Primary Compute processor because they
+need to monitor the other hardware, including the Primary Compute. Therefore,
+the initial status of the clusters in the driver is ``RPROC_DETACHED``, which
+means the cluster has been booted independently from the Primary Compute
+processor. This driver implements the notification handler using an MHUv3-based
+mailbox, which notifies other cores when new messages are sent to the virtual
+queue.
+
+The memory regions of the resource table, vrings and message buffers are
+configured in the device tree bindings for each cluster. The driver parses the
+device tree node for each cluster and adds each cluster to the remoteproc
+framework. Each cluster has its own resource table, vrings and message buffers
+that will be used as a base for communication.
 
 Virtualization Architecture
 ===========================
 
 In the Virtualization Architecture of the Reference Stack, virtual network
-interfaces based on Xen drivers will be exposed to the domUs. Xen virtual
-networks are created in the control domain (Dom0). The Xen virtual network
-interfaces are added to an Open vSwitch virtual switch along with an RPmsg
-virtual interface to communicate with the Safety Island.
+interfaces based on Xen drivers created in the control domain (Dom0) are
+exposed to the domUs. These virtual network interfaces are added to an Open
+vSwitch virtual switch along with an RPmsg virtual interface to communicate
+with the Safety Island.
 
 Dom0 has a communication channel with the Safety Island which is the same as
 the Baremetal Architecture.
@@ -180,19 +184,19 @@ traffic tagged with that identifier (tag).
 The traffic between the Primary Compute and the Safety Island is using the
 following VLAN identifiers:
 
- * VLAN **100**: Traffic from/to **Cluster 0**
- * VLAN **200**: Traffic from/to **Cluster 1**
- * VLAN **300**: Traffic from/to **Cluster 2**
+ * VLAN **100**: Traffic from/to **Safety Island Cluster 0**
+ * VLAN **200**: Traffic from/to **Safety Island Cluster 1**
+ * VLAN **300**: Traffic from/to **Safety Island Cluster 2**
 
 External Connection
 ===================
 
-The Safety Island has a single network interface leading outside of the Kronos
-system. It is located on Cluster 0.
+The Safety Island has a single network interface leading outside the Kronos
+FVP system located on Cluster 0.
 
-A software-based network bridge is deployed on Cluster 0. It bridges this
-external interface with the IPC channels to the other Safety Island clusters, so
-that Cluster 1 and 2 can reach outside of Kronos.
+A software-based network bridge deployed on Cluster 0 bridges this external
+interface with the IPC channels to the other Safety Island clusters so Cluster
+1 and 2 can reach outside Kronos FVP.
 
 See :ref:`design_applications_bridge` for more information.
 
