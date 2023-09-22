@@ -186,14 +186,17 @@ deployed on Cortex-M55 CPUs.
 
 The LCP is introduced for each application core to support a scalable power
 control solution in systems with very high core counts by SCP management. Now,
-the main functionality of the LCP is Per-core Dynamic Voltage Frequency Scaling
-(DVFS).
+the main functionality of the LCP is limited Per-core Dynamic Voltage Frequency
+Scaling (DVFS).
 
-DVFS allows for setting the components’ clock frequency and voltage level. It is
-implemented in the `dvfs_handler` module of the SCP. Each time the `mhu3` module
-gets a specific interrupt (triggered by power allocation reasons such as locking
-the core in an off power mode for system power off) from AP side, the LCP will
-program the hardware registers with the given frequency and voltage values.
+To minimize potential fault sources in a subsystem which functions in a mostly
+full-on state for the targeted application, the per core voltage scaling of
+DVFS is not supported.
+
+The per core frequency scaling is supported with limitation. Only one
+Phase-Locked Loop (PLL) function (which may incorporate redundancy as a safety
+mechanism) is supported for the application processors. This limitation
+also minimizes potential fault sources.
 
 MHUv3 Communication
 ===================
