@@ -28,11 +28,12 @@ tests is given.
 OEQA tests in meta-arm
 ======================
 
-The Compute Elements and Components tested by the framework are detailed below.
+The Processing Elements and Components tested by the framework are detailed
+below.
 The testing scripts can be found in
 :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/`.
 
-All of the Computing Elements and Components have their terminal output logged
+All of the Processing Elements and Components have their terminal output logged
 for debugging.
 
  * LCP
@@ -74,43 +75,6 @@ for debugging.
        The test waits for the Primary Compute to log that OP-TEE loads the
        required SPs (Secure Partitions) and primary CPU switches to normal world
        boot.
-
-    * HIPC
-       The scripts that implement the tests are
-       :kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_hipc.py` and
-       :kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_hipc_virtualization.py`.
-       The tests below are run for each Safety Island cluster for baremetal and
-       virtualization architectures. For the virtualization architecture tests
-       are run for each Xen guests created.
-
-       * test_ping_cluster
-          The test pings the Safety Island from the Primary Compute and vice
-          versa and checks that an answer is received (this test depends on
-          **test_linux_login**).
-
-       * test_hipc_cluster
-          The test verifies Heterogeneous Inter Processor Communication (HIPC)
-          between the Safety Island (using ``zperf``) and the Primary Compute
-          (using ``iperf``).
-          The tested configurations are:
-
-             * The Safety Island as an iperf server (UDP/TCP) and the Primary
-               Compute as a client (UDP/TCP).
-             * The Safety Island as an iperf client (UDP/TCP) and the Primary
-               Compute as a server (UDP/TCP).
-
-          This test depends on **test_ping_cluster**.
-
-       * test_hipc_cluster_cl{M}_cl{N}
-          The test verifies Heterogeneous Inter Processor Communication (HIPC)
-          between the Safety Island Clusters (using ``zperf``) where M and
-          N are the clusters number.
-          The tested configurations are:
-
-             * The Safety Island Cluster {M} as an Zperf server (UDP/TCP)
-               and the Safety Island Cluster {N} as a Zperf client (UDP/TCP).
-
-          This test depends on **test_ping_cluster**.
 
 .. _design_bsp_tests:
 
@@ -183,8 +147,8 @@ For example, the file
 
 .. _validation_actuation_demo:
 
-Integration Tests validating the Actuation Demo
-===============================================
+Integration Tests validating the Safety Island Actuation Demo
+=============================================================
 
 The ``test_player_to_analyzer`` integration test in
 :kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_actuation.py`
@@ -195,6 +159,41 @@ which triggers the Actuation Service to generate Control Commands to be
 forwarded to the host via BSD socket. These Control Commands are then captured
 by the Packet Analyzer which validates them against a recorded Control Commands
 list that is stored in the form of a CSV file.
+
+.. _validation_hipc_demo:
+
+Integration Tests Validating the Safety Island Communication Demo
+=================================================================
+
+The scripts that implement the tests are
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_hipc.py` and
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_hipc_virtualization.py`.
+The tests below are run for each Safety Island cluster for Baremetal and
+Virtualization Architectures. For the Virtualization Architecture, tests
+are run for each Xen guests created.
+
+* test_ping_cluster
+   The test pings the Safety Island from the Primary Compute and vice versa and
+   checks that an answer is received.
+
+* test_hipc_cluster
+   The test verifies Heterogeneous Inter Processor Communication (HIPC) between
+   the Safety Island (using ``zperf``) and the Primary Compute (using ``iperf``).
+   The tested configurations are:
+
+      * The Safety Island as an iperf server (UDP/TCP) and the Primary
+        Compute as a client (UDP/TCP).
+      * The Safety Island as an iperf client (UDP/TCP) and the Primary
+        Compute as a server (UDP/TCP).
+
+* test_hipc_cluster_cl{M}_cl{N}
+   The test verifies Heterogeneous Inter Processor Communication (HIPC) between
+   the Safety Island Clusters (using ``zperf``) where M and N are the clusters
+   number.
+   The tested configurations are:
+
+      * The Safety Island Cluster {M} as an Zperf server (UDP/TCP)
+        and the Safety Island Cluster {N} as a Zperf client (UDP/TCP).
 
 .. _validation_zephyr_bridge:
 
