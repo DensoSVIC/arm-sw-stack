@@ -597,8 +597,7 @@ Following the steps listed in :ref:`user_guide_reproduce_sr_ir_acs`, the system
 will boot with the ACS live OS image and the ACS tests will run automatically
 after the system boots.
 
-This process takes around 9 hours to complete. A similar output to the
-following is printed out:
+A similar output to the following is printed out:
 
 .. code-block:: console
 
@@ -645,6 +644,19 @@ following is printed out:
   2023-09-10 08:13:39 - INFO     - arm-systemready-ir-acs () - Ran 1 test in 32591.997s
   2023-09-10 08:13:39 - INFO     - arm-systemready-ir-acs - OK - All required tests passed (successes=1, skipped=0, failures=0, errors=0)
   2023-09-10 08:13:41 - INFO     - ACS test suite results are consistent with baseline.
+
+.. note::
+
+  The ACS tests take hours to complete. The actual time taken will vary
+  depending on the performance of the build host. The default timeout setting
+  for the tests is 12 hours for an x86_64 host or 24 hours for an aarch64 host.
+  If a timeout failure occurs, please increase the timeout setting and re-run
+  the tests with the following command on the build host terminal. The example
+  command below changes the timeout setting to 16 hours.
+
+  .. code-block:: shell
+
+     TEST_OVERALL_TIMEOUT="\${@16*60*60}" kas shell -c "bitbake arm-systemready-ir-acs -C unpack"
 
 Please refer to :ref:`systemready_ir_acs_tests` for an explanation on how the
 ACS tests are set up and how they work in the Reference Stack.
