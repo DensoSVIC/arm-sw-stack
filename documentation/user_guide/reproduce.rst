@@ -94,15 +94,19 @@ via:
    ``set-option -g history-limit 3000`` to ``~/.tmux.conf`` before starting
    tmux.
 
-.. _user_guide_reproduce_build:
+*************************
+Reproducing the Use-Cases
+*************************
 
-*****
-Build
-*****
+General
+=======
 
-The Kronos stack comes with a kas configuration menu that can be used to build
-:ref:`introduction_use_cases`. The kas configuration menu can also be used to
-apply customizable parameters in order to build different Reference Stack types.
+Kas Build
+---------
+
+The Kronos stack has a kas configuration menu that can be used to build the
+:ref:`introduction_use_cases`. It can also apply customizable parameters to build
+different Reference Stack Architecture types.
 
 To run the configuration menu:
 
@@ -113,7 +117,8 @@ To run the configuration menu:
 .. note::
   To build and run any image for the Kronos FVP the user has to accept its
   `EULA`_, which can be done by selecting the corresponding configuration
-  option in the build setup.
+  option in the build setup. The Safety Island Actuation Demo is built as
+  part of the default deployment.
 
 .. image:: ../images/kronos_reference_stack_build_config.png
    :align: center
@@ -121,153 +126,15 @@ To run the configuration menu:
 
 |
 
-Safety Island Actuation Demo
-============================
-
-The :ref:`design_applications_actuation` can be run on the Baremetal
-Architecture or Virtualization Architecture that boots Xen with
-2 guests.
-
-.. note::
-  The Safety Island Actuation Demo is built as part of the default deployment.
-
-Baremetal Architecture
-----------------------
-
-To build a Baremetal Architecture image:
-
-1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
-2. Choose ``Baremetal`` from the ``Reference Stack Architecture`` menu.
-3. Then choose ``Save & Build``.
-
-Validation tests can be run on the Baremetal Architecture images.
-See :ref:`reproduce_run-time_integration_tests` for more details on running
-run-time validation tests.
-
-Virtualization Architecture
----------------------------
-
-To build a Virtualization Architecture image:
-
-1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
-2. Choose ``Virtualization`` from the ``Reference Stack Architecture`` menu.
-3. Then choose ``Save & Build``.
-
-As with the Baremetal Architecture guidance above, the Reference Stack
-Virtualization Architecture image can also run validation tests.
-See :ref:`reproduce_run-time_integration_tests` for more details on running
-run-time validation tests.
-
-Safety Island Communication Demo (using HIPC)
-=============================================
-
-The demo can be run on the Baremetal Architecture or Virtualization
-Architecture.
-
-Baremetal Architecture
-----------------------
-
-To build a Baremetal Architecture image:
-
-1. Select ``Safety Island Communication Demo (using HIPC)`` from the
-   ``Use-Case`` menu.
-2. Choose ``Baremetal`` from the ``Reference Stack Architecture`` menu.
-3. Then choose ``Save & Build``.
-
-Validation tests can be run on the Baremetal Architecture images.
-See :ref:`reproduce_run-time_integration_tests` for more details on running
-run-time validation tests.
-
-Virtualization Architecture
----------------------------
-
-To build a Virtualization Architecture image:
-
-1. Select ``Safety Island Communication Demo (using HIPC)`` from the
-   ``Use-Case`` menu.
-2. Choose ``Virtualization`` from the ``Reference Stack Architecture`` menu.
-3. Then choose ``Save & Build``.
-
-As with the Baremetal Architecture guidance above, the Reference Stack
-Virtualization Architecture image can also run validation tests.
-See :ref:`reproduce_run-time_integration_tests` for more details on running
-run-time validation tests.
-
-|Arm SystemReadyTM| IR Validation
-=================================
-
-|Arm SystemReadyTM| IR Firmware Build
---------------------------------------
-
-The Arm SystemReady IR Firmware Build option just builds the
-|Arm SystemReadyTM| IR-aligned firmware.
-
-.. image:: ../images/kronos_reference_stack_build_config_sr_ir.png
-   :align: center
-   :width: 60 %
-
-|
-
-To build the |Arm SystemReadyTM| IR-aligned firmware image:
-
-1. Select ``Arm SystemReady IR Firmware Build`` under
-   ``Arm SystemReady IR Validation`` from the ``Use-Case`` menu.
-2. Then choose ``Save & Build``.
-
-.. _user_guide_reproduce_sr_ir_acs:
-
-|Arm SystemReadyTM| IR Architecture Compliance Suite (ACS) Tests
-----------------------------------------------------------------
-
-To build and run the |Arm SystemReadyTM| IR ACS tests:
-
-1. Select ``Arm SystemReady IR Architecture Compliance Suite (ACS) Tests`` under
-   ``Arm SystemReady IR Validation`` from the ``Use-Case`` menu.
-2. Then choose ``Save & Build``.
-
-See :ref:`user_guide_reproduce_arm_systemready_ir_acs` for more details on
-running the |Arm SystemReadyTM| IR ACS tests.
-
-.. _user_guide_reproduce_sr_ir_linux_build:
-
-Linux Distribution Installation (Debian and openSUSE)
-=====================================================
-
-To build the |Arm SystemReadyTM| IR Linux distros installation tests:
-
-1. Choose ``Debian Linux Distro Installation`` or
-   ``openSUSE Linux Distro Installation`` under
-   ``Linux Distribution Installation (Debian and openSUSE)`` from the
-   ``Use-Case`` menu.
-2. Then choose ``Save & Build``.
-
-.. image:: ../images/kronos_reference_stack_build_config_sr_distro.png
-   :align: center
-   :width: 60 %
-
-|
-
-See :ref:`user_guide_reproduce_arm_systemready_ir_linux` for more details on
-running the Linux distros installation tests.
-
-.. _reproduce_run:
-
-***
-Run
-***
-
-This section describes how to run the Reference Stack and the
-Debian and openSUSE Distro Installation images generated during
-:ref:`user_guide_reproduce_build` on its FVP. It also explains
-how to connect to the Primary Compute to manually execute commands,
-allowing users to explore the different
-:ref:`Use-Cases <introduction_use_cases>` Kronos offers.
+FVP
+---
 
 The ``runfvp`` tool that invokes the Kronos FVP creates one tmux terminal
 window per processing element. The default window displayed will be that of the
-Primary Compute titled ``terminal_ns_uart0``. User may press ``Ctrl-b w`` to
-see the list of tmux windows and use arrow keys to navigate through the windows
-and press ``Enter`` to select any processing element terminal.
+Primary Compute terminal titled as ``terminal_ns_uart0``. User may press
+``Ctrl-b w`` to see the list of tmux windows and use arrow keys to navigate
+through the windows and press ``Enter`` to select any processing element
+terminal.
 
 The Reference Stack running on the Primary Compute can be logged into as
 ``root`` user without password in the Linux terminal.
@@ -278,8 +145,34 @@ The Reference Stack running on the Primary Compute can be logged into as
   The main goal of the Reference Stack is to prove functionality only, and
   should not be used for performance analysis.
 
+.. _user_guide_reproduce_actuation_demo:
+
+Safety Island Actuation Demo
+============================
+
+The demo can be run on the Baremetal Architecture or Virtualization
+Architecture. See :ref:`design_applications_actuation` for further details.
+
 Baremetal Architecture
-======================
+----------------------
+
+Build
+^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To build a Baremetal Architecture image:
+
+1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
+2. Choose ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+3. Then choose ``Save & Build``.
+
+Run FVP
+^^^^^^^
 
 To start the FVP and connect to the Primary Compute terminal (running Linux):
 
@@ -296,98 +189,60 @@ fvp invocation.
 
 |
 
-Virtualization Architecture
-===========================
-
-To start the FVP and connect to the Primary Compute terminal (running Linux):
-
-.. code-block:: console
-
-  kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
-
-The user should wait for the system to boot and for the Linux prompt to appear.
-On a Virtualization Architecture image, this will access Dom0. Use the ``xl``
-tool to log in to the DomU1:
-
-.. code-block:: console
-
-  xl console domu1
-
-This command will provide a console on the DomU1. To exit, one can enter
-``Ctrl-]`` (to access the FVP telnet shell), followed by typing ``send esc``
-into the telnet shell and pressing ``Enter``. See the `xl documentation`_ for
-further details.
-
-.. _user_guide_reproduce_sr_ir_linux_run:
-
-Linux Distribution Installation (Debian and openSUSE)
-=====================================================
-
-Run the following command to start the installation:
-
-.. code-block:: console
-
-  kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
-
-Reproducing the Use-Cases
-=========================
-
-This section contains additional instructions to aid in reproducing the
-:ref:`introduction_use_cases` presented in the introduction.
-
-.. _user_guide_reproduce_actuation_demo:
-
-Safety Island Actuation Demo
-----------------------------
-
-The instructions can be run on both the Baremetal and Virtualization
-Architectures and an assumption has been made that the FVP has been launched
-as indicated under :ref:`reproduce_run`. See the `Safety Island Actuation
-Demo`_ for further details.
-
 The Safety Island (SI) Cluster 2 terminal running the Actuation Service is
 available via the tmux window titled ``terminal_uart_si_cluster2``. For ease of
-navigation, we recommend joining the SI Cluster 2 terminal to Primary Compute
-terminal and to create a tmux window attached to Primary Compute terminal in
-order to issue commands on the host machine. User can navigate through the panes
-by pressing ``Ctrl-b`` and arrow keys followed by the ``Enter`` key. Follow the
-steps below to achieve the same:
+navigation, we recommend joining the SI Cluster 2 terminal window to Primary
+Compute terminal window and to create a tmux pane attached to the build host
+machine in order to issue commands on it. User can navigate through the panes
+by pressing ``Ctrl-b`` and arrow keys followed by the ``Enter`` key.
+
+Follow the steps below to achieve the same:
 
 1. Press ``Ctrl-b w`` from the tmux session, navigate to the tmux window titled
    ``terminal_ns_uart0`` followed by pressing ``Enter`` key.
 2. Press ``Ctrl-b %`` to add a new tmux window which will be used to issue
-   commands on the host machine.
+   commands on the build host machine.
 3. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_uart_si_cluster2``
-   followed by pressing ``Enter`` key to join the SI Cluster 2 terminal to
-   Primary Compute terminal.
+   followed by pressing ``Enter`` key to join the SI Cluster 2 terminal window
+   to Primary Compute terminal window.
 
-Please refer to the following image for an example re-arrangement of tmux
-windows.
+Please refer to the following image of the tmux panes re-arrangement.
 
   .. image:: ../images/kronos_reference_stack_fvp_rearrange_windows.png
     :align: center
 
 |
 
-Baremetal Architecture
-^^^^^^^^^^^^^^^^^^^^^^
+The Reference Stack running on the Primary Compute can be logged into as
+``root`` user without password in the Linux terminal. Run the below
+command to guarantee that all the expected services have been
+initialized.
 
-1. Run the ``ping`` command from the Primary Compute (running Linux) to verify
-   that it can communicate with the Safety Island (running Zephyr):
+   .. code-block:: shell
+
+      systemctl is-system-running --wait
+
+Wait for it to return expecting ``running`` to be printed in the terminal.
+
+Run the demo
+^^^^^^^^^^^^
+
+1. Run the ``ping`` command from the Primary Compute terminal (running Linux)
+   to verify that it can communicate with the Safety Island (running Zephyr):
 
    .. code-block:: shell
 
       # On the Primary Compute terminal
-      ping 192.168.0.1 -c 10
+      ping 192.168.2.1 -c 10
 
    The output should look like the following line, repeated 10 times:
 
    .. code-block:: shell
 
-      64 bytes from 192.168.0.1 seq=0 ttl=64 time=0.151 ms
+      64 bytes from 192.168.2.1 seq=0 ttl=64 time=0.151 ms
 
-2. From the tmux window started for the host machine
-in :ref:`user_guide_reproduce_actuation_demo`, start the Packet Analyzer:
+2. From the tmux pane started for the build host machine terminal, start the
+   Packet Analyzer:
 
    .. code-block:: shell
 
@@ -403,29 +258,31 @@ in :ref:`user_guide_reproduce_actuation_demo`, start the Packet Analyzer:
       INFO : analyzer_client.py/_connect_to: Attempting a connect to (localhost : 49152)
       INFO : analyzer_client.py/_connect_to: Successfully connected to (localhost : 49152)
 
-   A message similar to the following should appear on the SI Cluster 2:
+   A message similar to the following should appear on the SI Cluster 2
+   terminal:
 
    .. code-block:: shell
 
       Actuation Service initialized.
       Accepted tcp connection from the Packet Analyzer: <11>
 
-   Please refer to the following image for an example invocation of the Packet
+   Please refer to the following image for an invocation example of the Packet
    Analyzer.
 
-     .. image:: ../images/kronos_reference_stack_packet_analyzer.png
+     .. image:: ../images/kronos_reference_stack_packet_analyzer_baremetal.png
        :align: center
 
 |
 
-3. Start the Player on the Primary Compute which replays a recording of a
-   driving scenario:
+3. Start the Player on the Primary Compute terminal which replays a recording
+   of a driving scenario:
 
    .. code-block:: shell
 
       actuation_player -p /usr/share/actuation_player/
 
-   A message similar to the following should appear on the SI Cluster 2:
+   A message similar to the following should appear on the SI Cluster 2
+   terminal:
 
    .. code-block:: shell
 
@@ -460,15 +317,159 @@ in :ref:`user_guide_reproduce_actuation_demo`, start the Packet Analyzer:
 
 4. To shutdown the FVP and terminate the emulation, follow the below steps:
 
-    * Issue a ``shutdown now`` on the Primary Compute.
-    * Once the shutdown process is complete, close the tmux windows created by
-      the ``runfvp`` tool by pressing ``Ctrl-]`` and typing ``quit``.
-    * Close the tmux window started for the host machine in
-      :ref:`user_guide_reproduce_actuation_demo` by pressing ``Ctrl-d``.
-    * Press ``Ctrl-c`` to stop the FVP process.
+    * Issue a ``shutdown now`` on the Primary Compute terminal. The below
+      messages indicate the shutdown process is complete.
+
+      .. code-block:: shell
+
+         [  OK  ] Finished System Power Off.
+         [  OK  ] Reached target System Power Off.
+
+    * Close the Primary Compute terminal tmux window created by the ``runfvp``
+      tool by pressing ``Ctrl-]`` and typing ``quit``.
+    * Close the tmux pane started for the build host machine by pressing
+      ``Ctrl-d``.
+    * Select the terminal titled as ``python3`` where the ``runfvp`` was
+      launched by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP
+      process.
+
+Automated Validation
+^^^^^^^^^^^^^^^^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To enable the validation tests:
+  1. Select ``Safety Island Actuation Demo`` as ``Use-Case``.
+  2. Choose ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+  3. Choose ``Run Automated Validation`` from the ``Runtime Validation Setup``
+     menu.
+  4. Then choose ``Save & Build``.
+
+The complete test suit takes around 16 minutes to complete. See
+:ref:`validation_actuation_demo` for more details. A similar output to the
+following is printed out.
+
+      .. code-block:: console
+
+        NOTE: Executing Tasks
+        2023-09-11 20:13:00 - INFO     - Creating terminal default on terminal_ns_uart0
+        2023-09-11 20:13:09 - INFO     - Creating terminal tf-a on terminal_sec_uart
+        2023-09-11 20:13:09 - INFO     - Creating terminal scp on terminal_uart_scp
+        2023-09-11 20:13:09 - INFO     - Creating terminal lcp on terminal_uart_lcp
+        2023-09-11 20:13:09 - INFO     - Creating terminal rss on terminal_rss_uart
+        2023-09-11 20:13:09 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+        2023-09-11 20:13:10 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+        2023-09-11 20:13:10 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+        2023-09-11 20:13:10 - INFO     - default: Waiting for login prompt
+        2023-09-11 20:29:25 - INFO     - RESULTS:
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (17.63s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_10_safety_island_c1.SafetyIslandC1Test.test_cluster1: PASSED (0.00s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_10_safety_island_c2.SafetyIslandC2Test.test_cluster2: PASSED (0.00s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.28s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (17.19s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (100.88s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: PASSED (374.00s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_00_secure_partition.OpteeTest.test_optee_normal: PASSED (0.00s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (297.81s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_cpu_hotplug: PASSED (115.08s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_networking: PASSED (16.50s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_rtc: PASSED (9.51s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_virtiorng: PASSED (10.21s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_watchdog: PASSED (6.50s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec: SKIPPED (0.00s)
+        2023-09-11 20:29:25 - INFO     - SUMMARY:
+        2023-09-11 20:29:25 - INFO     - baremetal-image () - Ran 19 tests in 965.595s
+
+The following messages are expected to validate this Use-Case:
+
+      .. code-block:: console
+    
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.28s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (17.19s)
+        2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (100.88s)
 
 Virtualization Architecture
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------
+
+Build
+^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To build a Virtualization Architecture image:
+
+1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
+2. Choose ``Virtualization`` from the ``Reference Stack Architecture`` menu.
+3. Then choose ``Save & Build``.
+
+Run FVP
+^^^^^^^
+
+To start the FVP and connect to the Primary Compute terminal (running Linux):
+
+.. code-block:: console
+
+  kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
+
+The user should wait for the system to boot and for the Linux prompt to appear.
+On a Virtualization Architecture image, this will access Dom0 terminal.
+Following image shows a example on how the terminal should look like after the
+fvp invocation.
+
+  .. image:: ../images/kronos_reference_stack_fvp_run.png
+   :align: center
+
+|
+
+The Safety Island (SI) Cluster 2 terminal running the Actuation Service is
+available via the tmux window titled ``terminal_uart_si_cluster2``. For ease of
+navigation, we recommend joining the SI Cluster 2 terminal window to Primary
+Compute terminal window and to create a tmux pane attached to the build host
+machine in order to issue commands on it. User can navigate through the panes
+by pressing ``Ctrl-b`` and arrow keys followed by the ``Enter`` key.
+
+Follow the steps below to achieve the same:
+
+1. Press ``Ctrl-b w`` from the tmux session, navigate to the tmux window titled
+   ``terminal_ns_uart0`` followed by pressing ``Enter`` key.
+2. Press ``Ctrl-b %`` to add a new tmux window which will be used to issue
+   commands on the build host machine.
+3. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_uart_si_cluster2``
+   followed by pressing ``Enter`` key to join the SI Cluster 2 terminal window
+   to Primary Compute terminal window.
+
+Please refer to the following image of the tmux panes re-arrangement.
+
+  .. image:: ../images/kronos_reference_stack_fvp_rearrange_windows.png
+    :align: center
+
+|
+
+The Reference Stack running on the Primary Compute can be logged into as
+``root`` user without password in the Linux terminal. Run the below
+command to guarantee that all the expected services have been
+initialized.
+
+   .. code-block:: shell
+
+      systemctl is-system-running --wait
+
+Wait for it to return expecting ``running`` to be printed in the terminal.
+
+Run the Demo
+^^^^^^^^^^^^
 
 1. Enter the DomU1 console using the ``xl`` tool:
 
@@ -476,47 +477,484 @@ Virtualization Architecture
 
       xl console domu1
 
-2. Follow the instructions as for the Baremetal Architecture above.
+DomU1 can be logged into as ``root`` user without password in the Linux
+terminal. This command will provide a console on the DomU1. To exit, one can
+enter ``Ctrl-]`` (to access the FVP telnet shell), followed by typing
+``send esc`` into the telnet shell and pressing ``Enter``. See the
+`xl documentation`_ for further details.
 
-3. To leave the DomU1 console, type ``Ctrl-]`` and enter ``send esc``.
+2. Run the ``ping`` command from the Primary Compute terminal (running Linux)
+   to verify that it can communicate with the Safety Island (running Zephyr):
 
-.. _user_guide_reproduce_si_communication_demo:
+   .. code-block:: shell
 
-Safety Island Communication Demo
---------------------------------
+      # On the Primary Compute terminal
+      ping 192.168.2.1 -c 10
+
+   The output should look like the following line, repeated 10 times:
+
+   .. code-block:: shell
+
+      64 bytes from 192.168.2.1 seq=0 ttl=64 time=0.151 ms
+
+3. From the tmux pane started for the build host machine terminal, start the
+   Packet Analyzer:
+
+   .. code-block:: shell
+
+      cd ~/kronos/
+      # Start the Packet Analyzer
+      kas shell -c "oe-run-native packet-analyzer-native start_analyzer -L debug -a localhost -c ./data"
+
+   The following messages are expected from the host terminal:
+
+   .. code-block:: shell
+
+      INFO : analyzer_client.py/_connect_to: Starting analyze, use Ctrl-C to stop the process.
+      INFO : analyzer_client.py/_connect_to: Attempting a connect to (localhost : 49152)
+      INFO : analyzer_client.py/_connect_to: Successfully connected to (localhost : 49152)
+
+   A message similar to the following should appear on the SI Cluster 2
+   terminal:
+
+   .. code-block:: shell
+
+      Actuation Service initialized.
+      Accepted tcp connection from the Packet Analyzer: <11>
+
+   Please refer to the following image for an invocation example of the Packet
+   Analyzer.
+
+     .. image:: ../images/kronos_reference_stack_packet_analyzer_virtualization.png
+       :align: center
+
+|
+
+4. Start the Player on the Primary Compute which replays a recording of a
+   driving scenario:
+
+   .. code-block:: shell
+
+      actuation_player -p /usr/share/actuation_player/
+
+   A message similar to the following should appear on the SI Cluster 2
+   terminal:
+
+   .. code-block:: shell
+
+    51572682601: -0.0000 (m/s^2) |  0.0000 (rad)^M
+    51597466928: -0.0000 (m/s^2) |  0.0000 (rad)^M
+    51622532911: -0.0000 (m/s^2) |  0.0000 (rad)^M
+    51647642316: -0.0000 (m/s^2) |  0.0000 (rad)^M
+    51672535849: -0.0000 (m/s^2) |  0.0000 (rad)^M
+    51697376579: -0.0000 (m/s^2) |  0.0000 (rad)^M
+    51722500414: -0.0000 (m/s^2) |  0.0000 (rad)^M
+    51747622543: -0.0000 (m/s^2) |  0.0000 (rad)^M
+    51772496466: -0.0000 (m/s^2) |  0.0000 (rad)^M
+    Thread get_analyzer_handle performing a blocking accept
+
+   A message similar to the following should appear on the host terminal where
+   the Packet Analyzer is running:
+
+   .. code-block:: shell
+
+    INFO : analyzer_client.py/_connect_to: Starting analyze, use Ctrl-C to stop the process.
+    INFO : analyzer_client.py/_connect_to: Attempting a connect to (localhost : 49152)
+    INFO : analyzer_client.py/_connect_to: Successfully connected to (localhost : 49152)
+    INFO : analyzer_client.py/run_analyze_on_chain: (1) Analyzer synced with packet chain
+    INFO : analyzer_client.py/run_analyze_on_chain: All expected control packets received
+    INFO : analyzer_client.py/_log_jitter: Observed Frequency = 21.36147200, Avg Jitter = 0.02624593, Std Deviation:0.06096328
+    INFO : analyzer_client.py/run_analyze_on_chain: End of cycle: AnalyzerResult.SUCCESS
+
+    INFO : analyzer_client.py/_tear_conn: Received fin ack from Actuation Service
+
+    Chain ID   Result
+    0          AnalyzerResult.SUCCESS
+
+5. To leave the DomU1 console, type ``Ctrl-]`` and enter ``send esc``.
+
+6. To shutdown the FVP and terminate the emulation, follow the below steps:
+
+    * Issue a ``shutdown now`` on the Primary Compute terminal. The below
+      messages indicate the shutdown process is complete.
+
+      .. code-block:: shell
+
+         [  OK  ] Finished System Power Off.
+         [  OK  ] Reached target System Power Off.
+
+    * Close the Primary Compute terminal tmux window created by the ``runfvp``
+      tool by pressing ``Ctrl-]`` and typing ``quit``.
+    * Close the tmux pane started for the build host machine by pressing
+      ``Ctrl-d``.
+    * Select the terminal titled as ``python3`` where the ``runfvp`` was
+      launched by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP
+      process.
+
+Automated Validation
+^^^^^^^^^^^^^^^^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To enable the validation tests:
+  1. Select ``Safety Island Actuation Demo`` as ``Use-Case``.
+  2. Choose ``Virtualization`` from the ``Reference Stack Architecture`` menu.
+  3. Choose ``Run Automated Validation`` from the ``Runtime Validation Setup``
+     menu.
+  4. Then choose ``Save & Build``.
+
+The complete test suit takes around 41 minutes to complete. See
+:ref:`validation_actuation_demo` for more details. A similar output to the
+following is printed out.
+
+  .. code-block:: console
+
+    2023-09-11 20:20:46 - INFO     - Creating terminal default on terminal_ns_uart0
+    2023-09-11 20:20:56 - INFO     - Creating terminal tf-a on terminal_sec_uart
+    2023-09-11 20:20:56 - INFO     - Creating terminal scp on terminal_uart_scp
+    2023-09-11 20:20:56 - INFO     - Creating terminal lcp on terminal_uart_lcp
+    2023-09-11 20:20:56 - INFO     - Creating terminal rss on terminal_rss_uart
+    2023-09-11 20:20:56 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+    2023-09-11 20:20:56 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+    2023-09-11 20:20:57 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+    2023-09-11 20:20:57 - INFO     - default: Waiting for login prompt
+    2023-09-11 20:42:20 - INFO     - Test skipped due to reliance on FFA, not supported in virtualization
+    2023-09-11 20:42:36 - INFO     - 'rtc' not tested in DomU
+    2023-09-11 20:42:36 - INFO     - 'virtiorng' not tested in DomU
+    2023-09-11 20:42:36 - INFO     - 'watchdog' not tested in DomU
+    2023-09-11 20:42:53 - INFO     - 'rtc' not tested in DomU
+    2023-09-11 20:42:53 - INFO     - 'virtiorng' not tested in DomU
+    2023-09-11 20:42:53 - INFO     - 'watchdog' not tested in DomU
+    2023-09-11 20:44:53 - INFO     - Test skipped due to reliance on FFA, not supported in virtualization
+    2023-09-11 20:46:38 - INFO     - Test skipped due to reliance on FFA, not supported in virtualization
+    2023-09-11 21:02:21 - INFO     - RESULTS:
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (617.49s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_10_safety_island_c1.SafetyIslandC1Test.test_cluster1: PASSED (0.00s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_10_safety_island_c2.SafetyIslandC2Test.test_cluster2: PASSED (0.00s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.28s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (30.62s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (170.71s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec: PASSED (120.99s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_cpu_hotplug: PASSED (7.98s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_networking: PASSED (2.65s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_cpu_hotplug: PASSED (2.09s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_networking: PASSED (2.19s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.GICv4DomU1Test.test_gicv4_1: PASSED (0.58s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.ParsecDomU1Test.test_parsec: PASSED (92.72s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.ParsecDomU2Test.test_parsec: PASSED (91.38s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.PtestRunnerDom0Test.test_ptestrunner: PASSED (850.17s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (317.42s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_20_bsp.BspTest.test_cpu_hotplug: PASSED (20.22s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_20_bsp.BspTest.test_networking: PASSED (21.98s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_20_bsp.BspTest.test_rtc: PASSED (9.90s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_20_bsp.BspTest.test_virtiorng: PASSED (10.04s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_20_bsp.BspTest.test_watchdog: PASSED (6.59s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: SKIPPED (0.00s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_rtc: SKIPPED (0.00s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_virtiorng: SKIPPED (0.00s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_watchdog: SKIPPED (0.00s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_rtc: SKIPPED (0.00s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_virtiorng: SKIPPED (0.00s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_watchdog: SKIPPED (0.00s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.ParsecDomU1Test.test_parsec_demo: SKIPPED (0.00s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.ParsecDomU2Test.test_parsec_demo: SKIPPED (0.00s)
+    2023-09-11 21:02:21 - INFO     - SUMMARY:
+    2023-09-11 21:02:21 - INFO     - virtualization-image () - Ran 34 tests in 2469.165s
+
+The following messages are expected to validate this Use-Case:
+
+  .. code-block:: console
+
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.28s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (30.62s)
+    2023-09-11 21:02:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (170.71s)
+
+Safety Island Communication Demo (using HIPC)
+=============================================
 
 The Safety Island Communication Demo uses :ref:`HIPC (Heterogeneous
 Inter-processor Communication) <design/hipc:Heterogeneous Inter-processor
 Communication (HIPC)>` to validate networking between the Primary Compute and
-the three Safety Island clusters. ``ping`` and ``iperf`` tools are installed and
-can be executed automatically using the automated HIPC test suite (see
-:ref:`reproduce_run-time_integration_tests` below and the test descriptions in
-:ref:`validation_run-time_integration_tests`).
+the three Safety Island clusters. ``ping`` and ``iperf`` tools are installed.
 
-.. _user_guide_reproduce_parsec_enabled_tls_demo:
+Baremetal Architecture
+----------------------
+
+Build
+^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To build a Baremetal Architecture image:
+
+1. Select ``Safety Island Communication Demo (using HIPC)`` from the
+   ``Use-Case`` menu.
+2. Choose ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+3. Then choose ``Save & Build``.
+
+Automated Validation
+^^^^^^^^^^^^^^^^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To enable the validation tests:
+
+  1. Select ``Safety Island Communication Demo (using HIPC)`` as ``Use-Case``.
+  2. Choose ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+  3. Choose ``Run Automated Validation`` from the ``Runtime Validation Setup``
+     menu.
+  4. Then choose ``Save & Build``.
+
+A similar output to the following is printed out. The complete test suit takes
+around 14 minutes to complete. See
+:ref:`validation_hipc_demo` for more details.
+
+.. code-block:: console
+
+  NOTE: Executing Tasks
+  2023-09-11 20:19:44 - INFO     - Creating terminal default on terminal_ns_uart0
+  2023-09-11 20:19:53 - INFO     - Creating terminal tf-a on terminal_sec_uart
+  2023-09-11 20:19:54 - INFO     - Creating terminal scp on terminal_uart_scp
+  2023-09-11 20:19:54 - INFO     - Creating terminal lcp on terminal_uart_lcp
+  2023-09-11 20:19:54 - INFO     - Creating terminal rss on terminal_rss_uart
+  2023-09-11 20:19:54 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+  2023-09-11 20:19:54 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+  2023-09-11 20:19:54 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+  2023-09-11 20:19:55 - INFO     - default: Waiting for login prompt
+  2023-09-11 20:33:45 - INFO     - RESULTS:
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (16.32s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster0: PASSED (93.28s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster1: PASSED (115.26s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster2: PASSED (89.39s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl1: PASSED (28.83s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl2: PASSED (39.16s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl1_cl2: PASSED (49.49s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl1: PASSED (10.91s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl2: PASSED (10.94s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl1_cl2: PASSED (10.68s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster0: PASSED (29.04s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster1: PASSED (27.40s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster2: PASSED (26.97s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_00_secure_partition.OpteeTest.test_optee_normal: PASSED (0.00s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (272.71s)
+  2023-09-11 20:33:45 - INFO     - SUMMARY:
+  2023-09-11 20:33:45 - INFO     - baremetal-image () - Ran 19 tests in 820.373s
+
+The following messages are expected to validate this Use-Case:
+
+.. code-block:: console
+
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster0: PASSED (93.28s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster1: PASSED (115.26s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster2: PASSED (89.39s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl1: PASSED (28.83s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl2: PASSED (39.16s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl1_cl2: PASSED (49.49s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl1: PASSED (10.91s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl2: PASSED (10.94s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl1_cl2: PASSED (10.68s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster0: PASSED (29.04s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster1: PASSED (27.40s)
+  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster2: PASSED (26.97s)
+
+Virtualization Architecture
+---------------------------
+
+Build
+^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To build a Virtualization Architecture image:
+
+1. Select ``Safety Island Communication Demo (using HIPC)`` as ``Use-Case``.
+2. Choose ``Virtualization`` from the ``Reference Stack Architecture`` menu.
+3. Then choose ``Save & Build``.
+
+
+Automated Validation
+^^^^^^^^^^^^^^^^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To enable the validation tests:
+  1. Select ``Safety Island Communication Demo (using HIPC)`` as ``Use-Case``.
+  2. Choose ``Virtualization`` from the ``Reference Stack Architecture`` menu.
+  3. Choose ``Run Automated Validation`` from the ``Runtime Validation Setup``
+     menu.
+  4. Then choose ``Save & Build``.
+
+The complete test suit takes around 36 minutes to complete. See
+:ref:`validation_hipc_demo` for more details. A similar output to the
+following is printed out.
+
+.. code-block:: console
+
+  2023-09-11 20:20:53 - INFO     - Creating terminal default on terminal_ns_uart0
+  2023-09-11 20:21:02 - INFO     - Creating terminal tf-a on terminal_sec_uart
+  2023-09-11 20:21:02 - INFO     - Creating terminal scp on terminal_uart_scp
+  2023-09-11 20:21:02 - INFO     - Creating terminal lcp on terminal_uart_lcp
+  2023-09-11 20:21:03 - INFO     - Creating terminal rss on terminal_rss_uart
+  2023-09-11 20:21:03 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+  2023-09-11 20:21:03 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+  2023-09-11 20:21:03 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+  2023-09-11 20:21:03 - INFO     - default: Waiting for login prompt
+  2023-09-11 20:50:04 - INFO     - HIPC to Cluster 0 not tested for DomU2
+  2023-09-11 20:53:36 - INFO     - HIPC to Cluster 2 not tested for DomU2
+  2023-09-11 20:57:00 - INFO     - Ping to Cluster 0 not tested for DomU2
+  2023-09-11 20:57:00 - INFO     - Ping to Cluster 2 not tested for DomU2
+  2023-09-11 20:57:22 - INFO     - RESULTS:
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (596.95s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster0: PASSED (159.92s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster1: PASSED (146.19s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster2: PASSED (125.69s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl1: PASSED (38.76s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl2: PASSED (45.72s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl1_cl2: PASSED (61.74s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl1: PASSED (24.59s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl2: PASSED (24.34s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl1_cl2: PASSED (24.17s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster0: PASSED (62.83s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster1: PASSED (61.03s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster2: PASSED (60.52s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster1: PASSED (150.95s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl0_cl1: PASSED (32.77s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl0_cl2: PASSED (45.79s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl1_cl2: PASSED (52.47s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl0_cl1: PASSED (24.51s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl0_cl2: PASSED (24.41s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl1_cl2: PASSED (24.56s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster1: PASSED (60.43s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (289.37s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster0: SKIPPED (0.00s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster2: SKIPPED (0.00s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster0: SKIPPED (0.00s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster2: SKIPPED (0.00s)
+  2023-09-11 20:57:22 - INFO     - SUMMARY:
+  2023-09-11 20:57:22 - INFO     - virtualization-image () - Ran 30 tests in 2165.293s
+
+The following messages are expected to validate this Use-Case:
+
+.. code-block:: console
+
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster0: PASSED (159.92s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster1: PASSED (146.19s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster2: PASSED (125.69s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl1: PASSED (38.76s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl2: PASSED (45.72s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl1_cl2: PASSED (61.74s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl1: PASSED (24.59s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl2: PASSED (24.34s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl1_cl2: PASSED (24.17s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster0: PASSED (62.83s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster1: PASSED (61.03s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster2: PASSED (60.52s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster1: PASSED (150.95s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl0_cl1: PASSED (32.77s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl0_cl2: PASSED (45.79s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl1_cl2: PASSED (52.47s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl0_cl1: PASSED (24.51s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl0_cl2: PASSED (24.41s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl1_cl2: PASSED (24.56s)
+  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster1: PASSED (60.43s)
 
 Parsec-enabled TLS Demo
------------------------
+=======================
 
 The demo is always available when the ``Baremetal Architecture`` is selected.
+The demo consists of a TLS server and a TLS client. Please refer to
+:ref:`design_applications_parsec_enabled_tls` for more information on
+this application. This demo is included as part of the
+``Safety Island Actuation Demo``.
 
-For the below instructions, an assumption has been made that the FVP has been
-launched as indicated under the
-:ref:`reproduce_run` section.
+Baremetal Architecture
+----------------------
+
+Build
+^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To build a Baremetal Architecture image:
+
+1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
+2. Choose ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+3. Then choose ``Save & Build``.
+
+Run FVP
+^^^^^^^
+
+To start the FVP and connect to the Primary Compute terminal (running Linux):
+
+.. code-block:: console
+
+  kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
+
+The user should wait for the system to boot and for the Linux prompt to appear.
+
+The Reference Stack running on the Primary Compute can be logged into as
+``root`` user without password in the Linux terminal. Run the below
+command to guarantee that all the expected services have been
+initialized.
+
+   .. code-block:: shell
+
+      systemctl is-system-running --wait
+
+Wait for it to return expecting ``running`` to be printed in the terminal.
+
+Run the demo
+^^^^^^^^^^^^
 
 The demo consists of a TLS server and a TLS client. Please refer to
 :ref:`design_applications_parsec_enabled_tls` for more information on
 this application.
 
-Run ``ssl_server`` from the Primary Compute terminal in the background and
-press ``Enter`` key to continue:
+1. Run ``ssl_server`` from the Primary Compute terminal in the background and
+   press ``Enter`` key to continue:
 
    .. code-block:: shell
 
       ssl_server &
 
-A message similar to the following should appear:
-
+   A message similar to the following should appear:
+   
    .. code-block:: shell
 
         . Seeding the random number generator... ok
@@ -525,77 +963,184 @@ A message similar to the following should appear:
         . Setting up the SSL data.... ok
         . Waiting for a remote connection ...
 
-The TLS client can take an optional parameter as the TLS server IP address. The
-default value of the parameter is ``localhost``.
+   The TLS client can take an optional parameter as the TLS server IP address. The
+   default value of the parameter is ``localhost``.
 
-Run ``ssl_client1`` from the Primary Compute terminal in a container:
+2. Run ``ssl_client1`` from the Primary Compute terminal in a container:
 
    .. code-block:: shell
 
       docker run  --rm -v /run/parsec/parsec.sock:/run/parsec/parsec.sock -v /usr/bin/ssl_client1:/usr/bin/ssl_client1 --network host docker.io/library/ubuntu:22.04 ssl_client1
 
-A message similar to the following should appear:
+   A message similar to the following should appear:
 
    .. code-block:: shell
 
-        . Seeding the random number generator... ok
-        . Loading the CA root certificate ... ok (0 skipped)
-        . Connecting to tcp/localhost/4433... ok
-        . Setting up the SSL/TLS structure... ok
-        . Performing the SSL/TLS handshake... ok
-        . Verifying peer X.509 certificate... ok
-        > Write to server: 18 bytes written
+         . Seeding the random number generator... ok
+         . Loading the CA root certificate ... ok (0 skipped)
+         . Connecting to tcp/localhost/4433... ok
+         . Setting up the SSL/TLS structure... ok
+         . Performing the SSL/TLS handshake... ok
+         . Verifying peer X.509 certificate... ok
+         > Write to server: 18 bytes written
 
-      GET / HTTP/1.0
+       GET / HTTP/1.0
 
-        < Read from server: 156 bytes read
+       < Read from server: 156 bytes read
 
-      HTTP/1.0 200 OK
-      Content-Type: text/html
+       HTTP/1.0 200 OK
+       Content-Type: text/html
 
-      <h2>mbed TLS Test Server</h2>
-      <p>Successful connection using: TLS-ECDHE-RSA-WITH-CHACHA20-POLY1305-SHA256</p>
+       <h2>mbed TLS Test Server</h2>
+       <p>Successful connection using: TLS-ECDHE-RSA-WITH-CHACHA20-POLY1305-SHA256</p>
 
-After the test, stop the TLS server and synchronize the container image to the
-persistent storage:
+3. Stop the TLS server and synchronize the container image to the
+   persistent storage:
 
-   .. code-block:: shell
+     .. code-block:: shell
+  
+        pkill ssl_server
+        sync
 
-      pkill ssl_server
-      sync
+4. To shutdown the FVP and terminate the emulation, follow the below step:
 
-To shutdown the FVP and terminate the emulation, follow the below steps:
+    * Issue a ``shutdown now`` on the Primary Compute terminal. The below
+      messages indicate the shutdown process is complete.
 
-  * Issue a ``shutdown now`` on the Primary Compute.
-  * Once the shutdown process is complete, close the tmux windows created by
-    the ``runfvp`` tool by pressing ``Ctrl-]`` and typing ``quit``.
-  * Close the tmux window started for the host machine in
-    :ref:`user_guide_reproduce_actuation_demo` by pressing ``Ctrl-d``.
-  * Press ``Ctrl-c`` to stop the FVP process.
+      .. code-block:: shell
 
-.. _user_guide_reproduce_IR_validation:
+         [  OK  ] Finished System Power Off.
+         [  OK  ] Reached target System Power Off.
+
+    * Select the terminal titled as ``python3`` where the ``runfvp`` was
+      launched by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP
+      process.
+
+Automated Validation
+^^^^^^^^^^^^^^^^^^^^
+
+For more details about the validation of Parsec demo, refer to
+:ref:`validation_parsec_enabled_tls_demo`.
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To enable the validation tests:
+  1. Select ``Safety Island Actuation Demo`` as ``Use-Case``.
+  2. Choose ``Baremetal Architecture`` from the ``Reference Stack Architecture``
+     menu.
+  3. Choose ``Run Automated Validation`` from the ``Runtime Validation Setup``
+     menu.
+  4. Then choose ``Save & Build``.
+
+The complete test suit takes around 16 minutes to complete. See
+:ref:`validation_parsec_enabled_tls_demo` for more details. A similar output to
+the following is printed out.
+
+.. code-block:: console
+
+  NOTE: Executing Tasks
+  2023-09-11 20:13:00 - INFO     - Creating terminal default on terminal_ns_uart0
+  2023-09-11 20:13:09 - INFO     - Creating terminal tf-a on terminal_sec_uart
+  2023-09-11 20:13:09 - INFO     - Creating terminal scp on terminal_uart_scp
+  2023-09-11 20:13:09 - INFO     - Creating terminal lcp on terminal_uart_lcp
+  2023-09-11 20:13:09 - INFO     - Creating terminal rss on terminal_rss_uart
+  2023-09-11 20:13:09 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+  2023-09-11 20:13:10 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+  2023-09-11 20:13:10 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+  2023-09-11 20:13:10 - INFO     - default: Waiting for login prompt
+  2023-09-11 20:29:25 - INFO     - RESULTS:
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (17.63s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_10_safety_island_c1.SafetyIslandC1Test.test_cluster1: PASSED (0.00s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_10_safety_island_c2.SafetyIslandC2Test.test_cluster2: PASSED (0.00s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.28s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (17.19s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (100.88s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: PASSED (374.00s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_00_secure_partition.OpteeTest.test_optee_normal: PASSED (0.00s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (297.81s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_cpu_hotplug: PASSED (115.08s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_networking: PASSED (16.50s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_rtc: PASSED (9.51s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_virtiorng: PASSED (10.21s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_watchdog: PASSED (6.50s)
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec: SKIPPED (0.00s)
+  2023-09-11 20:29:25 - INFO     - SUMMARY:
+  2023-09-11 20:29:25 - INFO     - baremetal-image () - Ran 19 tests in 965.595s
+
+The following messages are expected to validate this Use-Case:
+
+.. code-block:: console
+
+  2023-09-11 20:29:25 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: PASSED (374.00s)
 
 |Arm SystemReadyTM| IR Validation
----------------------------------
+=================================
 
 |Arm SystemReadyTM| IR Firmware Build
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------------
 
-This is a build-only option with no supported runtime functionality. The
-firmware artifacts can be found in the
-directory ``build/tmp/deploy/images/fvp-rd-kronos``.
+The Arm SystemReady IR Firmware Build option just builds the
+|Arm SystemReadyTM| IR-aligned firmware. Refer to :ref:`design_systemready_ir`
+for more details.
 
-.. _user_guide_reproduce_arm_systemready_ir_acs:
+.. image:: ../images/kronos_reference_stack_build_config_sr_ir.png
+   :align: center
+   :width: 60 %
+
+|
+
+Build
+^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To build the |Arm SystemReadyTM| IR-aligned firmware image:
+
+1. Select ``Arm SystemReady IR Firmware Build`` under
+   ``Arm SystemReady IR Validation`` from the ``Use-Case`` menu.
+2. Then choose ``Save & Build``.
+
+The firmware artifacts can be found in the directory
+``build/tmp_systemready-glibc/deploy/images/fvp-rd-kronos/``.
+
+.. _user_guide_reproduce_sr_ir_acs:
 
 |Arm SystemReadyTM| IR Architecture Compliance Suite (ACS) Tests
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------------------------------------------
 
-The ACS for the |Arm SystemReadyTM| IR certification is delivered through a live
-OS image, which enables the basic automation to run the tests.
+The ACS for the |Arm SystemReadyTM| IR certification is delivered through a
+live OS image, which enables the basic automation to run the tests.
 
-Following the steps listed in :ref:`user_guide_reproduce_sr_ir_acs`, the system
-will boot with the ACS live OS image and the ACS tests will run automatically
-after the system boots.
+The system will boot with the ACS live OS image and the ACS tests will run
+automatically after the system boots. See :ref:`systemready_ir_acs_tests` for
+more details.
+
+Build and Automated Validation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To build and run the |Arm SystemReadyTM| IR ACS tests:
+
+1. Select ``Arm SystemReady IR Architecture Compliance Suite (ACS) Tests`` under
+   ``Arm SystemReady IR Validation`` from the ``Use-Case`` menu.
+2. Then choose ``Save & Build``.
 
 A similar output to the following is printed out:
 
@@ -644,6 +1189,13 @@ A similar output to the following is printed out:
   2023-09-10 08:13:39 - INFO     - arm-systemready-ir-acs () - Ran 1 test in 32591.997s
   2023-09-10 08:13:39 - INFO     - arm-systemready-ir-acs - OK - All required tests passed (successes=1, skipped=0, failures=0, errors=0)
 
+As seen in the above logs, some Test Groups are expected to fail. The following
+messages are expected to validate this Use-Case:
+
+.. code-block:: console
+
+  2023-09-10 08:13:39 - INFO     - RESULTS - arm_systemready_ir_acs.SystemReadyACSTest.test_acs: PASSED (32592.00s)
+
 .. note::
 
   The ACS tests take hours to complete. The actual time taken will vary
@@ -663,13 +1215,10 @@ ACS tests are set up and how they work in the Reference Stack.
 .. _user_guide_reproduce_arm_systemready_ir_linux:
 
 Linux Distribution Installation (Debian and openSUSE)
------------------------------------------------------
+=====================================================
 
 The |Arm SystemReadyTM| IR-aligned firmware must boot at least two unmodified
-generic UEFI distribution images from an ISO image. To test the installation of
-a Linux distribution, follow the steps listed in
-:ref:`user_guide_reproduce_sr_ir_linux_build` to build and
-:ref:`user_guide_reproduce_sr_ir_linux_run` to start the installation.
+generic UEFI distribution images from an ISO image.
 
 This Software Stack currently supports two Linux distributions: `Debian Stable`_
 and `openSUSE Leap`_. To install Debian, you can refer to the
@@ -693,15 +1242,43 @@ Please refer to :ref:`systemready_ir_linux_install` for an explanation on how
 the Linux distros installation is set up and how they work in the Reference
 Stack.
 
-Below are some tips and possible problems encountered during the installation
-process for reference.
-
 Debian
-^^^^^^
+------
 
-The whole process of installing Debian will probably take about 5 hours.
+Distro Installation Media Preparation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The install process begins when you see something like the below picture:
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To build the |Arm SystemReadyTM| IR Linux distros installation tests:
+
+1. Choose ``Debian Linux Distro Installation`` under
+   ``Linux Distribution Installation (Debian and openSUSE)`` from the
+   ``Use-Case`` menu.
+2. Then choose ``Save & Build``.
+
+.. image:: ../images/kronos_reference_stack_build_config_sr_distro_debian.png
+   :align: center
+   :width: 60 %
+
+|
+
+Distro Installation
+^^^^^^^^^^^^^^^^^^^
+
+Run the following command to start the installation:
+
+.. code-block:: console
+
+  kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
+
+
+The whole process of installing Debian will probably take about 5 hours. The
+install process begins when you see something like the below picture:
 
     .. image:: ../images/sr-ir-linux-distro-debian-install-grub-3.png
        :align: center
@@ -815,11 +1392,43 @@ installation process and how to solve them:
 
 * Terminate the FVP
 
-  Press ``Ctrl-b 1`` to switch to the FVP running terminal, then press
-  ``Ctrl-c`` to terminate the FVP simulation.
+  Select the terminal titled as ``python3`` where the ``runfvp`` was launched
+  by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP process.
+
 
 openSUSE
-^^^^^^^^
+--------
+
+Distro Installation Media Preparation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To build the |Arm SystemReadyTM| IR Linux distros installation tests:
+
+1. Choose ``openSUSE Linux Distro Installation`` under
+   ``Linux Distribution Installation (Debian and openSUSE)`` from the
+   ``Use-Case`` menu.
+2. Then choose ``Save & Build``.
+
+.. image:: ../images/kronos_reference_stack_build_config_sr_distro_opensuse.png
+   :align: center
+   :width: 60 %
+
+|
+
+Distro Installation
+^^^^^^^^^^^^^^^^^^^
+
+Run the following command to start the installation:
+
+.. code-block:: console
+
+  kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
 The whole process of installing openSUSE will take about 6 hours. Below are the
 main steps and tips for installing openSUSE.
@@ -900,219 +1509,5 @@ main steps and tips for installing openSUSE.
 11. The reboot process takes about 20 minutes. Then you can login the Linux
     shell with the user created in Step 6.
 
-11. Press ``Ctrl-b 1`` to switch to the FVP running terminal, then press
-    ``Ctrl-c`` to terminate the FVP simulation.
-
-.. _reproduce_run-time_integration_tests:
-
-********************
-Automated Validation
-********************
-
-To enable the validation tests, choose ``Run Automated Validation``
-from the ``Runtime Validation Setup`` menu, then choose ``Save & Build``.
-
-The following validation tests can be performed on the Reference Stack:
-
-  * System Integration Tests:
-
-    * Baremetal Architecture Stack:
-
-      For the ``Safety Island Actuation Demo`` selected as ``Use-Case``, a
-      similar output to the following is printed out. The complete test suit
-      takes around 16 minutes to complete. See :ref:`validation_actuation_demo`
-      for more details.
-
-      .. code-block:: console
-
-        NOTE: Executing Tasks
-        2023-09-11 20:13:00 - INFO     - Creating terminal default on terminal_ns_uart0
-        2023-09-11 20:13:09 - INFO     - Creating terminal tf-a on terminal_sec_uart
-        2023-09-11 20:13:09 - INFO     - Creating terminal scp on terminal_uart_scp
-        2023-09-11 20:13:09 - INFO     - Creating terminal lcp on terminal_uart_lcp
-        2023-09-11 20:13:09 - INFO     - Creating terminal rss on terminal_rss_uart
-        2023-09-11 20:13:09 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
-        2023-09-11 20:13:10 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
-        2023-09-11 20:13:10 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
-        2023-09-11 20:13:10 - INFO     - default: Waiting for login prompt
-        2023-09-11 20:29:25 - INFO     - RESULTS:
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (17.63s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_10_safety_island_c1.SafetyIslandC1Test.test_cluster1: PASSED (0.00s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_10_safety_island_c2.SafetyIslandC2Test.test_cluster2: PASSED (0.00s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.28s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (17.19s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (100.88s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: PASSED (374.00s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_00_secure_partition.OpteeTest.test_optee_normal: PASSED (0.00s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (297.81s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_cpu_hotplug: PASSED (115.08s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_networking: PASSED (16.50s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_rtc: PASSED (9.51s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_virtiorng: PASSED (10.21s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_watchdog: PASSED (6.50s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec: SKIPPED (0.00s)
-        2023-09-11 20:29:25 - INFO     - SUMMARY:
-        2023-09-11 20:29:25 - INFO     - baremetal-image () - Ran 19 tests in 965.595s
-
-      For the ``Safety Island Communication Demo (using HIPC)`` selected as
-      ``Use-Case``, a similar output to the following is printed out. The
-      complete test suit takes around 14 minutes to complete. See
-      :ref:`validation_zephyr_bridge` for more details.
-
-      .. code-block:: console
-
-        NOTE: Executing Tasks
-        2023-09-11 20:19:44 - INFO     - Creating terminal default on terminal_ns_uart0
-        2023-09-11 20:19:53 - INFO     - Creating terminal tf-a on terminal_sec_uart
-        2023-09-11 20:19:54 - INFO     - Creating terminal scp on terminal_uart_scp
-        2023-09-11 20:19:54 - INFO     - Creating terminal lcp on terminal_uart_lcp
-        2023-09-11 20:19:54 - INFO     - Creating terminal rss on terminal_rss_uart
-        2023-09-11 20:19:54 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
-        2023-09-11 20:19:54 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
-        2023-09-11 20:19:54 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
-        2023-09-11 20:19:55 - INFO     - default: Waiting for login prompt
-        2023-09-11 20:33:45 - INFO     - RESULTS:
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (16.32s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster0: PASSED (93.28s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster1: PASSED (115.26s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster2: PASSED (89.39s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl1: PASSED (28.83s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl2: PASSED (39.16s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl1_cl2: PASSED (49.49s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl1: PASSED (10.91s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl2: PASSED (10.94s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl1_cl2: PASSED (10.68s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster0: PASSED (29.04s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster1: PASSED (27.40s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster2: PASSED (26.97s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_00_secure_partition.OpteeTest.test_optee_normal: PASSED (0.00s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 20:33:45 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (272.71s)
-        2023-09-11 20:33:45 - INFO     - SUMMARY:
-        2023-09-11 20:33:45 - INFO     - baremetal-image () - Ran 19 tests in 820.373s
-
-    * Virtualization Architecture Stack:
-
-      For the ``Safety Island Actuation Demo`` selected as ``Use-Case``, a
-      similar output to the following is printed out. The complete test suit
-      takes around 41 minutes to complete. See :ref:`validation_actuation_demo`
-      for more details.
-
-      .. code-block:: console
-
-        2023-09-11 20:20:46 - INFO     - Creating terminal default on terminal_ns_uart0
-        2023-09-11 20:20:56 - INFO     - Creating terminal tf-a on terminal_sec_uart
-        2023-09-11 20:20:56 - INFO     - Creating terminal scp on terminal_uart_scp
-        2023-09-11 20:20:56 - INFO     - Creating terminal lcp on terminal_uart_lcp
-        2023-09-11 20:20:56 - INFO     - Creating terminal rss on terminal_rss_uart
-        2023-09-11 20:20:56 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
-        2023-09-11 20:20:56 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
-        2023-09-11 20:20:57 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
-        2023-09-11 20:20:57 - INFO     - default: Waiting for login prompt
-        2023-09-11 20:42:20 - INFO     - Test skipped due to reliance on FFA, not supported in virtualization
-        2023-09-11 20:42:36 - INFO     - 'rtc' not tested in DomU
-        2023-09-11 20:42:36 - INFO     - 'virtiorng' not tested in DomU
-        2023-09-11 20:42:36 - INFO     - 'watchdog' not tested in DomU
-        2023-09-11 20:42:53 - INFO     - 'rtc' not tested in DomU
-        2023-09-11 20:42:53 - INFO     - 'virtiorng' not tested in DomU
-        2023-09-11 20:42:53 - INFO     - 'watchdog' not tested in DomU
-        2023-09-11 20:44:53 - INFO     - Test skipped due to reliance on FFA, not supported in virtualization
-        2023-09-11 20:46:38 - INFO     - Test skipped due to reliance on FFA, not supported in virtualization
-        2023-09-11 21:02:21 - INFO     - RESULTS:
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (617.49s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_10_safety_island_c1.SafetyIslandC1Test.test_cluster1: PASSED (0.00s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_10_safety_island_c2.SafetyIslandC2Test.test_cluster2: PASSED (0.00s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.28s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (30.62s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (170.71s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec: PASSED (120.99s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_cpu_hotplug: PASSED (7.98s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_networking: PASSED (2.65s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_cpu_hotplug: PASSED (2.09s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_networking: PASSED (2.19s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.GICv4DomU1Test.test_gicv4_1: PASSED (0.58s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.ParsecDomU1Test.test_parsec: PASSED (92.72s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.ParsecDomU2Test.test_parsec: PASSED (91.38s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.PtestRunnerDom0Test.test_ptestrunner: PASSED (850.17s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (317.42s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_20_bsp.BspTest.test_cpu_hotplug: PASSED (20.22s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_20_bsp.BspTest.test_networking: PASSED (21.98s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_20_bsp.BspTest.test_rtc: PASSED (9.90s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_20_bsp.BspTest.test_virtiorng: PASSED (10.04s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_20_bsp.BspTest.test_watchdog: PASSED (6.59s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: SKIPPED (0.00s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_rtc: SKIPPED (0.00s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_virtiorng: SKIPPED (0.00s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU1.test_watchdog: SKIPPED (0.00s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_rtc: SKIPPED (0.00s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_virtiorng: SKIPPED (0.00s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.BspTestDomU2.test_watchdog: SKIPPED (0.00s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.ParsecDomU1Test.test_parsec_demo: SKIPPED (0.00s)
-        2023-09-11 21:02:21 - INFO     - RESULTS - test_40_virtualization.ParsecDomU2Test.test_parsec_demo: SKIPPED (0.00s)
-        2023-09-11 21:02:21 - INFO     - SUMMARY:
-        2023-09-11 21:02:21 - INFO     - virtualization-image () - Ran 34 tests in 2469.165s
-
-      For the ``Safety Island Communication Demo (using HIPC)`` selected as
-      ``Use-Case``, a similar output to the following is printed out. The
-      complete test suit takes around 36 minutes to complete. See
-      :ref:`validation_zephyr_bridge` for more details.
-
-      .. code-block:: console
-
-        2023-09-11 20:20:53 - INFO     - Creating terminal default on terminal_ns_uart0
-        2023-09-11 20:21:02 - INFO     - Creating terminal tf-a on terminal_sec_uart
-        2023-09-11 20:21:02 - INFO     - Creating terminal scp on terminal_uart_scp
-        2023-09-11 20:21:02 - INFO     - Creating terminal lcp on terminal_uart_lcp
-        2023-09-11 20:21:03 - INFO     - Creating terminal rss on terminal_rss_uart
-        2023-09-11 20:21:03 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
-        2023-09-11 20:21:03 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
-        2023-09-11 20:21:03 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
-        2023-09-11 20:21:03 - INFO     - default: Waiting for login prompt
-        2023-09-11 20:50:04 - INFO     - HIPC to Cluster 0 not tested for DomU2
-        2023-09-11 20:53:36 - INFO     - HIPC to Cluster 2 not tested for DomU2
-        2023-09-11 20:57:00 - INFO     - Ping to Cluster 0 not tested for DomU2
-        2023-09-11 20:57:00 - INFO     - Ping to Cluster 2 not tested for DomU2
-        2023-09-11 20:57:22 - INFO     - RESULTS:
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (596.95s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster0: PASSED (159.92s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster1: PASSED (146.19s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster2: PASSED (125.69s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl1: PASSED (38.76s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl2: PASSED (45.72s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl1_cl2: PASSED (61.74s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl1: PASSED (24.59s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl2: PASSED (24.34s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl1_cl2: PASSED (24.17s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster0: PASSED (62.83s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster1: PASSED (61.03s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster2: PASSED (60.52s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster1: PASSED (150.95s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl0_cl1: PASSED (32.77s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl0_cl2: PASSED (45.79s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl1_cl2: PASSED (52.47s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl0_cl1: PASSED (24.51s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl0_cl2: PASSED (24.41s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl1_cl2: PASSED (24.56s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster1: PASSED (60.43s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (289.37s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster0: SKIPPED (0.00s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster2: SKIPPED (0.00s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster0: SKIPPED (0.00s)
-        2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster2: SKIPPED (0.00s)
-        2023-09-11 20:57:22 - INFO     - SUMMARY:
-        2023-09-11 20:57:22 - INFO     - virtualization-image () - Ran 30 tests in 2165.293s
+12. Select the terminal titled as ``python3`` where the ``runfvp`` was launched
+    by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP process.

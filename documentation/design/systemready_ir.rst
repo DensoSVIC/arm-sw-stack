@@ -64,7 +64,7 @@ Current Status
 **************
 
 This Reference Stack has the testing capability to check for |Arm SystemReadyTM|
-alignment. Please refer to :ref:`user_guide_reproduce_arm_systemready_ir_acs` to
+alignment. Please refer to :ref:`user_guide_reproduce_sr_ir_acs` to
 see how to run the |Arm SystemReadyTM| IR `ACS`_ tests in this Reference Stack.
 
 The |Arm SystemReadyTM| IR ACS tests of the Reference Stack use the
@@ -156,7 +156,7 @@ bitbake testimage task.
 
 See :meta-arm-repo:`meta-arm-systemready/README.md` for more details.
 To run the tests, please refer to
-:ref:`user_guide_reproduce_arm_systemready_ir_acs`.
+:ref:`user_guide_reproduce_sr_ir_acs`.
 
 .. _systemready_ir_linux_install:
 
