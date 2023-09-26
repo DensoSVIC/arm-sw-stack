@@ -12,8 +12,7 @@ HOMEPAGE = "https://cam.docs.arm.com/"
 LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://license.rst;md5=214c73aa30e7f71d6173261fe950f51b"
 
-BRANCH_CAM ?= "branch=main"
-SRCREV_CAM ?= "b9d851c07e67ca61657b102e6d4f053058773394"
+require critical-application-monitoring-common.inc
 
 PV .= "+git${SRCPV}"
 SRC_URI = "${SRC_URI_CAM};${BRANCH_CAM}"

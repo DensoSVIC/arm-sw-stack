@@ -1,0 +1,14 @@
+/*
+ * SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ * affiliates <open-source-office@arm.com></text>
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+&ipc_rpmsg_veth_0 {
+       status = "disabled";
+};
+
+&ipc_rpmsg_veth_1 {
+       status = "disabled";
+};

@@ -123,6 +123,7 @@ datap
 dateutil
 dbch
 DBUILD
+DCAM
 DCONFIG
 DCONTROL
 DDSPERF
