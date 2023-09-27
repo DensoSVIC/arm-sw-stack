@@ -8,6 +8,27 @@
 #ifndef ZEPHYR_DRIVERS_FAULT_MGMT_ARM_FMU_PRIV_H_
 #define ZEPHYR_DRIVERS_FAULT_MGMT_ARM_FMU_PRIV_H_
 
+#include <zephyr/sys/iterable_sections.h>
+
+struct fault_mgmt_arm_fmu_internal_api {
+	void (*isr)(const struct device *dev, bool critical);
+	int (*inject)(const struct device *dev, uint32_t prot_id);
+	int (*set_enabled)(const struct device *dev, uint32_t prot_id, bool enabled);
+};
+
+struct fault_mgmt_arm_fmu_implementation {
+	uint32_t erriidr;
+	int (*init_fn)(const struct device *dev);
+	const struct fault_mgmt_arm_fmu_internal_api *api;
+};
+
+#define FAULT_MGMT_ARM_FMU_DEFINE(name, _erriidr, _init_fn, _api)                                  \
+	STRUCT_SECTION_ITERABLE(fault_mgmt_arm_fmu_implementation, name) = {                       \
+		.erriidr = _erriidr,                                                               \
+		.init_fn = _init_fn,                                                               \
+		.api = _api,                                                                       \
+	}
+
 struct fault_mgmt_arm_fmu_config {
 	DEVICE_MMIO_ROM;
 	void (*irq_config)(const struct device *dev);
@@ -18,6 +39,7 @@ struct fault_mgmt_arm_fmu_data {
 	struct k_spinlock lock;
 	fault_mgmt_arm_fmu_callback_t callback;
 	void *user_data;
+	const struct fault_mgmt_arm_fmu_internal_api *internal_api;
 };
 
 #define FAULT_MGMT_ARM_FMU_DEV_DATA(dev) ((struct fault_mgmt_arm_fmu_data *const)(dev)->data)
@@ -53,6 +75,8 @@ static const mem_addr_t FAULT_MGMT_ARM_FMU_FIELD_CID[] = {0xFF0, 0xFF4, 0xFF8, 0
 #define FAULT_MGMT_ARM_FMU_CID_AMBA           0xB105F00D
 #define FAULT_MGMT_ARM_FMU_PID_SYSTEM         0x0BB49B
 #define FAULT_MGMT_ARM_FMU_PID_MASK           0xFFFFF
+
+#define FAULT_MGMT_ARM_FMU_SYSTEM_ERRIIDR 0x10000
 
 static ALWAYS_INLINE uint32_t fault_mgmt_arm_fmu_read32(const struct device *dev, mem_addr_t offset)
 {

@@ -5,4 +5,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 zephyr_library()
-zephyr_library_sources_ifdef(CONFIG_FAULT_MGMT_ARM_FMU fault_mgmt_arm_fmu.c)
+
+if(CONFIG_FAULT_MGMT_ARM_FMU)
+
+zephyr_library_sources(
+        fault_mgmt_arm_fmu_common.c
+        fault_mgmt_arm_fmu_system.c)
+zephyr_linker_sources(DATA_SECTIONS fault_mgmt_arm_fmu.ld)
+
+endif()
