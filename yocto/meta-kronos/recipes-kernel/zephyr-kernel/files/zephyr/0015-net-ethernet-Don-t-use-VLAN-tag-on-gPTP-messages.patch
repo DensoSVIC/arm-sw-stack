@@ -1,0 +1,73 @@
+From ff03f7a7e8532833a053982763c014befa13848b Mon Sep 17 00:00:00 2001
+From: Ambroise Vincent <ambroise.vincent@arm.com>
+Date: Mon, 9 Oct 2023 16:03:05 +0100
+Subject: [PATCH] net: ethernet: Don't use VLAN tag on gPTP messages
+
+According to IEEE Std 802.1AS-2011 11.3.3, gPTP messages are not
+VLAN-tagged.
+
+Remove the use of VLAN headers for gPTP messages on the TX path.
+The RX path is handled by the drivers. The network drivers in Zephyr
+might need to be updated as well in order to accept receiving
+non-VLAN-tagged gPTP messages when the CONFIG_NET_VLAN option is
+selected.
+
+Continue sending gPTP packets with VLAN tags when CONFIG_NET_GPTP_VLAN
+is enabled. Specify that this option is for testing purposes.
+
+Signed-off-by: Ambroise Vincent <ambroise.vincent@arm.com>
+Upstream-Status: Backport [357f88bb596fd4cf6f4e4788fb25e16184c7c36b]
+---
+ subsys/net/l2/ethernet/ethernet.c   |  6 ++++--
+ subsys/net/l2/ethernet/gptp/Kconfig | 11 +++++++----
+ 2 files changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/subsys/net/l2/ethernet/ethernet.c b/subsys/net/l2/ethernet/ethernet.c
+index b727f5e450..540696d83e 100644
+--- a/subsys/net/l2/ethernet/ethernet.c
++++ b/subsys/net/l2/ethernet/ethernet.c
+@@ -517,7 +517,8 @@ static struct net_buf *ethernet_fill_header(struct ethernet_context *ctx,
+ 	}
+ 
+ 	if (IS_ENABLED(CONFIG_NET_VLAN) &&
+-	    net_eth_is_vlan_enabled(ctx, net_pkt_iface(pkt))) {
++	    net_eth_is_vlan_enabled(ctx, net_pkt_iface(pkt)) &&
++	    (IS_ENABLED(CONFIG_NET_GPTP_VLAN) || ptype != htons(NET_ETH_PTYPE_PTP))) {
+ 		struct net_eth_vlan_hdr *hdr_vlan;
+ 
+ 		hdr_vlan = (struct net_eth_vlan_hdr *)(hdr_frag->data);
+@@ -694,7 +695,8 @@ static int ethernet_send(struct net_if *iface, struct net_pkt *pkt)
+ 	}
+ 
+ 	if (IS_ENABLED(CONFIG_NET_VLAN) &&
+-	    net_eth_is_vlan_enabled(ctx, iface)) {
++	    net_eth_is_vlan_enabled(ctx, iface) &&
++	    (IS_ENABLED(CONFIG_NET_GPTP_VLAN) || ptype != htons(NET_ETH_PTYPE_PTP))) {
+ 		if (set_vlan_tag(ctx, iface, pkt) == NET_DROP) {
+ 			ret = -EINVAL;
+ 			goto error;
+diff --git a/subsys/net/l2/ethernet/gptp/Kconfig b/subsys/net/l2/ethernet/gptp/Kconfig
+index 357edc2553..661288180f 100644
+--- a/subsys/net/l2/ethernet/gptp/Kconfig
++++ b/subsys/net/l2/ethernet/gptp/Kconfig
+@@ -117,10 +117,13 @@ config NET_GPTP_VLAN
+ 	select NET_MGMT_EVENT
+ 	select NET_MGMT_EVENT_INFO
+ 	help
+-	  This setting allows gPTP to run over VLAN link. Currently only
+-	  one port can have VLAN tag set. Note that CONFIG_NET_GPTP_VLAN_TAG
+-	  setting must have a proper tag value set, otherwise the gPTP over
+-	  VLAN will not work.
++	  The standard requires gPTP packets to not be VLAN-tagged (see IEEE
++	  802.1AS chapter 11.3.3).
++	  This setting is for testing purposes. It allows to deviate from the
++	  standard by running gPTP over a VLAN link. Currently only one port can
++	  have VLAN tag set. Note that CONFIG_NET_GPTP_VLAN_TAG setting must
++	  have a proper tag value set, otherwise the gPTP over VLAN will not
++	  work.
+ 
+ config NET_GPTP_VLAN_TAG
+ 	int "VLAN tag to use"
+-- 
+2.25.1
+

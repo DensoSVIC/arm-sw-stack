@@ -1,0 +1,85 @@
+From 56a06083b891e94ce1c5fbe7896aa13197608b11 Mon Sep 17 00:00:00 2001
+From: Ambroise Vincent <ambroise.vincent@arm.com>
+Date: Fri, 29 Sep 2023 10:06:42 +0100
+Subject: [PATCH] net: gptp: Invert priority of outgoing packets
+
+The previous implementation was setting priority 3 (Critical
+applications) for Sync, Pdelay and Pdelay_Resp messages; and priority 6
+(Internetwork control) for the other PTP messages. This might have been
+done under the incorrect understanding that "Critical applications" was
+the highest priority.
+This resulted in the Pdelay_Resp_Follow_Up getting sent before the
+Pdelay_Resp message when enough TC_TX queues were being used
+(NET_TC_TX_COUNT >= 2), which is an inversion compared to the intended
+order.
+
+Invert the priority of the outgoing PTP packets so that the PTP event
+messages are sent with higher priority, as was originally intended.
+
+Signed-off-by: Ambroise Vincent <ambroise.vincent@arm.com>
+Upstream-Status: Backport [d0ac02a18d2dcf9b565509216a0aeecf6390d558]
+---
+ subsys/net/l2/ethernet/gptp/gptp_messages.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/subsys/net/l2/ethernet/gptp/gptp_messages.c b/subsys/net/l2/ethernet/gptp/gptp_messages.c
+index 8fc1ffe2ea..8b6afdb0ac 100644
+--- a/subsys/net/l2/ethernet/gptp/gptp_messages.c
++++ b/subsys/net/l2/ethernet/gptp/gptp_messages.c
+@@ -198,7 +198,7 @@ struct net_pkt *gptp_prepare_sync(int port)
+ 		return NULL;
+ 	}
+ 
+-	net_pkt_set_priority(pkt, NET_PRIORITY_CA);
++	net_pkt_set_priority(pkt, NET_PRIORITY_IC);
+ 
+ 	port_ds = GPTP_PORT_DS(port);
+ 	sync = GPTP_SYNC(pkt);
+@@ -254,7 +254,7 @@ struct net_pkt *gptp_prepare_follow_up(int port, struct net_pkt *sync)
+ 		return NULL;
+ 	}
+ 
+-	net_pkt_set_priority(pkt, NET_PRIORITY_IC);
++	net_pkt_set_priority(pkt, NET_PRIORITY_CA);
+ 
+ 	hdr = GPTP_HDR(pkt);
+ 	fup = GPTP_FOLLOW_UP(pkt);
+@@ -318,7 +318,7 @@ struct net_pkt *gptp_prepare_pdelay_req(int port)
+ 		return NULL;
+ 	}
+ 
+-	net_pkt_set_priority(pkt, NET_PRIORITY_CA);
++	net_pkt_set_priority(pkt, NET_PRIORITY_IC);
+ 
+ 	port_ds = GPTP_PORT_DS(port);
+ 	req = GPTP_PDELAY_REQ(pkt);
+@@ -373,7 +373,7 @@ struct net_pkt *gptp_prepare_pdelay_resp(int port,
+ 		return NULL;
+ 	}
+ 
+-	net_pkt_set_priority(pkt, NET_PRIORITY_CA);
++	net_pkt_set_priority(pkt, NET_PRIORITY_IC);
+ 
+ 	port_ds = GPTP_PORT_DS(port);
+ 
+@@ -434,7 +434,7 @@ struct net_pkt *gptp_prepare_pdelay_follow_up(int port,
+ 		return NULL;
+ 	}
+ 
+-	net_pkt_set_priority(pkt, NET_PRIORITY_IC);
++	net_pkt_set_priority(pkt, NET_PRIORITY_CA);
+ 
+ 	port_ds = GPTP_PORT_DS(port);
+ 
+@@ -503,7 +503,7 @@ struct net_pkt *gptp_prepare_announce(int port)
+ 		return NULL;
+ 	}
+ 
+-	net_pkt_set_priority(pkt, NET_PRIORITY_IC);
++	net_pkt_set_priority(pkt, NET_PRIORITY_CA);
+ 
+ 	hdr = GPTP_HDR(pkt);
+ 	ann = GPTP_ANNOUNCE(pkt);
+-- 
+2.25.1
+

@@ -1,0 +1,74 @@
+From 15f46627e7e79076bdda361587fe99835d17c25a Mon Sep 17 00:00:00 2001
+From: Ambroise Vincent <ambroise.vincent@arm.com>
+Date: Fri, 29 Sep 2023 09:36:08 +0100
+Subject: [PATCH] net: ip: Clarify highest priority traffic class
+
+The priority 3 (Critical applications) was incorrectly marked as
+"highest priority", which might have led to incorrect use of
+NET_PRIORITY_CA in some cases.
+
+Note that this is already correctly advertized in other places, as it
+was partially fixed in af8a0b1a5dec4dfcdbba3f4fee9d267e56df7971.
+
+NET_TC_SKIP_FOR_HIGH_PRIO was previously only allowing to push priority
+3 (Critical applications) packets directly to the driver, but not the
+ones with a higher priority. Change it so that it is now in effect for
+priority 3 and above.
+
+Signed-off-by: Ambroise Vincent <ambroise.vincent@arm.com>
+Upstream-Status: Backport [b7df39f81fe705d83341de17c209fafa17c24c6e]
+---
+ include/zephyr/net/net_ip.h | 4 ++--
+ subsys/net/ip/Kconfig       | 4 ++--
+ subsys/net/ip/net_if.c      | 2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/include/zephyr/net/net_ip.h b/include/zephyr/net/net_ip.h
+index 6c78428c1c..a1c4294bd6 100644
+--- a/include/zephyr/net/net_ip.h
++++ b/include/zephyr/net/net_ip.h
+@@ -423,11 +423,11 @@ enum net_priority {
+ 	NET_PRIORITY_BK = 1, /**< Background (lowest)                */
+ 	NET_PRIORITY_BE = 0, /**< Best effort (default)              */
+ 	NET_PRIORITY_EE = 2, /**< Excellent effort                   */
+-	NET_PRIORITY_CA = 3, /**< Critical applications (highest)    */
++	NET_PRIORITY_CA = 3, /**< Critical applications              */
+ 	NET_PRIORITY_VI = 4, /**< Video, < 100 ms latency and jitter */
+ 	NET_PRIORITY_VO = 5, /**< Voice, < 10 ms latency and jitter  */
+ 	NET_PRIORITY_IC = 6, /**< Internetwork control               */
+-	NET_PRIORITY_NC = 7  /**< Network control                    */
++	NET_PRIORITY_NC = 7  /**< Network control (highest)          */
+ } __packed;
+ 
+ #define NET_MAX_PRIORITIES 8 /* How many priority values there are */
+diff --git a/subsys/net/ip/Kconfig b/subsys/net/ip/Kconfig
+index 2ce2e35171..f31b05032e 100644
+--- a/subsys/net/ip/Kconfig
++++ b/subsys/net/ip/Kconfig
+@@ -211,8 +211,8 @@ config NET_TC_RX_COUNT
+ config NET_TC_SKIP_FOR_HIGH_PRIO
+ 	bool "Push high priority packets directly to network driver"
+ 	help
+-	  If this is set, then high priority (NET_PRIORITY_CA) net_pkt will be
+-	  pushed directly to network driver and will skip the traffic class
++	  If this is set, then high priority (>= NET_PRIORITY_CA) net_pkt will
++	  be pushed directly to network driver and will skip the traffic class
+ 	  queues. This is currently not enabled by default.
+ 
+ choice NET_TC_THREAD_TYPE
+diff --git a/subsys/net/ip/net_if.c b/subsys/net/ip/net_if.c
+index 5da2a66467..bfb3ad807f 100644
+--- a/subsys/net/ip/net_if.c
++++ b/subsys/net/ip/net_if.c
+@@ -356,7 +356,7 @@ void net_if_queue_tx(struct net_if *iface, struct net_pkt *pkt)
+ 	 * directly to the driver.
+ 	 */
+ 	if ((IS_ENABLED(CONFIG_NET_TC_SKIP_FOR_HIGH_PRIO) &&
+-	     prio == NET_PRIORITY_CA) || NET_TC_TX_COUNT == 0) {
++	     prio >= NET_PRIORITY_CA) || NET_TC_TX_COUNT == 0) {
+ 		net_pkt_set_tx_stats_tick(pkt, k_cycle_get_32());
+ 
+ 		net_if_tx(net_pkt_iface(pkt), pkt);
+-- 
+2.25.1
+

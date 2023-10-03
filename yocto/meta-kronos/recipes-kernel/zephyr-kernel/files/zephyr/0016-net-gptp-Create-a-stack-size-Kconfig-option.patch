@@ -1,0 +1,58 @@
+From 24763898ea6ee9cb2be1f819406bce463cff7601 Mon Sep 17 00:00:00 2001
+From: Ambroise Vincent <ambroise.vincent@arm.com>
+Date: Thu, 12 Oct 2023 08:48:56 +0100
+Subject: [PATCH] net: gptp: Create a stack size Kconfig option
+
+The stack size was previously hardcoded in the source code, making it
+difficult to change when enabling options that require a larger stack.
+
+Signed-off-by: Ambroise Vincent <ambroise.vincent@arm.com>
+Upstream-Status: Backport [68dfd819c14b945faaa217b02070f448c6ce3ca0]
+---
+ subsys/net/l2/ethernet/gptp/Kconfig | 7 +++++++
+ subsys/net/l2/ethernet/gptp/gptp.c  | 4 +---
+ 2 files changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/subsys/net/l2/ethernet/gptp/Kconfig b/subsys/net/l2/ethernet/gptp/Kconfig
+index 661288180f..59dcbae232 100644
+--- a/subsys/net/l2/ethernet/gptp/Kconfig
++++ b/subsys/net/l2/ethernet/gptp/Kconfig
+@@ -103,6 +103,13 @@ config NET_GPTP_CLOCK_ACCURACY
+ 	default 0x31 if NET_GPTP_CLOCK_ACCURACY_GT_10S
+ 	default 0xfe
+ 
++config NET_GPTP_STACK_SIZE
++	int "gPTP thread stack size"
++	default 2048
++	help
++	  Set the gPTP thread stack size in bytes. The gPTP thread handles the
++	  gPTP state machine. There is one gPTP thread in the system.
++
+ config NET_GPTP_NUM_PORTS
+ 	int "Number of gPTP ports"
+ 	default 1
+diff --git a/subsys/net/l2/ethernet/gptp/gptp.c b/subsys/net/l2/ethernet/gptp/gptp.c
+index bad1d5bf26..4126ee5c09 100644
+--- a/subsys/net/l2/ethernet/gptp/gptp.c
++++ b/subsys/net/l2/ethernet/gptp/gptp.c
+@@ -20,8 +20,6 @@ LOG_MODULE_REGISTER(net_gptp, CONFIG_NET_GPTP_LOG_LEVEL);
+ 
+ #include "gptp_private.h"
+ 
+-#define NET_GPTP_STACK_SIZE 2048
+-
+ #if CONFIG_NET_GPTP_NUM_PORTS > 32
+ /*
+  * Boolean arrays sizes have been hardcoded.
+@@ -31,7 +29,7 @@ LOG_MODULE_REGISTER(net_gptp, CONFIG_NET_GPTP_LOG_LEVEL);
+ #error Maximum number of ports exceeded. (Max is 32).
+ #endif
+ 
+-K_KERNEL_STACK_DEFINE(gptp_stack, NET_GPTP_STACK_SIZE);
++K_KERNEL_STACK_DEFINE(gptp_stack, CONFIG_NET_GPTP_STACK_SIZE);
+ K_FIFO_DEFINE(gptp_rx_queue);
+ 
+ static k_tid_t tid;
+-- 
+2.25.1
+

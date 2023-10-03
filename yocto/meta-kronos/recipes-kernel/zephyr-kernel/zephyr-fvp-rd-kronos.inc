@@ -20,6 +20,10 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0010-net-gptp-fix-follow_up-message-timestamp.patch;patchdir=zephyr \
     file://zephyr/0011-net-gptp-fix-follow_up-message-correction_field.patch;patchdir=zephyr \
     file://zephyr/0012-net-gptp-fix-announce-message-byte-order.patch;patchdir=zephyr \
+    file://zephyr/0013-net-ip-Clarify-highest-priority-traffic-class.patch;patchdir=zephyr \
+    file://zephyr/0014-net-gptp-Invert-priority-of-outgoing-packets.patch;patchdir=zephyr \
+    file://zephyr/0015-net-ethernet-Don-t-use-VLAN-tag-on-gPTP-messages.patch;patchdir=zephyr \
+    file://zephyr/0016-net-gptp-Create-a-stack-size-Kconfig-option.patch;patchdir=zephyr \
     "
 # /* cSpell:enable */
 
