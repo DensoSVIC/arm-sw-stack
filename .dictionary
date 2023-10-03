@@ -223,6 +223,7 @@ genid
 GENMASK
 gentimer
 gettext
+gicd
 gicv
 GICv4
 GICv4.1

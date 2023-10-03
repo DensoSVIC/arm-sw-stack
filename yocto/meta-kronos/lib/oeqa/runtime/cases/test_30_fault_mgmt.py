@@ -22,7 +22,9 @@ class FaultMgmtTest(OERuntimeTestCase):
 
         self.target.sendline(self.console, "fault tree")
         self.target.expect(self.console, self.si_prompt, timeout=60)
-        self.assertIn(b"fmu@2a510000", self.target.before(self.console))
+        tree = self.target.before(self.console)
+        for fmu in [b"fmu@2a510000", b"fmu@2a570000"]:
+            self.assertIn(fmu, tree)
 
     def test_system_fmu_internal_inject(self):
         self.fmu_fault_clear()
@@ -55,6 +57,29 @@ class FaultMgmtTest(OERuntimeTestCase):
         self.target.expect(self.console, 'Enabling fault', timeout=30)
         self.target.expect(self.console,
                            "Fault received")
+
+    def test_gic_fmu_inject(self):
+        fault_ids = [
+            "0x100",  # GICD 0 - Clock error
+            "0x10000600",  # Wake 0 - QCH error
+            "0x20000a00",  # SPI Collator ID 0 - External error 1
+            "0x40001300",  # ITS 0 - COL SED in address bit
+            "0x50000300",  # FMU 0 - FMU lockstep protection error
+        ]
+
+        for fault_id in fault_ids:
+            self.target.expect(self.console, self.si_prompt, timeout=60)
+            self.target.sendline(
+                self.console,
+                f"fault set_enabled fmu@2a570000 {fault_id} 1")
+            self.target.expect(self.console, "Enabling fault", timeout=30)
+            self.target.expect(self.console, self.si_prompt, timeout=30)
+            self.target.sendline(self.console,
+                                 f"fault inject fmu@2a570000 {fault_id}")
+            self.target.expect(self.console,
+                               r"Fault received \(critical\): "
+                               fr"{fault_id} on fmu@2a570000",
+                               timeout=30)
 
     def test_fmu_fault_count(self):
         self.test_system_fmu_internal_inject()
