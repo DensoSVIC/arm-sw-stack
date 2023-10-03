@@ -16,3 +16,7 @@
 &system_fmu {
 	status = "okay";
 };
+
+&pc_gic_fmu {
+	status = "okay";
+};
