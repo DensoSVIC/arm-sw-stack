@@ -7,3 +7,10 @@
 config FAULT_MGMT_ARM_FMU
 	bool "Arm Fault Management Unit"
 	default n
+
+config FAULT_MGMT_MAX_TREE_DEPTH
+	int "Arm Fault Management maximum tree depth"
+	default 4
+	help
+	  The maximum fault management device tree depth, used to statically
+	  allocate memory for tree traversal.

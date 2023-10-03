@@ -10,6 +10,8 @@
 
 #include <zephyr/sys/iterable_sections.h>
 
+#define FAULT_MGMT_ARM_FMU_NEXT_FAULT_UPSTREAM 1
+
 struct fault_mgmt_arm_fmu_internal_api {
 	int (*next_fault)(const struct device *dev, bool critical, uint32_t *next_id);
 	int (*inject)(const struct device *dev, uint32_t prot_id);

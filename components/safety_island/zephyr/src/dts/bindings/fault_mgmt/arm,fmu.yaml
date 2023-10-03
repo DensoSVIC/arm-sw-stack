@@ -12,3 +12,6 @@ include: base.yaml
 properties:
   reg:
     required: true
+
+  upstream-fmus:
+    type: phandles

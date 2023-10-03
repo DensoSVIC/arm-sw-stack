@@ -47,8 +47,37 @@ static int fault_mgmt_arm_fmu_next_internal_fault(const struct device *dev, uint
 	return 0;
 }
 
+static int fault_mgmt_arm_fmu_next_upstream_fault(const struct device *dev, uint32_t record_id,
+						  uint32_t *next_id)
+{
+	size_t count = 0;
+	const device_handle_t *upstream_fmus;
+	uint32_t upstream_fmu_index = record_id / 2;
+	uint32_t status;
+
+	upstream_fmus = device_required_handles_get(dev, &count);
+	if (upstream_fmu_index >= count) {
+		LOG_ERR("Upstream FMU %d does not exist\n", upstream_fmu_index);
+		k_oops();
+	}
+
+	status = fault_mgmt_arm_fmu_read32(dev, FAULT_MGMT_ARM_FMU_RECORD_FIELD_STATUS(record_id));
+	if (FIELD_GET(FAULT_MGMT_ARM_FMU_STATUS_V_MASK, status) == 0) {
+		LOG_WRN("Spurious interrupt\n");
+		return -EFAULT;
+	}
+
+	LOG_DBG("Upstream fault: %d\n", upstream_fmu_index);
+	*next_id = upstream_fmus[upstream_fmu_index];
+
+	/* Set the V bit to clear the fault */
+	fault_mgmt_arm_fmu_write32(dev, status, FAULT_MGMT_ARM_FMU_RECORD_FIELD_STATUS(record_id));
+
+	return FAULT_MGMT_ARM_FMU_NEXT_FAULT_UPSTREAM;
+}
+
 static int fault_mgmt_arm_fmu_system_next_fault(const struct device *dev, bool critical,
-						uint32_t *prot_id)
+						uint32_t *next_id)
 {
 	uint32_t record_id, features;
 	uint64_t errgsrs, lsb;
@@ -69,10 +98,9 @@ static int fault_mgmt_arm_fmu_system_next_fault(const struct device *dev, bool c
 	is_internal = FIELD_GET(FAULT_MGMT_ARM_FMU_FR_ED_MASK, features) ==
 		      FAULT_MGMT_ARM_FMU_FR_ED_INTERNAL;
 	if (is_internal) {
-		return fault_mgmt_arm_fmu_next_internal_fault(dev, record_id, prot_id);
+		return fault_mgmt_arm_fmu_next_internal_fault(dev, record_id, next_id);
 	} else {
-		LOG_WRN("Unsupported error record: 0x%x\n", record_id);
-		return -ENOTSUP;
+		return fault_mgmt_arm_fmu_next_upstream_fault(dev, record_id, next_id);
 	}
 }
 

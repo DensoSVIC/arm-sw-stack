@@ -81,38 +81,67 @@ static int fault_mgmt_arm_fmu_init(const struct device *dev)
 	return 0;
 }
 
-static void fault_mgmt_arm_fmu_isr(const struct device *dev, bool critical)
+static void fault_mgmt_arm_fmu_isr(const struct device *root_dev, bool critical)
 {
 	int ret;
-	uint32_t prot_id;
+	uint32_t next_id;
 	uint64_t num_iterations = 0;
-	struct fault_mgmt_arm_fmu_data *data = FAULT_MGMT_ARM_FMU_DEV_DATA(dev);
+	struct fault_mgmt_arm_fmu_data *data;
+	struct fault_mgmt_arm_fmu_data *root_data = FAULT_MGMT_ARM_FMU_DEV_DATA(root_dev);
 	struct fault_mgmt_arm_fmu_fault fault;
-	k_spinlock_key_t key = k_spin_lock(&data->lock);
+	struct stack_state {
+		const struct device *dev;
+		k_spinlock_key_t key;
+	};
+	struct stack_state stack[CONFIG_FAULT_MGMT_MAX_TREE_DEPTH + 1] = {{
+		.dev = root_dev,
+		.key = k_spin_lock(&root_data->lock),
+	}};
+	struct stack_state *stack_ptr = stack;
 
-	__ASSERT(data->callback != NULL, "Fault received without callback")
+	__ASSERT(root_data->callback != NULL, "Fault received without callback");
 
-	do {
+	while (stack_ptr >= stack) {
+		if (stack_ptr - stack >= CONFIG_FAULT_MGMT_MAX_TREE_DEPTH) {
+			LOG_ERR("Maximum FMU tree depth exceeded\n");
+			k_oops();
+		}
 		if (num_iterations >= FAULT_MGMT_ARM_FMU_MAX_FAULT_ITERATIONS) {
-			LOG_ERR("Maximum FMU callback iterations exceeded");
+			LOG_ERR("Maximum FMU callback iterations exceeded\n");
 			k_oops();
 		}
 
-		prot_id = 0;
-		ret = data->internal_api->next_fault(dev, critical, &prot_id);
+		LOG_DBG("Next fault: %s, depth=%zd\n", stack_ptr->dev->name, stack_ptr - stack);
+		next_id = 0;
+		data = FAULT_MGMT_ARM_FMU_DEV_DATA(stack_ptr->dev);
+		ret = data->internal_api->next_fault(stack_ptr->dev, critical, &next_id);
+		LOG_DBG("Return: ret=0x%x, next_id=0x%x\n", ret, next_id);
 
-		if (ret < 0) {
-			LOG_ERR("Invalid next_fault (ret=0x%x, next_id=0x%x)", ret, prot_id);
+		if (ret == FAULT_MGMT_ARM_FMU_NEXT_FAULT_UPSTREAM) {
+			/* Next fault is from an upstream FMU
+			 * Put next_id (the next device handle) on the stack
+			 */
+			stack_ptr++;
+			stack_ptr->dev = device_from_handle(next_id);
+			data = FAULT_MGMT_ARM_FMU_DEV_DATA(stack_ptr->dev);
+			stack_ptr->key = k_spin_lock(&data->lock);
+		} else if (ret == 0) {
+			if (next_id == FAULT_MGMT_ARM_FMU_FAULT_PROTECTION_ID_INVALID) {
+				/* No more errors so rewind the stack */
+				k_spin_unlock(&data->lock, stack_ptr->key);
+				stack_ptr--;
+			} else {
+				/* A fault has been reported - send to callback */
+				fault.handle = device_handle_get(stack_ptr->dev);
+				fault.prot_id = next_id;
+				root_data->callback(root_dev, &fault, root_data->user_data);
+			}
+		} else {
+			LOG_ERR("Invalid next_fault (ret=0x%x, next_id=0x%x)\n", ret, next_id);
 			k_oops();
-		} else if (ret == 0 && prot_id != FAULT_MGMT_ARM_FMU_FAULT_PROTECTION_ID_INVALID) {
-			fault.handle = device_handle_get(dev);
-			fault.prot_id = prot_id;
-			data->callback(dev, &fault, data->user_data);
 		}
 		num_iterations++;
-	} while (prot_id != FAULT_MGMT_ARM_FMU_FAULT_PROTECTION_ID_INVALID);
-
-	k_spin_unlock(&data->lock, key);
+	}
 }
 
 static void fault_mgmt_arm_fmu_isr_critical(const struct device *dev)
