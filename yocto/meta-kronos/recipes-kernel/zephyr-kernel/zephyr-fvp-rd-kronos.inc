@@ -17,6 +17,9 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0007-net-sockets-Fix-connected-datagram-socket-packet-fil.patch;patchdir=zephyr \
     file://zephyr/0008-kernel-poll-Lock-all-calls-to-signal_poll_event.patch;patchdir=zephyr \
     file://zephyr/0009-net-sockets-Keep-lock-when-notifying-condvar.patch;patchdir=zephyr \
+    file://zephyr/0010-net-gptp-fix-follow_up-message-timestamp.patch;patchdir=zephyr \
+    file://zephyr/0011-net-gptp-fix-follow_up-message-correction_field.patch;patchdir=zephyr \
+    file://zephyr/0012-net-gptp-fix-announce-message-byte-order.patch;patchdir=zephyr \
     "
 # /* cSpell:enable */
 
