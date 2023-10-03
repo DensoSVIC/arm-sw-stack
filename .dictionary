@@ -590,6 +590,8 @@ sysvinit
 testimage
 THISDIR
 THRTL
+tickless
+timestamping
 timesyncd
 titlesonly
 tmpdir
