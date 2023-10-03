@@ -10,12 +10,13 @@
  * Luca Fancellu <luca.fancellu@arm.com>
  */
 
+#include <linux/etherdevice.h>
+#include <linux/ethtool.h>
+#include <linux/if_vlan.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <linux/rpmsg.h>
 #include <linux/netdevice.h>
-#include <linux/etherdevice.h>
-#include <linux/if_vlan.h>
+#include <linux/rpmsg.h>
 
 struct rpmsg_ept_netdev {
 	struct net_device *dev;
@@ -121,6 +122,10 @@ static netdev_tx_t rpmsg_net_start_xmit(struct sk_buff *skb,
 	return NETDEV_TX_OK;
 }
 
+static const struct ethtool_ops rpmsg_net_ethtool_ops = {
+	.get_ts_info = ethtool_op_get_ts_info,
+};
+
 static const struct net_device_ops rpmsg_netdev_ops = {
 	.ndo_open         = rpmsg_net_open,
 	.ndo_stop         = rpmsg_net_stop,
@@ -141,6 +146,7 @@ static int rpmsg_netdev_probe(struct rpmsg_device *rpdev)
 	/* Set up network device as normal. */
 	netdev->priv_flags |= IFF_UNICAST_FLT | IFF_LIVE_ADDR_CHANGE;
 	netdev->netdev_ops = &rpmsg_netdev_ops;
+	netdev->ethtool_ops = &rpmsg_net_ethtool_ops;
 	netdev->features = NETIF_F_HIGHDMA;
 
 	netdev->vlan_features = netdev->features;
