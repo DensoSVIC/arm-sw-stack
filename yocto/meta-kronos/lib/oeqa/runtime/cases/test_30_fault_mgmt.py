@@ -28,12 +28,12 @@ class FaultMgmtTest(OERuntimeTestCase):
                                r"Fault received \(non-critical\): "
                                fr"{fault_id} on fmu@2a510000",
                                timeout=30)
-            self.target.sendline(self.console)
 
     def test_system_fmu_internal_set_enabled(self):
         self.target.expect(self.console, self.si_prompt, timeout=60)
         self.target.sendline(self.console,
                              f"fault set_enabled fmu@2a510000 0x2 0")
+        self.target.expect(self.console, 'Disabling fault', timeout=30)
         self.target.expect(self.console, self.si_prompt, timeout=30)
         self.target.sendline(self.console, f"fault inject fmu@2a510000 0x2")
         # Wait 10 seconds to ensure the fault is not triggered
@@ -46,5 +46,6 @@ class FaultMgmtTest(OERuntimeTestCase):
         # Re-enable the fault and ensure it is now received
         self.target.sendline(self.console,
                              f"fault set_enabled fmu@2a510000 0x2 1")
+        self.target.expect(self.console, 'Enabling fault', timeout=30)
         self.target.expect(self.console,
                            "Fault received")
