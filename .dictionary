@@ -50,6 +50,7 @@ bitbang
 bitfield
 BITMASK
 bmca
+blkid
 BOOTAA
 bootable
 bootimg
@@ -193,10 +194,12 @@ EPHSR
 eptdev
 ERCV
 ERRCODE
+errdevid
 errgsr
 errgsrs
 erriidr
 errno
+errupdate
 etherdev
 ethpc
 ethsi
@@ -335,6 +338,7 @@ maxdepth
 MAXSIZE
 MBED
 mbedtls
+mbid
 mbox
 mboxes
 mbwu
@@ -470,6 +474,7 @@ premaster
 presmp
 printstats
 PRIO
+protid
 PRMS
 procinfo
 PRODUCTID
@@ -479,6 +484,7 @@ ptable
 ptest
 ptestrunner
 pver
+pwroff
 pycache
 pyparsing
 pypi

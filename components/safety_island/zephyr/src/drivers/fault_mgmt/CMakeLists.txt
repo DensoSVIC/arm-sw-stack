@@ -10,7 +10,9 @@ if(CONFIG_FAULT_MGMT_ARM_FMU)
 
 zephyr_library_sources(
         fault_mgmt_arm_fmu_common.c
-        fault_mgmt_arm_fmu_system.c)
+        fault_mgmt_arm_fmu_gic.c
+        fault_mgmt_arm_fmu_system.c
+)
 zephyr_linker_sources(DATA_SECTIONS fault_mgmt_arm_fmu.ld)
 
 endif()
