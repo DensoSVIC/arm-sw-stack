@@ -643,7 +643,6 @@ A similar output to the following is printed out:
   2023-09-10 08:13:39 - INFO     - SUMMARY:
   2023-09-10 08:13:39 - INFO     - arm-systemready-ir-acs () - Ran 1 test in 32591.997s
   2023-09-10 08:13:39 - INFO     - arm-systemready-ir-acs - OK - All required tests passed (successes=1, skipped=0, failures=0, errors=0)
-  2023-09-10 08:13:41 - INFO     - ACS test suite results are consistent with baseline.
 
 .. note::
 

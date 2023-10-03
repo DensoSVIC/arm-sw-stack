@@ -52,9 +52,10 @@ Compliant systems must conform to the:
 |Arm SystemReadyTM| IR Objective
 ********************************
 
-This Reference Stack aims to be aligned with |Arm SystemReadyTM| IR version 1.0,
-but does not aim to be |Arm SystemReadyTM| IR certified, meaning that neither
-formal compliance testing nor validation are performed.
+This Reference Stack aims to be aligned with |Arm SystemReadyTM| IR version
+|SystemReady IR ACS version|, but does not aim to be |Arm SystemReadyTM| IR
+certified, meaning that neither formal compliance testing nor validation are
+performed.
 
 .. _boot_process_systemready-status:
 
@@ -66,14 +67,11 @@ This Reference Stack has the testing capability to check for |Arm SystemReadyTM|
 alignment. Please refer to :ref:`user_guide_reproduce_arm_systemready_ir_acs` to
 see how to run the |Arm SystemReadyTM| IR `ACS`_ tests in this Reference Stack.
 
-The |Arm SystemReadyTM| IR ACS tests of the Reference Stack use a set of
-baseline files to detect any changes in regards to the current status of the
-|Arm SystemReadyTM| IR alignment of the system. These files can be found under
-:meta-arm-repo:`meta-arm-bsp/arm-systemready/acs/baseline/fvp-rd-kronos` and
-describe the current status of the Reference Stack. A high-level summary of the
-current non-alignments is described in
-:ref:`boot_process_systemready-non_alignments`. Please refer to the baseline
-files for more detailed information on each individual set of tests.
+The |Arm SystemReadyTM| IR ACS tests of the Reference Stack use the
+|Arm SystemReadyTM| scripts to check the test results. The checks are currently
+patched to account for the current non-alignments. A high-level summary of
+these non-alignments is described in
+:ref:`boot_process_systemready-non_alignments`.
 
 .. _boot_process_systemready-non_alignments:
 
@@ -95,8 +93,11 @@ The Reference Stack is currently known to have the following non-alignments:
        persist EFI variables', which in turn will cause the BootServicesTest
        case ``BS.ExitBootServices - ConsistencyTestCheckpoint1`` and several
        RuntimeServicesTest ``SetVariable``/``GetVariable`` cases to fail.
-    3. U-Boot uses the 'removable storage' method to boot the EFI payload and
-       the EFI boot manager is not configured/used.
+
+* Devicetree
+    1. Missing schemas for components which have not yet or are not appropriate
+       to be upstreamed (``arm,mhuv3``, ``arm,mpam-msc``, ``arm,rd-kronos``,
+       ``arm,slc``, ``arm,si-channel``, ``arm,si-rproc``).
 
 * U-Boot
 
@@ -146,7 +147,7 @@ class in the meta-arm-systemready Yocto layer contains the common logic to
 deploy the |Arm SystemReadyTM| IR ACS version |SystemReady IR ACS version|
 pre-built image and set up the testimage environment. It also contains a
 testimage "postfunc" called ``acs_logs_handle`` which generates report files
-and analyzes the test results against a baseline.
+and checks the results.
 
 The script
 :meta-arm-repo:`meta-arm-systemready/lib/oeqa/runtime/cases/arm_systemready_ir_acs.py`

@@ -115,7 +115,7 @@ optee_version = "3.20.0"
 # /* cspell:disable-next-line */
 scp_firmware_base_version = "master branch post v2.11.0"
 scp_firmware_version = "f71f34237365b2c4b54be798aba79b740dcc4020"
-systemready_ir_acs_version = "1.0"
+systemready_ir_acs_version = "2.0.0"
 trusted_firmware_a_version = "2.8.0"
 # /* cspell:disable-next-line */
 trusted_firmware_m_base_version = "master branch post v1.8.0"
