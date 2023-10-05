@@ -703,7 +703,15 @@ int veth_rpmsg_send(const struct device *dev, struct net_pkt *pkt)
 	gptp_hdr = update_gptp_tx(net_pkt_iface(pkt), pkt);
 #endif /* CONFIG_NET_GPTP */
 
-	ret = rpmsg_send(&ctx->sc_ept, frame_buf, packet_length);
+	/* Don't allow PTP messages to be delayed */
+	ret = rpmsg_trysend(&ctx->sc_ept, frame_buf, packet_length);
+	if (ret == -ENOMEM) {
+		if (gptp_hdr) {
+			LOG_WRN("No TX buffer available.\n");
+			return ret;
+		}
+		ret = rpmsg_send(&ctx->sc_ept, frame_buf, packet_length);
+	}
 	if (ret < 0) {
 		LOG_DBG("Rpmsg endpoint not ready or sending failed.\n");
 		return -EIO;
