@@ -11,7 +11,7 @@ menuconfig VETH_RPMSG
 	default n
 
 config VETH_MAC_ADDR
-string "MAC address for the interface"
+	string "MAC address for the interface"
 	help
 	  Specify a MAC address for the Veth interface in the form of
 	  six hex 8-bit chars separated by colons (e.g.:
@@ -19,8 +19,19 @@ string "MAC address for the interface"
 	  means the code will make 00:00:00:00:00:01.
 
 config VETH_NS_NAME
-string "Name advertised through nameservice"
+	string "Name advertised through nameservice"
 	default "rpmsg-netdev"
 	help
 	  Specify a name, advertised through the nameservice, that uniquely
 	  identifies this endpoint.
+
+config VETH_PTP_CLOCK_INIT_PRIORITY
+	int "veth PTP clock device init priority"
+	default 81
+	help
+	  veth PTP clock device init priority. Note that the priority needs to
+	  be higher than the ethernet init priority and lower than the net
+	  stack.
+
+config NET_GPTP
+	depends on POSIX_API

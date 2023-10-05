@@ -5,23 +5,28 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/kernel.h>
-#include <zephyr/device.h>
-#include <zephyr/devicetree.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include <zephyr/device.h>
+#include <zephyr/devicetree.h>
 #include <zephyr/drivers/mbox.h>
+#include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 #include <zephyr/net/ethernet.h>
 #include <zephyr/net/net_if.h>
 
-#include <openamp/open_amp.h>
 #include <metal/device.h>
+#include <openamp/open_amp.h>
 #include <resource_table.h>
 
-#include <zephyr/logging/log.h>
+#if defined(CONFIG_NET_GPTP)
+#include <zephyr/drivers/ptp_clock.h>
+#include <zephyr/net/gptp.h>
+#include <zephyr/posix/time.h>
+#include <zephyr/sys_clock.h>
+#endif /* CONFIG_NET_GPTP */
 
 LOG_MODULE_REGISTER(veth_rpmsg, LOG_LEVEL_INF);
 
@@ -72,6 +77,9 @@ struct veth_rpmsg_ctx {
 	struct rpmsg_virtio_device rvdev;
 	struct rpmsg_device *rpdev;
 	struct rpmsg_endpoint sc_ept;
+#if defined(CONFIG_NET_GPTP)
+	const struct device *ptp_clock;
+#endif /* CONFIG_NET_GPTP */
 };
 
 struct veth_rpmsg_conf {
@@ -131,6 +139,136 @@ static struct net_if *get_iface(struct veth_rpmsg_ctx *ctx, uint16_t vlan_tag)
 #endif
 }
 
+#if defined(CONFIG_NET_GPTP)
+static bool gptp_need_fup(struct gptp_hdr *hdr)
+{
+	switch (hdr->message_type) {
+	case GPTP_SYNC_MESSAGE:
+	case GPTP_PATH_DELAY_RESP_MESSAGE:
+		return true;
+	default:
+		return false;
+	}
+}
+
+static struct gptp_hdr *check_gptp_msg(struct net_if *iface, struct net_pkt *pkt, bool is_tx)
+{
+	struct net_eth_hdr *hdr = NET_ETH_HDR(pkt);
+	struct gptp_hdr *gptp_hdr;
+	int eth_hlen = -1;
+
+	/* Accept both VLAN and non-VLAN tagged PTP packets */
+	if (ntohs(hdr->type) == NET_ETH_PTYPE_PTP) {
+		eth_hlen = sizeof(struct net_eth_hdr);
+	} else if (ntohs(hdr->type) == NET_ETH_PTYPE_VLAN) {
+		struct net_eth_vlan_hdr *hdr_vlan = (struct net_eth_vlan_hdr *)hdr;
+
+		if (ntohs(hdr_vlan->type) == NET_ETH_PTYPE_PTP) {
+			eth_hlen = sizeof(struct net_eth_vlan_hdr);
+		}
+	}
+	if (eth_hlen < 0) {
+		return NULL;
+	}
+
+	/* In TX, the first net_buf contains the Ethernet header and the actual gPTP header is in
+	 * the second net_buf. In RX, the Ethernet header + other headers are in the first net_buf.
+	 */
+	if (is_tx) {
+		if (pkt->frags->frags == NULL) {
+			return NULL;
+		}
+
+		gptp_hdr = (struct gptp_hdr *)pkt->frags->frags->data;
+	} else {
+		gptp_hdr = (struct gptp_hdr *)(pkt->frags->data + eth_hlen);
+	}
+
+	return gptp_hdr;
+}
+
+static void update_pkt_priority(struct gptp_hdr *hdr, struct net_pkt *pkt)
+{
+	/* Use the same priority for all PTP message classes to ensure they are pushed to the
+	network stack in the same order they were received. Otherwise sync and followup messages
+	could get processed out of order by the PTP state machine on SMP systems with enough traffic
+	classes. */
+	net_pkt_set_priority(pkt, NET_PRIORITY_IC);
+}
+
+int eth_clock_settime(const struct net_ptp_time *time)
+{
+	struct timespec tp;
+	int ret;
+
+	tp.tv_sec = time->second;
+	tp.tv_nsec = time->nanosecond;
+
+	ret = clock_settime(CLOCK_REALTIME, &tp);
+	if (ret < 0) {
+		return -errno;
+	}
+
+	return 0;
+}
+
+int eth_clock_gettime(struct net_ptp_time *time)
+{
+	struct timespec tp;
+	int ret;
+
+	ret = clock_gettime(CLOCK_REALTIME, &tp);
+	if (ret < 0) {
+		return -errno;
+	}
+
+	time->second = tp.tv_sec;
+	time->nanosecond = tp.tv_nsec;
+
+	return 0;
+}
+
+static struct gptp_hdr *update_gptp_tx(struct net_if *iface, struct net_pkt *pkt)
+{
+	struct net_ptp_time timestamp;
+	struct gptp_hdr *hdr;
+	int ret;
+
+	hdr = check_gptp_msg(iface, pkt, true);
+	if (!hdr) {
+		return NULL;
+	}
+
+	ret = eth_clock_gettime(&timestamp);
+	if (ret < 0) {
+		return NULL;
+	}
+
+	net_pkt_set_timestamp(pkt, &timestamp);
+
+	return hdr;
+}
+
+static bool update_gptp_rx(struct net_if *iface, struct net_pkt *pkt,
+			   struct net_ptp_time *timestamp)
+{
+	struct gptp_hdr *hdr;
+
+	hdr = check_gptp_msg(iface, pkt, false);
+	if (!hdr) {
+		return false;
+	}
+
+	net_pkt_set_timestamp(pkt, timestamp);
+	update_pkt_priority(hdr, pkt);
+
+	return true;
+}
+#else
+#define update_gptp_tx(iface, pkt)
+#define update_gptp_rx(iface, pkt, timestamp)
+#endif /* CONFIG_NET_GPTP */
+
 static int rpmsg_recv_callback(struct rpmsg_endpoint *ept, void *data,
 			       size_t len, uint32_t src, void *priv)
 {
@@ -138,7 +276,13 @@ static int rpmsg_recv_callback(struct rpmsg_endpoint *ept, void *data,
 	struct veth_rpmsg_ctx *ctx = priv;
 	struct net_if *iface = ctx->iface;
 	struct net_pkt *pkt = NULL;
+	bool gptp = false;
 	int ret;
+#if defined(CONFIG_NET_GPTP)
+	struct net_ptp_time timestamp;
+
+	eth_clock_gettime(&timestamp);
+#endif /* CONFIG_NET_GPTP */
 
 	if (data) {
 		if (!rpmsg_ready) {
@@ -161,10 +305,14 @@ static int rpmsg_recv_callback(struct rpmsg_endpoint *ept, void *data,
 			return -1;
 		}
 
+#if defined(CONFIG_NET_GPTP)
+		gptp = update_gptp_rx(get_iface(ctx, vlan_tag), pkt, &timestamp);
+#endif /* CONFIG_NET_GPTP */
+
 #if defined(CONFIG_NET_VLAN)
 		struct net_eth_hdr *hdr = NET_ETH_HDR(pkt);
 
-		if (ntohs(hdr->type) == NET_ETH_PTYPE_VLAN) {
+		if (ntohs(hdr->type) == NET_ETH_PTYPE_VLAN && !gptp) {
 			struct net_eth_vlan_hdr *hdr_vlan =
 				(struct net_eth_vlan_hdr *)
 				NET_ETH_HDR(pkt);
@@ -504,6 +652,9 @@ static enum ethernet_hw_caps veth_rpmsg_caps(const struct device *dev)
 #if defined(CONFIG_NET_PROMISCUOUS_MODE)
 		| ETHERNET_PROMISC_MODE
 #endif
+#if defined(CONFIG_NET_GPTP)
+		| ETHERNET_PTP
+#endif
 	);
 }
 
@@ -537,6 +688,7 @@ int veth_rpmsg_send(const struct device *dev, struct net_pkt *pkt)
 	struct veth_rpmsg_ctx *ctx = dev->data;
 	uint8_t frame_buf[NET_ETH_MAX_FRAME_SIZE];
 	size_t packet_length = net_pkt_get_len(pkt);
+	struct gptp_hdr *gptp_hdr = NULL;
 	int ret;
 
 	if (!rpmsg_ready)
@@ -547,11 +699,21 @@ int veth_rpmsg_send(const struct device *dev, struct net_pkt *pkt)
 		return -EIO;
 	}
 
+#if defined(CONFIG_NET_GPTP)
+	gptp_hdr = update_gptp_tx(net_pkt_iface(pkt), pkt);
+#endif /* CONFIG_NET_GPTP */
+
 	ret = rpmsg_send(&ctx->sc_ept, frame_buf, packet_length);
 	if (ret < 0) {
 		LOG_DBG("Rpmsg endpoint not ready or sending failed.\n");
 		return -EIO;
 	}
+
+#if defined(CONFIG_NET_GPTP)
+	if (gptp_hdr && gptp_need_fup(gptp_hdr)) {
+		net_if_add_tx_timestamp(pkt);
+	}
+#endif /* CONFIG_NET_GPTP */
 
 	return 0;
 }
@@ -568,12 +730,24 @@ static int veth_rpmsg_start(const struct device *dev)
 	return 0;
 }
 
+#if defined(CONFIG_NET_GPTP)
+static const struct device *veth_get_ptp_clock(const struct device *dev)
+{
+	struct veth_rpmsg_ctx *ctx = dev->data;
+
+	return ctx->ptp_clock;
+}
+#endif /* CONFIG_NET_GPTP */
+
 static const struct ethernet_api veth_rpmsg_api = {
 	.iface_api.init     = veth_rpmsg_iface_init,
 	.start              = veth_rpmsg_start,
 	.get_capabilities   = veth_rpmsg_caps,
 	.set_config         = veth_rpmsg_set_config,
 	.send               = veth_rpmsg_send,
+#if defined(CONFIG_NET_GPTP)
+	.get_ptp_clock      = veth_get_ptp_clock,
+#endif /* CONFIG_NET_GPTP */
 };
 
 ETH_NET_DEVICE_INIT(veth_rpmsg,
@@ -584,3 +758,77 @@ ETH_NET_DEVICE_INIT(veth_rpmsg,
 		    CONFIG_ETH_INIT_PRIORITY,
 		    &veth_rpmsg_api,
 		    NET_ETH_MTU);
+
+#if defined(CONFIG_NET_GPTP)
+struct ptp_context {
+	struct veth_rpmsg_ctx *eth_context;
+};
+
+static struct ptp_context veth_ptp_context;
+
+
+static int veth_ptp_clock_set(const struct device *clk, struct net_ptp_time *tm)
+{
+	ARG_UNUSED(clk);
+
+	return eth_clock_settime(tm);
+}
+
+static int veth_ptp_clock_get(const struct device *clk, struct net_ptp_time *tm)
+{
+	ARG_UNUSED(clk);
+
+	return eth_clock_gettime(tm);
+}
+
+static int veth_ptp_clock_adjust(const struct device *clk, int increment)
+{
+	ARG_UNUSED(clk);
+	ARG_UNUSED(increment);
+
+	/* Do nothing, as Zephyr doesn't yet have an abstract clock subsystem, which would allow to
+	adjust the time of a POSIX clock. */
+
+	return 0;
+}
+
+static int veth_ptp_clock_rate_adjust(const struct device *clk, double ratio)
+{
+	ARG_UNUSED(clk);
+	ARG_UNUSED(ratio);
+
+	/* Do nothing, as Zephyr doesn't yet have an abstract clock subsystem, which would allow to
+	adjust the time of a POSIX clock. */
+
+	return 0;
+}
+
+static const struct ptp_clock_driver_api api = {
+	.set = veth_ptp_clock_set,
+	.get = veth_ptp_clock_get,
+	.adjust = veth_ptp_clock_adjust,
+	.rate_adjust = veth_ptp_clock_rate_adjust,
+};
+
+static int veth_ptp_init(const struct device *port)
+{
+	const struct device *const eth_dev = DEVICE_GET(veth_rpmsg);
+	struct veth_rpmsg_ctx *context = eth_dev->data;
+	struct ptp_context *ptp_context = port->data;
+
+	context->ptp_clock = port;
+	ptp_context->eth_context = context;
+
+	return 0;
+}
+
+DEVICE_DEFINE(veth_ptp_clock,
+	      "veth_ptp_clock",
+	      veth_ptp_init,
+	      NULL,
+	      &veth_ptp_context,
+	      NULL,
+	      POST_KERNEL,
+	      CONFIG_VETH_PTP_CLOCK_INIT_PRIORITY,
+	      &api);
+#endif /* CONFIG_NET_GPTP */

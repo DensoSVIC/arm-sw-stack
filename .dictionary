@@ -223,6 +223,7 @@ GICv4.1
 gntalloc
 gntdev
 gnueabi
+GPTP
 grubaa
 HARDLIM
 helloworld
@@ -451,6 +452,7 @@ POLLERR
 pollfd
 POLLIN
 POLLNVAL
+POSIX
 postfunc
 postfuncs
 postinst
