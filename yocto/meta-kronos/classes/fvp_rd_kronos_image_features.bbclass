@@ -145,7 +145,7 @@ TEST_SUITES_EXTRA:hipc-validation:virtualization = " \
 
 TEST_SUITES_EXTRA:si0-bridge-ethernet0 = " test_30_si0_bridge_ethernet0"
 
-TEST_SUITES_EXTRA:cam = ""
+TEST_SUITES_EXTRA:cam = " test_40_cam"
 
 TEST_SUITES_EXTRA:append:virtualization = " \
     test_40_virtualization \
@@ -178,6 +178,12 @@ TEST_SUITES:remove:hipc-validation:virtualization = " \
 TEST_SUITES:remove:virtualization = " \
     test_00_secure_partition \
     "
+
+TEST_SUITES:remove:cam = "\
+    test_20_bsp \
+    test_40_parsec \
+    "
+
 EXTRA_TESTIMAGE_RDEPENDS ?= ""
 EXTRA_TESTIMAGE_RDEPENDS:si0-bridge-ethernet0 = "iperf-native:do_populate_sysroot"
 
