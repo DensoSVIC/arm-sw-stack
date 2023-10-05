@@ -101,7 +101,7 @@ enum rproc_state {
 
 static struct veth_rpmsg_ctx veth_rpmsg_contex;
 
-bool rpmsg_ready = false;
+bool rpmsg_ready;
 
 static int mailbox_notify(void *priv, uint32_t vqid)
 {
