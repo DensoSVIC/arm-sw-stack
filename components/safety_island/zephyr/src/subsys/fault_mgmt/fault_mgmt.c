@@ -39,12 +39,16 @@ BUILD_ASSERT(ARRAY_SIZE(fault_mgmt_roots) > 0, "At least one root device must be
 /* Define separate message queues and threads for critical and non-critical
  * faults
  */
-K_MSGQ_DEFINE(fault_mgmt_msgq_critical, sizeof(struct fault_mgmt_fault),
+struct fault_mgmt_queue_item {
+	device_handle_t root_dev;
+	struct fault_mgmt_fault fault;
+};
+K_MSGQ_DEFINE(fault_mgmt_msgq_critical, sizeof(struct fault_mgmt_queue_item),
 	      CONFIG_FAULT_MGMT_QUEUE_SIZE_CRITICAL, 4);
 K_THREAD_STACK_DEFINE(fault_mgmt_stack_critical, CONFIG_FAULT_MGMT_STACK_SIZE);
 static struct k_thread fault_mgmt_thread_critical;
 
-K_MSGQ_DEFINE(fault_mgmt_msgq_non_critical, sizeof(struct fault_mgmt_fault),
+K_MSGQ_DEFINE(fault_mgmt_msgq_non_critical, sizeof(struct fault_mgmt_queue_item),
 	      CONFIG_FAULT_MGMT_QUEUE_SIZE_NON_CRITICAL, 4);
 K_THREAD_STACK_DEFINE(fault_mgmt_stack_non_critical, CONFIG_FAULT_MGMT_STACK_SIZE);
 static struct k_thread fault_mgmt_thread_non_critical;
@@ -56,8 +60,12 @@ static void fault_mgmt_fault_callback(const struct device *dev,
 	struct k_msgq *target_msgq = FAULT_MGMT_FAULT_IS_CRITICAL(fault)
 					     ? &fault_mgmt_msgq_critical
 					     : &fault_mgmt_msgq_non_critical;
+	struct fault_mgmt_queue_item queue_item = {
+		.root_dev = device_handle_get(dev),
+		.fault = *fault,
+	};
 
-	ret = k_msgq_put(target_msgq, fault, K_NO_WAIT);
+	ret = k_msgq_put(target_msgq, &queue_item, K_NO_WAIT);
 	/* Abort if the queue has overflowed */
 	if (ret < 0) {
 		LOG_ERR("Failed to push fault to queue: 0x%x\n", ret);
@@ -67,7 +75,9 @@ static void fault_mgmt_fault_callback(const struct device *dev,
 
 static void fault_mgmt_handler(void *arg0, void *arg1, void *arg2)
 {
-	struct fault_mgmt_fault fault;
+	struct fault_mgmt_queue_item queue_item;
+	struct fault_mgmt_fault *fault;
+	const struct device *root_dev;
 	struct k_msgq *msgq = (struct k_msgq *)arg0;
 	const struct device *dev;
 	uint32_t protection_id;
@@ -77,21 +87,28 @@ static void fault_mgmt_handler(void *arg0, void *arg1, void *arg2)
 	ARG_UNUSED(arg2);
 
 	while (1) {
-		k_msgq_get(msgq, &fault, K_FOREVER);
+		k_msgq_get(msgq, &queue_item, K_FOREVER);
+		fault = &queue_item.fault;
+		root_dev = device_from_handle(queue_item.root_dev);
+		dev = device_from_handle(fault->handle);
 
-		dev = device_from_handle(fault.handle);
-
-		protection_id = FAULT_MGMT_FAULT_PROTECTION_ID(&fault);
-		criticality = FAULT_MGMT_FAULT_IS_CRITICAL(&fault) ? "critical" : "non-critical";
+		protection_id = FAULT_MGMT_FAULT_PROTECTION_ID(fault);
+		criticality = FAULT_MGMT_FAULT_IS_CRITICAL(fault) ? "critical" : "non-critical";
 
 #ifdef CONFIG_FAULT_MGMT_STORAGE
-		uint64_t total_size = fault_mgmt_storage_write(&fault);
+		uint64_t total_size = fault_mgmt_storage_write(fault);
 
 		LOG_INF("Fault received (%s): 0x%x on %s : count %llu\n", criticality,
 			protection_id, dev->name, total_size);
 #else
 		LOG_INF("Fault received (%s): 0x%x on %s\n", criticality, protection_id, dev->name);
 #endif
+
+		STRUCT_SECTION_FOREACH(fault_mgmt_handler, handler) {
+			if (handler->handle) {
+				handler->handle(root_dev, fault);
+			}
+		}
 	}
 }
 
@@ -160,6 +177,17 @@ int fault_mgmt_device_foreach(fault_mgmt_device_callback callback, void *cookie)
 
 static int fault_mgmt_init_root_device(const struct device *dev)
 {
+	int ret;
+
+	STRUCT_SECTION_FOREACH(fault_mgmt_handler, handler) {
+		if (handler->init) {
+			ret = handler->init(dev);
+			if (ret < 0) {
+				return ret;
+			}
+		}
+	}
+
 	FAULT_MGMT_DEV_API(dev)->fault_callback_set(dev, fault_mgmt_fault_callback, NULL);
 
 	return 0;

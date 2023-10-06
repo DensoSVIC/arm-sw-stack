@@ -9,6 +9,9 @@
 #define FAULT_MGMT_H_
 
 #include <zephyr/device.h>
+#include <zephyr/sys/iterable_sections.h>
+
+#include "zephyr/drivers/fault_mgmt/fault_mgmt_device.h"
 
 /**
  * @defgroup fault_mgmt Fault management
@@ -88,6 +91,48 @@ int fault_mgmt_set_critical(const struct device *dev, uint32_t prot_id, bool cri
  * @retval NULL if no safety state device is attached
  */
 const struct device *fault_mgmt_safety_device(const struct device *dev);
+
+/**
+ * @brief Fault handler initialization function
+ *
+ * @param root_dev A pointer to the root device to be initialized
+ * @retval 0 On success
+ * @retval -errno  Error code on failure, terminates subsystem initialization
+ */
+typedef int (*fault_mgmt_handler_init)(const struct device *root_dev);
+
+/**
+ * @brief Fault handler function called for each fault received
+ *
+ * @param root_dev A pointer to the root device to which the fault was delivered
+ * @param fault A struct with metadata about the fault
+ */
+typedef void (*fault_mgmt_handler_handle)(const struct device *root_dev,
+					  const struct fault_mgmt_fault *fault);
+
+/** @cond INTERNAL_HIDDEN */
+struct fault_mgmt_handler {
+	fault_mgmt_handler_init init;
+	fault_mgmt_handler_handle handle;
+};
+#define FAULT_MGMT_HANDLER_NAME(priority) handler_##priority
+/** @endcond */
+
+/**
+ * @brief Macro to statically register a fault handler
+ *
+ * Each enabled fault handler must have a unique priority.
+ *
+ * @param priority Determines the placement in the fault handler list
+ * @param _init The handler's initialization function of type @ref fault_mgmt_handler_init, or @c
+ * NULL
+ * @param _handle The handler's fault handler of type @ref fault_mgmt_handler_handle, or @c NULL
+ */
+#define FAULT_MGMT_HANDLER_DEFINE(priority, _init, _handle)                                        \
+	STRUCT_SECTION_ITERABLE(fault_mgmt_handler, FAULT_MGMT_HANDLER_NAME(priority)) = {         \
+		.init = _init,                                                                     \
+		.handle = _handle,                                                                 \
+	}
 
 /** @} */
 
