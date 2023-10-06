@@ -158,8 +158,8 @@
 		system_fmu: fmu@2a510000 {
 			compatible = "arm,fmu";
 			reg = <0x0 0x2a510000 0x1000>;
-			interrupts = <GIC_SPI 128 IRQ_TYPE_LEVEL IRQ_CRITICAL_PRIORITY>,
-					<GIC_SPI 134 IRQ_TYPE_LEVEL IRQ_DEFAULT_PRIORITY>;
+			interrupts = <GIC_SPI 96 IRQ_TYPE_LEVEL IRQ_CRITICAL_PRIORITY>,
+					<GIC_SPI 102 IRQ_TYPE_LEVEL IRQ_DEFAULT_PRIORITY>;
 			interrupt-names = "critical", "non_critical";
 			status = "disabled";
 		};
