@@ -671,6 +671,9 @@ related to:
  * Adding SMSC91x driver promiscuous mode
  * Fixing connected datagram socket packet filtering
  * Fixing race conditions in poll and condvar
+ * Fixing gPTP message generation correctness
+ * Fixing gPTP packet priority
+ * Conforming to the gPTP VLAN rules
 
 **********
 References
