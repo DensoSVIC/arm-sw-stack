@@ -539,13 +539,13 @@ int veth_rpmsg_send(const struct device *dev, struct net_pkt *pkt)
 	size_t packet_length = net_pkt_get_len(pkt);
 	int ret;
 
+	if (!rpmsg_ready)
+		return -EIO;
+
 	if (net_pkt_read(pkt, frame_buf, packet_length)) {
 		LOG_ERR("Packet read failed.\n");
 		return -EIO;
 	}
-
-	if (!rpmsg_ready)
-		return 0;
 
 	ret = rpmsg_send(&ctx->sc_ept, frame_buf, packet_length);
 	if (ret < 0) {
