@@ -15,6 +15,23 @@ LOG_MODULE_REGISTER(fault_mgmt_arm_fmu, CONFIG_FAULT_MGMT_LOG_LEVEL);
 #include "zephyr/drivers/fault_mgmt/fault_mgmt_arm_fmu.h"
 #include "fault_mgmt_arm_fmu_priv.h"
 
+struct fault_mgmt_arm_fmu_config {
+	DEVICE_MMIO_ROM;
+	void (*irq_config)(const struct device *dev);
+};
+
+struct fault_mgmt_arm_fmu_data {
+	DEVICE_MMIO_RAM;
+	struct k_spinlock lock;
+	fault_mgmt_arm_fmu_callback_t callback;
+	void *user_data;
+	const struct fault_mgmt_arm_fmu_internal_api *internal_api;
+};
+
+#define FAULT_MGMT_ARM_FMU_DEV_DATA(dev) ((struct fault_mgmt_arm_fmu_data *const)(dev)->data)
+#define FAULT_MGMT_ARM_FMU_DEV_CFG(dev)                                                            \
+	((const struct fault_mgmt_arm_fmu_config *const)(dev)->config)
+
 static int fault_mgmt_arm_fmu_implementation_init(
 	const struct device *dev, const struct fault_mgmt_arm_fmu_implementation *implementation)
 {
@@ -66,11 +83,35 @@ static int fault_mgmt_arm_fmu_init(const struct device *dev)
 
 static void fault_mgmt_arm_fmu_isr(const struct device *dev, bool critical)
 {
+	int ret;
+	uint32_t prot_id;
+	uint64_t num_iterations = 0;
 	struct fault_mgmt_arm_fmu_data *data = FAULT_MGMT_ARM_FMU_DEV_DATA(dev);
-	k_spinlock_key_t key;
+	struct fault_mgmt_arm_fmu_fault fault;
+	k_spinlock_key_t key = k_spin_lock(&data->lock);
 
-	key = k_spin_lock(&data->lock);
-	data->internal_api->isr(dev, critical);
+	__ASSERT(data->callback != NULL, "Fault received without callback")
+
+	do {
+		if (num_iterations >= FAULT_MGMT_ARM_FMU_MAX_FAULT_ITERATIONS) {
+			LOG_ERR("Maximum FMU callback iterations exceeded");
+			k_oops();
+		}
+
+		prot_id = 0;
+		ret = data->internal_api->next_fault(dev, critical, &prot_id);
+
+		if (ret < 0) {
+			LOG_ERR("Invalid next_fault (ret=0x%x, next_id=0x%x)", ret, prot_id);
+			k_oops();
+		} else if (ret == 0 && prot_id != FAULT_MGMT_ARM_FMU_FAULT_PROTECTION_ID_INVALID) {
+			fault.handle = device_handle_get(dev);
+			fault.prot_id = prot_id;
+			data->callback(dev, &fault, data->user_data);
+		}
+		num_iterations++;
+	} while (prot_id != FAULT_MGMT_ARM_FMU_FAULT_PROTECTION_ID_INVALID);
+
 	k_spin_unlock(&data->lock, key);
 }
 

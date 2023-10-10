@@ -21,6 +21,7 @@ struct fault_mgmt_arm_fmu_fault {
 	(((fault)->prot_id & FAULT_MGMT_ARM_FMU_FAULT_CRITICAL_MASK) > 0)
 #define FAULT_MGMT_ARM_FMU_FAULT_PROTECTION_ID(fault)                                              \
 	((fault)->prot_id & FAULT_MGMT_ARM_FMU_FAULT_PROTECTION_ID_MASK)
+#define FAULT_MGMT_ARM_FMU_FAULT_PROTECTION_ID_INVALID 0
 
 typedef void (*fault_mgmt_arm_fmu_callback_t)(const struct device *dev,
 					      const struct fault_mgmt_arm_fmu_fault *fault,
