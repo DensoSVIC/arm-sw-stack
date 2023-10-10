@@ -11,6 +11,7 @@ SRC_URI_EXTRA_PATCHES = "\
     file://0002-virtio-disable-remoteproc-virtio-RPMSG-to-use-DMA-ap.patch \
     file://0003-dt-bindings-mailbox-arm-mhuv3-Add-bindings.patch \
     file://0004-mailbox-arm-mhuv3-Add-driver.patch \
+    file://0005-xen-netback-add-software-timestamp-capabilities.patch \
     "
 SRC_URI += "${SRC_URI_EXTRA_PATCHES}"
 SRC_URI:append = " file://kronos-kmeta-extra;type=kmeta;name=kronos-kmeta-extra;destsuffix=kronos-kmeta-extra"
