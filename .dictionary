@@ -251,6 +251,7 @@ imgtool
 importlib
 inappropriatemsg
 INCDIR
+includedir
 includenotfound
 inclusivity
 inet
@@ -292,6 +293,7 @@ LAYERDEPENDS
 LAYERDIR
 LAYERSERIES
 libc
+libcam
 libcpp
 libdir
 libeigen
@@ -525,6 +527,8 @@ sockaddr
 socketid
 socklen
 SOFTDEP
+SOLIBS
+SOLIBSDEV
 sourceparams
 SOURCEPATH
 spinlock

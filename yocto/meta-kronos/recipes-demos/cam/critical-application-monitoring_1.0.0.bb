@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-SUMMARY = "CAM demo"
+SUMMARY = "Critical Application Monitoring"
 DESCRIPTION = "The Critical Application Monitoring (CAM) project implements a  \
                solution for monitoring applications using a service running on \
                a higher safety level system."
@@ -22,14 +22,33 @@ S = "${WORKDIR}/git"
 
 inherit cmake pkgconfig python_setuptools_build_meta
 
-FILES:${PN} += "${datadir}/*"
-
-RDEPENDS:${PN} += "python3 \
-                   python3-bitmap-pkg \
-                   python3-future \
-                   python3-pyyaml \
-                   python3-wheel \
+PACKAGES = "libcam \
+            libcam-dev \
+            libcam-staticdev \
+            libcam-dbg \
+            cam-app-example \
+            cam-service \
+            cam-tool \
 "
+
+FILES:libcam += "${libdir}/libcam${SOLIBS}"
+FILES:libcam-staticdev += "${libdir}/libcam*.a"
+FILES:libcam-dev += "${includedir} \
+                     ${libdir}/cmake \
+                     ${libdir}/libcam${SOLIBSDEV} \
+"
+FILES:libcam-dbg += "${libdir}/.debug ${bindir}/.debug"
+FILES:cam-app-example += "${bindir}/cam-app-example ${datadir}/*"
+FILES:cam-service += "${bindir}/cam-service"
+FILES:cam-tool += "${bindir}/cam-tool ${libdir}/python3*"
+
+RDEPENDS:cam-tool += "python3 \
+                      python3-bitmap-pkg \
+                      python3-future \
+                      python3-pyyaml \
+                      python3-wheel \
+"
+RDEPENDS:cam-app-example += "libcam"
 
 PEP517_SOURCE_PATH = "${S}/cam-tool"
 
