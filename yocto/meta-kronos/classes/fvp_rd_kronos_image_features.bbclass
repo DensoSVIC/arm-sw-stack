@@ -85,12 +85,14 @@ FEATURE_PACKAGES_virtualization = " \
     kernel-module-xen-gntalloc \
     kernel-module-xen-gntdev \
     kernel-module-xen-netback \
+    linuxptp \
     xen-tools \
     virtualization-integration-tests-ptest \
     "
 
 FEATURE_PACKAGES_domu = " \
     kronos-network-conf \
+    linuxptp \
     packagegroup-core-boot \
     systemd-conf-kronos \
     podman \
