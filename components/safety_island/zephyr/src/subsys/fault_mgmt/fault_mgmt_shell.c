@@ -9,7 +9,6 @@
 #include <zephyr/shell/shell.h>
 #include <zephyr/shell/shell_string_conv.h>
 
-#include "zephyr/drivers/fault_mgmt/fault_mgmt_arm_fmu.h"
 #include "zephyr/subsys/fault_mgmt/fault_mgmt.h"
 
 #ifdef CONFIG_FAULT_MGMT_STORAGE_SYS_HASH_MAP
@@ -67,7 +66,6 @@ static int cmd_fmu_inject(const struct shell *sh, size_t argc, char **argv, void
 {
 	int ret;
 	const struct device *dev;
-	const struct fault_mgmt_arm_fmu_api *api;
 	uint32_t prot_id;
 
 	ret = parse_fmu_args(sh, argc, argv, &dev, &prot_id);
@@ -77,8 +75,7 @@ static int cmd_fmu_inject(const struct shell *sh, size_t argc, char **argv, void
 
 	shell_info(sh, "Injecting fault 0x%x to device %s", prot_id, dev->name);
 
-	api = dev->api;
-	ret = api->inject(dev, prot_id);
+	ret = fault_mgmt_inject(dev, prot_id);
 	return handle_error(sh, ret);
 }
 
@@ -86,7 +83,6 @@ static int cmd_fmu_set_enabled(const struct shell *sh, size_t argc, char **argv,
 {
 	int ret;
 	const struct device *dev;
-	const struct fault_mgmt_arm_fmu_api *api;
 	uint32_t prot_id;
 	bool enabled;
 	const char *action;
@@ -105,8 +101,7 @@ static int cmd_fmu_set_enabled(const struct shell *sh, size_t argc, char **argv,
 	action = enabled ? "Enabling" : "Disabling";
 	shell_info(sh, "%s fault %x on device %s", action, prot_id, dev->name);
 
-	api = dev->api;
-	ret = api->set_enabled(dev, prot_id, enabled);
+	ret = fault_mgmt_set_enabled(dev, prot_id, enabled);
 	return handle_error(sh, ret);
 }
 
