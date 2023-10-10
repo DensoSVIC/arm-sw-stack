@@ -20,6 +20,7 @@ LOG_MODULE_REGISTER(fault_mgmt, CONFIG_FAULT_MGMT_LOG_LEVEL);
 #endif
 
 /* Ensure all root FMUs have the "okay" status and have IRQs defined */
+#define ZEPHYR_USER_NODE DT_PATH(zephyr_user)
 #define BUILD_ASSERT_VALID(node_id, prop, idx)                                                     \
 	BUILD_ASSERT(DT_NODE_HAS_STATUS(DT_PHANDLE_BY_IDX(node_id, prop, idx), okay),              \
 		     "All root FMUs must have a status okay");                                     \
@@ -28,7 +29,7 @@ LOG_MODULE_REGISTER(fault_mgmt, CONFIG_FAULT_MGMT_LOG_LEVEL);
 DT_FOREACH_PROP_ELEM(ZEPHYR_USER_NODE, root_fmus, BUILD_ASSERT_VALID)
 
 #define PHANDLE_TO_DEVICE(node_id, prop, idx) DEVICE_DT_GET(DT_PHANDLE_BY_IDX(node_id, prop, idx)),
-const struct device *fault_mgmt_root_fmus[] = {
+static const struct device *fault_mgmt_root_fmus[] = {
 	DT_FOREACH_PROP_ELEM(ZEPHYR_USER_NODE, root_fmus, PHANDLE_TO_DEVICE)};
 BUILD_ASSERT(ARRAY_SIZE(fault_mgmt_root_fmus) > 0, "At least one root FMU must be defined");
 
@@ -108,6 +109,68 @@ int fault_mgmt_set_enabled(const struct device *dev, uint32_t prot_id, bool enab
 	return api->set_enabled(dev, prot_id, enabled);
 }
 
+int fault_mgmt_device_foreach(fault_mgmt_device_callback callback, void *cookie)
+{
+	int ret;
+	size_t i;
+	device_handle_t root_fmu_handles[ARRAY_SIZE(fault_mgmt_root_fmus)];
+	struct stack_state {
+		const device_handle_t *fmus;
+		size_t count;
+		size_t index;
+	};
+	struct stack_state stack[CONFIG_FAULT_MGMT_MAX_TREE_DEPTH + 1] = {{
+		.fmus = root_fmu_handles,
+		.count = ARRAY_SIZE(root_fmu_handles),
+		.index = 0,
+	}};
+	struct stack_state *stack_ptr = stack;
+	const struct device *dev;
+
+	for (i = 0; i < ARRAY_SIZE(root_fmu_handles); i++) {
+		root_fmu_handles[i] = device_handle_get(fault_mgmt_root_fmus[i]);
+	}
+
+	while (stack_ptr >= stack) {
+		if (stack_ptr->index >= stack_ptr->count) {
+			stack_ptr--;
+			continue;
+		}
+
+		dev = device_from_handle(stack_ptr->fmus[stack_ptr->index]);
+		ret = callback(dev, stack_ptr - stack, stack_ptr->index, cookie);
+		if (ret < 0) {
+			return ret;
+		}
+
+		stack_ptr->index++;
+		stack_ptr++;
+		if (stack_ptr - stack > CONFIG_FAULT_MGMT_MAX_TREE_DEPTH) {
+			LOG_ERR("FMU tree depth exceeds CONFIG_FAULT_MGMT_MAX_TREE_DEPTH\n");
+			return -ENOMEM;
+		}
+		stack_ptr->fmus = device_required_handles_get(dev, &stack_ptr->count);
+		stack_ptr->index = 0;
+	}
+
+	return 0;
+}
+
+static int fault_mgmt_validate_callback(const struct device *dev, size_t depth, size_t index,
+					void *cookie)
+{
+	ARG_UNUSED(depth);
+	ARG_UNUSED(index);
+	ARG_UNUSED(cookie);
+
+	if (!device_is_ready(dev)) {
+		LOG_ERR("FMU %s is not ready\n", dev->name);
+		return -ENODEV;
+	}
+
+	return 0;
+}
+
 static int fault_mgmt_prepare_root_fmus(void)
 {
 	int i;
@@ -116,11 +179,6 @@ static int fault_mgmt_prepare_root_fmus(void)
 
 	for (i = 0; i < ARRAY_SIZE(fault_mgmt_root_fmus); i++) {
 		dev = fault_mgmt_root_fmus[i];
-
-		if (!device_is_ready(dev)) {
-			LOG_ERR("Root FMU %s is not ready\n", dev->name);
-			return -ENODEV;
-		}
 
 		api = dev->api;
 		api->fault_callback_set(dev, fault_mgmt_fault_callback, NULL);
@@ -136,6 +194,13 @@ static int fault_mgmt_init(void)
 	k_tid_t tid;
 	int ret;
 
+	/* Ensure all FMUs in the tree are ready */
+	ret = fault_mgmt_device_foreach(fault_mgmt_validate_callback, NULL);
+	if (ret < 0) {
+		return ret;
+	}
+
+	/* Attach root FMU callbacks */
 	ret = fault_mgmt_prepare_root_fmus();
 	if (ret < 0) {
 		return ret;

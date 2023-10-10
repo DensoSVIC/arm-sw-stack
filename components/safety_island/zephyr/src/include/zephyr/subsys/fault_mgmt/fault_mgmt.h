@@ -8,11 +8,11 @@
 #ifndef FAULT_MGMT_H_
 #define FAULT_MGMT_H_
 
-#include <zephyr/devicetree.h>
+#include <zephyr/device.h>
 
-#define ZEPHYR_USER_NODE DT_PATH(zephyr_user)
-
-extern const struct device *fault_mgmt_root_fmus[DT_PROP_LEN(ZEPHYR_USER_NODE, root_fmus)];
+typedef int (*fault_mgmt_device_callback)(const struct device *dev, size_t depth, size_t index,
+					  void *cookie);
+int fault_mgmt_device_foreach(fault_mgmt_device_callback callback, void *cookie);
 
 int fault_mgmt_inject(const struct device *dev, uint32_t prot_id);
 int fault_mgmt_set_enabled(const struct device *dev, uint32_t prot_id, bool enabled);

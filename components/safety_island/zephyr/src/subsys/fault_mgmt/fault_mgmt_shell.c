@@ -15,11 +15,28 @@
 #include "zephyr/subsys/fault_mgmt/fault_mgmt_storage.h"
 #endif
 
+static int print_fmu(const struct device *dev, size_t depth, size_t index, void *cookie)
+{
+	size_t i;
+	const struct shell *sh = (const struct shell *)cookie;
+
+	if (depth == 0) {
+		shell_fprintf(sh, SHELL_NORMAL, "Root %zd: ", index);
+	} else {
+		/* Indent line based on current tree depth */
+		for (i = 0; i < depth; i++) {
+			shell_fprintf(sh, SHELL_NORMAL, "\t");
+		}
+		shell_fprintf(sh, SHELL_NORMAL, "Slot %zd: ", index);
+	}
+	shell_print(sh, "%s", dev->name);
+
+	return 0;
+}
+
 static int cmd_fault_tree(const struct shell *sh, size_t argc, char **argv, void *data)
 {
-	for (int i = 0; i < ARRAY_SIZE(fault_mgmt_root_fmus); i++) {
-		shell_print(sh, "Root: %s", fault_mgmt_root_fmus[i]->name);
-	}
+	fault_mgmt_device_foreach(print_fmu, (void *)sh);
 
 	return 0;
 }
