@@ -322,6 +322,7 @@ LLRAM
 loadpolicy
 luca
 mainmenu
+MALLOC
 mandatoryvar
 mandir
 maxcpus

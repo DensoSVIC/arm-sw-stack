@@ -15,6 +15,10 @@ LOG_MODULE_REGISTER(fault_mgmt, CONFIG_FAULT_MGMT_LOG_LEVEL);
 
 #include "zephyr/drivers/fault_mgmt/fault_mgmt_arm_fmu.h"
 
+#ifdef CONFIG_FAULT_MGMT_STORAGE_SYS_HASH_MAP
+#include "fault_mgmt_priv.h"
+#endif
+
 /* Ensure all root FMUs have the "okay" status and have IRQs defined */
 #define BUILD_ASSERT_VALID(node_id, prop, idx)                                                     \
 	BUILD_ASSERT(DT_NODE_HAS_STATUS(DT_PHANDLE_BY_IDX(node_id, prop, idx), okay),              \
@@ -73,7 +77,15 @@ static void fault_mgmt_handler(void *arg0, void *arg1, void *arg2)
 		protection_id = FAULT_MGMT_ARM_FMU_FAULT_PROTECTION_ID(&fault);
 		criticality =
 			FAULT_MGMT_ARM_FMU_FAULT_IS_CRITICAL(&fault) ? "critical" : "non-critical";
+
+#ifdef CONFIG_FAULT_MGMT_STORAGE_SYS_HASH_MAP
+		uint64_t total_size = fault_mgmt_storage_write(&fault);
+
+		LOG_INF("Fault received (%s): 0x%x on %s : count %llu\n", criticality,
+			protection_id, dev->name, total_size);
+#else
 		LOG_INF("Fault received (%s): 0x%x on %s\n", criticality, protection_id, dev->name);
+#endif
 	}
 }
 

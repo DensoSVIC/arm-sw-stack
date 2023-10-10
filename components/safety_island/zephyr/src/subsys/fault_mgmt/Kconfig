@@ -39,6 +39,14 @@ config FAULT_MGMT_SHELL
 	  Activate shell module that provides commands to manually inspect and
 	  control the Arm fault management subsystem.
 
+config FAULT_MGMT_STORAGE_SYS_HASH_MAP
+	bool "Enable fault storage"
+	default n
+	select SYS_HASH_MAP
+	help
+	  Enable fault storage: This option allows the setup to store reported
+	  faults.
+
 module = FAULT_MGMT
 module-str = Fault management
 source "subsys/logging/Kconfig.template.log_config"
