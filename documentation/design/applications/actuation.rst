@@ -49,7 +49,7 @@ The following diagram describes the data flow of the demo:
 
 |
 
-.. image:: ../../images/actuation.svg
+.. image:: ../../images/actuation.png
    :align: center
 
 |

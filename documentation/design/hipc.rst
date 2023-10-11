@@ -32,7 +32,7 @@ Communication between Primary Compute and Safety Island clusters
 
 |
 
-.. image:: ../images/hipc_baremetal_design.svg
+.. image:: ../images/hipc_baremetal_design.png
    :align: center
 
 |
@@ -132,7 +132,7 @@ the Baremetal Architecture.
 
 |
 
-.. image:: ../images/hipc_virtualization_design.svg
+.. image:: ../images/hipc_virtualization_design.png
    :align: center
 
 |
@@ -155,7 +155,7 @@ implemented on top of virtio based RPMsg communication.
 
 |
 
-.. image:: ../images/hipc_inter_si_communication_design.svg
+.. image:: ../images/hipc_inter_si_communication_design.png
    :align: center
 
 |
@@ -219,7 +219,7 @@ Island cluster N via brsi{N}.
 
 |
 
-.. image:: ../images/hipc_network_topology_baremetal.svg
+.. image:: ../images/hipc_network_topology_baremetal.png
    :align: center
 
 |
@@ -238,7 +238,7 @@ Island Cluster N.
 
 |
 
-.. image:: ../images/hipc_network_topology_virtualization.svg
+.. image:: ../images/hipc_network_topology_virtualization.png
    :align: center
 
 |

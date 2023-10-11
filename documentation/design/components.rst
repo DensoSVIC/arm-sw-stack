@@ -85,7 +85,7 @@ relevant external components.
 
 |
 
-.. image:: ../images/rss_software_structure_simplified.svg
+.. image:: ../images/rss_software_structure_simplified.png
    :align: center
 
 |
@@ -216,7 +216,7 @@ the RSS and SCP.
 
 |
 
-.. image:: ../images/mhuv3_comm_rss_scp.svg
+.. image:: ../images/mhuv3_comm_rss_scp.png
    :align: center
 
 |
@@ -429,7 +429,7 @@ slices so that cache contention with multiple domains can be mitigated.
 
 |
 
-.. image:: ../images/xen_mpam_structure.svg
+.. image:: ../images/xen_mpam_structure.png
    :align: center
 
 |
@@ -509,7 +509,7 @@ entered.
 With Xen Kconfig ``CONFIG_GICV4=y``, the Kronos platform will be automatically
 equipped with the capability of all GICv4.1 features.
 
-.. image:: ../images/xen_gicv4_1_structure.svg
+.. image:: ../images/xen_gicv4_1_structure.png
    :align: center
 
 |

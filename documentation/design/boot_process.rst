@@ -110,7 +110,7 @@ The following diagram illustrates the boot flow that originates from the RSS.
 
 |
 
-.. image:: ../images/rss_oriented_boot_flow.svg
+.. image:: ../images/rss_oriented_boot_flow.png
    :align: center
 
 |

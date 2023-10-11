@@ -44,7 +44,7 @@ the Reference Stack.
 
 |
 
-.. image:: ../images/kronos_yocto_layers_dependency_diagram.svg
+.. image:: ../images/kronos_yocto_layers_dependency_diagram.png
    :align: center
 
 |

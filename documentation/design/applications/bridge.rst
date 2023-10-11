@@ -41,7 +41,7 @@ Diagram
 
 |
 
-.. image:: ../../images/safety_island_c0_bridge.svg
+.. image:: ../../images/safety_island_c0_bridge.png
    :align: center
 
 |

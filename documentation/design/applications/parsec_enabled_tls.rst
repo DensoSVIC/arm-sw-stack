@@ -28,7 +28,7 @@ Architecture
 
 |
 
-.. image:: ../../images/parsec_tls_demo_architecture.svg
+.. image:: ../../images/parsec_tls_demo_architecture.png
    :align: center
 
 |
@@ -100,7 +100,7 @@ demo.
 
 |
 
-.. image:: ../../images/parsec_tls_demo_handshake.svg
+.. image:: ../../images/parsec_tls_demo_handshake.png
    :align: center
 
 |

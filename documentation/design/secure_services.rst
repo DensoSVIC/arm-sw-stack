@@ -50,7 +50,7 @@ the Secure Services.
 
 |
 
-.. image:: ../images/secure_services.svg
+.. image:: ../images/secure_services.png
    :align: center
 
 |
