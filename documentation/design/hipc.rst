@@ -137,9 +137,8 @@ the Baremetal Architecture.
 
 |
 
-There are some issues and limitations of the virtual network device over RPMsg.
-Please refer to the changelog :ref:`changelog_knownissues` and
-:ref:`changelog_limitations` section.
+There are some limitations of the virtual network device over RPMsg. Please
+refer to the changelog :ref:`changelog_limitations` section.
 
 ************************************************
 Communication between the Safety Island clusters
