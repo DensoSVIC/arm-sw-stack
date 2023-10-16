@@ -4,7 +4,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-menu "Subsystems"
-rsource "fault_mgmt/Kconfig"
-rsource "ipc/psa_service/Kconfig"
-endmenu
+menuconfig PSA
+	bool "PSA Service"
+	select POLL
+	help
+	  Enable the PSA Service subsystem
