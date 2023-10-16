@@ -6,8 +6,10 @@
  */
 
 / {
-	zephyr,user {
+	fault_mgmt {
+		compatible = "zephyr,fault-mgmt";
 		root-fmus = <&system_fmu>;
+		status = "okay";
 	};
 };
 

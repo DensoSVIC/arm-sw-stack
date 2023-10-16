@@ -20,17 +20,20 @@ LOG_MODULE_REGISTER(fault_mgmt, CONFIG_FAULT_MGMT_LOG_LEVEL);
 #endif
 
 /* Ensure all root FMUs have the "okay" status and have IRQs defined */
-#define ZEPHYR_USER_NODE DT_PATH(zephyr_user)
+#define DT_DRV_COMPAT zephyr_fault_mgmt
+BUILD_ASSERT(DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT) == 1,
+	     "There should be exactly one zephyr,fault-mgmt node");
+#define DT_FAULT_MGMT DT_COMPAT_GET_ANY_STATUS_OKAY(DT_DRV_COMPAT)
 #define BUILD_ASSERT_VALID(node_id, prop, idx)                                                     \
 	BUILD_ASSERT(DT_NODE_HAS_STATUS(DT_PHANDLE_BY_IDX(node_id, prop, idx), okay),              \
 		     "All root FMUs must have a status okay");                                     \
 	BUILD_ASSERT(DT_NUM_IRQS(DT_PHANDLE_BY_IDX(node_id, prop, idx)) > 0,                       \
 		     "All root FMUs must have IRQs");
-DT_FOREACH_PROP_ELEM(ZEPHYR_USER_NODE, root_fmus, BUILD_ASSERT_VALID)
+DT_FOREACH_PROP_ELEM(DT_FAULT_MGMT, root_fmus, BUILD_ASSERT_VALID)
 
 #define PHANDLE_TO_DEVICE(node_id, prop, idx) DEVICE_DT_GET(DT_PHANDLE_BY_IDX(node_id, prop, idx)),
 static const struct device *fault_mgmt_root_fmus[] = {
-	DT_FOREACH_PROP_ELEM(ZEPHYR_USER_NODE, root_fmus, PHANDLE_TO_DEVICE)};
+	DT_FOREACH_PROP_ELEM(DT_FAULT_MGMT, root_fmus, PHANDLE_TO_DEVICE)};
 BUILD_ASSERT(ARRAY_SIZE(fault_mgmt_root_fmus) > 0, "At least one root FMU must be defined");
 
 /* Define separate message queues and threads for critical and non-critical
@@ -189,10 +192,12 @@ static int fault_mgmt_prepare_root_fmus(void)
 	return 0;
 }
 
-static int fault_mgmt_init(void)
+static int fault_mgmt_init(const struct device *dev)
 {
 	k_tid_t tid;
 	int ret;
+
+	ARG_UNUSED(dev);
 
 	/* Ensure all FMUs in the tree are ready */
 	ret = fault_mgmt_device_foreach(fault_mgmt_validate_callback, NULL);
@@ -225,4 +230,5 @@ static int fault_mgmt_init(void)
 	return 0;
 }
 
-SYS_INIT(fault_mgmt_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
+DEVICE_DT_DEFINE(DT_FAULT_MGMT, fault_mgmt_init, NULL, NULL, NULL, APPLICATION,
+		 CONFIG_APPLICATION_INIT_PRIORITY, NULL);

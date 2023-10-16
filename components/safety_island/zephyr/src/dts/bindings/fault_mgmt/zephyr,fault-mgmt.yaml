@@ -1,0 +1,12 @@
+# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+description: Fault management subsystem
+
+compatible: "zephyr,fault-mgmt"
+
+properties:
+  root-fmus:
+    type: phandles
