@@ -9,3 +9,11 @@ menuconfig PSA
 	select POLL
 	help
 	  Enable the PSA Service subsystem
+
+if PSA
+
+module = PSA_SERVICE
+module-str = psa_service
+source "subsys/logging/Kconfig.template.log_config"
+
+endif

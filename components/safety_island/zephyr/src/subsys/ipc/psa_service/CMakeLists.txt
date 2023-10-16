@@ -6,3 +6,4 @@
 
 zephyr_library()
 zephyr_library_sources_ifdef(CONFIG_PSA psa_backend.c)
+zephyr_library_sources_ifdef(CONFIG_PSA psa_service.c)

@@ -73,4 +73,40 @@ struct psa_outvec {
 	size_t len; /*!< the size in bytes                      */
 };
 
+/*************************** PSA Client API **********************************/
+/**
+ * \brief Call an RoT Service on an established connection.
+ *
+ * \note  FF-M 1.0 proposes 6 parameters for psa_call but the secure gateway ABI
+ *        support at most 4 parameters. TF-M chooses to encode 'in_len',
+ *        'out_len', and 'type' into a 32-bit integer to improve efficiency.
+ *        Compared with struct-based encoding, this method saves extra memory
+ *        check and memory copy operation. The disadvantage is that the 'type'
+ *        range has to be reduced into a 16-bit integer. So with this encoding,
+ *        the valid range for 'type' is 0-32767.
+ *
+ * \param[in] handle            A handle to an established connection.
+ * \param[in] type              The request type.
+ *                              Must be zero( \ref PSA_IPC_CALL) or positive.
+ * \param[in] in_vec            Array of input \ref psa_invec structures.
+ * \param[in] in_len            Number of input \ref psa_invec structures.
+ * \param[in,out] out_vec       Array of output \ref psa_outvec structures.
+ * \param[in] out_len           Number of output \ref psa_outvec structures.
+ *
+ * \retval >=0                  RoT Service-specific status value.
+ * \retval <0                   RoT Service-specific error code.
+ * \retval PSA_ERROR_PROGRAMMER_ERROR The connection has been terminated by the
+ *                              RoT Service. The call is a PROGRAMMER ERROR if
+ *                              one or more of the following are true:
+ * \arg                           An invalid handle was passed.
+ * \arg                           The connection is already handling a request.
+ * \arg                           type < 0.
+ * \arg                           An invalid memory reference was provided.
+ * \arg                           in_len + out_len > PSA_MAX_IOVEC.
+ * \arg                           The message is unrecognized by the RoT
+ *                                Service or incorrectly formatted.
+ */
+psa_status_t psa_call(psa_handle_t handle, int32_t type, const struct psa_invec *in_vec,
+		      size_t in_len, struct psa_outvec *out_vec, size_t out_len);
+
 #endif /* PSA_CLIENT_H */
