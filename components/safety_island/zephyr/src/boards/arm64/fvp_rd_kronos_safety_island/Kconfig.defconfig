@@ -14,4 +14,23 @@ config BOARD
 config NUM_IRQS
 	default 256
 
+if LOG
+
+# Deferred logging performance is unpredictable in the FVP due to timer
+# simulation inaccuracies, so log synchronously by default
+choice LOG_MODE
+        default LOG_MODE_IMMEDIATE
+endchoice
+
+endif # LOG
+
+if SHELL
+
+# The Safety Island is resource-constrained and the default shell uses escape
+# characters that complicate automated testing
+config SHELL_MINIMAL
+	default y
+
+endif # SHELL
+
 endif # BOARD_FVP_RD_KRONOS_SAFETY_ISLAND
