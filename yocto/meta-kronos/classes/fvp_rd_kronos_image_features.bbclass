@@ -85,14 +85,12 @@ FEATURE_PACKAGES_virtualization = " \
     kernel-module-xen-gntalloc \
     kernel-module-xen-gntdev \
     kernel-module-xen-netback \
-    linuxptp \
     xen-tools \
     virtualization-integration-tests-ptest \
     "
 
 FEATURE_PACKAGES_domu = " \
     kronos-network-conf \
-    linuxptp \
     packagegroup-core-boot \
     systemd-conf-kronos \
     podman \
@@ -112,8 +110,8 @@ KRONOS_EXTRA_IMAGEDEPENDS:actuation = "packet-analyzer-native:do_addto_recipe_sy
 EXTRA_IMAGEDEPENDS:append:baremetal = " ${KRONOS_EXTRA_IMAGEDEPENDS}"
 EXTRA_IMAGEDEPENDS:append:virtualization = " ${KRONOS_EXTRA_IMAGEDEPENDS}"
 
-FEATURE_PACKAGES_hipc-validation = "iperf"
-FEATURE_PACKAGES_hipc-validation:virtualization = ""
+FEATURE_PACKAGES_hipc-validation = "iperf linuxptp"
+FEATURE_PACKAGES_hipc-validation:virtualization = "linuxptp"
 
 require ${@bb.utils.contains('MACHINE', 'fvp-rd-kronos', 'conf/machine/include/fvp-rd-kronos-extras.inc', '', d)}
 
@@ -126,7 +124,9 @@ ZEPHYR_APP_SAFETY_ISLAND_CL2:actuation = "actuation"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:si0-bridge-ethernet0 = "zperf"
 
-LINUXPTP_IFACES:hipc-validation:virtualization = "domu1.ethsi0 domu2.ethsi0"
+LINUXPTP_IFACES:hipc-validation = "ethsi0 ethsi1 ethsi2"
+LINUXPTP_IFACES:append:hipc-validation:virtualization = \
+    " domu1.ethsi0 domu2.ethsi0"
 LINUXPTP_IFACES:hipc-validation:domu = "ethsi0"
 
 TEST_SUITES_EXTRA ?= " \

@@ -7,6 +7,7 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/kronos-files:"
 
 KRONOS_LINUXPTP_SRC_URI_EXTRA = "file://ptp4l-override.conf"
+KRONOS_LINUXPTP_SRC_URI_EXTRA:append:baremetal = " file://ptp4l.conf"
 KRONOS_LINUXPTP_SRC_URI_EXTRA:append:virtualization = " file://ptp4l.conf"
 KRONOS_LINUXPTP_SRC_URI_EXTRA:append:domu = " file://ptp4l-domu.conf"
 
@@ -16,11 +17,11 @@ inherit features_check
 
 # This variable is computed dynamically by the features_check bbclass
 # nooelint: oelint.vars.mispell
-ANY_OF_IMAGE_FEATURES = "virtualization domu"
+ANY_OF_IMAGE_FEATURES = "baremetal virtualization domu"
 
 LINUXPTP_SYSTEMD_SERVICES = "ptp4l@.service"
 
-KRONOS_PTP4L_CFG_FILE:virtualization = "ptp4l.conf"
+KRONOS_PTP4L_CFG_FILE = "ptp4l.conf"
 KRONOS_PTP4L_CFG_FILE:domu = "ptp4l-domu.conf"
 
 do_install:append() {
