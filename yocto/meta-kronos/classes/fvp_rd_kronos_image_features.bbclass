@@ -126,6 +126,9 @@ ZEPHYR_APP_SAFETY_ISLAND_CL2:actuation = "actuation"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:si0-bridge-ethernet0 = "zperf"
 
+LINUXPTP_IFACES:hipc-validation:virtualization = "domu1.ethsi0 domu2.ethsi0"
+LINUXPTP_IFACES:hipc-validation:domu = "ethsi0"
+
 TEST_SUITES_EXTRA ?= " \
     test_10_safety_island_c0 \
     test_10_safety_island_c1 \

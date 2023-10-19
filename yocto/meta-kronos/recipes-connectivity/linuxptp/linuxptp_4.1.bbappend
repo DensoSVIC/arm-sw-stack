@@ -20,10 +20,6 @@ ANY_OF_IMAGE_FEATURES = "virtualization domu"
 
 LINUXPTP_SYSTEMD_SERVICES = "ptp4l@.service"
 
-KRONOS_SYSTEMD_LINUXPTP_SERVICES:domu = "ptp4l@ethsi0.service"
-KRONOS_SYSTEMD_LINUXPTP_SERVICES:virtualization = "ptp4l@domu1.ethsi0.service \
-    ptp4l@domu2.ethsi0.service"
-
 KRONOS_PTP4L_CFG_FILE:virtualization = "ptp4l.conf"
 KRONOS_PTP4L_CFG_FILE:domu = "ptp4l-domu.conf"
 
@@ -34,9 +30,9 @@ do_install:append() {
 
     # Enable the service(s)
     install -d ${D}${sysconfdir}/systemd/system/multi-user.target.wants/
-    for service in ${KRONOS_SYSTEMD_LINUXPTP_SERVICES}; do
+    for iface in ${LINUXPTP_IFACES}; do
         ln -sf ${systemd_unitdir}/system/ptp4l@.service \
-            ${D}${sysconfdir}/systemd/system/multi-user.target.wants/$service
+            ${D}${sysconfdir}/systemd/system/multi-user.target.wants/ptp4l@${iface}.service
     done
 
     # Install the kronos ptp4l systemd service drop-in file
