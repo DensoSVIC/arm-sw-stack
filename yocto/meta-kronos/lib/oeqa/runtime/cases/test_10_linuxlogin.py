@@ -20,7 +20,10 @@ class LinuxLoginTest(OERuntimeTestCase):
         self.target.expect(console_name, rf'root@{hostname}:~#', timeout=300)
 
         # Ensure all services have started
-        self.target.run('systemctl is-system-running --wait', timeout=300)
+        status, output = self.target.run('systemctl is-system-running --wait',
+                                         timeout=300)
+        self.assertEqual(status, 0,
+                         msg=f'Failed to get systemctl running.\n{output}')
 
         if 'virtualization' in self.td.get('IMAGE_FEATURES').split():
             # Wait for the domains to be fully booted
