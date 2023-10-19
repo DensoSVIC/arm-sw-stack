@@ -12,7 +12,7 @@ LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://license.rst;md5=e805dc5353977631b7881c7705a6c04a"
 
 require recipes-kernel/zephyr-kernel/zephyr-sample.inc
-require recipes-demos/actuation/actuation-comon.inc
+require recipes-demos/actuation/actuation-common.inc
 require recipes-demos/actuation/cyclonedds_0.10.3.inc
 
 DEPENDS += "\

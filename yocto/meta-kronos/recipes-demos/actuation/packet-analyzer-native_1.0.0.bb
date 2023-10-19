@@ -10,7 +10,7 @@ HOMEPAGE = "https://safety-island-actuation-demo.docs.arm.com/"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://license.rst;md5=e805dc5353977631b7881c7705a6c04a"
 
-require actuation-comon.inc
+require actuation-common.inc
 
 DEPENDS += "python3-setuptools-scm-native"
 
