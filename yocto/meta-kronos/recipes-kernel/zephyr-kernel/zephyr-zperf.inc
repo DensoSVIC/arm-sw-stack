@@ -10,10 +10,13 @@ OVERLAY_BASENAME ?= \
     "${ZEPHYR_SAFETY_ISLAND_MODULE}/overlays/${OVERLAY_DIR}/${ZEPHYR_BOARD}"
 OVERLAY_BRIDGE_BASENAME ?= \
     "${ZEPHYR_SAFETY_ISLAND_MODULE}/overlays/bridge/${ZEPHYR_BOARD}"
+OVERLAY_GPTP_BASENAME ?= \
+    "${ZEPHYR_SAFETY_ISLAND_MODULE}/overlays/gptp/${ZEPHYR_BOARD}"
 
 python __anonymous() {
     ovrl_basename = d.getVar('OVERLAY_BASENAME')
     ovrl_bridge_basename = d.getVar('OVERLAY_BRIDGE_BASENAME')
+    ovrl_gptp_basename = d.getVar('OVERLAY_GPTP_BASENAME')
     extra_image_features = d.getVar('EXTRA_IMAGE_FEATURES', "")
 
     if ovrl_basename and ovrl_bridge_basename:
@@ -22,7 +25,7 @@ python __anonymous() {
                          f' -DOVERLAY_CONFIG="{ovrl_basename}.conf;{ovrl_bridge_basename}.conf"'
         else:
             extra_conf = f' -DDTC_OVERLAY_FILE={ovrl_basename}.overlay' \
-                         f' -DOVERLAY_CONFIG={ovrl_basename}.conf'
+                         f' -DOVERLAY_CONFIG="{ovrl_basename}.conf;{ovrl_gptp_basename}.conf"'
 
         d.appendVar('EXTRA_OECMAKE', extra_conf)
 }
