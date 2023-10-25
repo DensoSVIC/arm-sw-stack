@@ -136,7 +136,7 @@ TEST_SUITES_EXTRA ?= " \
     test_10_safety_island_c2 \
     "
 
-TEST_SUITES_EXTRA:hipc-validation = " test_30_hipc"
+TEST_SUITES_EXTRA:hipc-validation = " test_30_hipc test_30_ptp"
 
 TEST_SUITES_EXTRA:actuation = " \
     test_30_actuation \
@@ -146,6 +146,7 @@ TEST_SUITES_EXTRA:actuation = " \
 
 TEST_SUITES_EXTRA:hipc-validation:virtualization = " \
     test_30_hipc_virtualization \
+    test_30_ptp \
     "
 
 TEST_SUITES_EXTRA:si0-bridge-ethernet0 = " test_30_si0_bridge_ethernet0"

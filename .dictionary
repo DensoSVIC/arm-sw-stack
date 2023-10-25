@@ -139,6 +139,7 @@ dependsordered
 DEPLOYDIR
 destdir
 destsuffix
+desync
 devad
 devd
 devel
@@ -284,6 +285,7 @@ irqreturn
 IRQS
 irqsave
 Izuma
+journalctl
 jsonschema
 kbuild
 kcalloc
