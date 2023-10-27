@@ -30,6 +30,9 @@ OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
 OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
                     'si0-bridge-ethernet0', ':si0-bridge-ethernet0', '', d)}"
 
+OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
+                    'si-psa-storage-tests', ':si-psa-storage-tests', '', d)}"
+
 # This bbclass handles, via the EXTRA_IMAGE_FEATURES variable, the following
 # features that will be used to select packages to be installed on rootfs,
 # Safety Island image and integration testing.
@@ -41,6 +44,7 @@ IMAGE_FEATURES[validitems] += " \
     actuation \
     si0-bridge-ethernet0 \
     cam \
+    si-psa-storage-tests \
     "
 
 DOMU_INSTANCES ?= "2"
@@ -48,11 +52,12 @@ DOMU_INSTANCES ?= "2"
 IMAGE_FEATURES_CONFLICTS_baremetal = "virtualization domu"
 IMAGE_FEATURES_CONFLICTS_virtualization = "baremetal domu cam"
 IMAGE_FEATURES_CONFLICTS_domu = "baremetal virtualization cam"
-IMAGE_FEATURES_CONFLICTS_hipc-validation = "si0-bridge-ethernet0 actuation cam"
-IMAGE_FEATURES_CONFLICTS_actuation = "si0-bridge-ethernet0 hipc-validation cam"
-IMAGE_FEATURES_CONFLICTS_si0-bridge-ethernet0 = "hipc-validation actuation cam"
+IMAGE_FEATURES_CONFLICTS_hipc-validation = "si0-bridge-ethernet0 actuation cam si-psa-storage-tests"
+IMAGE_FEATURES_CONFLICTS_actuation = "si0-bridge-ethernet0 hipc-validation cam si-psa-storage-tests"
+IMAGE_FEATURES_CONFLICTS_si0-bridge-ethernet0 = "hipc-validation actuation cam si-psa-storage-tests"
 IMAGE_FEATURES_CONFLICTS_cam = \
-    "si0-bridge-ethernet0 hipc-validation actuation virtualization domu"
+    "si0-bridge-ethernet0 hipc-validation actuation virtualization domu si-psa-storage-tests"
+IMAGE_FEATURES_CONFLICTS_si-psa-storage-tests = "hipc-validation actuation si0-bridge-ethernet0 cam"
 
 FEATURE_PACKAGES_COMMON = " \
     arm-si-rproc-mod \
@@ -124,6 +129,7 @@ ZEPHYR_APP_SAFETY_ISLAND_CL1:si0-bridge-ethernet0 = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:actuation = "actuation"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:si0-bridge-ethernet0 = "zperf"
+ZEPHYR_APP_SAFETY_ISLAND_CL2:si-psa-storage-tests = "psa-storage-tests"
 
 LINUXPTP_IFACES:hipc-validation = "ethsi0 ethsi1 ethsi2"
 LINUXPTP_IFACES:append:hipc-validation:virtualization = \
@@ -152,6 +158,8 @@ TEST_SUITES_EXTRA:hipc-validation:virtualization = " \
 TEST_SUITES_EXTRA:si0-bridge-ethernet0 = " test_30_si0_bridge_ethernet0"
 
 TEST_SUITES_EXTRA:cam = " test_40_cam"
+
+TEST_SUITES_EXTRA:si-psa-storage-tests = ""
 
 TEST_SUITES_EXTRA:append:virtualization = " \
     test_40_virtualization \
@@ -186,6 +194,11 @@ TEST_SUITES:remove:virtualization = " \
     "
 
 TEST_SUITES:remove:cam = "\
+    test_20_bsp \
+    test_40_parsec \
+    "
+
+TEST_SUITES:remove:si-psa-storage-tests = "\
     test_20_bsp \
     test_40_parsec \
     "

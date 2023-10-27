@@ -135,6 +135,11 @@ Image-Build-baremetal-hipc-validation:
     KAS_CONFIGS: baremetal/hipc-validation
     DEPLOY_DIR: $CI_PROJECT_DIR/work/build/tmp_baremetal/deploy
 
+Image-Build-baremetal-si-psa-storage-tests:
+  extends: .kas_image_build_kronos
+  variables:
+    KAS_CONFIGS: baremetal/si-psa-storage-tests
+
 Image-Upload:
   image: releases-docker.jfrog.io/jfrog/jfrog-cli-v2-jf:2.42.0
   stage: Release
