@@ -7,4 +7,3 @@
 zephyr_library()
 
 zephyr_library_sources_ifdef(CONFIG_PSA_INTERNAL_TRUSTED_STORAGE internal_trusted_storage.c)
-zephyr_library_sources_ifdef(CONFIG_PSA_PROTECTED_STORAGE protected_storage.c)

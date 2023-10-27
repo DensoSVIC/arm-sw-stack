@@ -11,11 +11,6 @@ config PSA_INTERNAL_TRUSTED_STORAGE
 	help
 	  Activate PSA Internal Trusted Storage
 
-config PSA_PROTECTED_STORAGE
-	bool "PSA Protected Storage"
-	help
-	  Activate PSA Protected Storage
-
 module = PSA_API
 module-str = PSA API
 source "subsys/logging/Kconfig.template.log_config"
