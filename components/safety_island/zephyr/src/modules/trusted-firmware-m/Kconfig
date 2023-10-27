@@ -1,0 +1,15 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+config TFM_PSA_PROTECTED_STORAGE_API
+    bool "TF-M PSA Protected Storage API"
+    select PSA
+    select PSA_PROTECTED_STORAGE_API
+
+config TFM_PSA_INTERNAL_TRUSTED_STORAGE_API
+    bool "TF-M PSA Internal Trusted Storage API"
+    select PSA
+    select PSA_INTERNAL_TRUSTED_STORAGE_API

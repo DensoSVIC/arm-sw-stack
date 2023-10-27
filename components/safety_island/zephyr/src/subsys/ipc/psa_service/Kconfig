@@ -12,6 +12,12 @@ menuconfig PSA
 
 if PSA
 
+config PSA_PROTECTED_STORAGE_API
+	bool "PSA Protected Storage API"
+
+config PSA_INTERNAL_TRUSTED_STORAGE_API
+	bool "PSA Internal Trusted Storage API"
+
 module = PSA_SERVICE
 module-str = psa_service
 source "subsys/logging/Kconfig.template.log_config"

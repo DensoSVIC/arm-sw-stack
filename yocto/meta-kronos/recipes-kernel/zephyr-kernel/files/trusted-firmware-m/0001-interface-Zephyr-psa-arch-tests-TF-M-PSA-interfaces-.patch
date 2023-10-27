@@ -1,0 +1,70 @@
+From c96a05570bd6076b1f71d5d1695f45adac8a326d Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Wed, 25 Oct 2023 15:51:53 +0100
+Subject: [PATCH] interface: Zephyr psa-arch-tests TF-M PSA interfaces
+ modifications
+
+Some variables which are used in the message need be changed
+from size_t to uint32_t due to difference in the architecture
+between RSS (32 bits) and Safety Island (64 bits).
+
+Upstream-Status: Pending
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ interface/include/psa/storage_common.h | 4 ++--
+ interface/src/tfm_its_api.c            | 4 +++-
+ interface/src/tfm_ps_api.c             | 4 +++-
+ 3 files changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/interface/include/psa/storage_common.h b/interface/include/psa/storage_common.h
+index 3f901c5bf..8b76354e1 100644
+--- a/interface/include/psa/storage_common.h
++++ b/interface/include/psa/storage_common.h
+@@ -32,8 +32,8 @@ typedef uint64_t psa_storage_uid_t;
+ /* A container for metadata associated with a specific uid */
+ 
+ struct psa_storage_info_t {
+-    size_t capacity;
+-    size_t size;
++    uint32_t capacity;
++    uint32_t size;
+     psa_storage_create_flags_t flags;
+ };
+ 
+diff --git a/interface/src/tfm_its_api.c b/interface/src/tfm_its_api.c
+index a52197b6e..c2c79dced 100644
+--- a/interface/src/tfm_its_api.c
++++ b/interface/src/tfm_its_api.c
+@@ -38,9 +38,11 @@ psa_status_t psa_its_get(psa_storage_uid_t uid,
+ {
+     psa_status_t status;
+ 
++	uint32_t offset = (uint32_t)data_offset;
++
+     psa_invec in_vec[] = {
+         { .base = &uid, .len = sizeof(uid) },
+-        { .base = &data_offset, .len = sizeof(data_offset) }
++        { .base = &offset, .len = sizeof(offset) }
+     };
+ 
+     psa_outvec out_vec[] = {
+diff --git a/interface/src/tfm_ps_api.c b/interface/src/tfm_ps_api.c
+index 047f4d1ca..7093e8f26 100644
+--- a/interface/src/tfm_ps_api.c
++++ b/interface/src/tfm_ps_api.c
+@@ -37,9 +37,11 @@ psa_status_t psa_ps_get(psa_storage_uid_t uid,
+ {
+     psa_status_t status;
+ 
++	uint32_t offset = (uint32_t)data_offset;
++
+     psa_invec in_vec[] = {
+         { .base = &uid, .len = sizeof(uid) },
+-        { .base = &data_offset, .len = sizeof(data_offset) }
++        { .base = &offset, .len = sizeof(offset) }
+     };
+ 
+     psa_outvec out_vec[] = {
+-- 
+2.25.1
+
