@@ -7,5 +7,4 @@
 menu "Subsystems"
 rsource "fault_mgmt/Kconfig"
 rsource "ipc/psa_service/Kconfig"
-rsource "ipc/psa_service/psa/Kconfig"
 endmenu
