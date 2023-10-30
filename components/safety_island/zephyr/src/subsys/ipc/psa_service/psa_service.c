@@ -22,8 +22,8 @@ LOG_MODULE_REGISTER(psa_service, CONFIG_PSA_SERVICE_LOG_LEVEL);
 #include "zephyr/subsys/ipc/psa_service/psa_backend.h"
 #include "rss_comms/rss_comms_protocol.h"
 
-static struct device *dev;
-static struct k_sem psa_call_sem;
+static const struct device *dev = DEVICE_DT_GET(DT_NODELABEL(psa));
+K_SEM_DEFINE(psa_call_sem, 1, 1);
 
 /* Union as message space and reply space are never used at the same time,
  * and this saves space as we can overlap them.
@@ -179,12 +179,6 @@ clean:
 
 static int psa_service_init(void)
 {
-	/* Initialize Semaphore */
-	k_sem_init(&psa_call_sem, 1, 1);
-
-	/* Set the PSA device */
-	dev = DEVICE_DT_GET(DT_NODELABEL(psa));
-
 	if (!device_is_ready(dev)) {
 		LOG_ERR("[RSS-COMMS] IPC PSA device is not ready\n");
 		return -ENODEV;
