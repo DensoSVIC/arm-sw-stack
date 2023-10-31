@@ -544,6 +544,7 @@ SHMEM
 shpool
 SHRAM
 SIMD
+sipsa
 slirp
 SMCC
 smen
