@@ -106,7 +106,7 @@ ACTUATION_PACKAGES ?= "actuation-player"
 FEATURE_PACKAGES_actuation = "${ACTUATION_PACKAGES}"
 FEATURE_PACKAGES_actuation:virtualization = ""
 
-CAM_PACKAGES ?= "cam-app-example cam-service cam-tool"
+CAM_PACKAGES ?= "cam-app-example cam-service cam-tool linuxptp"
 FEATURE_PACKAGES_cam = "${CAM_PACKAGES}"
 
 KRONOS_EXTRA_IMAGEDEPENDS = ""
@@ -131,6 +131,7 @@ ZEPHYR_APP_SAFETY_ISLAND_CL2:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:si0-bridge-ethernet0 = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:si-psa-storage-tests = "psa-storage-tests"
 
+LINUXPTP_IFACES:cam = "ethsi1"
 LINUXPTP_IFACES:hipc-validation = "ethsi0 ethsi1 ethsi2"
 LINUXPTP_IFACES:append:hipc-validation:virtualization = \
     " domu1.ethsi0 domu2.ethsi0"
