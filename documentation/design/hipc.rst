@@ -187,6 +187,50 @@ following VLAN identifiers:
  * VLAN **200**: Traffic from/to **Safety Island Cluster 1**
  * VLAN **300**: Traffic from/to **Safety Island Cluster 2**
 
+gPTP
+====
+
+Generalized Precision Time Protocol (gPTP) is a concept standardized by `IEEE
+802.1AS`_. It is used to synchronize the clocks of multiple systems over a
+network. A "PTP Instance" is an instance of this protocol. Each PTP Instance can
+have one or more logical access point to the network (a "PTP Port"). The source
+of the synchronized time in a domain is a single PTP Instance, the "Grandmaster
+PTP Instance", which always act as a server.
+
+In the Kronos Reference Stack, Grandmaster PTP Instances are deployed on the
+Primary Compute (in Dom0 in case of the Virtualization Architecture),
+advertizing a single source of time to the other PTP Instances (on the Safety
+Island clusters and the DomUs) acting as clients. The Grandmaster PTP Instances
+each have one PTP Port per remote PTP Instance. All the Operating Systems that
+make use of gPTP have a dedicated service to handle the network messages:
+
+* On Linux, the `Linux PTP Project`_ provides a ``ptp4l`` program that creates a
+  PTP Port on a specified network interface. At system boot, one ``ptp4l``
+  daemon is started per network interface specified in the ``LINUXPTP_IFACES``
+  bitbake variable. This variable is set per :ref:`Use-Case
+  <introduction_use_cases>`, with the Safety Island Communication Demo Use-Case
+  making use of gPTP on all Operating Systems. The network interfaces created by
+  Open vSwitch are not capable of software timestamping; hence, the direct
+  network interfaces to the remote participant are used instead (for example for
+  Safety Island Cluster 0, ``ptp4l`` binds to ethsi0, not brsi0). Note that
+  ``ptp4l`` only writes to the system logger, not to the console, including in
+  case of de-synchronization.
+
+* On Zephyr, the kernel provides a `Zephyr gPTP subsystem`_. Enabling it is done
+  per application, by including the appropriate configuration file from
+  :kronos-repo:`components/safety_island/zephyr/src/overlays/gptp`. They disable
+  the Grandmaster capability and create a single PTP Port, on the first network
+  interface. When the client is not synchronized with the server, the gPTP
+  subsystem prints a warning-level logging message (``<wrn> net_gptp: Reset
+  Pdelay requests``) at each tick of its state machine (about once per second).
+
+In the Kronos Reference Stack, all of the PTP Instances use software
+timestamping. This limits the maximum achievable precision of the clock
+synchronization and it makes the stability of the clock vulnerable to software
+activity on either side of the gPTP link.
+
+See :ref:`validation_gptp` for details on how the functionality is validated.
+
 External Connection
 ===================
 

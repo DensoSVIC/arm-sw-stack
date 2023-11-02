@@ -196,6 +196,32 @@ are run for each Xen guests created.
       * The Safety Island Cluster {M} as an Zperf server (UDP/TCP)
         and the Safety Island Cluster {N} as a Zperf client (UDP/TCP).
 
+.. _validation_gptp:
+
+Integration Tests Validating gPTP
+=================================
+
+The scripts that implement the tests are
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_gptp_base.py` and
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_gptp.py`.
+
+* test_ptp_linux_services
+      The test ensures the ``ptp4l`` services are running.
+
+* test_ptp_si_clients
+      The test verifies that the gPTP services running on the Safety Island
+      clusters are in the expected client state. It then introduces a fault in
+      the system by bringing down the relevant network interfaces on the server
+      side and checks that the state machines on the Safety Island clusters are
+      not in a client state anymore. The network interfaces are brought back up
+      and the test validates that the state machines get back to the expected
+      state.
+
+* test_ptp_domu_client
+      The test has the same steps as the Safety Island test above, but targeted
+      at the DomUs instead of the Safety Island clusters. It is skipped when not
+      using the Virtualization Architecture.
+
 .. _validation_zephyr_bridge:
 
 Integration Tests Validating the Safety Island Cluster 0 Bridge

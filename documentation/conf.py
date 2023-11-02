@@ -212,9 +212,11 @@ rst_prolog = f"""
 .. _Fast Models FVP Reference Guide: https://developer.arm.com/documentation/100966/latest
 .. _GICv4.1 - Direct injection of virtual interrupts: https://developer.arm.com/documentation/107627/0101/GICv4-1---Direct-injection-of-virtual-interrupts
 .. _GitLab Issues: https://gitlab.arm.com/automotive-and-industrial/kronos/kronos/-/issues
+.. _IEEE 802.1AS: https://ieeexplore.ieee.org/document/9121845
 .. _IEEE 802.1Q: https://ieeexplore.ieee.org/document/10004498
 .. _IPC service: https://docs.zephyrproject.org/{zephyr_version}/services/ipc/ipc_service/ipc_service.html
 .. _Kernel Types: https://docs.yoctoproject.org/{yocto_doc_version}/kernel-dev/advanced.html#kernel-types
+.. _Linux PTP Project: https://linuxptp.sourceforge.net
 .. _Linux preempt-rt repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fpreempt-rt%2Fbase
 .. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fbase
 .. _Local Control Processor (LCP) Firmware: https://developer.arm.com/documentation/den0050/latest
@@ -265,6 +267,7 @@ rst_prolog = f"""
 .. _Xen repository: https://xenbits.xen.org/gitweb/?p=xen.git;a=tree;h=refs/heads/stable-{xen_version}
 .. _Yocto Project Quick Start: https://docs.yoctoproject.org/{yocto_doc_version}brief-yoctoprojectqs/index.html
 .. _Yocto Project: https://docs.yoctoproject.org/{yocto_doc_version}/index.html
+.. _Zephyr gPTP subsystem: https://docs.zephyrproject.org/{zephyr_version}/connectivity/networking/api/gptp.html
 .. _Zephyr repository: https://github.com/zephyrproject-rtos/zephyr/tree/v{zephyr_version}
 .. _Zephyr: https://docs.zephyrproject.org/{zephyr_version}/
 .. _edk2-test-parser: https://gitlab.arm.com/systemready/edk2-test-parser/-/blob/ir1/EBBR.yaml

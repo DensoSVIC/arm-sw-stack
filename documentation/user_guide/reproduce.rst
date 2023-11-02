@@ -722,60 +722,67 @@ To enable the validation tests:
   4. Then choose ``Save & Build``.
 
 A similar output to the following is printed out. The complete test suit takes
-around 14 minutes to complete. See
+around 17 minutes to complete. See
 :ref:`validation_hipc_demo` for more details.
 
 .. code-block:: console
 
-  NOTE: Executing Tasks
-  2023-09-11 20:19:44 - INFO     - Creating terminal default on terminal_ns_uart0
-  2023-09-11 20:19:53 - INFO     - Creating terminal tf-a on terminal_sec_uart
-  2023-09-11 20:19:54 - INFO     - Creating terminal scp on terminal_uart_scp
-  2023-09-11 20:19:54 - INFO     - Creating terminal lcp on terminal_uart_lcp
-  2023-09-11 20:19:54 - INFO     - Creating terminal rss on terminal_rss_uart
-  2023-09-11 20:19:54 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
-  2023-09-11 20:19:54 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
-  2023-09-11 20:19:54 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
-  2023-09-11 20:19:55 - INFO     - default: Waiting for login prompt
-  2023-09-11 20:33:45 - INFO     - RESULTS:
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (16.32s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster0: PASSED (93.28s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster1: PASSED (115.26s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster2: PASSED (89.39s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl1: PASSED (28.83s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl2: PASSED (39.16s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl1_cl2: PASSED (49.49s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl1: PASSED (10.91s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl2: PASSED (10.94s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl1_cl2: PASSED (10.68s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster0: PASSED (29.04s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster1: PASSED (27.40s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster2: PASSED (26.97s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_00_secure_partition.OpteeTest.test_optee_normal: PASSED (0.00s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (272.71s)
-  2023-09-11 20:33:45 - INFO     - SUMMARY:
-  2023-09-11 20:33:45 - INFO     - baremetal-image () - Ran 19 tests in 820.373s
+  2023-11-05 21:17:10 - INFO     - Creating terminal default on terminal_ns_uart0
+  2023-11-05 21:17:20 - INFO     - Creating terminal tf-a on terminal_sec_uart
+  2023-11-05 21:17:20 - INFO     - Creating terminal scp on terminal_uart_scp
+  2023-11-05 21:17:20 - INFO     - Creating terminal lcp on terminal_uart_lcp
+  2023-11-05 21:17:20 - INFO     - Creating terminal rss on terminal_rss_uart
+  2023-11-05 21:17:21 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+  2023-11-05 21:17:21 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+  2023-11-05 21:17:22 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+  2023-11-05 21:17:22 - INFO     - default: Waiting for login prompt
+  2023-11-05 21:34:42 - INFO     - RESULTS:
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (20.02s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster0: PASSED (116.47s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster1: PASSED (129.01s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster2: PASSED (146.54s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl1: PASSED (27.87s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl2: PASSED (32.90s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl1_cl2: PASSED (54.07s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl1: PASSED (18.51s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl2: PASSED (18.73s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl1_cl2: PASSED (18.92s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster0: PASSED (50.29s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster1: PASSED (47.85s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster2: PASSED (46.58s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_ptp.PTPTest.test_ptp_linux_services: PASSED (1.87s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_ptp.PTPTest.test_ptp_si_clients: PASSED (16.93s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_00_secure_partition.OpteeTest.test_optee_normal: PASSED (0.00s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (283.33s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_ptp.PTPTestDomU1.test_ptp_domu_client: SKIPPED
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_ptp.PTPTestDomU1.test_ptp_linux_services: SKIPPED
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_ptp.PTPTestDomU2.test_ptp_domu_client: SKIPPED
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_ptp.PTPTestDomU2.test_ptp_linux_services: SKIPPED
+  2023-11-05 21:34:42 - INFO     - SUMMARY:
+  2023-11-05 21:34:42 - INFO     - baremetal-image () - Ran 21 tests in 1030.628s
 
 The following messages are expected to validate this Use-Case:
 
 .. code-block:: console
 
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster0: PASSED (93.28s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster1: PASSED (115.26s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster2: PASSED (89.39s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl1: PASSED (28.83s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl2: PASSED (39.16s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl1_cl2: PASSED (49.49s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl1: PASSED (10.91s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl2: PASSED (10.94s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl1_cl2: PASSED (10.68s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster0: PASSED (29.04s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster1: PASSED (27.40s)
-  2023-09-11 20:33:45 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster2: PASSED (26.97s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster0: PASSED (116.47s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster1: PASSED (129.01s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster2: PASSED (146.54s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl1: PASSED (27.87s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl2: PASSED (32.90s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl1_cl2: PASSED (54.07s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl1: PASSED (18.51s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl2: PASSED (18.73s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl1_cl2: PASSED (18.92s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster0: PASSED (50.29s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster1: PASSED (47.85s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster2: PASSED (46.58s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_ptp.PTPTest.test_ptp_linux_services: PASSED (1.87s)
+  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_ptp.PTPTest.test_ptp_si_clients: PASSED (16.93s)
 
 Virtualization Architecture
 ---------------------------
@@ -812,83 +819,95 @@ To enable the validation tests:
      menu.
   4. Then choose ``Save & Build``.
 
-The complete test suit takes around 36 minutes to complete. See
+The complete test suit takes around 41 minutes to complete. See
 :ref:`validation_hipc_demo` for more details. A similar output to the
 following is printed out.
 
 .. code-block:: console
 
-  2023-09-11 20:20:53 - INFO     - Creating terminal default on terminal_ns_uart0
-  2023-09-11 20:21:02 - INFO     - Creating terminal tf-a on terminal_sec_uart
-  2023-09-11 20:21:02 - INFO     - Creating terminal scp on terminal_uart_scp
-  2023-09-11 20:21:02 - INFO     - Creating terminal lcp on terminal_uart_lcp
-  2023-09-11 20:21:03 - INFO     - Creating terminal rss on terminal_rss_uart
-  2023-09-11 20:21:03 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
-  2023-09-11 20:21:03 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
-  2023-09-11 20:21:03 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
-  2023-09-11 20:21:03 - INFO     - default: Waiting for login prompt
-  2023-09-11 20:50:04 - INFO     - HIPC to Cluster 0 not tested for DomU2
-  2023-09-11 20:53:36 - INFO     - HIPC to Cluster 2 not tested for DomU2
-  2023-09-11 20:57:00 - INFO     - Ping to Cluster 0 not tested for DomU2
-  2023-09-11 20:57:00 - INFO     - Ping to Cluster 2 not tested for DomU2
-  2023-09-11 20:57:22 - INFO     - RESULTS:
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (596.95s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster0: PASSED (159.92s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster1: PASSED (146.19s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster2: PASSED (125.69s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl1: PASSED (38.76s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl2: PASSED (45.72s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl1_cl2: PASSED (61.74s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl1: PASSED (24.59s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl2: PASSED (24.34s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl1_cl2: PASSED (24.17s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster0: PASSED (62.83s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster1: PASSED (61.03s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster2: PASSED (60.52s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster1: PASSED (150.95s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl0_cl1: PASSED (32.77s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl0_cl2: PASSED (45.79s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl1_cl2: PASSED (52.47s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl0_cl1: PASSED (24.51s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl0_cl2: PASSED (24.41s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl1_cl2: PASSED (24.56s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster1: PASSED (60.43s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (289.37s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster0: SKIPPED (0.00s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster2: SKIPPED (0.00s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster0: SKIPPED (0.00s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster2: SKIPPED (0.00s)
-  2023-09-11 20:57:22 - INFO     - SUMMARY:
-  2023-09-11 20:57:22 - INFO     - virtualization-image () - Ran 30 tests in 2165.293s
+  2023-11-05 21:17:43 - INFO     - Creating terminal default on terminal_ns_uart0
+  2023-11-05 21:17:52 - INFO     - Creating terminal tf-a on terminal_sec_uart
+  2023-11-05 21:17:52 - INFO     - Creating terminal scp on terminal_uart_scp
+  2023-11-05 21:17:53 - INFO     - Creating terminal lcp on terminal_uart_lcp
+  2023-11-05 21:17:53 - INFO     - Creating terminal rss on terminal_rss_uart
+  2023-11-05 21:17:53 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+  2023-11-05 21:17:53 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+  2023-11-05 21:17:53 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+  2023-11-05 21:17:53 - INFO     - default: Waiting for login prompt
+  2023-11-05 21:49:05 - INFO     - HIPC to Cluster 0 not tested for DomU2
+  2023-11-05 21:52:43 - INFO     - HIPC to Cluster 2 not tested for DomU2
+  2023-11-05 21:56:46 - INFO     - Ping to Cluster 0 not tested for DomU2
+  2023-11-05 21:56:46 - INFO     - Ping to Cluster 2 not tested for DomU2
+  2023-11-05 21:59:07 - INFO     - RESULTS:
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (576.25s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster0: PASSED (177.82s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster1: PASSED (133.61s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster2: PASSED (154.19s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl1: PASSED (37.69s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl2: PASSED (34.65s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl1_cl2: PASSED (57.19s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl1: PASSED (35.90s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl2: PASSED (35.35s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl1_cl2: PASSED (35.49s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster0: PASSED (91.98s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster1: PASSED (89.69s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster2: PASSED (89.12s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster1: PASSED (127.11s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl0_cl1: PASSED (37.59s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl0_cl2: PASSED (41.76s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl1_cl2: PASSED (57.34s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl0_cl1: PASSED (35.54s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl0_cl2: PASSED (35.36s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl1_cl2: PASSED (35.85s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster1: PASSED (90.17s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTest.test_ptp_linux_services: PASSED (3.57s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTest.test_ptp_si_clients: PASSED (25.89s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTestDomU1.test_ptp_domu_client: PASSED (28.75s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTestDomU1.test_ptp_linux_services: PASSED (0.67s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTestDomU2.test_ptp_domu_client: PASSED (25.30s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTestDomU2.test_ptp_linux_services: PASSED (0.69s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (302.13s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster0: SKIPPED (0.00s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster2: SKIPPED (0.00s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster0: SKIPPED (0.00s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster2: SKIPPED (0.00s)
+  2023-11-05 21:59:07 - INFO     - SUMMARY:
+  2023-11-05 21:59:07 - INFO     - virtualization-image () - Ran 36 tests in 2461.116s
 
 The following messages are expected to validate this Use-Case:
 
 .. code-block:: console
 
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster0: PASSED (159.92s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster1: PASSED (146.19s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster2: PASSED (125.69s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl1: PASSED (38.76s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl2: PASSED (45.72s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl1_cl2: PASSED (61.74s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl1: PASSED (24.59s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl2: PASSED (24.34s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl1_cl2: PASSED (24.17s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster0: PASSED (62.83s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster1: PASSED (61.03s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster2: PASSED (60.52s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster1: PASSED (150.95s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl0_cl1: PASSED (32.77s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl0_cl2: PASSED (45.79s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl1_cl2: PASSED (52.47s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl0_cl1: PASSED (24.51s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl0_cl2: PASSED (24.41s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl1_cl2: PASSED (24.56s)
-  2023-09-11 20:57:22 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster1: PASSED (60.43s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster0: PASSED (177.82s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster1: PASSED (133.61s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster2: PASSED (154.19s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl1: PASSED (37.69s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl2: PASSED (34.65s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl1_cl2: PASSED (57.19s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl1: PASSED (35.90s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl2: PASSED (35.35s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl1_cl2: PASSED (35.49s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster0: PASSED (91.98s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster1: PASSED (89.69s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster2: PASSED (89.12s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster1: PASSED (127.11s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl0_cl1: PASSED (37.59s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl0_cl2: PASSED (41.76s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl1_cl2: PASSED (57.34s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl0_cl1: PASSED (35.54s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl0_cl2: PASSED (35.36s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl1_cl2: PASSED (35.85s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster1: PASSED (90.17s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTest.test_ptp_linux_services: PASSED (3.57s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTest.test_ptp_si_clients: PASSED (25.89s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTestDomU1.test_ptp_domu_client: PASSED (28.75s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTestDomU1.test_ptp_linux_services: PASSED (0.67s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTestDomU2.test_ptp_domu_client: PASSED (25.30s)
+  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTestDomU2.test_ptp_linux_services: PASSED (0.69s)
 
 Parsec-enabled TLS Demo
 =======================
