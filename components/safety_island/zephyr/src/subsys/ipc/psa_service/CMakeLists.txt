@@ -11,4 +11,6 @@ zephyr_library_sources(
         psa_service.c
 )
 
+zephyr_include_directories(${ZEPHYR_CURRENT_MODULE_DIR}/include/zephyr/subsys/ipc/psa_service)
+
 add_subdirectory(rss_comms)

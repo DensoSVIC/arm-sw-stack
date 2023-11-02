@@ -1,0 +1,33 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+choice PSA_ARCH_TEST
+	prompt "Enable a PSA Architecture test suite"
+	default PSA_ARCH_TEST_NONE
+
+config PSA_ARCH_TEST_PROTECTED_STORAGE
+	bool "PSA Protected Storage tests"
+	depends on PSA_PROTECTED_STORAGE_API
+	help
+	  Enable the PSA Protected Storage test suite.
+
+config PSA_ARCH_TEST_INTERNAL_TRUSTED_STORAGE
+	bool "PSA Internal Trusted Storage tests"
+	depends on PSA_INTERNAL_TRUSTED_STORAGE_API
+	help
+	  Enable the PSA Internal Trusted Storage test suite.
+
+config PSA_ARCH_TEST_STORAGE
+	bool "PSA Storage tests"
+	depends on PSA_PROTECTED_STORAGE_API && PSA_INTERNAL_TRUSTED_STORAGE_API
+	help
+	  Enable the PSA Storage test suite. This is a combination of the
+	  Protected Storage and Internal Trusted Storage tests.
+
+config PSA_ARCH_TEST_NONE
+	bool "No PSA test suite"
+
+endchoice

@@ -5,6 +5,7 @@
 aarch
 acpi
 actables
+adac
 addbr
 addif
 addnotaskbody
@@ -410,6 +411,7 @@ noreboot
 NOTFOUND
 notifyid
 NRDY
+nspe
 numpy
 NVRAM
 OBJS
