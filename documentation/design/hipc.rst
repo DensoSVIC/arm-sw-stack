@@ -113,9 +113,9 @@ mailbox, which notifies other cores when new messages are sent to the virtual
 queue.
 
 The memory regions of the resource table, vrings and message buffers are
-configured in the device tree bindings for each cluster. The driver parses the
-device tree node for each cluster and adds each cluster to the remoteproc
-framework. Each cluster has its own resource table, vrings and message buffers
+configured in the device tree bindings for each cluster. The driver parses the
+device tree node for each cluster and adds each cluster to the remoteproc
+framework. Each cluster has its own resource table, vrings and message buffers
 that will be used as a base for communication.
 
 Virtualization Architecture
