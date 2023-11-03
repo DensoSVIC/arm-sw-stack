@@ -193,10 +193,13 @@ rst_prolog = f"""
 .. _Arm SystemReady IR: https://www.arm.com/architecture/system-architectures/systemready-certification-program/ir
 .. _Arm SystemReady program: https://www.arm.com/architecture/system-architectures/systemready-certification-program
 .. _Arm SystemReady: https://www.arm.com/architecture/system-architectures/systemready-certification-program
+.. _Autoware: https://autowarefoundation.github.io/autoware-documentation
 .. _Base Boot Requirements (BBR): https://developer.arm.com/documentation/den0044/latest
 .. _Base System Architecture (BSA): https://developer.arm.com/documentation/den0094/latest
 .. _Cassini: https://cassini.readthedocs.io/en/{cassini_version}
 .. _Crypto Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/crypto-service-description.html
+.. _CycloneDDS: https://cyclonedds.io/docs/cyclonedds/latest/about_dds/eclipse_cyclone_dds.html
+.. _Data Distribution Service: https://www.dds-foundation.org/what-is-dds-3
 .. _Debian GNU/Linux Installation Guide: https://www.debian.org/releases/bullseye/arm64/
 .. _Debian Stable: https://www.debian.org/releases/stable/
 .. _Device Tree specification: https://www.devicetree.org/
@@ -230,12 +233,14 @@ rst_prolog = f"""
 .. _Parsec Secure Element Driver: https://github.com/parallaxsecond/parsec-se-driver
 .. _Parsec: https://parallaxsecond.github.io/parsec-book/index.html
 .. _Power Control System Architecture (PCSA): https://developer.arm.com/documentation/den0050/latest
+.. _Pure Pursuit: https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/pure-pursuit.html
 .. _RSS provisioning: https://tf-m-user-guide.trustedfirmware.org/platform/arm/rss/rss_provisioning.html
 .. _Runtime Security Subsystem (RSS): https://tf-m-user-guide.trustedfirmware.org/platform/arm/rss/readme.html
 .. _SCP-firmware repository: https://github.com/ARM-software/SCP-firmware/tree/{scp_firmware_version}
 .. _SE Proxy SP: https://trusted-services.readthedocs.io/en/latest/deployments/secure-partitions.html#se-proxy
 .. _SMM Gateway SP: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/secure-partitions.html#smm-gateway
 .. _Safety Island Actuation Demo: https://safety-island-actuation-demo.docs.arm.com
+.. _Secure Partition: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/environments/secure-partitions/index.html
 .. _Secure Storage Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/secure-storage-service-description.html
 .. _System Control Processor (SCP) Firmware: https://developer.arm.com/documentation/den0050/latest
 .. _TF-M Crypto Service: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/tfm_crypto_design.html
@@ -273,11 +278,6 @@ rst_prolog = f"""
 .. _testimage.bbclass: https://docs.yoctoproject.org/{yocto_doc_version}ref-manual/classes.html#testimage-bbclass
 .. _xl documentation: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.1.html
 .. _zperf sample: https://docs.zephyrproject.org/{zephyr_version}/connectivity/networking/api/zperf.html
-.. _Autoware: https://autowarefoundation.github.io/autoware-documentation
-.. _Pure Pursuit: https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/pure-pursuit.html
-.. _Data Distribution Service: https://www.dds-foundation.org/what-is-dds-3
-.. _CycloneDDS: https://cyclonedds.io/docs/cyclonedds/latest/about_dds/eclipse_cyclone_dds.html
-.. _Secure Partition: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/environments/secure-partitions/index.html
 """  # noqa: E501
 
 # URL to use for references to repository paths
