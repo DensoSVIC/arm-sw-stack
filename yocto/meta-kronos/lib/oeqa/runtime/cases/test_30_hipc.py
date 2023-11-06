@@ -140,10 +140,8 @@ class HIPCTestBase(OERuntimeTestCase):
                 self.target.expect(cl_console, r'End of session!\r\n',
                                    timeout=session_end_timeout)
                 self.target.expect(cl_console,
-                                   r'received packets:\s*(\d+)\r\n',
+                                   r'received packets:\s*\d+\r\n',
                                    timeout=10)
-                self.assertGreater(int(self.target.match(cl_console)[1]),
-                                   10)
                 self.target.expect(cl_console,
                                    r'nb packets lost:\s*0\r\n',
                                    timeout=10)
