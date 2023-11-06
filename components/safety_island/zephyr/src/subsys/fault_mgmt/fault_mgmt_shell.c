@@ -168,28 +168,40 @@ void fault_history_read_callback(const struct fault_mgmt_storage_info *fault_inf
 					  : "non-critical";
 	const struct device *dev = device_from_handle(fault_info->fault.handle);
 
-	shell_info(sh, "Fault received (%s): 0x%x on %s : count %u\n", criticality, protection_id,
+	shell_info(sh, "Fault received (%s): 0x%x on %s : count %llu\n", criticality, protection_id,
 		   dev->name, fault_info->count);
 }
 
-static void cmd_fmu_fault_listed(const struct shell *sh)
+static int cmd_fmu_fault_listed(const struct shell *sh, size_t argc, char **argv, void *data)
 {
-	uint64_t record_size = fault_mgmt_storage_total_fault_reported();
+	uint64_t threshold_value;
+	int ret = 0;
+	fault_storage_stats_t record_stats = {0};
 
-	if (record_size == 0) {
-		shell_info(sh, "No fault reported");
-		return;
+	fault_mgmt_storage_stats(&record_stats);
+
+	if (argc > 1) {
+		threshold_value = (uint64_t)shell_strtoul(argv[1], 0, &ret);
+	} else {
+		threshold_value = 0;
 	}
-	shell_info(sh, "Fault history:");
-	fault_mgmt_storage_foreach(fault_history_read_callback, (void *)sh,
-				   FAULT_MGMT_OPTION_LIST_FAULT);
+	if (record_stats.total_fault == 0) {
+		shell_info(sh, "No fault reported");
+	} else {
+		shell_info(sh, "Fault history:");
+		fault_mgmt_storage_foreach(fault_history_read_callback, threshold_value,
+					   (void *)sh);
+	}
+
+	return ret;
 }
 
 static void cmd_fmu_fault_summary(const struct shell *sh)
 {
-	uint64_t record_size = fault_mgmt_storage_total_fault_reported();
+	fault_storage_stats_t record_stats = {0};
 
-	if (record_size == 0) {
+	fault_mgmt_storage_stats(&record_stats);
+	if (record_stats.total_fault == 0) {
 		shell_info(sh, "No fault reported");
 		return;
 	}
@@ -204,32 +216,35 @@ static void cmd_fmu_fault_summary(const struct shell *sh)
 		   "|__________________________________________________________________________|");
 	shell_info(sh,
 		   "                                                                            ");
-	shell_info(sh, "Number of fault reported: %llu", record_size);
+	shell_info(sh, "Number of fault reported: %llu", record_stats.total_fault);
 
 	shell_info(sh,
 		   "____________________________________________________________________________");
 	shell_info(sh,
 		   "                                                                            ");
 	shell_info(sh, "Most reported faults:");
-	fault_mgmt_storage_foreach(fault_history_read_callback, (void *)sh,
-				   FAULT_MGMT_OPTION_LIST_MOST_REPORTED_FAULT);
-
+	if (record_stats.highest_count > 1) {
+		fault_mgmt_storage_foreach(fault_history_read_callback, record_stats.highest_count,
+					   (void *)sh);
+	} else {
+		shell_info(sh, "No fault reported more than once");
+	}
 	shell_info(sh,
 		   "____________________________________________________________________________");
 	shell_info(sh,
 		   "                                                                            ");
 	shell_info(sh, "Fault history:");
-	fault_mgmt_storage_foreach(fault_history_read_callback, (void *)sh,
-				   FAULT_MGMT_OPTION_LIST_FAULT);
+	fault_mgmt_storage_foreach(fault_history_read_callback, 0, (void *)sh);
 	shell_info(sh,
 		   "____________________________________________________________________________");
 }
 
 static void cmd_fmu_total_reported_fault(const struct shell *sh)
 {
-	uint64_t record_size = fault_mgmt_storage_total_fault_reported();
+	fault_storage_stats_t record_stats = {0};
 
-	shell_info(sh, "Number of fault reported: %llu", record_size);
+	fault_mgmt_storage_stats(&record_stats);
+	shell_info(sh, "Number of fault reported: %llu", record_stats.total_fault);
 }
 
 static void cmd_fmu_clear_stored_fault(const struct shell *sh)
@@ -250,7 +265,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
 	SHELL_CMD_ARG(set_critical, &dsub_device_name, "Set fault criticality",
 		      cmd_fmu_set_critical, 4, 0),
 #ifdef CONFIG_FAULT_MGMT_STORAGE_SYS_HASH_MAP
-	SHELL_CMD_ARG(list, NULL, "List all reported faults", cmd_fmu_fault_listed, 0, 0),
+	SHELL_CMD_ARG(list, NULL, "List all reported faults", cmd_fmu_fault_listed, 0, 1),
 	SHELL_CMD_ARG(summary, NULL, "Show fault summary", cmd_fmu_fault_summary, 0, 0),
 	SHELL_CMD_ARG(count, NULL, "Total faults reported", cmd_fmu_total_reported_fault, 0, 0),
 	SHELL_CMD_ARG(clear, NULL, "Clear the storage", cmd_fmu_clear_stored_fault, 0, 0),

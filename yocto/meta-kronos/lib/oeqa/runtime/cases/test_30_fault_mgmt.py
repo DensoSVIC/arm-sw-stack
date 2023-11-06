@@ -87,7 +87,7 @@ class FaultMgmtTest(OERuntimeTestCase):
                 f"fault inject fmu@2a570000 {fault_id}")
             self.target.expect(self.console,
                                r"Fault received \(non-critical\): "
-                               fr"{fault_id} on fmu@2a570000",
+                               fr"{fault_id} on fmu@2a570000 : count 1",
                                timeout=30)
 
             # Configure fault as critical and inject
@@ -101,7 +101,7 @@ class FaultMgmtTest(OERuntimeTestCase):
                                  f"fault inject fmu@2a570000 {fault_id}")
             self.target.expect(self.console,
                                r"Fault received \(critical\): "
-                               fr"{fault_id} on fmu@2a570000",
+                               fr"{fault_id} on fmu@2a570000 : count 1",
                                timeout=30)
 
     def test_fmu_fault_count(self):
@@ -114,14 +114,34 @@ class FaultMgmtTest(OERuntimeTestCase):
 
     def test_fmu_fault_list(self):
         self.test_system_fmu_internal_inject()
+        self.test_gic_fmu_inject()
         self.target.expect(self.console, self.si_prompt, timeout=60)
         self.target.sendline(self.console, "fault list")
         self.target.expect(self.console, r"Fault history:", timeout=30)
+
+        # Fault patterns for the address "2a510000" (only non-critical)
         for fault_id in ['0x1', '0x2', '0x8', '0x20']:
-            self.target.expect(self.console,
-                               r"Fault received \(non-critical\): "
-                               fr"{fault_id} on fmu@2a510000 : count 1",
-                               timeout=30)
+            pattern = (fr"Fault received \(non-critical\): {fault_id} on "
+                       fr"fmu@2a510000 : count 1")
+            self.target.expect(self.console, pattern, timeout=60)
+
+        # For the address "2a570000" (critical and non-critical)
+        for fault_id in ['0x100', '0x10000600', '0x20000a00', \
+                         '0x40001300', '0x50000300']:
+            non_critical_pattern = (fr"Fault received \(non-critical\): "
+                                    fr"{fault_id} on fmu@2a570000 : count 1")
+            critical_pattern = (fr"Fault received \(critical\): {fault_id} "
+                                fr"on fmu@2a570000 : count 1")
+            self.target.expect(self.console, non_critical_pattern, timeout=30)
+            self.target.expect(self.console, critical_pattern, timeout=30)
+        self.target.expect(self.console, self.si_prompt, timeout=60)
+        self.target.sendline(self.console, f"fault inject fmu@2a510000 0x2")
+        self.target.expect(self.console, self.si_prompt, timeout=60)
+        self.target.sendline(self.console, "fault list 2")
+        self.target.expect(self.console,
+                           r"Fault received \(non-critical\): "
+                           fr"0x2 on fmu@2a510000 : count 2",
+                           timeout=60)
 
     def test_fmu_fault_summary(self):
         self.test_system_fmu_internal_inject()

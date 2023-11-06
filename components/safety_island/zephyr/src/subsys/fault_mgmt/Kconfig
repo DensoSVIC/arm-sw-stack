@@ -40,12 +40,11 @@ config FAULT_MGMT_SHELL
 	  control the Arm fault management subsystem.
 
 config FAULT_MGMT_STORAGE_SYS_HASH_MAP
-	bool "Enable fault storage"
+	bool "Use system hash map for fault storage"
 	default n
 	select SYS_HASH_MAP
 	help
-	  Enable fault storage: This option allows the setup to store reported
-	  faults.
+	  Utilize the system hash map as the backend for storing fault records.
 
 module = FAULT_MGMT
 module-str = Fault management
