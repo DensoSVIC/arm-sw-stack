@@ -171,10 +171,10 @@ VLAN
 `Open vSwitch`_ is used to create a virtual switch that connects all the
 network interfaces of the Primary Compute.
 
-VLAN is a concept standardized by IEEE 802.1Q. It is used to partition a switch
-into multiple logical switches. The VLAN tag has a value from 0 to 4096 stored
-in the packet header. Usually 0 means that the packet is untagged, but some
-values are reserved.
+VLAN is a concept standardized by `IEEE 802.1Q`_. It is used to partition a
+switch into multiple logical switches. The VLAN tag has a value from 0 to 4096
+stored in the packet header. Usually 0 means that the packet is untagged, but
+some values are reserved.
 
 On a switch, using VLAN tagged traffic makes sure that a packet tagged with a
 certain VLAN identifier reaches only ports that are configured to manage the
