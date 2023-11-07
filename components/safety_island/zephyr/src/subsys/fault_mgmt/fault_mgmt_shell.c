@@ -11,7 +11,7 @@
 
 #include "zephyr/subsys/fault_mgmt/fault_mgmt.h"
 
-#ifdef CONFIG_FAULT_MGMT_STORAGE_SYS_HASH_MAP
+#ifdef CONFIG_FAULT_MGMT_STORAGE
 #include "zephyr/subsys/fault_mgmt/fault_mgmt_storage.h"
 #endif
 
@@ -158,7 +158,7 @@ static void cmd_fmu_device_name(size_t idx, struct shell_static_entry *entry)
 	entry->subcmd = NULL;
 }
 
-#ifdef CONFIG_FAULT_MGMT_STORAGE_SYS_HASH_MAP
+#ifdef CONFIG_FAULT_MGMT_STORAGE
 void fault_history_read_callback(const struct fault_mgmt_storage_info *fault_info, void *cookie)
 {
 	const struct shell *sh = (const struct shell *)cookie;
@@ -264,7 +264,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
 		      4, 0),
 	SHELL_CMD_ARG(set_critical, &dsub_device_name, "Set fault criticality",
 		      cmd_fmu_set_critical, 4, 0),
-#ifdef CONFIG_FAULT_MGMT_STORAGE_SYS_HASH_MAP
+#ifdef CONFIG_FAULT_MGMT_STORAGE
 	SHELL_CMD_ARG(list, NULL, "List all reported faults", cmd_fmu_fault_listed, 0, 1),
 	SHELL_CMD_ARG(summary, NULL, "Show fault summary", cmd_fmu_fault_summary, 0, 0),
 	SHELL_CMD_ARG(count, NULL, "Total faults reported", cmd_fmu_total_reported_fault, 0, 0),

@@ -14,5 +14,13 @@ LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://license.rst;md5=e805dc5353977631b7881c7705a6c04a"
 
 require recipes-kernel/zephyr-kernel/zephyr-sample.inc
+require zephyr-tfm-psa-apis.inc
 
 ZEPHYR_SRC_DIR = "${ZEPHYR_SAFETY_ISLAND_MODULE}/apps/fault_mgmt"
+
+OVERLAY_FAULT_MGMT_PSA = "${ZEPHYR_SAFETY_ISLAND_MODULE}/overlays/psa/${ZEPHYR_BOARD}"
+OVERLAY_FAULT_MGMT = "${ZEPHYR_SAFETY_ISLAND_MODULE}/apps/fault_mgmt/boards/${ZEPHYR_BOARD}"
+EXTRA_OECMAKE:append = "\
+    -DDTC_OVERLAY_FILE='${OVERLAY_FAULT_MGMT_PSA}.overlay;${OVERLAY_FAULT_MGMT}.overlay' \
+    -DOVERLAY_CONFIG='${OVERLAY_FAULT_MGMT_PSA}.conf' \
+"

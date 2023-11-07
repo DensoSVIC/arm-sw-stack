@@ -15,7 +15,7 @@ class FaultMgmtTest(OERuntimeTestCase):
     def fmu_fault_clear(self):
         self.target.expect(self.console, self.si_prompt, timeout=60)
         self.target.sendline(self.console, "fault clear")
-        self.target.expect(self.console, r"Done!", timeout=30)
+        self.target.expect(self.console, r"Done!", timeout=120)
 
     def test_tree(self):
         self.target.expect(self.console, self.si_prompt, timeout=60)
@@ -35,7 +35,7 @@ class FaultMgmtTest(OERuntimeTestCase):
             self.target.expect(self.console,
                                r"Fault received \(non-critical\): "
                                fr"{fault_id} on fmu@2a510000 : count 1",
-                               timeout=30)
+                               timeout=90)
 
     def test_system_fmu_internal_set_enabled(self):
         self.target.expect(self.console, self.si_prompt, timeout=60)
@@ -88,7 +88,7 @@ class FaultMgmtTest(OERuntimeTestCase):
             self.target.expect(self.console,
                                r"Fault received \(non-critical\): "
                                fr"{fault_id} on fmu@2a570000 : count 1",
-                               timeout=30)
+                               timeout=90)
 
             # Configure fault as critical and inject
             self.target.expect(self.console, self.si_prompt, timeout=30)
@@ -110,7 +110,7 @@ class FaultMgmtTest(OERuntimeTestCase):
         self.target.sendline(self.console, "fault count")
         self.target.expect(self.console,
                            r"Number of fault reported: 4",
-                           timeout=30)
+                           timeout=60)
 
     def test_fmu_fault_list(self):
         self.test_system_fmu_internal_inject()
@@ -132,16 +132,16 @@ class FaultMgmtTest(OERuntimeTestCase):
                                     fr"{fault_id} on fmu@2a570000 : count 1")
             critical_pattern = (fr"Fault received \(critical\): {fault_id} "
                                 fr"on fmu@2a570000 : count 1")
-            self.target.expect(self.console, non_critical_pattern, timeout=30)
-            self.target.expect(self.console, critical_pattern, timeout=30)
+            self.target.expect(self.console, non_critical_pattern, timeout=60)
+            self.target.expect(self.console, critical_pattern, timeout=60)
         self.target.expect(self.console, self.si_prompt, timeout=60)
         self.target.sendline(self.console, f"fault inject fmu@2a510000 0x2")
-        self.target.expect(self.console, self.si_prompt, timeout=60)
+        self.target.expect(self.console, self.si_prompt, timeout=90)
         self.target.sendline(self.console, "fault list 2")
         self.target.expect(self.console,
                            r"Fault received \(non-critical\): "
                            fr"0x2 on fmu@2a510000 : count 2",
-                           timeout=60)
+                           timeout=90)
 
     def test_fmu_fault_summary(self):
         self.test_system_fmu_internal_inject()
@@ -155,13 +155,13 @@ class FaultMgmtTest(OERuntimeTestCase):
         self.target.expect(self.console,
                            r"Most reported faults:\r\n"
                            r"Fault received \(non-critical\): "
-                           fr"0x20 on fmu@2a510000 : count 2", timeout=30)
+                           fr"0x20 on fmu@2a510000 : count 2", timeout=60)
         self.target.expect(self.console,
                            r"Fault history:\s*\r?\n(?:Fault "
                            r"received \(non-critical\): (0x1|0x2|0x8) on "
                            r"fmu@2a510000 : count 1\s*\r?\n){3}Fault "
                            r"received \(non-critical\): 0x20 on "
-                           r"fmu@2a510000 : count 2\r\n", timeout=30)
+                           r"fmu@2a510000 : count 2\r\n", timeout=60)
 
     def test_fmu_fault_clear(self):
         self.test_system_fmu_internal_inject()
@@ -173,4 +173,4 @@ class FaultMgmtTest(OERuntimeTestCase):
         self.target.expect(self.console, self.si_prompt, timeout=60)
         self.target.sendline(self.console, "fault list")
         self.target.expect(self.console, r"No fault reported",
-                           timeout=30)
+                           timeout=90)

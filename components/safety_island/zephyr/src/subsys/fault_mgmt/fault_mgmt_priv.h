@@ -24,4 +24,11 @@ extern struct k_mutex fault_mgmt_storage_mutex;
  */
 uint64_t fault_mgmt_storage_write(struct fault_mgmt_arm_fmu_fault *fault);
 
+#ifdef CONFIG_FAULT_MGMT_PSA_PROTECTED_STORAGE
+/**
+ * @brief Initialize the PSA Protected Storage for Fault Management.
+ */
+void fault_mgmt_storage_init_psa_protected_storage(void);
+#endif
+
 #endif /* FAULT_MGMT_PRIV_H_ */

@@ -15,7 +15,7 @@ LOG_MODULE_REGISTER(fault_mgmt, CONFIG_FAULT_MGMT_LOG_LEVEL);
 
 #include "zephyr/drivers/fault_mgmt/fault_mgmt_arm_fmu.h"
 
-#ifdef CONFIG_FAULT_MGMT_STORAGE_SYS_HASH_MAP
+#ifdef CONFIG_FAULT_MGMT_STORAGE
 #include "fault_mgmt_priv.h"
 #endif
 
@@ -85,7 +85,7 @@ static void fault_mgmt_handler(void *arg0, void *arg1, void *arg2)
 		criticality =
 			FAULT_MGMT_ARM_FMU_FAULT_IS_CRITICAL(&fault) ? "critical" : "non-critical";
 
-#ifdef CONFIG_FAULT_MGMT_STORAGE_SYS_HASH_MAP
+#ifdef CONFIG_FAULT_MGMT_STORAGE
 		uint64_t total_size = fault_mgmt_storage_write(&fault);
 
 		LOG_INF("Fault received (%s): 0x%x on %s : count %llu\n", criticality,
@@ -207,6 +207,10 @@ static int fault_mgmt_init(const struct device *dev)
 	if (ret < 0) {
 		return ret;
 	}
+
+#ifdef CONFIG_FAULT_MGMT_PSA_PROTECTED_STORAGE
+	fault_mgmt_storage_init_psa_protected_storage();
+#endif
 
 	/* Create critical fault thread */
 	tid = k_thread_create(&fault_mgmt_thread_critical, fault_mgmt_stack_critical,

@@ -39,12 +39,53 @@ config FAULT_MGMT_SHELL
 	  Activate shell module that provides commands to manually inspect and
 	  control the Arm fault management subsystem.
 
-config FAULT_MGMT_STORAGE_SYS_HASH_MAP
-	bool "Use system hash map for fault storage"
+menuconfig FAULT_MGMT_STORAGE
+	bool "fault management storage"
 	default n
 	select SYS_HASH_MAP
 	help
+	  If selected, enables the fault storage feature which requires a
+	  subsequent choice of storage backend.
+
+if FAULT_MGMT_STORAGE
+
+choice
+	prompt "Select fault management storage backend"
+	optional
+
+config FAULT_MGMT_STORAGE_SYS_HASH_MAP
+	bool "Use system hash map for fault storage"
+	help
 	  Utilize the system hash map as the backend for storing fault records.
+
+config FAULT_MGMT_PSA_PROTECTED_STORAGE
+	bool "Use PSA Protected Storage for fault management"
+	select PSA
+	select TFM_PSA_PROTECTED_STORAGE_API
+	help
+	  Utilize PSA Protected Storage as the backend for storing fault records.
+
+endchoice
+
+if FAULT_MGMT_PSA_PROTECTED_STORAGE
+
+config FAULT_MGMT_NAMESPACE_ID
+	hex "Configure UID namespace for PSA Protected Storage"
+	default 0xAAFF5500
+	help
+	  Specify the unique identifier (UID) namespace for storing
+	  fault records in the PSA Protected Storage.
+
+config MAX_PSA_PROTECTED_STORAGE_SIZE
+	int "Fault management PSA storage size"
+	default 50
+	help
+	  Specify the maximum number of new fault records that can be stored
+	  or allocated in the PSA Protected Storage. Currently, there is a
+	  limitation where the maximum storage size is capped at 50.
+
+endif
+endif
 
 module = FAULT_MGMT
 module-str = Fault management
