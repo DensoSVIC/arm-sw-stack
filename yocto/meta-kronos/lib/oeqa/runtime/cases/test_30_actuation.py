@@ -24,6 +24,8 @@ class ActuationTest(OERuntimeTestCase):
         cls.linux_prompt = rf'root@{cls.hostname}:~#'
         cls.host_log = \
             cls.tc.target._create_logfile("packet_analyzer_actuation")
+        cls.console = \
+            cls.tc.target._get_terminal(cls.tc.target.DEFAULT_CONSOLE)
         if 'virtualization' in cls.td.get('IMAGE_FEATURES').split():
             # Use negative lookahead to match Dom0 prompt, so match every
             # prompt that is not of this guest
@@ -36,6 +38,10 @@ class ActuationTest(OERuntimeTestCase):
 
     @classmethod
     def tearDownClass(cls):
+        # Cancel potentially pending 'actuation_player' command
+        cls.console.sendcontrol('C')
+        cls.console.sendline()
+        cls.console.expect(cls.linux_prompt, timeout=60)
         if 'virtualization' in cls.td.get('IMAGE_FEATURES').split():
             XenUtils.exit_guest_to_dom0(cls.console, cls.dom0_prompt,
                                         cls.linux_prompt, cls.domu_hostname)
