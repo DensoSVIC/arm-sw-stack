@@ -55,7 +55,10 @@ static void fault_mgmt_fault_callback(const struct device *dev,
 
 	ret = k_msgq_put(target_msgq, fault, K_NO_WAIT);
 	/* Abort if the queue has overflowed */
-	__ASSERT(ret == 0, "Failed to push fault to queue: 0x%x", ret);
+	if (ret < 0) {
+		LOG_ERR("Failed to push fault to queue: 0x%x\n", ret);
+		k_oops();
+	}
 }
 
 static void fault_mgmt_handler(void *arg0, void *arg1, void *arg2)
