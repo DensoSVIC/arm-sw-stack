@@ -14,8 +14,8 @@ Solution Design
    :caption: Contents
 
    boot_process
-   hipc
    secure_services
+   hipc
    components
    applications/index
    integration
