@@ -140,10 +140,30 @@ static int fault_mgmt_arm_fmu_device_set_enabled(const struct device *dev, uint3
 	return fault_mgmt_arm_fmu_device_wait_busy(dev);
 }
 
+static int fault_mgmt_arm_fmu_device_set_critical(const struct device *dev, uint32_t prot_id,
+						  bool critical)
+{
+	int ret;
+	uint32_t smcr;
+
+	ret = fault_mgmt_arm_fmu_device_validate_prot_id(prot_id);
+	if (ret < 0) {
+		return ret;
+	}
+
+	LOG_DBG("Changing criticality of 0x%x\n", prot_id);
+
+	smcr = critical ? prot_id | FAULT_MGMT_ARM_FMU_GIC_ENABLED
+			: prot_id & ~FAULT_MGMT_ARM_FMU_GIC_ENABLED;
+	fault_mgmt_arm_fmu_write32(dev, smcr, FAULT_MGMT_ARM_FMU_FIELD_SMCR);
+	return fault_mgmt_arm_fmu_device_wait_busy(dev);
+}
+
 static const struct fault_mgmt_arm_fmu_internal_api fault_mgmt_arm_fmu_device_api = {
 	.next_fault = fault_mgmt_arm_fmu_device_next_fault,
 	.inject = fault_mgmt_arm_fmu_device_inject,
 	.set_enabled = fault_mgmt_arm_fmu_device_set_enabled,
+	.set_critical = fault_mgmt_arm_fmu_device_set_critical,
 };
 
 FAULT_MGMT_ARM_FMU_DEFINE(gic_fmu, FAULT_MGMT_ARM_FMU_GIC_ERRIIDR, NULL,

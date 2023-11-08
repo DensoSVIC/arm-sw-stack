@@ -16,5 +16,6 @@ int fault_mgmt_device_foreach(fault_mgmt_device_callback callback, void *cookie)
 
 int fault_mgmt_inject(const struct device *dev, uint32_t prot_id);
 int fault_mgmt_set_enabled(const struct device *dev, uint32_t prot_id, bool enabled);
+int fault_mgmt_set_critical(const struct device *dev, uint32_t prot_id, bool critical);
 
 #endif /* FAULT_MGMT_H_ */

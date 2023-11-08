@@ -16,6 +16,7 @@ struct fault_mgmt_arm_fmu_internal_api {
 	int (*next_fault)(const struct device *dev, bool critical, uint32_t *next_id);
 	int (*inject)(const struct device *dev, uint32_t prot_id);
 	int (*set_enabled)(const struct device *dev, uint32_t prot_id, bool enabled);
+	int (*set_critical)(const struct device *dev, uint32_t prot_id, bool critical);
 };
 
 struct fault_mgmt_arm_fmu_implementation {
@@ -36,6 +37,7 @@ struct fault_mgmt_arm_fmu_implementation {
 #define FAULT_MGMT_ARM_FMU_FIELD_ERRIIDR    0xE10
 #define FAULT_MGMT_ARM_FMU_FIELD_SMEN       0xF00
 #define FAULT_MGMT_ARM_FMU_FIELD_SMERR      0xF04
+#define FAULT_MGMT_ARM_FMU_FIELD_SMCR       0xF08
 #define FAULT_MGMT_ARM_FMU_FIELD_FMU_STATUS 0xF1C
 #define FAULT_MGMT_ARM_FMU_FIELD_FMU_KEY    0xF20
 #define FAULT_MGMT_ARM_FMU_FIELD_ERRUPDATE  0xF28

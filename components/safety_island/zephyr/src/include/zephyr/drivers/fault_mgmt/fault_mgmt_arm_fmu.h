@@ -30,6 +30,7 @@ typedef void (*fault_mgmt_arm_fmu_callback_t)(const struct device *dev,
 __subsystem struct fault_mgmt_arm_fmu_api {
 	int (*inject)(const struct device *dev, uint32_t prot_id);
 	int (*set_enabled)(const struct device *dev, uint32_t prot_id, bool enabled);
+	int (*set_critical)(const struct device *dev, uint32_t prot_id, bool critical);
 	int (*fault_callback_set)(const struct device *dev, fault_mgmt_arm_fmu_callback_t callback,
 				  void *user_data);
 };

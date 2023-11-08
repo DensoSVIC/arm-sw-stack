@@ -180,6 +180,20 @@ static int fault_mgmt_arm_fmu_set_enabled(const struct device *dev, uint32_t pro
 	return ret;
 }
 
+static int fault_mgmt_arm_fmu_set_critical(const struct device *dev, uint32_t prot_id,
+					   bool critical)
+{
+	int ret;
+	struct fault_mgmt_arm_fmu_data *data = FAULT_MGMT_ARM_FMU_DEV_DATA(dev);
+	k_spinlock_key_t key;
+
+	key = k_spin_lock(&data->lock);
+	ret = data->internal_api->set_critical(dev, prot_id, critical);
+	k_spin_unlock(&data->lock, key);
+
+	return ret;
+}
+
 static int fault_mgmt_arm_fmu_fault_callback_set(const struct device *dev,
 						 fault_mgmt_arm_fmu_callback_t callback,
 						 void *user_data)
@@ -198,6 +212,7 @@ static int fault_mgmt_arm_fmu_fault_callback_set(const struct device *dev,
 static const struct fault_mgmt_arm_fmu_api fault_mgmt_arm_fmu_system_api = {
 	.inject = fault_mgmt_arm_fmu_inject,
 	.set_enabled = fault_mgmt_arm_fmu_set_enabled,
+	.set_critical = fault_mgmt_arm_fmu_set_critical,
 	.fault_callback_set = fault_mgmt_arm_fmu_fault_callback_set,
 };
 

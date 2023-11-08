@@ -152,10 +152,18 @@ static int fault_mgmt_arm_fmu_system_set_enabled(const struct device *dev, uint3
 	return 0;
 }
 
+static int fault_mgmt_arm_fmu_system_set_critical(const struct device *dev, uint32_t prot_id,
+						  bool critical)
+{
+	/* All System FMU internal faults are always non-critical */
+	return critical ? -ENOTSUP : 0;
+}
+
 static const struct fault_mgmt_arm_fmu_internal_api fault_mgmt_arm_fmu_system_api = {
 	.next_fault = fault_mgmt_arm_fmu_system_next_fault,
 	.inject = fault_mgmt_arm_fmu_system_inject,
 	.set_enabled = fault_mgmt_arm_fmu_system_set_enabled,
+	.set_critical = fault_mgmt_arm_fmu_system_set_critical,
 };
 
 FAULT_MGMT_ARM_FMU_DEFINE(system_fmu, FAULT_MGMT_ARM_FMU_SYSTEM_ERRIIDR,

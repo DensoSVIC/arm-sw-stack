@@ -106,6 +106,11 @@ int fault_mgmt_set_enabled(const struct device *dev, uint32_t prot_id, bool enab
 	return FAULT_MGMT_ARM_FMU_DEV_API(dev)->set_enabled(dev, prot_id, enabled);
 }
 
+int fault_mgmt_set_critical(const struct device *dev, uint32_t prot_id, bool critical)
+{
+	return FAULT_MGMT_ARM_FMU_DEV_API(dev)->set_critical(dev, prot_id, critical);
+}
+
 int fault_mgmt_device_foreach(fault_mgmt_device_callback callback, void *cookie)
 {
 	int ret;
