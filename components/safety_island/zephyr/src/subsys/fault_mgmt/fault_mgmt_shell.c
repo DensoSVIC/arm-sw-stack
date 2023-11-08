@@ -122,6 +122,32 @@ static int cmd_fmu_set_enabled(const struct shell *sh, size_t argc, char **argv,
 	return handle_error(sh, ret);
 }
 
+static int cmd_fmu_set_critical(const struct shell *sh, size_t argc, char **argv, void *data)
+{
+	int ret;
+	const struct device *dev;
+	uint32_t prot_id;
+	bool critical;
+	const char *status;
+
+	ret = parse_fmu_args(sh, argc, argv, &dev, &prot_id);
+	if (ret < 0) {
+		return ret;
+	}
+
+	critical = shell_strtobool(argv[3], 0, &ret);
+	if (ret < 0) {
+		shell_error(sh, "Invalid criticality status: %s", argv[3]);
+		return -EINVAL;
+	}
+
+	status = critical ? "critical" : "non-critical";
+	shell_info(sh, "Setting fault %x on device %s as %s", prot_id, dev->name, status);
+
+	ret = fault_mgmt_set_critical(dev, prot_id, critical);
+	return handle_error(sh, ret);
+}
+
 static void cmd_fmu_device_name(size_t idx, struct shell_static_entry *entry)
 {
 	const struct device *dev = shell_device_lookup(idx, NULL);
@@ -221,6 +247,8 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
 	SHELL_CMD_ARG(inject, &dsub_device_name, "Inject a fault", cmd_fmu_inject, 3, 0),
 	SHELL_CMD_ARG(set_enabled, &dsub_device_name, "Enable/disable a fault", cmd_fmu_set_enabled,
 		      4, 0),
+	SHELL_CMD_ARG(set_critical, &dsub_device_name, "Set fault criticality",
+		      cmd_fmu_set_critical, 4, 0),
 #ifdef CONFIG_FAULT_MGMT_STORAGE_SYS_HASH_MAP
 	SHELL_CMD_ARG(list, NULL, "List all reported faults", cmd_fmu_fault_listed, 0, 0),
 	SHELL_CMD_ARG(summary, NULL, "Show fault summary", cmd_fmu_fault_summary, 0, 0),

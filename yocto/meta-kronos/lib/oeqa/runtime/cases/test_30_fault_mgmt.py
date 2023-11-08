@@ -68,11 +68,34 @@ class FaultMgmtTest(OERuntimeTestCase):
         ]
 
         for fault_id in fault_ids:
+            # Enable fault
             self.target.expect(self.console, self.si_prompt, timeout=60)
             self.target.sendline(
                 self.console,
                 f"fault set_enabled fmu@2a570000 {fault_id} 1")
             self.target.expect(self.console, "Enabling fault", timeout=30)
+
+            # Configure fault as non-critical and inject
+            self.target.expect(self.console, self.si_prompt, timeout=30)
+            self.target.sendline(
+                self.console,
+                f"fault set_critical fmu@2a570000 {fault_id} 0")
+            self.target.expect(self.console, "Setting fault", timeout=30)
+            self.target.expect(self.console, self.si_prompt, timeout=30)
+            self.target.sendline(
+                self.console,
+                f"fault inject fmu@2a570000 {fault_id}")
+            self.target.expect(self.console,
+                               r"Fault received \(non-critical\): "
+                               fr"{fault_id} on fmu@2a570000",
+                               timeout=30)
+
+            # Configure fault as critical and inject
+            self.target.expect(self.console, self.si_prompt, timeout=30)
+            self.target.sendline(
+                self.console,
+                f"fault set_critical fmu@2a570000 {fault_id} 1")
+            self.target.expect(self.console, "Setting fault", timeout=30)
             self.target.expect(self.console, self.si_prompt, timeout=30)
             self.target.sendline(self.console,
                                  f"fault inject fmu@2a570000 {fault_id}")
