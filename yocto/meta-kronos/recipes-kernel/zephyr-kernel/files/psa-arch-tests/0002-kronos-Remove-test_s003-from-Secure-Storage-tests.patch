@@ -1,0 +1,103 @@
+From 8bb7b7e9f4e6588c8f6b654fea95a7effd181d81 Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Tue, 7 Nov 2023 15:39:37 +0000
+Subject: [PATCH] kronos: Remove test_s003 from Secure Storage tests
+
+test_s003 saturates the RSS storage, this causes the
+tests running on other Safety Island clusters to fail
+as they can not find any more storage for their tests.
+
+This also affects the linux boot when TF-A attempts
+to use the RSS PSA service, resulting in a linux
+boot failure.
+
+This should not be a problem when TF-M is updated
+to support a separate partition for each of the
+Application Processor, SI CL0, SI CL1 and SI CL2.
+
+Upstream-Status: Inappropriate [Kronos-specific]
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ api-tests/dev_apis/storage/its_1.0-beta2_testsuite.db | 1 -
+ api-tests/dev_apis/storage/its_1.0_testsuite.db       | 1 -
+ api-tests/dev_apis/storage/its_testsuite.db           | 1 -
+ api-tests/dev_apis/storage/ps_1.0-beta2_testsuite.db  | 1 -
+ api-tests/dev_apis/storage/ps_1.0_testsuite.db        | 1 -
+ api-tests/dev_apis/storage/ps_testsuite.db            | 1 -
+ 6 files changed, 6 deletions(-)
+
+diff --git a/api-tests/dev_apis/storage/its_1.0-beta2_testsuite.db b/api-tests/dev_apis/storage/its_1.0-beta2_testsuite.db
+index ebfbaaf..2cd7968 100644
+--- a/api-tests/dev_apis/storage/its_1.0-beta2_testsuite.db
++++ b/api-tests/dev_apis/storage/its_1.0-beta2_testsuite.db
+@@ -22,7 +22,6 @@
+ 
+ test_s001
+ test_s002
+-test_s003
+ test_s004
+ test_s005
+ test_s006
+diff --git a/api-tests/dev_apis/storage/its_1.0_testsuite.db b/api-tests/dev_apis/storage/its_1.0_testsuite.db
+index ebfbaaf..2cd7968 100644
+--- a/api-tests/dev_apis/storage/its_1.0_testsuite.db
++++ b/api-tests/dev_apis/storage/its_1.0_testsuite.db
+@@ -22,7 +22,6 @@
+ 
+ test_s001
+ test_s002
+-test_s003
+ test_s004
+ test_s005
+ test_s006
+diff --git a/api-tests/dev_apis/storage/its_testsuite.db b/api-tests/dev_apis/storage/its_testsuite.db
+index 8b5c5b6..1d67e22 100644
+--- a/api-tests/dev_apis/storage/its_testsuite.db
++++ b/api-tests/dev_apis/storage/its_testsuite.db
+@@ -22,7 +22,6 @@
+ 
+ test_s001
+ test_s002
+-test_s003
+ test_s004
+ test_s005
+ test_s006
+diff --git a/api-tests/dev_apis/storage/ps_1.0-beta2_testsuite.db b/api-tests/dev_apis/storage/ps_1.0-beta2_testsuite.db
+index a89fa95..47436d4 100644
+--- a/api-tests/dev_apis/storage/ps_1.0-beta2_testsuite.db
++++ b/api-tests/dev_apis/storage/ps_1.0-beta2_testsuite.db
+@@ -22,7 +22,6 @@
+ 
+ test_s001
+ test_s002
+-test_s003
+ test_s004
+ test_s005
+ test_s006
+diff --git a/api-tests/dev_apis/storage/ps_1.0_testsuite.db b/api-tests/dev_apis/storage/ps_1.0_testsuite.db
+index a89fa95..47436d4 100644
+--- a/api-tests/dev_apis/storage/ps_1.0_testsuite.db
++++ b/api-tests/dev_apis/storage/ps_1.0_testsuite.db
+@@ -22,7 +22,6 @@
+ 
+ test_s001
+ test_s002
+-test_s003
+ test_s004
+ test_s005
+ test_s006
+diff --git a/api-tests/dev_apis/storage/ps_testsuite.db b/api-tests/dev_apis/storage/ps_testsuite.db
+index 6af00b5..24da4b3 100644
+--- a/api-tests/dev_apis/storage/ps_testsuite.db
++++ b/api-tests/dev_apis/storage/ps_testsuite.db
+@@ -22,7 +22,6 @@
+ 
+ test_s001
+ test_s002
+-test_s003
+ test_s004
+ test_s005
+ test_s006
+-- 
+2.25.1
+
