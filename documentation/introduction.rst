@@ -32,6 +32,56 @@ introduction to FVPs available in the `Fast Models FVP Reference Guide`_.
   Users of this software stack must consider safety and security implications
   according to their own usage goals.
 
+.. _introduction_reference_software_stack_overview:
+
+*********************************
+Reference Software Stack Overview
+*********************************
+
+This Reference Software Stack is made available as part of the Arm Kronos
+Reference Design and is composed of multiple Open Source components which
+together form the proposed solution, including:
+
+
+  * The `Runtime Security Subsystem (RSS)`_ runs an instance of Trusted
+    Firmware-M, which offers boot, cryptography, and protected storage services.
+
+  * The Safety Island subsystem runs three instances of the Zephyr real-time
+    operating system (RTOS).
+
+  * The firmware for the Primary Compute uses Trusted Firmware-A, U-Boot, OP-TEE
+    and Trusted Services. These are configured to be aligned with
+    `Arm SystemReady IR`_.
+
+The remaining software in the Primary Compute subsystem, based on the
+`Cassini`_  distribution, is available in two main architectures:
+
+  **Baremetal Architecture**
+
+  The Primary Compute boots a single rich operating system (real-time Linux with
+  PREEMPT_RT patches).
+
+.. image:: images/kronos_baremetal_high_level_arch.png
+   :align: center
+
+|
+
+  **Virtualization Architecture**
+
+    The Primary Compute boots into a type-1 hypervisor (Xen) using Arm’s
+    hardware virtualization support. There are three isolated, resource-managed
+    virtual machines: Dom0 (privileged domain) and DomU1 and DomU2 (unprivileged
+    domains).
+
+.. image:: images/kronos_virtualization_high_level_arch.png
+   :align: center
+
+|
+
+In both architectures the Primary Compute (Linux) can communicate with the
+Safety Island subsystem (Zephyr) via a bi-directional communication channel. The
+:ref:`design_applications_actuation` is integrated into the stack to show-case
+this Heterogeneous Inter-processor Communication (HIPC) between subsystems.
 
 .. _introduction_use_cases:
 
@@ -93,57 +143,6 @@ Linux Distribution Installation
 
 Demonstrates the installation of two unmodified generic UEFI distribution
 images, Debian and openSUSE, fulfilling |Arm SystemReadyTM| requirements.
-
-.. _introduction_reference_software_stack_overview:
-
-*********************************
-Reference Software Stack Overview
-*********************************
-
-This Reference Software Stack is made available as part of the Arm Kronos
-Reference Design and is composed of multiple Open Source components which
-together form the proposed solution, including:
-
-
-  * The `Runtime Security Subsystem (RSS)`_ runs an instance of Trusted
-    Firmware-M, which offers boot, cryptography, and protected storage services.
-
-  * The Safety Island subsystem runs three instances of the Zephyr real-time
-    operating system (RTOS).
-
-  * The firmware for the Primary Compute uses Trusted Firmware-A, U-Boot, OP-TEE
-    and Trusted Services. These are configured to be aligned with
-    `Arm SystemReady IR`_.
-
-The remaining software in the Primary Compute subsystem, based on the
-`Cassini`_  distribution, is available in two main architectures:
-
-  **Baremetal Architecture**
-
-  The Primary Compute boots a single rich operating system (real-time Linux with
-  PREEMPT_RT patches).
-
-.. image:: images/kronos_baremetal_high_level_arch.png
-   :align: center
-
-|
-
-  **Virtualization Architecture**
-
-    The Primary Compute boots into a type-1 hypervisor (Xen) using Arm’s
-    hardware virtualization support. There are three isolated, resource-managed
-    virtual machines: Dom0 (privileged domain) and DomU1 and DomU2 (unprivileged
-    domains).
-
-.. image:: images/kronos_virtualization_high_level_arch.png
-   :align: center
-
-|
-
-In both architectures the Primary Compute (Linux) can communicate with the
-Safety Island subsystem (Zephyr) via a bi-directional communication channel. The
-:ref:`design_applications_actuation` is integrated into the stack to show-case
-this Heterogeneous Inter-processor Communication (HIPC) between subsystems.
 
 
 **********************
