@@ -167,6 +167,8 @@ to have a certain understanding of the following technologies:
 
     * `System Control Processor (SCP) Firmware`_
 
+    * `Local Control Processor (LCP) Firmware`_
+
     * `Trusted Firmware-A (TF-A)`_
 
     * `Trusted Services`_

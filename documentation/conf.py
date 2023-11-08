@@ -211,6 +211,7 @@ rst_prolog = f"""
 .. _Kernel Types: https://docs.yoctoproject.org/{yocto_doc_version}/kernel-dev/advanced.html#kernel-types
 .. _Linux preempt-rt repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fpreempt-rt%2Fbase
 .. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fbase
+.. _Local Control Processor (LCP) Firmware: https://developer.arm.com/documentation/den0050/latest
 .. _MCUboot: https://docs.mcuboot.com/
 .. _Mbed TLS repository: https://github.com/Mbed-TLS/mbedtls/tree/{mbedtls_version}
 .. _Mbed TLS: https://mbed-tls.readthedocs.io/en/latest/
@@ -225,6 +226,7 @@ rst_prolog = f"""
 .. _PSA Secure Storage API: https://arm-software.github.io/psa-api/storage/{psa_storage_api_version}
 .. _Parsec Secure Element Driver: https://github.com/parallaxsecond/parsec-se-driver
 .. _Parsec: https://parallaxsecond.github.io/parsec-book/index.html
+.. _Power Control System Architecture (PCSA): https://developer.arm.com/documentation/den0050/latest
 .. _RSS provisioning: https://tf-m-user-guide.trustedfirmware.org/platform/arm/rss/rss_provisioning.html
 .. _Runtime Security Subsystem (RSS): https://tf-m-user-guide.trustedfirmware.org/platform/arm/rss/readme.html
 .. _SCP-firmware repository: https://github.com/ARM-software/SCP-firmware/tree/{scp_firmware_version}
@@ -232,7 +234,7 @@ rst_prolog = f"""
 .. _SMM Gateway SP: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/secure-partitions.html#smm-gateway
 .. _Safety Island Actuation Demo: https://safety-island-actuation-demo.docs.arm.com
 .. _Secure Storage Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/secure-storage-service-description.html
-.. _System Control Processor (SCP) Firmware: https://developer.arm.com/Tools%20and%20Software/SCP%20Firmware
+.. _System Control Processor (SCP) Firmware: https://developer.arm.com/documentation/den0050/latest
 .. _TF-M Crypto Service: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/tfm_crypto_design.html
 .. _TF-M Internal Trusted Storage Service: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/tfm_its_service.html
 .. _TF-M Secure Services: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/index.html

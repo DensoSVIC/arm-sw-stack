@@ -171,7 +171,7 @@ to:
 SCP-firmware
 ************
 
-The Power Control System Architecture (PCSA) [1]_ describes how systems can be
+The `Power Control System Architecture (PCSA)`_ describes how systems can be
 built to provide microcontrollers to abstract various power, or other system
 management tasks, away from Primary Compute (PC).
 
@@ -698,10 +698,3 @@ related to:
  * Fixing gPTP message generation correctness
  * Fixing gPTP packet priority
  * Conforming to the gPTP VLAN rules
-
-**********
-References
-**********
-
-.. [1] Power Control System Architecture - DEN0050C (Please contact Arm directly
-       to obtain a copy of this document)
