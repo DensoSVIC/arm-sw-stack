@@ -148,6 +148,30 @@ For the RD-Kronos platform, Safety Island GIC provides 4 programming views:
 * View-2: Used by Operating System on Safety Island Cluster-1.
 * View-3: Used by Operating System on Safety Island Cluster-2.
 
+.. _design_components_rss_ni710ae:
+
+|CoreLink| NI-710AE Network-on-Chip Interconnect
+================================================
+
+The `CoreLink NI-710AE Network-on-Chip Interconnect`_ is a highly
+configurable |AMBA|-compliant system-level interconnect that enables
+functional safety for automotive and industrial applications. On the
+RD-Kronos platform, the NI-710AE handles traffic from four managers,
+i.e. Safety Island CPU cluster 0/1/2 and the RSS. It provides
+capabilities for these managers to access their corresponding
+subordinates. It also provides the capabilities for the subordinates
+to be exclusive to a certain manager or be shared among multiple
+managers during the different stages of RSS booting.
+
+On Kronos, the configuration of NI-710AE is split to two stages, namely
+the discovery stage and the programming stage, both stages are done in
+RSS BL2. In the discovery stage, software can determine the structure
+of the NI-710AE domains, components, and subfeatures without previous
+knowledge of the configuration, based on the the base address of the
+configuration space. Then, the pre-defined APU tables are programmed
+to the APUs of the NI-710AE interfaces, and the RSS BL2 continues its
+normal boot process.
+
 .. _design_components_rss_downstream_changes:
 
 Downstream Changes
@@ -163,6 +187,7 @@ to:
 * Load and boot the LCP.
 * Load and boot the AP.
 * Configure GIC View-1/2/3 for Safety Island.
+* Configure the NI-710AE of the Safety Island.
 * Support the runtime services listed above.
 
 .. _design_components_scp-firmware:

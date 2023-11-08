@@ -132,8 +132,10 @@ psa_storage_api_version = "1.0"
 
 rst_prolog = f"""
 .. |Actuation version| replace:: {actuation_version}
+.. |AMBA| replace:: AMBA\\ :sup:`®`
 .. |Arm SystemReadyTM| replace:: Arm SystemReady\\ :sup:`TM`
 .. |Arm| replace:: Arm\\ :sup:`®`
+.. |CoreLink| replace:: Arm\\ :sup:`®` CoreLink\\ :sup:`TM`
 .. |Cortex| replace:: Arm\\ :sup:`®` Cortex\\ :sup:`®`
 .. |FVP_RD_Kronos version| replace:: {fvp_version}
 .. |Linux version| replace:: {linux_version}.{linux_version_patch}
@@ -215,6 +217,7 @@ rst_prolog = f"""
 .. _MCUboot: https://docs.mcuboot.com/
 .. _Mbed TLS repository: https://github.com/Mbed-TLS/mbedtls/tree/{mbedtls_version}
 .. _Mbed TLS: https://mbed-tls.readthedocs.io/en/latest/
+.. _CoreLink NI-710AE Network-on-Chip Interconnect: https://developer.arm.com/documentation/102756/latest/
 .. _OEQA FVP: https://git.yoctoproject.org/meta-arm/tree/documentation/oeqa-fvp.md?h={yocto_version}
 .. _OP-TEE repository: https://github.com/OP-TEE/optee_os/tree/{optee_version}
 .. _OP-TEE: https://optee.readthedocs.io/en/{optee_version}/
