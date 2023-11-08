@@ -20,7 +20,7 @@ struct fault_mgmt_arm_fmu_data {
 	void *user_data;
 };
 
-#define FAULT_MGMT_ARM_FMU_DEV_DATA(dev) ((struct fault_mgmt_arm_fmu_data *)(dev)->data)
+#define FAULT_MGMT_ARM_FMU_DEV_DATA(dev) ((struct fault_mgmt_arm_fmu_data *const)(dev)->data)
 #define FAULT_MGMT_ARM_FMU_DEV_CFG(dev)                                                            \
 	((const struct fault_mgmt_arm_fmu_config *const)(dev)->config)
 
