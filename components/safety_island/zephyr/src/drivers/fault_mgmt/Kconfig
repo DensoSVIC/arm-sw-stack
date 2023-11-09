@@ -14,3 +14,7 @@ config FAULT_MGMT_MAX_TREE_DEPTH
 	help
 	  The maximum fault management device tree depth, used to statically
 	  allocate memory for tree traversal.
+
+config FAULT_MGMT_ARM_SSU
+	bool "Arm Safety Status Unit"
+	default n

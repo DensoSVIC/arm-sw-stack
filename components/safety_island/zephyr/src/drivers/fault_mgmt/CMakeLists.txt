@@ -16,3 +16,5 @@ zephyr_library_sources(
 zephyr_linker_sources(DATA_SECTIONS fault_mgmt_arm_fmu.ld)
 
 endif()
+
+zephyr_library_sources_ifdef(CONFIG_FAULT_MGMT_ARM_SSU fault_mgmt_arm_ssu.c)
