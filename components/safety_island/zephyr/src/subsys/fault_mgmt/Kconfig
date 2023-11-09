@@ -38,6 +38,12 @@ config FAULT_MGMT_SHELL
 	  Activate shell module that provides commands to manually inspect and
 	  control the Arm fault management subsystem.
 
+config FAULT_MGMT_SAFETY
+	bool "Fault management safety state integration"
+	help
+	  Control and report the status of an attached safety state management
+	  device in response to faults
+
 menuconfig FAULT_MGMT_STORAGE
 	bool "fault management storage"
 	default n
