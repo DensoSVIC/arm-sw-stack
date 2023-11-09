@@ -11,6 +11,10 @@
 
 #include "zephyr/subsys/fault_mgmt/fault_mgmt.h"
 
+#ifdef CONFIG_FAULT_MGMT_SAFETY
+#include "zephyr/subsys/fault_mgmt/fault_mgmt_safety.h"
+#endif
+
 #ifdef CONFIG_FAULT_MGMT_STORAGE
 #include "zephyr/subsys/fault_mgmt/fault_mgmt_storage.h"
 #endif
@@ -148,6 +152,53 @@ static int cmd_fault_set_critical(const struct shell *sh, size_t argc, char **ar
 	return handle_error(sh, ret);
 }
 
+#ifdef CONFIG_FAULT_MGMT_SAFETY
+static int cmd_fault_safety_status(const struct shell *sh, size_t argc, char **argv, void *data)
+{
+	const struct device *dev;
+	enum fault_mgmt_safety_state state;
+
+	dev = device_get_binding(argv[1]);
+	if (dev == NULL) {
+		shell_error(sh, "Invalid device name: %s", argv[1]);
+		return -EINVAL;
+	}
+
+	state = fault_mgmt_safety_status(dev);
+	shell_info(sh, "Status: %s (0x%x)", fault_mgmt_safety_state_to_str(state), state);
+
+	return 0;
+}
+
+static int cmd_fault_safety_control(const struct shell *sh, size_t argc, char **argv, void *data)
+{
+	int ret;
+	const struct device *dev;
+	enum fault_mgmt_safety_signal signal;
+	enum fault_mgmt_safety_state state;
+
+	dev = device_get_binding(argv[1]);
+	if (dev == NULL) {
+		shell_error(sh, "Invalid device name: %s", argv[1]);
+		return -EINVAL;
+	}
+
+	ret = fault_mgmt_safety_signal_from_str(argv[2], &signal);
+	ret = handle_error(sh, ret);
+	if (ret < 0) {
+		return ret;
+	}
+
+	shell_info(sh, "Signal: %s (0x%x)", argv[2], signal);
+	fault_mgmt_safety_control(dev, signal);
+
+	state = fault_mgmt_safety_status(dev);
+	shell_info(sh, "State: %s (0x%x)", fault_mgmt_safety_state_to_str(state), state);
+
+	return 0;
+}
+#endif
+
 static void cmd_fault_device_name(size_t idx, struct shell_static_entry *entry)
 {
 	const struct device *dev = shell_device_lookup(idx, NULL);
@@ -268,6 +319,12 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
 	SHELL_CMD_ARG(summary, NULL, "Show fault summary", cmd_fault_summary, 0, 0),
 	SHELL_CMD_ARG(count, NULL, "Total faults reported", cmd_total_reported_fault, 0, 0),
 	SHELL_CMD_ARG(clear, NULL, "Clear the storage", cmd_clear_stored_fault, 0, 0),
+#endif
+#ifdef CONFIG_FAULT_MGMT_SAFETY
+	SHELL_CMD_ARG(safety_status, &dsub_device_name, "Read safety state",
+		      cmd_fault_safety_status, 2, 0),
+	SHELL_CMD_ARG(safety_control, &dsub_device_name, "Send safety signal",
+		      cmd_fault_safety_control, 3, 0),
 #endif
 	SHELL_SUBCMD_SET_END);
 
