@@ -135,7 +135,7 @@ static int fault_mgmt_arm_fmu_device_set_enabled(const struct device *dev, uint3
 	LOG_DBG("Changing enabled status of 0x%x\n", prot_id);
 
 	smen = enabled ? prot_id | FAULT_MGMT_ARM_FMU_GIC_ENABLED
-		       : prot_id | FAULT_MGMT_ARM_FMU_GIC_DISABLED;
+		       : prot_id & ~FAULT_MGMT_ARM_FMU_GIC_ENABLED;
 	fault_mgmt_arm_fmu_write32(dev, smen, FAULT_MGMT_ARM_FMU_FIELD_SMEN);
 	return fault_mgmt_arm_fmu_device_wait_busy(dev);
 }
