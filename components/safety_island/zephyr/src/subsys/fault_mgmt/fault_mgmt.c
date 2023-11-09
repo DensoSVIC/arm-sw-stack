@@ -98,18 +98,12 @@ static void fault_mgmt_handler(void *arg0, void *arg1, void *arg2)
 
 int fault_mgmt_inject(const struct device *dev, uint32_t prot_id)
 {
-	const struct fault_mgmt_arm_fmu_api *api;
-	api = dev->api;
-
-	return api->inject(dev, prot_id);
+	return FAULT_MGMT_ARM_FMU_DEV_API(dev)->inject(dev, prot_id);
 }
 
 int fault_mgmt_set_enabled(const struct device *dev, uint32_t prot_id, bool enabled)
 {
-	const struct fault_mgmt_arm_fmu_api *api;
-	api = dev->api;
-
-	return api->set_enabled(dev, prot_id, enabled);
+	return FAULT_MGMT_ARM_FMU_DEV_API(dev)->set_enabled(dev, prot_id, enabled);
 }
 
 int fault_mgmt_device_foreach(fault_mgmt_device_callback callback, void *cookie)
@@ -178,13 +172,11 @@ static int fault_mgmt_prepare_root_fmus(void)
 {
 	int i;
 	const struct device *dev;
-	const struct fault_mgmt_arm_fmu_api *api;
 
 	for (i = 0; i < ARRAY_SIZE(fault_mgmt_root_fmus); i++) {
 		dev = fault_mgmt_root_fmus[i];
-
-		api = dev->api;
-		api->fault_callback_set(dev, fault_mgmt_fault_callback, NULL);
+		FAULT_MGMT_ARM_FMU_DEV_API(dev)->fault_callback_set(dev, fault_mgmt_fault_callback,
+								    NULL);
 
 		LOG_DBG("Fault management initialized for root FMU: %s\n", dev->name);
 	}

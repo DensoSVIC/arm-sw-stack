@@ -34,4 +34,6 @@ __subsystem struct fault_mgmt_arm_fmu_api {
 				  void *user_data);
 };
 
+#define FAULT_MGMT_ARM_FMU_DEV_API(dev) ((const struct fault_mgmt_arm_fmu_api *const)(dev)->api)
+
 #endif /* ZEPHYR_INCLUDE_FAULT_MGMT_ARM_FMU_H_ */
