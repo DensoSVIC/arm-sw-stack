@@ -50,8 +50,8 @@ bitbake
 bitbang
 bitfield
 BITMASK
-bmca
 blkid
+bmca
 BOOTAA
 bootable
 bootimg
@@ -389,6 +389,7 @@ MSMON
 MSMONCFG
 MULCOL
 multilineident
+Multiview
 nameservice
 nativesdk
 Neoverse
@@ -477,10 +478,10 @@ premaster
 presmp
 printstats
 PRIO
-protid
 PRMS
 procinfo
 PRODUCTID
+protid
 prtad
 PSCI
 ptable
@@ -547,9 +548,9 @@ SIMD
 sipsa
 slirp
 SMCC
+smcr
 smen
 smerr
-smcr
 smmu
 SMMUs
 smmuv
@@ -591,6 +592,7 @@ stty
 subcmd
 subcomponents
 subdir
+subfeatures
 subsys
 subvolume
 sufix
