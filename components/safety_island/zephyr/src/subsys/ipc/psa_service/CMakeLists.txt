@@ -5,5 +5,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 zephyr_library()
-zephyr_library_sources_ifdef(CONFIG_PSA psa_backend.c)
-zephyr_library_sources_ifdef(CONFIG_PSA psa_service.c)
+
+zephyr_library_sources(
+        psa_backend.c
+        psa_service.c
+)
+
+add_subdirectory(rss_comms)

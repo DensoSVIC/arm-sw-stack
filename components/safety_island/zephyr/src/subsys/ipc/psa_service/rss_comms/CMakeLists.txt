@@ -6,6 +6,8 @@
 
 zephyr_library()
 
-zephyr_library_sources_ifdef(CONFIG_PSA rss_comms_protocol_embed.c)
-zephyr_library_sources_ifdef(CONFIG_PSA rss_comms_protocol_pointer_access.c)
-zephyr_library_sources_ifdef(CONFIG_PSA rss_comms_protocol.c)
+zephyr_library_sources(
+        rss_comms_protocol_embed.c
+        rss_comms_protocol_pointer_access.c
+        rss_comms_protocol.c
+)

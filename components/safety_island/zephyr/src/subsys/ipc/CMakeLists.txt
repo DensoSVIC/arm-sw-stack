@@ -4,7 +4,4 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-menu "Subsystems"
-rsource "fault_mgmt/Kconfig"
-rsource "ipc/Kconfig"
-endmenu
+add_subdirectory_ifdef(CONFIG_PSA psa_service)
