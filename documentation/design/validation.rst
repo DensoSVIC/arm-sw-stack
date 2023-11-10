@@ -46,8 +46,9 @@ for debugging.
  * RSS
     The script that implements the test is
     :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/test_00_rss.py`.
-    The test waits for the RSS to log that it is releasing the SCP. This is its
-    last action as part of the RSS boot process.
+    The test firstly waits for the successful programming of the GIC-Multiview
+    and the NI-710AE. Then the test waits for the RSS to log that it is releasing
+    the SCP. This is its last action as part of the RSS boot process.
 
  * SCP
     The script that implements the test is
