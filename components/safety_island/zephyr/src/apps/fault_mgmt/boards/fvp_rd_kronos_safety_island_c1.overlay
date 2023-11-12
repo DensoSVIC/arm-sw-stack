@@ -20,3 +20,7 @@
 &pc_gic_fmu {
 	status = "okay";
 };
+
+&ssu {
+	status = "okay";
+};

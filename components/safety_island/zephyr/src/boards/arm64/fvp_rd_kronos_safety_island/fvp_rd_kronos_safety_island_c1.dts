@@ -170,6 +170,12 @@
 			reg = <0x0 0x2a570000 0x1000>;
 			status = "disabled";
 		};
+
+		ssu: ssu@2a500000 {
+			compatible = "arm,ssu";
+			reg = <0x0 0x2a500000 0x1000>;
+			status = "disabled";
+		};
 	};
 };
 
