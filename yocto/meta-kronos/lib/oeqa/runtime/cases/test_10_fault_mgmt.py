@@ -7,7 +7,10 @@
 from oeqa.core.decorator.depends import OETestDepends
 from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.utils.zephyr_shell import Shell
+import os
 import pexpect
+
+FAULT_MGMT_CONSOLE = 'safety_island_c1'
 
 SYSTEM_FMU_INTERNAL_FAULTS = [
     '0x1',  # Clock error
@@ -37,10 +40,9 @@ GIC_FMU_FAULT_SAMPLE = [
 
 
 class FaultMgmtTest(OERuntimeTestCase):
-    console = 'safety_island_c1'
-
     def setUp(self):
         super().setUp()
+        self.console = FAULT_MGMT_CONSOLE
         self.shell = Shell(self.target, self.console, self.logger)
         self.shell.wait_for_prompt(timeout=60)
 
@@ -50,7 +52,7 @@ class FaultMgmtTest(OERuntimeTestCase):
 
     def test_tree(self):
         tree = self.shell.exec_command("fault tree")
-        for fmu in ["fmu@2a510000", "fmu@2a570000"]:
+        for fmu in ["fmu@2a510000", "fmu@2a570000", "ssu@2a500000"]:
             self.assertIn(fmu, tree)
 
     def test_system_fmu_internal_inject(self):
@@ -168,3 +170,75 @@ class FaultMgmtTest(OERuntimeTestCase):
 
         output = self.shell.exec_command("fault list")
         self.assertIn("No fault reported", output)
+
+
+class FaultMgmtSSUTest(OERuntimeTestCase):
+    def setUp(self):
+        super().setUp()
+        # Work around duplicate symlink creation so it can be recreated
+        os.unlink(self.target.bootlog)
+        self.logger.info('Resetting')
+        self.target.stop()
+        self.target.start()
+
+        self.shell = Shell(self.target, FAULT_MGMT_CONSOLE, self.logger)
+        self.shell.wait_for_prompt(timeout=60)
+
+        # Ensure initial state is "TEST"
+        output = self.shell.exec_command("fault safety_status ssu@2a500000")
+        self.assertIn("TEST", output)
+
+    def test_ssu_compl_ok(self):
+        # TEST -> compl_ok -> SAFE
+        output = self.shell.exec_command(
+            "fault safety_control ssu@2a500000 compl_ok")
+        self.assertIn("SAFE", output)
+
+        # SAFE -> non-critical fault -> ERRN
+        self.shell.exec_command("fault inject fmu@2a510000 2")
+        output = self.shell.exec_command("fault safety_status ssu@2a500000")
+        self.assertIn("ERRN", output)
+
+        # ERRN -> compl_ok -> SAFE
+        output = self.shell.exec_command(
+            "fault safety_control ssu@2a500000 compl_ok")
+        self.assertIn("SAFE", output)
+
+        # SAFE -> critical fault -> ERRC
+        self.shell.exec_command("fault set_enabled fmu@2a570000 0x200 1")
+        self.shell.exec_command("fault set_critical fmu@2a570000 0x200 1")
+        self.shell.exec_command("fault inject fmu@2a570000 0x200")
+        output = self.shell.exec_command("fault safety_status ssu@2a500000")
+        self.assertIn("ERRC", output)
+
+        # ERRC is unrecoverable
+        output = self.shell.exec_command(
+            "fault safety_control ssu@2a500000 compl_ok")
+        self.assertIn("ERRC", output)
+
+    def test_ssu_nce_ok(self):
+        # TEST -> nce_ok -> ERRN
+        output = self.shell.exec_command(
+            "fault safety_control ssu@2a500000 nce_ok")
+        self.assertIn("ERRN", output)
+
+        # ERRN -> nce_not_ok -> ERRC
+        output = self.shell.exec_command(
+            "fault safety_control ssu@2a500000 nce_not_ok")
+        self.assertIn("ERRC", output)
+
+        # ERRC is unrecoverable
+        output = self.shell.exec_command(
+            "fault safety_control ssu@2a500000 compl_ok")
+        self.assertIn("ERRC", output)
+
+    def test_ssu_ce_not_ok(self):
+        # TEST -> ce_not_ok -> ERRC
+        output = self.shell.exec_command(
+            "fault safety_control ssu@2a500000 ce_not_ok")
+        self.assertIn("ERRC", output)
+
+        # ERRC is unrecoverable
+        output = self.shell.exec_command(
+            "fault safety_control ssu@2a500000 compl_ok")
+        self.assertIn("ERRC", output)

@@ -61,6 +61,7 @@ bootimg
 bootinfo
 bootloader
 bootloaders
+bootlog
 brctl
 brext
 brsi
@@ -96,6 +97,7 @@ CMDS
 cmdtable
 comms
 COMPAT
+compl
 condvar
 conf
 configfile
@@ -204,11 +206,13 @@ EOPNOTSUPP
 EPHSR
 eptdev
 ERCV
+ERRC
 ERRCODE
 errdevid
 errgsr
 errgsrs
 erriidr
+ERRN
 errno
 errupdate
 etherdev

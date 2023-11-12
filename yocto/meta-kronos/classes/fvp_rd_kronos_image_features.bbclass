@@ -155,7 +155,7 @@ TEST_SUITES_EXTRA:hipc-validation = " test_30_hipc test_30_ptp"
 
 TEST_SUITES_EXTRA:actuation = " \
     test_30_actuation \
-    test_30_fault_mgmt \
+    test_10_fault_mgmt \
     test_10_safety_island_c2 \
     "
 
