@@ -44,7 +44,7 @@ together form the proposed solution, including:
 
 
   * The `Runtime Security Subsystem (RSS)`_ runs an instance of Trusted
-    Firmware-M, which offers boot, cryptography, and protected storage services.
+    Firmware-M, which offers boot, cryptography, and secure storage services.
 
   * The Safety Island subsystem runs three instances of the Zephyr real-time
     operating system (RTOS).
@@ -117,6 +117,19 @@ Inter-processor Communication), the networking between:
   * Safety Island clusters.
 
 Please refer to :ref:`design_hipc` for more information on HIPC.
+
+Safety Island PSA Secure Storage APIs Architecture Test Suite
+=============================================================
+
+The PSA Secure Storage architecture test suite is a set of examples of
+the invariant behaviors that are specified in the PSA Secure Storage
+Certified APIs specifications.
+
+We use this suite to verify whether these behaviors are implemented
+correctly in our system. This suite contains self-checking and portable
+C-based tests with directed stimulus.
+
+Please refer to :ref:`design_applications_psa_arch_tests` for more information.
 
 Parsec-enabled TLS Demo
 =======================

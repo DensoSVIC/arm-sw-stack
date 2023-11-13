@@ -16,3 +16,4 @@ Applications
    actuation
    bridge
    parsec_enabled_tls
+   psa_arch_tests

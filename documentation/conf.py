@@ -112,6 +112,7 @@ linux_version_patch = "46"
 mbedtls_base_version = "3.4.0"
 mbedtls_version = "63a21f4cda8b3d21fe5f85e6efc62d924b492757"
 optee_version = "3.20.0"
+psa_arch_tests_version = "v23.06_API1.5_ADAC_EAC"
 # /* cspell:disable-next-line */
 scp_firmware_base_version = "master branch post v2.11.0"
 scp_firmware_version = "f71f34237365b2c4b54be798aba79b740dcc4020"
@@ -233,6 +234,7 @@ rst_prolog = f"""
 .. _PSA Arch Tests: https://github.com/ARM-software/psa-arch-tests
 .. _PSA Crypto API: https://arm-software.github.io/psa-api/crypto/{psa_crypto_api_version}
 .. _PSA Secure Storage API: https://arm-software.github.io/psa-api/storage/{psa_storage_api_version}
+.. _PSA Secure Storage APIs Architecture Test Suite: https://github.com/ARM-software/psa-arch-tests/blob/{psa_arch_tests_version}/api-tests/docs/psa_storage_testlist.md
 .. _Parsec Secure Element Driver: https://github.com/parallaxsecond/parsec-se-driver
 .. _Parsec: https://parallaxsecond.github.io/parsec-book/index.html
 .. _Power Control System Architecture (PCSA): https://developer.arm.com/documentation/den0050/latest
@@ -255,6 +257,8 @@ rst_prolog = f"""
 .. _Trusted Firmware-A (TF-A): https://trustedfirmware-a.readthedocs.io
 .. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/tree/?h=v{trusted_firmware_a_version}
 .. _Trusted Firmware-M (TF-M): https://tf-m-user-guide.trustedfirmware.org
+.. _Trusted Firmware-M PSA Protected Storage Interfaces: https://tf-m-user-guide.trustedfirmware.org/integration_guide/services/tfm_its_integration_guide.html#psa-internal-trusted-storage-interfaces
+.. _Trusted Firmware-M PSA Internal Trusted Storage Interfaces: https://tf-m-user-guide.trustedfirmware.org/integration_guide/services/tfm_ps_integration_guide.html#psa-protected-storage-interfaces
 .. _Trusted Firmware-M repository: https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git/tree/?h={trusted_firmware_m_version}
 .. _Trusted Services Test Executables: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/test-executables.html
 .. _Trusted Services repository: https://git.trustedfirmware.org/TS/trusted-services.git/tree/?h={trusted_services_version}
