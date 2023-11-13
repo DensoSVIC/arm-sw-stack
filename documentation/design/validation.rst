@@ -318,3 +318,15 @@ The test consists of the following aspects and will only be run on DomU1:
 
 The testing of interrupt injection is not currently validated for run time
 operations, e.g. file system actions or data transfer.
+
+.. _validation_psa_arch_tests:
+
+Integration Tests Validating PSA APIs Architecture Test Suite
+=============================================================
+
+The ``test_psa_si_cluster{N}`` integration tests in
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_si_psa_arch_tests.py`
+verify that the psa-arch-tests suite report is as expected.
+
+This test waits until the ``psa-arch-tests`` finish successfully
+and there are no failures in the tests suite report.

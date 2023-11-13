@@ -1100,6 +1100,151 @@ The following messages are expected to validate this Use-Case:
 
   2023-09-11 20:29:25 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: PASSED (374.00s)
 
+
+Safety Island PSA Secure Storage APIs Architecture Test Suite
+=============================================================
+
+The demo is always available when the ``Baremetal Architecture`` is selected.
+See :ref:`design_applications_psa_arch_tests` for further details.
+
+Baremetal Architecture
+----------------------
+
+Build
+^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To build a Baremetal Architecture image:
+
+1. Select ``Safety Island PSA Secure Storage APIs Architecture Test Suite``
+   from the ``Use-Case`` menu.
+2. Then choose ``Save & Build``.
+
+Run FVP
+^^^^^^^
+
+To start the FVP:
+
+.. code-block:: console
+
+  kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
+
+The Safety Island (SI) Cluster 2 terminal running the ``PSA Secure Storage APIs
+Architecture Test Suite`` is available via the tmux window titled
+``terminal_uart_si_cluster2``. User can navigate through the panes by pressing
+``Ctrl-b`` and arrow keys followed by the ``Enter`` key.
+
+Run the tests
+^^^^^^^^^^^^^
+
+The tests will automatically run. A log similar to the following should be
+visible; it is normal for some tests to be skipped but there should be no
+failed tests::
+
+    ***** PSA Architecture Test Suite - Version 1.4 *****
+    Running.. Storage Suite
+    ******************************************
+    TEST: 401 | DESCRIPTION: UID not found check | UT: STORAGE
+    [Info] Executing tests from non-secure
+    [Info] Executing ITS Tests
+    [Check 1] Call get API for UID 6 which is not set
+    [Check 2] Call get_info API for UID 6 which is not set
+    [Check 3] Call remove API for UID 6 which is not set
+    [Check 4] Call get API for UID 6 which is removed
+    [Check 5] Call get_info API for UID 6 which is removed
+    [Check 6] Call remove API for UID 6 which is removed
+    Set storage for UID 6
+    [Check 7] Call get API for different UID 5
+    [Check 8] Call get_info API for different UID 5
+    [Check 9] Call remove API for different UID 5
+
+    [Info] Executing PS Tests
+    [Check 1] Call get API for UID 6 which is not set
+    [Check 2] Call get_info API for UID 6 which is not set
+    [Check 3] Call remove API for UID 6 which is not set
+    [Check 4] Call get API for UID 6 which is removed
+    [Check 5] Call get_info API for UID 6 which is removed
+    [Check 6] Call remove API for UID 6 which is removed
+    Set storage for UID 6
+    [Check 7] Call get API for different UID 5
+    [Check 8] Call get_info API for different UID 5
+    [Check 9] Call remove API for different UID 5
+
+    TEST RESULT: PASSED
+
+    ******************************************
+
+    <further tests removed from log for brevity>
+
+    ************ Storage Suite Report **********
+    TOTAL TESTS     : 17
+    TOTAL PASSED    : 11
+    TOTAL SIM ERROR : 0
+    TOTAL FAILED    : 0
+    TOTAL SKIPPED   : 6
+    ******************************************
+
+Automated Validation
+^^^^^^^^^^^^^^^^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To enable the validation tests:
+  1. Select ``Safety Island PSA Secure Storage APIs Architecture Test Suite``
+     from the ``Use-Case`` menu.
+  2. Choose ``Run Automated Validation`` from the ``Runtime Validation Setup``
+     menu.
+  3. Then choose ``Save & Build``.
+
+The complete test suit takes around 10 minutes to complete. See
+:ref:`validation_psa_arch_tests` for more details. A similar output to the
+following is printed out.
+
+      .. code-block:: console
+
+        NOTE: Executing Tasks
+        2023-11-13 11:43:15 - INFO     - Creating terminal default on terminal_ns_uart0
+        2023-11-13 11:43:23 - INFO     - Creating terminal tf-a on terminal_sec_uart
+        2023-11-13 11:43:23 - INFO     - Creating terminal scp on terminal_uart_scp
+        2023-11-13 11:43:23 - INFO     - Creating terminal lcp on terminal_uart_lcp
+        2023-11-13 11:43:23 - INFO     - Creating terminal rss on terminal_rss_uart
+        2023-11-13 11:43:24 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+        2023-11-13 11:43:24 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+        2023-11-13 11:43:24 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+        2023-11-13 11:43:24 - INFO     - default: Waiting for login prompt
+        2023-11-13 11:53:36 - INFO     - Skip as ZEPHYR_APP_SAFETY_ISLAND_CL0 is not psa-storage-tests
+        2023-11-13 11:53:36 - INFO     - Skip as ZEPHYR_APP_SAFETY_ISLAND_CL1 is not psa-storage-tests
+        2023-11-13 11:53:48 - INFO     - RESULTS:
+        2023-11-13 11:53:48 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (38.58s)
+        2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.00s)
+        2023-11-13 11:53:48 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
+        2023-11-13 11:53:48 - INFO     - RESULTS - test_00_rss.RssTest.test_gic_multiple_view: PASSED (0.00s)
+        2023-11-13 11:53:48 - INFO     - RESULTS - test_00_rss.RssTest.test_ni710ae: PASSED (0.00s)
+        2023-11-13 11:53:48 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+        2023-11-13 11:53:48 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+        2023-11-13 11:53:48 - INFO     - RESULTS - test_00_secure_partition.OpteeTest.test_optee_normal: PASSED (0.00s)
+        2023-11-13 11:53:48 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+        2023-11-13 11:53:48 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (573.76s)
+        2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster0: SKIPPED (0.00s)
+        2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster1: SKIPPED (0.00s)
+        2023-11-13 11:53:48 - INFO     - SUMMARY:
+        2023-11-13 11:53:48 - INFO     - baremetal-image () - Ran 12 tests in 612.344s
+
+The following message is expected to validate this Use-Case:
+
+      .. code-block:: console
+
+        2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.00s)
+
 |Arm SystemReadyTM| IR Validation
 =================================
 
