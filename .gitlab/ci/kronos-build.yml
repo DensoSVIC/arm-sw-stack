@@ -139,6 +139,11 @@ Image-Build-baremetal-si-psa-storage-tests:
   variables:
     KAS_CONFIGS: baremetal/si-psa-storage-tests
 
+Image-Build-baremetal-si-psa-crypto-tests:
+  extends: .kas_image_build_kronos
+  variables:
+    KAS_CONFIGS: baremetal/si-psa-crypto-tests
+
 fvp-summary-render:
   image: ${MIRROR_DOCKER}/python:3.8
   stage: Release
