@@ -83,6 +83,7 @@ chainloader
 chans
 chinfo
 CHKSUM
+Ciphersuite
 clks
 cmath
 CMAX
@@ -93,6 +94,7 @@ cmdtable
 comms
 COMPAT
 condvar
+conf
 configfile
 configu
 contex
@@ -163,6 +165,7 @@ domus
 DOVERLAY
 DPLX
 DPYTHON
+DRBG
 DROS
 drvdata
 dsub
@@ -175,6 +178,7 @@ earlyprintk
 EBBR
 EBUSY
 ECDH
+ECJPAKE
 EFAULT
 eigen
 EINVAL
@@ -239,6 +243,7 @@ helloworld
 heredocs
 HIGHDMA
 hipc
+HMAC
 homepageping
 hostbridge
 hostnames
@@ -462,6 +467,7 @@ phandles
 physinfo
 physmap
 pidof
+PKCS
 pkgconfig
 pkgs
 pkill
