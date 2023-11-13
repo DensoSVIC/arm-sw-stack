@@ -122,7 +122,20 @@ Limitations
    not support IP fragmentation.
  * `PSA Secure Storage API`_ defines two interfaces for storages: Internal
    Trusted Storage (ITS) API and Protected Storage (PS) API. For now the
-   Reference Stack supports the PS API only.
+   Reference Stack supports the ITS API on Safety Island only.
+ * PSA Protected Storage Optional APIs ``psa_ps_create`` and ``psa_ps_extended``
+   are not supported by Kronos Reference Stack as they are not implemented
+   in the Protected Storage Service provided by Trusted Firmware-M.
+ * PSA Secure Storage APIs Architecture Test Suite only runs on
+   Cluster 2 in the Safety Island due to the following limitations:
+
+   * Trusted Firmware-M supports a single partition only, this causes
+     tests running simultaneously on different entities to interfere
+     with each other due to accessing the same assets, resulting in failures.
+   * Trusted Firmware-M has no support against Denial of Service attacks,
+     where a test running on one entity might take up all the storage
+     on the RSS resulting in denial of service for tests running on other
+     entities.
 
 Resolved and Known Issues
 =========================
