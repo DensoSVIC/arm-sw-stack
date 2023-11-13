@@ -111,6 +111,7 @@ cpupools
 CPUS
 cpython
 crosstool
+crypto
 cspell
 CSSELR
 csumonidr
@@ -692,5 +693,6 @@ Yanqin
 yocto
 zephyr
 zephyrcore
+zephyrproject
 Zhang
 zperf

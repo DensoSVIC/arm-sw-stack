@@ -10,18 +10,22 @@ elseif (CONFIG_PSA_ARCH_TEST_INTERNAL_TRUSTED_STORAGE)
         set(PSA_ARCH_TEST_SUITE INTERNAL_TRUSTED_STORAGE)
 elseif (CONFIG_PSA_ARCH_TEST_STORAGE)
         set(PSA_ARCH_TEST_SUITE STORAGE)
+elseif (CONFIG_PSA_ARCH_TEST_CRYPTO)
+        set(PSA_ARCH_TEST_SUITE CRYPTO)
 endif()
 
 if(PSA_ARCH_TEST_SUITE)
 
 set(PSA_ARCH_TESTS_PATH ${ZEPHYR_CURRENT_MODULE_DIR}/../psa-arch-tests)
 
-zephyr_library_sources(
-        ${ZEPHYR_BASE}/modules/trusted-firmware-m/src/zephyr_tfm_psa_test.c
-)
-set(PSA_INCLUDE_PATHS
-        ${ZEPHYR_TRUSTED_FIRMWARE_M_MODULE_DIR}/interface/include
-)
+zephyr_library_sources(src/zephyr_psa_test.c)
+
+if (CONFIG_PSA_ARCH_TEST_API_TFM_HEADERS)
+        set(PSA_INCLUDE_PATHS ${ZEPHYR_TRUSTED_FIRMWARE_M_MODULE_DIR}/interface/include)
+elseif (CONFIG_PSA_ARCH_TEST_API_MBEDTLS_HEADERS)
+        set(PSA_INCLUDE_PATHS ${ZEPHYR_MBEDTLS_MODULE_DIR}/include)
+endif()
+
 set(SUITE ${PSA_ARCH_TEST_SUITE})
 set(TOOLCHAIN INHERIT)
 set(TARGET tgt_dev_apis_linux)

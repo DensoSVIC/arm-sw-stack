@@ -27,7 +27,38 @@ config PSA_ARCH_TEST_STORAGE
 	  Enable the PSA Storage test suite. This is a combination of the
 	  Protected Storage and Internal Trusted Storage tests.
 
+config PSA_ARCH_TEST_CRYPTO
+	bool "PSA Crypto tests"
+	depends on MAIN_STACK_SIZE >= 4096
+	help
+	  Enable the PSA Crypto test suite.
+
 config PSA_ARCH_TEST_NONE
 	bool "No PSA test suite"
+
+endchoice
+
+choice PSA_ARCH_TEST_API_HEADERS
+	prompt "Select which API header files to enable the PSA Arch Tests suite"
+	default PSA_ARCH_TEST_API_TFM_HEADERS
+	help
+	  It defines an additional directory to be included into the
+	  compiler search path. Users must select a PSA API header files
+	  implementation for test suite build system.
+
+config PSA_ARCH_TEST_API_TFM_HEADERS
+	bool "Select the TF-M PSA API header files"
+	help
+	  Select the TF-M PSA API header files to enable the PSA Arch Tests suite.
+
+config PSA_ARCH_TEST_API_MBEDTLS_HEADERS
+	depends on MBEDTLS && PSA_ARCH_TEST_CRYPTO && \
+			   (!PSA_ARCH_TEST_PROTECTED_STORAGE || \
+			   !PSA_ARCH_TEST_INTERNAL_TRUSTED_STORAGE || \
+			   !PSA_ARCH_TEST_STORAGE)
+	bool "Select the Mbed TLS PSA Crypto API header files"
+	help
+	  Select the Mbed TLS PSA Crypto API header files to enable the PSA
+	  Arch Crypto Tests suite.
 
 endchoice
