@@ -1,0 +1,98 @@
+From 3c38a46ac86445c1a78f79b43b644db5784c352e Mon Sep 17 00:00:00 2001
+From: Penny Zheng <Penny.Zheng@arm.com>
+Date: Mon, 13 Nov 2023 11:11:49 +0800
+Subject: mbedtls: Enable missing algorithms for psa-arch-tests
+
+In order to run all PSA Crypto API compliance tests successfully
+on zephyr mbedtls module, a few missing algorithms need to be
+enabled, including:
+- HKDF algorithm (RFC 5869)
+- RIPEMD-160 hash algorithm
+- CBC Cipher with PKCS7 padding
+
+Upstream-Status: Pending
+Signed-off-by: Penny Zheng <Penny.Zheng@arm.com>
+---
+ modules/mbedtls/Kconfig.tls-generic          |  9 +++++++++
+ modules/mbedtls/configs/config-tls-generic.h | 10 ++++++++++
+ 2 files changed, 19 insertions(+)
+
+diff --git a/modules/mbedtls/Kconfig.tls-generic b/modules/mbedtls/Kconfig.tls-generic
+index a891759b40..616fe732ab 100644
+--- a/modules/mbedtls/Kconfig.tls-generic
++++ b/modules/mbedtls/Kconfig.tls-generic
+@@ -210,6 +210,7 @@ config MBEDTLS_HASH_ALL_ENABLED
+ 	select MBEDTLS_HASH_SHA256_ENABLED
+ 	select MBEDTLS_HASH_SHA384_ENABLED
+ 	select MBEDTLS_HASH_SHA512_ENABLED
++	select MBEDTLS_HASH_RIPEMD160_ENABLED
+ 
+ config MBEDTLS_HASH_SHA256_ENABLED
+ 	bool "SHA256 hash"
+@@ -224,6 +225,9 @@ config MBEDTLS_HASH_SHA512_ENABLED
+ 	bool "SHA512 hash"
+ 	default y if !NET_L2_OPENTHREAD
+ 
++config MBEDTLS_HASH_RIPEMD160_ENABLED
++	bool "RIPEMD-160 hash algorithm"
++
+ comment "Supported cipher modes"
+ 
+ config MBEDTLS_CIPHER_ALL_ENABLED
+@@ -302,6 +306,7 @@ config MBEDTLS_MAC_ALL_ENABLED
+ 	select MBEDTLS_MAC_SHA512_ENABLED
+ 	select MBEDTLS_MAC_POLY1305_ENABLED
+ 	select MBEDTLS_MAC_CMAC_ENABLED
++	select MBEDTLS_HKDF_ENABLED
+ 
+ config MBEDTLS_MAC_MD4_ENABLED
+ 	bool "MD4 hash algorithm"
+@@ -340,6 +345,10 @@ config MBEDTLS_MAC_CMAC_ENABLED
+ 	bool "CMAC (Cipher-based Message Authentication Code) mode for block ciphers."
+ 	depends on MBEDTLS_CIPHER_AES_ENABLED || MBEDTLS_CIPHER_DES_ENABLED
+ 
++config MBEDTLS_HKDF_ENABLED
++	bool "HKDF algorithm (RFC 5869)"
++	depends on MBEDTLS_MD
++
+ endmenu
+ 
+ comment "Random number generators"
+diff --git a/modules/mbedtls/configs/config-tls-generic.h b/modules/mbedtls/configs/config-tls-generic.h
+index fd5cc83289..5c09c55e65 100644
+--- a/modules/mbedtls/configs/config-tls-generic.h
++++ b/modules/mbedtls/configs/config-tls-generic.h
+@@ -176,6 +176,7 @@
+ 
+ #if defined(CONFIG_MBEDTLS_CIPHER_MODE_CBC_ENABLED)
+ #define MBEDTLS_CIPHER_MODE_CBC
++#define MBEDTLS_CIPHER_PADDING_PKCS7
+ #endif
+ 
+ #if defined(CONFIG_MBEDTLS_CIPHER_MODE_CTR_ENABLED)
+@@ -258,6 +259,11 @@
+ #define MBEDTLS_ECP_NIST_OPTIM
+ #endif
+ 
++/* Supported hash methods */
++#if defined(CONFIG_MBEDTLS_HASH_RIPEMD160_ENABLED)
++#define MBEDTLS_RIPEMD160_C
++#endif
++
+ /* Supported message authentication methods */
+ 
+ #if defined(CONFIG_MBEDTLS_MAC_MD4_ENABLED)
+@@ -348,6 +354,10 @@
+ #define MBEDTLS_MD_C
+ #endif
+ 
++#if defined(CONFIG_MBEDTLS_HKDF_ENABLED)
++#define MBEDTLS_HKDF_C
++#endif
++
+ /* Automatic dependencies */
+ 
+ #if defined(MBEDTLS_KEY_EXCHANGE_DHE_PSK_ENABLED) || \
+-- 
+2.25.1
+
