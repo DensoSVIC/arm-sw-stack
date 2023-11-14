@@ -44,6 +44,11 @@ config FAULT_MGMT_SAFETY
 	  Control and report the status of an attached safety state management
 	  device in response to faults
 
+config FAULT_MGMT_SAFETY_PRIORITY
+	int "Fault management safety state handler priority"
+	depends on FAULT_MGMT_SAFETY
+	default 10
+
 menuconfig FAULT_MGMT_STORAGE
 	bool "fault management storage"
 	default n
