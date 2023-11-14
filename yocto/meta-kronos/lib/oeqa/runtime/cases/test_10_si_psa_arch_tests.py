@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 from oeqa.runtime.case import OERuntimeTestCase
-from oeqa.core.decorator.data import skipIfNotDataVar
+from oeqa.core.decorator.data import skipIfNotInDataVar
 import pexpect
 
 
@@ -16,17 +16,18 @@ class SIPSAArchTests(OERuntimeTestCase):
                            r"TOTAL SIM ERROR : 0\r\n"
                            r"TOTAL FAILED    : 0\r\n", timeout=1800)
 
-    @skipIfNotDataVar('ZEPHYR_APP_SAFETY_ISLAND_CL0', 'psa-storage-tests',
-                      'Skip as ZEPHYR_APP_SAFETY_ISLAND_CL0 is not psa-storage-tests')
+    # Only psa-related test variants execute, including psa-storage-tests and psa-crypto-tests
+    @skipIfNotInDataVar('ZEPHYR_APP_SAFETY_ISLAND_CL0', 'psa',
+                        'Skip as ZEPHYR_APP_SAFETY_ISLAND_CL0 is not psa-storage-tests or psa-crypto-tests')
     def test_psa_si_cluster0(self):
         self.check_si_psa('safety_island_c0')
 
-    @skipIfNotDataVar('ZEPHYR_APP_SAFETY_ISLAND_CL1', 'psa-storage-tests',
-                      'Skip as ZEPHYR_APP_SAFETY_ISLAND_CL1 is not psa-storage-tests')
+    @skipIfNotInDataVar('ZEPHYR_APP_SAFETY_ISLAND_CL1', 'psa',
+                        'Skip as ZEPHYR_APP_SAFETY_ISLAND_CL1 is not psa-storage-tests or psa-crypto-tests')
     def test_psa_si_cluster1(self):
         self.check_si_psa('safety_island_c1')
 
-    @skipIfNotDataVar('ZEPHYR_APP_SAFETY_ISLAND_CL2', 'psa-storage-tests',
-                      'Skip as ZEPHYR_APP_SAFETY_ISLAND_CL2 is not psa-storage-tests')
+    @skipIfNotInDataVar('ZEPHYR_APP_SAFETY_ISLAND_CL2', 'psa',
+                        'Skip as ZEPHYR_APP_SAFETY_ISLAND_CL2 is not psa-storage-tests or psa-crypto-tests')
     def test_psa_si_cluster2(self):
         self.check_si_psa('safety_island_c2')
