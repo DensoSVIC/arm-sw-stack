@@ -11,6 +11,7 @@ ZEPHYR_PSA_ARCH_TESTS_PATCHES ?= "\
     file://0002-kronos-Remove-test_s003-from-Secure-Storage-tests.patch;patchdir=${ZEPHYR_PSA_ARCH_TESTS_PATCHDIR} \
     file://0003-kronos-Re-add-test_s003-to-Secure-Storage-tests.patch;patchdir=${ZEPHYR_PSA_ARCH_TESTS_PATCHDIR} \
     file://0004-tests-zephyr-mbedtls-disable-failing-tests.patch;patchdir=${ZEPHYR_PSA_ARCH_TESTS_PATCHDIR} \
+    file://0005-tests-zephyr-mbedtls-Make-asymmetric-operations-to-c.patch;patchdir=${ZEPHYR_PSA_ARCH_TESTS_PATCHDIR} \
 "
 SRC_URI_ZEPHYR_PSA_ARCH_TESTS = "${ZEPHYR_PSA_ARCH_TESTS_PATCHES}"
 SRC_URI_ZEPHYR_PSA_ARCH_TESTS += "git://github.com/ARM-software/psa-arch-tests.git;protocol=https"

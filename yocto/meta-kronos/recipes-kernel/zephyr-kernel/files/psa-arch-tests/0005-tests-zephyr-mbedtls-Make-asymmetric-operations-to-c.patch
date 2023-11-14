@@ -1,0 +1,196 @@
+From 163b115bcaf3d0482fa0288ae6d39bbb57ed9142 Mon Sep 17 00:00:00 2001
+From: Jiamei Xie <jiamei.xie@arm.com>
+Date: Tue, 7 Nov 2023 16:26:32 +0800
+Subject: [PATCH] tests/zephyr-mbedtls: Make asymmetric operations to call
+ rss driver
+
+Set key location for all asymmetric related operations to call rss
+driver.
+
+The below test suites are modifed:
+
+test_c016 (psa_generate_key, RSA cases only)
+test_c050 (psa_sign_message)
+test_c051 (psa_verify_message)
+test_c041 (psa_sign_hash)
+test_c042 (psa_verify_hash)
+test_c039 (psa_asymmetric_encrypt)
+test_c040 (psa_asymmetric_decrypt)
+
+Upstream-Status: Inappropriate [Kronos-specific]
+Signed-off-by: Jiamei Xie <jiamei.xie@arm.com>
+---
+ api-tests/dev_apis/crypto/test_c016/test_c016.c | 11 +++++++++++
+ api-tests/dev_apis/crypto/test_c039/test_c039.c |  5 +++++
+ api-tests/dev_apis/crypto/test_c040/test_c040.c |  5 +++++
+ api-tests/dev_apis/crypto/test_c041/test_c041.c |  4 ++++
+ api-tests/dev_apis/crypto/test_c042/test_c042.c |  4 ++++
+ api-tests/dev_apis/crypto/test_c050/test_c050.c |  3 +++
+ api-tests/dev_apis/crypto/test_c051/test_c051.c |  4 ++++
+ 7 files changed, 36 insertions(+)
+
+diff --git a/api-tests/dev_apis/crypto/test_c016/test_c016.c b/api-tests/dev_apis/crypto/test_c016/test_c016.c
+index cde0940..17237e3 100644
+--- a/api-tests/dev_apis/crypto/test_c016/test_c016.c
++++ b/api-tests/dev_apis/crypto/test_c016/test_c016.c
+@@ -26,6 +26,8 @@ const client_test_t test_c016_crypto_list[] = {
+     NULL,
+ };
+ 
++#define PSA_KEY_LOCATION_RSS                ((psa_key_location_t) 0x800000)
++
+ int32_t psa_generate_key_test(caller_security_t caller __UNUSED)
+ {
+     int32_t               i, status;
+@@ -65,6 +67,15 @@ int32_t psa_generate_key_test(caller_security_t caller __UNUSED)
+         val->crypto_function(VAL_CRYPTO_SET_KEY_USAGE_FLAGS, &attributes, check1[i].usage_flags);
+         val->crypto_function(VAL_CRYPTO_SET_KEY_ALGORITHM,   &attributes, check1[i].alg);
+ 
++#ifdef ARCH_TEST_ASYMMETRIC_ENCRYPTION
++        if (check1[i].type == PSA_KEY_TYPE_RSA_KEY_PAIR || check1[i].type == PSA_KEY_TYPE_RSA_PUBLIC_KEY)
++            val->crypto_function(VAL_CRYPTO_SET_KEY_LIFETIME, &attributes,
++                                 PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(
++                                 PSA_KEY_PERSISTENCE_VOLATILE,
++                                 PSA_KEY_LOCATION_RSS));
++#endif
++
++
+         /* Generate the key */
+         status = val->crypto_function(VAL_CRYPTO_GENERATE_KEY, &attributes, &key);
+         TEST_ASSERT_EQUAL(status, check1[i].expected_status, TEST_CHECKPOINT_NUM(3));
+diff --git a/api-tests/dev_apis/crypto/test_c039/test_c039.c b/api-tests/dev_apis/crypto/test_c039/test_c039.c
+index 8edc6ca..17dcce7 100644
+--- a/api-tests/dev_apis/crypto/test_c039/test_c039.c
++++ b/api-tests/dev_apis/crypto/test_c039/test_c039.c
+@@ -20,6 +20,8 @@
+ #include "test_c039.h"
+ #include "test_data.h"
+ 
++#define PSA_KEY_LOCATION_RSS                ((psa_key_location_t) 0x800000)
++
+ const client_test_t test_c039_crypto_list[] = {
+     NULL,
+     psa_asymmetric_encrypt_test,
+@@ -62,6 +64,9 @@ int32_t psa_asymmetric_encrypt_test(caller_security_t caller __UNUSED)
+         val->crypto_function(VAL_CRYPTO_SET_KEY_TYPE,        &attributes, check1[i].type);
+         val->crypto_function(VAL_CRYPTO_SET_KEY_ALGORITHM,   &attributes, check1[i].alg);
+         val->crypto_function(VAL_CRYPTO_SET_KEY_USAGE_FLAGS, &attributes, check1[i].usage_flags);
++        val->crypto_function(VAL_CRYPTO_SET_KEY_LIFETIME, &attributes, PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(PSA_KEY_PERSISTENCE_VOLATILE,
++                                                                       PSA_KEY_LOCATION_RSS));
++
+ 
+         /* Import the key data into the key slot */
+         status = val->crypto_function(VAL_CRYPTO_IMPORT_KEY, &attributes, check1[i].data,
+diff --git a/api-tests/dev_apis/crypto/test_c040/test_c040.c b/api-tests/dev_apis/crypto/test_c040/test_c040.c
+index 8aaa769..1f3fcde 100644
+--- a/api-tests/dev_apis/crypto/test_c040/test_c040.c
++++ b/api-tests/dev_apis/crypto/test_c040/test_c040.c
+@@ -20,6 +20,8 @@
+ #include "test_c040.h"
+ #include "test_data.h"
+ 
++#define PSA_KEY_LOCATION_RSS                ((psa_key_location_t) 0x800000)
++
+ const client_test_t test_c040_crypto_list[] = {
+     NULL,
+     psa_asymmetric_decrypt_test,
+@@ -62,6 +64,9 @@ int32_t psa_asymmetric_decrypt_test(caller_security_t caller __UNUSED)
+         val->crypto_function(VAL_CRYPTO_SET_KEY_TYPE,        &attributes, check1[i].type);
+         val->crypto_function(VAL_CRYPTO_SET_KEY_ALGORITHM,   &attributes, check1[i].alg);
+         val->crypto_function(VAL_CRYPTO_SET_KEY_USAGE_FLAGS, &attributes, check1[i].usage_flags);
++        val->crypto_function(VAL_CRYPTO_SET_KEY_LIFETIME, &attributes, PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(PSA_KEY_PERSISTENCE_VOLATILE,
++                                                                       PSA_KEY_LOCATION_RSS));
++
+ 
+         /* Import the key data into the key slot */
+         status = val->crypto_function(VAL_CRYPTO_IMPORT_KEY, &attributes, check1[i].data,
+diff --git a/api-tests/dev_apis/crypto/test_c041/test_c041.c b/api-tests/dev_apis/crypto/test_c041/test_c041.c
+index 0fe0ef5..e2a30cd 100644
+--- a/api-tests/dev_apis/crypto/test_c041/test_c041.c
++++ b/api-tests/dev_apis/crypto/test_c041/test_c041.c
+@@ -20,6 +20,8 @@
+ #include "test_c041.h"
+ #include "test_data.h"
+ 
++#define PSA_KEY_LOCATION_RSS                ((psa_key_location_t) 0x800000)
++
+ const client_test_t test_c041_crypto_list[] = {
+     NULL,
+     psa_sign_hash_test,
+@@ -62,6 +64,8 @@ int32_t psa_sign_hash_test(caller_security_t caller __UNUSED)
+         val->crypto_function(VAL_CRYPTO_SET_KEY_TYPE,        &attributes, check1[i].type);
+         val->crypto_function(VAL_CRYPTO_SET_KEY_ALGORITHM,   &attributes, check1[i].alg);
+         val->crypto_function(VAL_CRYPTO_SET_KEY_USAGE_FLAGS, &attributes, check1[i].usage_flags);
++        val->crypto_function(VAL_CRYPTO_SET_KEY_LIFETIME, &attributes, PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(PSA_KEY_PERSISTENCE_VOLATILE,
++                                                                       PSA_KEY_LOCATION_RSS));
+ 
+         /* Import the key data into the key slot */
+         status = val->crypto_function(VAL_CRYPTO_IMPORT_KEY, &attributes, check1[i].data,
+diff --git a/api-tests/dev_apis/crypto/test_c042/test_c042.c b/api-tests/dev_apis/crypto/test_c042/test_c042.c
+index 6948577..69a9319 100644
+--- a/api-tests/dev_apis/crypto/test_c042/test_c042.c
++++ b/api-tests/dev_apis/crypto/test_c042/test_c042.c
+@@ -31,6 +31,8 @@ extern  uint32_t g_test_count;
+ 
+ static int32_t  valid_test_input_index = -1;
+ 
++#define PSA_KEY_LOCATION_RSS                ((psa_key_location_t) 0x800000)
++
+ int32_t psa_verify_hash_test(caller_security_t caller __UNUSED)
+ {
+     int32_t                 num_checks = sizeof(check1)/sizeof(check1[0]);
+@@ -61,6 +63,8 @@ int32_t psa_verify_hash_test(caller_security_t caller __UNUSED)
+         val->crypto_function(VAL_CRYPTO_SET_KEY_TYPE,        &attributes, check1[i].type);
+         val->crypto_function(VAL_CRYPTO_SET_KEY_ALGORITHM,   &attributes, check1[i].alg);
+         val->crypto_function(VAL_CRYPTO_SET_KEY_USAGE_FLAGS, &attributes, check1[i].usage_flags);
++        val->crypto_function(VAL_CRYPTO_SET_KEY_LIFETIME, &attributes, PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(PSA_KEY_PERSISTENCE_VOLATILE,
++                                                                       PSA_KEY_LOCATION_RSS));
+ 
+         /* Import the key data into the key slot */
+         status = val->crypto_function(VAL_CRYPTO_IMPORT_KEY, &attributes, check1[i].data,
+diff --git a/api-tests/dev_apis/crypto/test_c050/test_c050.c b/api-tests/dev_apis/crypto/test_c050/test_c050.c
+index 4715e5a..e729987 100644
+--- a/api-tests/dev_apis/crypto/test_c050/test_c050.c
++++ b/api-tests/dev_apis/crypto/test_c050/test_c050.c
+@@ -29,6 +29,7 @@ const client_test_t test_c050_crypto_list[] = {
+ 
+ extern  uint32_t g_test_count;
+ static int32_t  valid_test_input_index = -1;
++#define PSA_KEY_LOCATION_RSS                ((psa_key_location_t) 0x800000)
+ 
+ 
+ int32_t psa_sign_message_test(caller_security_t caller __UNUSED)
+@@ -68,6 +69,8 @@ int32_t psa_sign_message_test(caller_security_t caller __UNUSED)
+         val->crypto_function(VAL_CRYPTO_SET_KEY_USAGE_FLAGS,
+                              &attributes,
+                              check1[i].usage_flags);
++        val->crypto_function(VAL_CRYPTO_SET_KEY_LIFETIME, &attributes, PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(PSA_KEY_PERSISTENCE_VOLATILE,
++                                                                       PSA_KEY_LOCATION_RSS));
+ 
+         /* Import the key data into the key slot */
+         status = val->crypto_function(VAL_CRYPTO_IMPORT_KEY,
+diff --git a/api-tests/dev_apis/crypto/test_c051/test_c051.c b/api-tests/dev_apis/crypto/test_c051/test_c051.c
+index d7fb4a3..1b15c6e 100644
+--- a/api-tests/dev_apis/crypto/test_c051/test_c051.c
++++ b/api-tests/dev_apis/crypto/test_c051/test_c051.c
+@@ -20,6 +20,8 @@
+ #include "test_c051.h"
+ #include "test_data.h"
+ 
++#define PSA_KEY_LOCATION_RSS                ((psa_key_location_t) 0x800000)
++
+ const client_test_t test_c051_crypto_list[] = {
+     NULL,
+     psa_verify_message_test,
+@@ -66,6 +68,8 @@ int32_t psa_verify_message_test(caller_security_t caller __UNUSED)
+         val->crypto_function(VAL_CRYPTO_SET_KEY_USAGE_FLAGS,
+                              &attributes,
+                              check1[i].usage_flags);
++        val->crypto_function(VAL_CRYPTO_SET_KEY_LIFETIME, &attributes, PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(PSA_KEY_PERSISTENCE_VOLATILE,
++                                                                       PSA_KEY_LOCATION_RSS));
+ 
+         /* Import the key data into the key slot */
+         status = val->crypto_function(VAL_CRYPTO_IMPORT_KEY,
+-- 
+2.25.1
+
