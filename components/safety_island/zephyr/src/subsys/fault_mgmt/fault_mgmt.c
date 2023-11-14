@@ -158,10 +158,18 @@ int fault_mgmt_device_foreach(fault_mgmt_device_callback callback, void *cookie)
 	return 0;
 }
 
-static int fault_mgmt_validate_callback(const struct device *dev, size_t depth, size_t index,
-					void *cookie)
+static int fault_mgmt_init_root_device(const struct device *dev)
 {
-	ARG_UNUSED(depth);
+	FAULT_MGMT_DEV_API(dev)->fault_callback_set(dev, fault_mgmt_fault_callback, NULL);
+
+	return 0;
+}
+
+static int fault_mgmt_init_device(const struct device *dev, size_t depth, size_t index,
+				  void *cookie)
+{
+	int ret;
+
 	ARG_UNUSED(index);
 	ARG_UNUSED(cookie);
 
@@ -170,20 +178,15 @@ static int fault_mgmt_validate_callback(const struct device *dev, size_t depth, 
 		return -ENODEV;
 	}
 
-	return 0;
-}
-
-static int fault_mgmt_prepare_roots(void)
-{
-	int i;
-	const struct device *dev;
-
-	for (i = 0; i < ARRAY_SIZE(fault_mgmt_roots); i++) {
-		dev = fault_mgmt_roots[i];
-		FAULT_MGMT_DEV_API(dev)->fault_callback_set(dev, fault_mgmt_fault_callback, NULL);
-
-		LOG_DBG("Fault management initialized for root device: %s\n", dev->name);
+	if (depth == 0) {
+		/* Perform additional initialization for root devices */
+		ret = fault_mgmt_init_root_device(dev);
+		if (ret < 0) {
+			return ret;
+		}
 	}
+
+	LOG_DBG("Fault device initialized: %s\n", dev->name);
 
 	return 0;
 }
@@ -195,14 +198,8 @@ static int fault_mgmt_init(const struct device *dev)
 
 	ARG_UNUSED(dev);
 
-	/* Ensure all devices in the tree are ready */
-	ret = fault_mgmt_device_foreach(fault_mgmt_validate_callback, NULL);
-	if (ret < 0) {
-		return ret;
-	}
-
-	/* Attach root device callbacks */
-	ret = fault_mgmt_prepare_roots();
+	/* Ensure all fault devices in the tree are ready */
+	ret = fault_mgmt_device_foreach(fault_mgmt_init_device, NULL);
 	if (ret < 0) {
 		return ret;
 	}
