@@ -51,11 +51,11 @@ static int fault_mgmt_arm_fmu_next_upstream_fault(const struct device *dev, uint
 						  uint32_t *next_id)
 {
 	size_t count = 0;
-	const device_handle_t *upstream_fmus;
+	const struct device **upstream_fmus;
 	uint32_t upstream_fmu_index = record_id / 2;
 	uint32_t status;
 
-	upstream_fmus = device_required_handles_get(dev, &count);
+	upstream_fmus = FAULT_MGMT_DEV_API(dev)->upstream_devices(dev, &count);
 	if (upstream_fmu_index >= count) {
 		LOG_ERR("Upstream FMU %d does not exist\n", upstream_fmu_index);
 		k_oops();
@@ -68,7 +68,7 @@ static int fault_mgmt_arm_fmu_next_upstream_fault(const struct device *dev, uint
 	}
 
 	LOG_DBG("Upstream fault: %d\n", upstream_fmu_index);
-	*next_id = upstream_fmus[upstream_fmu_index];
+	*next_id = device_handle_get(upstream_fmus[upstream_fmu_index]);
 
 	/* Set the V bit to clear the fault */
 	fault_mgmt_arm_fmu_write32(dev, status, FAULT_MGMT_ARM_FMU_RECORD_FIELD_STATUS(record_id));

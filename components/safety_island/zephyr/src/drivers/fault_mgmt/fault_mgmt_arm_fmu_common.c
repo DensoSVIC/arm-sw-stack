@@ -18,6 +18,8 @@ LOG_MODULE_REGISTER(fault_mgmt_arm_fmu, CONFIG_FAULT_MGMT_LOG_LEVEL);
 struct fault_mgmt_arm_fmu_config {
 	DEVICE_MMIO_ROM;
 	void (*irq_config)(const struct device *dev);
+	const struct device **upstream;
+	size_t num_upstream;
 };
 
 struct fault_mgmt_arm_fmu_data {
@@ -209,11 +211,20 @@ static int fault_mgmt_arm_fmu_fault_callback_set(const struct device *dev,
 	return 0;
 }
 
+const struct device **fault_mgmt_arm_fmu_upstream_devices(const struct device *dev, size_t *count)
+{
+	const struct fault_mgmt_arm_fmu_config *cfg = FAULT_MGMT_ARM_FMU_DEV_CFG(dev);
+
+	*count = cfg->num_upstream;
+	return cfg->upstream;
+}
+
 static const struct fault_mgmt_device_api fault_mgmt_arm_fmu_system_api = {
 	.inject = fault_mgmt_arm_fmu_inject,
 	.set_enabled = fault_mgmt_arm_fmu_set_enabled,
 	.set_critical = fault_mgmt_arm_fmu_set_critical,
 	.fault_callback_set = fault_mgmt_arm_fmu_fault_callback_set,
+	.upstream_devices = fault_mgmt_arm_fmu_upstream_devices,
 };
 
 #define DT_DRV_COMPAT arm_fmu
@@ -234,12 +245,19 @@ static const struct fault_mgmt_device_api fault_mgmt_arm_fmu_system_api = {
 		irq_enable(DT_INST_IRQ_BY_NAME(n, non_critical, irq));                             \
 	}
 
+#define PHANDLE_TO_DEVICE(node_id, prop, idx) DEVICE_DT_GET(DT_PHANDLE_BY_IDX(node_id, prop, idx)),
+
 #define FAULT_MGMT_ARM_FMU_INIT(n)                                                                 \
 	FAULT_MGMT_ARM_FMU_HAS_INTERRUPTS(n, (FAULT_MGMT_ARM_FMU_IRQ_CONFIG(n)), ())               \
+	static const struct device *fault_mgmt_arm_fmu_upstream_##n[] = {                          \
+		COND_CODE_1(DT_INST_NODE_HAS_PROP(n, upstream),                                    \
+			    (DT_INST_FOREACH_PROP_ELEM(n, upstream, PHANDLE_TO_DEVICE)), ())};     \
 	static const struct fault_mgmt_arm_fmu_config fault_mgmt_arm_fmu_config_##n = {            \
 		DEVICE_MMIO_ROM_INIT(DT_DRV_INST(n)),                                              \
 		.irq_config = FAULT_MGMT_ARM_FMU_HAS_INTERRUPTS(                                   \
 			n, (fault_mgmt_arm_fmu_irq_config_##n), (NULL)),                           \
+		.upstream = fault_mgmt_arm_fmu_upstream_##n,                                       \
+		.num_upstream = DT_INST_PROP_LEN_OR(n, upstream, 0),                               \
 	};                                                                                         \
 	static struct fault_mgmt_arm_fmu_data fault_mgmt_arm_fmu_data_##n = {                      \
 		.callback = NULL,                                                                  \

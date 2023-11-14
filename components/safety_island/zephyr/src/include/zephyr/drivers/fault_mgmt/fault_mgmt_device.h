@@ -103,6 +103,14 @@ __subsystem struct fault_mgmt_device_api {
 	 */
 	int (*fault_callback_set)(const struct device *dev, fault_mgmt_fault_callback_t callback,
 				  void *user_data);
+
+	/** @brief Obtain a list of upstream fault devices
+	 *
+	 * @param dev A pointer to the fault device
+	 * @param count An out pointer to store the number of upstream devices
+	 * @return The head of an array of @p count upstream fault devices
+	 */
+	const struct device **(*upstream_devices)(const struct device *dev, size_t *count);
 };
 
 /**

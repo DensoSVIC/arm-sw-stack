@@ -113,24 +113,18 @@ int fault_mgmt_set_critical(const struct device *dev, uint32_t prot_id, bool cri
 int fault_mgmt_device_foreach(fault_mgmt_device_callback callback, void *cookie)
 {
 	int ret;
-	size_t i;
-	device_handle_t root_handles[ARRAY_SIZE(fault_mgmt_roots)];
 	struct stack_state {
-		const device_handle_t *devices;
+		const struct device **devices;
 		size_t count;
 		size_t index;
 	};
 	struct stack_state stack[CONFIG_FAULT_MGMT_MAX_TREE_DEPTH + 1] = {{
-		.devices = root_handles,
-		.count = ARRAY_SIZE(root_handles),
+		.devices = fault_mgmt_roots,
+		.count = ARRAY_SIZE(fault_mgmt_roots),
 		.index = 0,
 	}};
 	struct stack_state *stack_ptr = stack;
 	const struct device *dev;
-
-	for (i = 0; i < ARRAY_SIZE(root_handles); i++) {
-		root_handles[i] = device_handle_get(fault_mgmt_roots[i]);
-	}
 
 	while (stack_ptr >= stack) {
 		if (stack_ptr->index >= stack_ptr->count) {
@@ -138,7 +132,7 @@ int fault_mgmt_device_foreach(fault_mgmt_device_callback callback, void *cookie)
 			continue;
 		}
 
-		dev = device_from_handle(stack_ptr->devices[stack_ptr->index]);
+		dev = stack_ptr->devices[stack_ptr->index];
 		ret = callback(dev, stack_ptr - stack, stack_ptr->index, cookie);
 		if (ret < 0) {
 			return ret;
@@ -151,7 +145,8 @@ int fault_mgmt_device_foreach(fault_mgmt_device_callback callback, void *cookie)
 				"CONFIG_FAULT_MGMT_MAX_TREE_DEPTH\n");
 			return -ENOMEM;
 		}
-		stack_ptr->devices = device_required_handles_get(dev, &stack_ptr->count);
+		stack_ptr->devices =
+			FAULT_MGMT_DEV_API(dev)->upstream_devices(dev, &stack_ptr->count);
 		stack_ptr->index = 0;
 	}
 
