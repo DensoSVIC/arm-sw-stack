@@ -35,7 +35,7 @@ class CAMTest(OERuntimeTestCase):
         st = 'cam-tool -h'
         status, output = self.target.run(st, timeout=60)
         self.assertEqual(status, 0, msg=f'{st} failed.\n{output}')
-        self.assertTrue(r'usage: cam-tool [-h] {pack,analyze,deploy}'
+        self.assertTrue(r'usage: cam-tool [-h] {analyze,pack,deploy}'
                         in output)
 
     @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
