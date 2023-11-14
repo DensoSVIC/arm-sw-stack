@@ -54,6 +54,12 @@ menuconfig FAULT_MGMT_STORAGE
 
 if FAULT_MGMT_STORAGE
 
+config FAULT_MGMT_STORAGE_PRIORITY
+	int "Fault management storage handler priority"
+	default 70
+	help
+	  Priority of the storage fault handler
+
 choice
 	prompt "Select fault management storage backend"
 	optional

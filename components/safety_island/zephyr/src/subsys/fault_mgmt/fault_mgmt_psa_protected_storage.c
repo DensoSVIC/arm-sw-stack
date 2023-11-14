@@ -11,6 +11,7 @@
 #include <zephyr/sys/hash_map.h>
 
 #include "zephyr/drivers/fault_mgmt/fault_mgmt_device.h"
+#include "zephyr/subsys/fault_mgmt/fault_mgmt.h"
 #include "zephyr/subsys/fault_mgmt/fault_mgmt_storage.h"
 #include "fault_mgmt_priv.h"
 
@@ -53,7 +54,7 @@ static void fault_mgmt_storage_deserialize(void)
 	}
 }
 
-void fault_mgmt_storage_init_psa_protected_storage(void)
+static int fault_mgmt_storage_init_psa_protected_storage(const struct device *root_dev)
 {
 	size_t data_size;
 	psa_status_t status;
@@ -61,7 +62,7 @@ void fault_mgmt_storage_init_psa_protected_storage(void)
 
 	if (!device_is_ready(dev)) {
 		LOG_ERR("PSA device is not ready\n");
-		k_oops();
+		return -ENODEV;
 	}
 
 	memset(ps_storage_map, 0, sizeof(ps_storage_map));
@@ -76,12 +77,14 @@ void fault_mgmt_storage_init_psa_protected_storage(void)
 		}
 	} else if (status != PSA_ERROR_DOES_NOT_EXIST) {
 		LOG_ERR("%s: Error accessing PSA Protected Storage - Status: %d", __func__, status);
-		k_oops();
+		return -ENXIO;
 	}
 	/* No action needed if status is PSA_ERROR_DOES_NOT_EXIST at this point */
+	return 0;
 }
 
-uint64_t fault_mgmt_storage_write(struct fault_mgmt_fault *fault)
+static void fault_mgmt_storage_write(const struct device *root_dev,
+				     const struct fault_mgmt_fault *fault)
 {
 	psa_status_t status;
 	uint64_t counter;
@@ -89,6 +92,8 @@ uint64_t fault_mgmt_storage_write(struct fault_mgmt_fault *fault)
 	bool inc_overflow;
 	size_t storage_size;
 	int ret;
+	uint32_t protection_id;
+	const struct device *dev;
 
 	k_mutex_lock(&fault_mgmt_storage_mutex, K_FOREVER);
 	combined_key = GENERATE_FAULT_STORAGE_KEY(fault->handle, fault->prot_id);
@@ -122,7 +127,9 @@ uint64_t fault_mgmt_storage_write(struct fault_mgmt_fault *fault)
 	}
 	k_mutex_unlock(&fault_mgmt_storage_mutex);
 
-	return counter;
+	protection_id = FAULT_MGMT_FAULT_PROTECTION_ID(fault);
+	dev = device_from_handle(fault->handle);
+	LOG_INF("Fault count for 0x%x on %s: %llu\n", protection_id, dev->name, counter);
 }
 
 void fault_mgmt_storage_clear(void)
@@ -139,3 +146,6 @@ void fault_mgmt_storage_clear(void)
 	}
 	k_mutex_unlock(&fault_mgmt_storage_mutex);
 }
+
+FAULT_MGMT_HANDLER_DEFINE(CONFIG_FAULT_MGMT_STORAGE_PRIORITY,
+			  fault_mgmt_storage_init_psa_protected_storage, fault_mgmt_storage_write);

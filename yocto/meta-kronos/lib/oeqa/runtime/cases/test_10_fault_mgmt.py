@@ -63,8 +63,12 @@ class FaultMgmtTest(OERuntimeTestCase):
                                  f"fault inject fmu@2a510000 {fault_id}")
             self.target.expect(self.console,
                                r"Fault received \(non-critical\): "
-                               fr"{fault_id} on fmu@2a510000 : count 1",
+                               fr"{fault_id} on fmu@2a510000",
                                timeout=90)
+            self.target.expect(
+                self.console,
+                fr"Fault count for {fault_id} on fmu@2a510000: 1",
+                timeout=30)
 
     def test_system_fmu_internal_set_enabled(self):
         output = self.shell.exec_command(
@@ -102,8 +106,12 @@ class FaultMgmtTest(OERuntimeTestCase):
                                  f"fault inject fmu@2a570000 {fault_id}")
             self.target.expect(self.console,
                                r"Fault received \(non-critical\): "
-                               fr"{fault_id} on fmu@2a570000 : count 1",
+                               fr"{fault_id} on fmu@2a570000",
                                timeout=90)
+            self.target.expect(
+                self.console,
+                fr"Fault count for {fault_id} on fmu@2a570000: 1",
+                timeout=30)
 
             # Configure fault as critical and inject
             self.shell.wait_for_prompt()
@@ -114,8 +122,12 @@ class FaultMgmtTest(OERuntimeTestCase):
                                  f"fault inject fmu@2a570000 {fault_id}")
             self.target.expect(self.console,
                                r"Fault received \(critical\): "
-                               fr"{fault_id} on fmu@2a570000 : count 1",
+                               fr"{fault_id} on fmu@2a570000",
                                timeout=30)
+            self.target.expect(
+                self.console,
+                fr"Fault count for {fault_id} on fmu@2a570000: 1",
+                timeout=30)
 
     def test_fmu_fault_count(self):
         self.test_system_fmu_internal_inject()

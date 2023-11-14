@@ -11,17 +11,20 @@
 #include <zephyr/sys/math_extras.h>
 
 #include "zephyr/drivers/fault_mgmt/fault_mgmt_device.h"
+#include "zephyr/subsys/fault_mgmt/fault_mgmt.h"
 #include "zephyr/subsys/fault_mgmt/fault_mgmt_storage.h"
-#include "fault_mgmt_priv.h"
+#include "fault_mgmt_storage_priv.h"
 
 LOG_MODULE_REGISTER(fault_mgmt_storage_sys_hash_map, CONFIG_FAULT_MGMT_LOG_LEVEL);
 
-uint64_t fault_mgmt_storage_write(struct fault_mgmt_fault *fault)
+static void fault_mgmt_storage_write(const struct device *root_dev, struct fault_mgmt_fault *fault)
 {
 	uint64_t counter;
 	uint64_t combined_key;
 	bool inc_overflow;
 	int ret;
+	uint32_t protection_id;
+	const struct device *dev;
 
 	k_mutex_lock(&fault_mgmt_storage_mutex, K_FOREVER);
 	combined_key = GENERATE_FAULT_STORAGE_KEY(fault->handle, fault->prot_id);
@@ -43,7 +46,9 @@ uint64_t fault_mgmt_storage_write(struct fault_mgmt_fault *fault)
 
 	k_mutex_unlock(&fault_mgmt_storage_mutex);
 
-	return counter;
+	protection_id = FAULT_MGMT_FAULT_PROTECTION_ID(fault);
+	dev = device_from_handle(fault->handle);
+	LOG_INF("Fault count for 0x%x on %s: %llu\n", protection_id, dev->name, counter);
 }
 
 void fault_mgmt_storage_clear(void)
@@ -52,3 +57,5 @@ void fault_mgmt_storage_clear(void)
 	sys_hashmap_clear(&fault_map, NULL, NULL);
 	k_mutex_unlock(&fault_mgmt_storage_mutex);
 }
+
+FAULT_MGMT_HANDLER_DEFINE(CONFIG_FAULT_MGMT_STORAGE_PRIORITY, NULL, fault_mgmt_storage_write);

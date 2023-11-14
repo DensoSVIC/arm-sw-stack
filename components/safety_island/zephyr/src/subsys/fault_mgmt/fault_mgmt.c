@@ -15,10 +15,6 @@ LOG_MODULE_REGISTER(fault_mgmt, CONFIG_FAULT_MGMT_LOG_LEVEL);
 
 #include "zephyr/drivers/fault_mgmt/fault_mgmt_device.h"
 
-#ifdef CONFIG_FAULT_MGMT_STORAGE
-#include "fault_mgmt_priv.h"
-#endif
-
 /* Ensure all root devices have the "okay" status and have IRQs defined */
 #define DT_DRV_COMPAT zephyr_fault_mgmt
 BUILD_ASSERT(DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT) == 1,
@@ -94,15 +90,7 @@ static void fault_mgmt_handler(void *arg0, void *arg1, void *arg2)
 
 		protection_id = FAULT_MGMT_FAULT_PROTECTION_ID(fault);
 		criticality = FAULT_MGMT_FAULT_IS_CRITICAL(fault) ? "critical" : "non-critical";
-
-#ifdef CONFIG_FAULT_MGMT_STORAGE
-		uint64_t total_size = fault_mgmt_storage_write(fault);
-
-		LOG_INF("Fault received (%s): 0x%x on %s : count %llu\n", criticality,
-			protection_id, dev->name, total_size);
-#else
 		LOG_INF("Fault received (%s): 0x%x on %s\n", criticality, protection_id, dev->name);
-#endif
 
 		STRUCT_SECTION_FOREACH(fault_mgmt_handler, handler) {
 			if (handler->handle) {
@@ -231,10 +219,6 @@ static int fault_mgmt_init(const struct device *dev)
 	if (ret < 0) {
 		return ret;
 	}
-
-#ifdef CONFIG_FAULT_MGMT_PSA_PROTECTED_STORAGE
-	fault_mgmt_storage_init_psa_protected_storage();
-#endif
 
 	/* Create critical fault thread */
 	tid = k_thread_create(&fault_mgmt_thread_critical, fault_mgmt_stack_critical,
