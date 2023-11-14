@@ -1,0 +1,102 @@
+From b7d0a2a7927edade656f410c8015648286b6b933 Mon Sep 17 00:00:00 2001
+From: Yanqin Wei <yanqin.wei@arm.com>
+Date: Tue, 14 Nov 2023 19:10:35 +0800
+Subject: [PATCH] lib/posix: Support realtime timer
+
+Add realtime clock id support for posix timer. It calculates the
+timer duration based on the realtime clock from clock_gettime.
+
+The armed realtime absolute timers are not updated when realtime
+clock is updated.
+
+A clock subsystem ticket is included in the 3.6 milestone, which
+has a large modification for it. So, this commit may not be
+upstreamed.
+https://github.com/zephyrproject-rtos/zephyr/issues/19030
+
+Upstream-Status: Inappropriate
+Signed-off-by: Yanqin Wei <yanqin.wei@arm.com>
+---
+ include/zephyr/posix/time.h |  6 ++++++
+ lib/posix/timer.c           | 19 +++++++++++++++----
+ 2 files changed, 21 insertions(+), 4 deletions(-)
+
+diff --git a/include/zephyr/posix/time.h b/include/zephyr/posix/time.h
+index cada7b2f36..88afa03f89 100644
+--- a/include/zephyr/posix/time.h
++++ b/include/zephyr/posix/time.h
+@@ -82,6 +82,12 @@ static inline int32_t _ts_to_ms(const struct timespec *to)
+ 	return (to->tv_sec * MSEC_PER_SEC) + (to->tv_nsec / NSEC_PER_MSEC);
+ }
+ 
++static inline uint64_t _ts_to_ms64(const struct timespec *to)
++{
++	return (((uint64_t)to->tv_sec) * MSEC_PER_SEC) +
++			(to->tv_nsec / NSEC_PER_MSEC);
++}
++
+ #ifdef CONFIG_ARCH_POSIX
+ int clock_gettime(clockid_t clock_id, struct timespec *ts);
+ #else
+diff --git a/lib/posix/timer.c b/lib/posix/timer.c
+index 2d43ffc2a9..5253a6eb01 100644
+--- a/lib/posix/timer.c
++++ b/lib/posix/timer.c
+@@ -21,6 +21,7 @@ struct timer_obj {
+ 	struct timespec interval;	/* Reload value */
+ 	uint32_t reload;			/* Reload value in ms */
+ 	uint32_t status;
++	clockid_t clockid;
+ };
+ 
+ K_MEM_SLAB_DEFINE(posix_timer_slab, sizeof(struct timer_obj),
+@@ -52,7 +53,8 @@ int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid)
+ 	struct timer_obj *timer;
+ 	const k_timeout_t alloc_timeout = K_MSEC(CONFIG_TIMER_CREATE_WAIT);
+ 
+-	if (clockid != CLOCK_MONOTONIC || evp == NULL ||
++	if ((clockid != CLOCK_MONOTONIC && clockid != CLOCK_REALTIME) ||
++	     evp == NULL ||
+ 	    (evp->sigev_notify != SIGEV_NONE &&
+ 	     evp->sigev_notify != SIGEV_SIGNAL)) {
+ 		errno = EINVAL;
+@@ -66,6 +68,7 @@ int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid)
+ 		return -1;
+ 	}
+ 
++	timer->clockid = clockid;
+ 	timer->sigev_notify_function = evp->sigev_notify_function;
+ 	timer->val = evp->sigev_value;
+ 	timer->interval.tv_sec = 0;
+@@ -127,7 +130,7 @@ int timer_settime(timer_t timerid, int flags, const struct itimerspec *value,
+ 		  struct itimerspec *ovalue)
+ {
+ 	struct timer_obj *timer = (struct timer_obj *) timerid;
+-	uint32_t duration, current;
++	uint64_t duration, current;
+ 
+ 	if (timer == NULL ||
+ 	    value->it_interval.tv_nsec < 0 ||
+@@ -159,9 +162,17 @@ int timer_settime(timer_t timerid, int flags, const struct itimerspec *value,
+ 	timer->interval.tv_nsec = value->it_interval.tv_nsec;
+ 
+ 	/* Calculate timer duration */
+-	duration = _ts_to_ms(&(value->it_value));
++	duration = _ts_to_ms64(&(value->it_value));
+ 	if ((flags & TIMER_ABSTIME) != 0) {
+-		current = k_timer_remaining_get(&timer->ztimer);
++		if(timer->clockid == CLOCK_REALTIME) {
++			struct timespec ts;
++			if (clock_gettime(CLOCK_REALTIME, &ts) < 0){
++				return -1;
++			}
++			current = _ts_to_ms64(&ts);
++		} else {
++			current = k_timer_remaining_get(&timer->ztimer);
++		}
+ 
+ 		if (current >= duration) {
+ 			duration = 0U;
+-- 
+2.25.1
+
