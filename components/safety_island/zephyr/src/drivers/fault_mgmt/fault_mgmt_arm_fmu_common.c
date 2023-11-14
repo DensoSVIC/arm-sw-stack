@@ -20,6 +20,7 @@ struct fault_mgmt_arm_fmu_config {
 	void (*irq_config)(const struct device *dev);
 	const struct device **upstream;
 	size_t num_upstream;
+	const struct device *safety_dev;
 };
 
 struct fault_mgmt_arm_fmu_data {
@@ -219,12 +220,20 @@ const struct device **fault_mgmt_arm_fmu_upstream_devices(const struct device *d
 	return cfg->upstream;
 }
 
+static const struct device *fault_mgmt_arm_fmu_safety_device(const struct device *dev)
+{
+	const struct fault_mgmt_arm_fmu_config *cfg = FAULT_MGMT_ARM_FMU_DEV_CFG(dev);
+
+	return cfg->safety_dev;
+}
+
 static const struct fault_mgmt_device_api fault_mgmt_arm_fmu_system_api = {
 	.inject = fault_mgmt_arm_fmu_inject,
 	.set_enabled = fault_mgmt_arm_fmu_set_enabled,
 	.set_critical = fault_mgmt_arm_fmu_set_critical,
 	.fault_callback_set = fault_mgmt_arm_fmu_fault_callback_set,
 	.upstream_devices = fault_mgmt_arm_fmu_upstream_devices,
+	.safety_device = fault_mgmt_arm_fmu_safety_device,
 };
 
 #define DT_DRV_COMPAT arm_fmu
@@ -258,6 +267,8 @@ static const struct fault_mgmt_device_api fault_mgmt_arm_fmu_system_api = {
 			n, (fault_mgmt_arm_fmu_irq_config_##n), (NULL)),                           \
 		.upstream = fault_mgmt_arm_fmu_upstream_##n,                                       \
 		.num_upstream = DT_INST_PROP_LEN_OR(n, upstream, 0),                               \
+		.safety_dev = COND_CODE_1(DT_INST_NODE_HAS_PROP(n, safety),                        \
+					  DEVICE_DT_GET(DT_INST_PHANDLE(n, safety)), NULL),        \
 	};                                                                                         \
 	static struct fault_mgmt_arm_fmu_data fault_mgmt_arm_fmu_data_##n = {                      \
 		.callback = NULL,                                                                  \

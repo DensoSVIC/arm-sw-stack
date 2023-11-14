@@ -110,6 +110,11 @@ int fault_mgmt_set_critical(const struct device *dev, uint32_t prot_id, bool cri
 	return FAULT_MGMT_DEV_API(dev)->set_critical(dev, prot_id, critical);
 }
 
+const struct device *fault_mgmt_safety_device(const struct device *dev)
+{
+	return FAULT_MGMT_DEV_API(dev)->safety_device(dev);
+}
+
 int fault_mgmt_device_foreach(fault_mgmt_device_callback callback, void *cookie)
 {
 	int ret;

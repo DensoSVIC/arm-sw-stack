@@ -23,17 +23,24 @@ static int print_fault_device(const struct device *dev, size_t depth, size_t ind
 {
 	size_t i;
 	const struct shell *sh = (const struct shell *)cookie;
+	const struct device *safety_dev;
 
 	if (depth == 0) {
 		shell_fprintf(sh, SHELL_NORMAL, "Root %zd: ", index);
+		shell_print(sh, "%s", dev->name);
+
+		safety_dev = fault_mgmt_safety_device(dev);
+		if (safety_dev) {
+			shell_print(sh, "\tSafety: %s", safety_dev->name);
+		}
 	} else {
 		/* Indent line based on current tree depth */
 		for (i = 0; i < depth; i++) {
 			shell_fprintf(sh, SHELL_NORMAL, "\t");
 		}
 		shell_fprintf(sh, SHELL_NORMAL, "Slot %zd: ", index);
+		shell_print(sh, "%s", dev->name);
 	}
-	shell_print(sh, "%s", dev->name);
 
 	return 0;
 }

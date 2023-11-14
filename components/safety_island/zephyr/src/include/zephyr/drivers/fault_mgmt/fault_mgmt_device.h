@@ -111,6 +111,14 @@ __subsystem struct fault_mgmt_device_api {
 	 * @return The head of an array of @p count upstream fault devices
 	 */
 	const struct device **(*upstream_devices)(const struct device *dev, size_t *count);
+
+	/** @brief Obtain the attached safety state device
+	 *
+	 * @param dev A pointer to the fault device
+	 * @retval dev A pointer to the safety state device
+	 * @retval NULL if no safety state device is attached
+	 */
+	const struct device *(*safety_device)(const struct device *dev);
 };
 
 /**

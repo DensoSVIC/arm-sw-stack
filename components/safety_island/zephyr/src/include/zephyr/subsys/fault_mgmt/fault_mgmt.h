@@ -80,6 +80,15 @@ int fault_mgmt_set_enabled(const struct device *dev, uint32_t prot_id, bool enab
  */
 int fault_mgmt_set_critical(const struct device *dev, uint32_t prot_id, bool critical);
 
+/**
+ * @brief Obtain the safety state device attached to a fault device
+ *
+ * @param dev A pointer to the fault device
+ * @retval dev A pointer to the safety state device
+ * @retval NULL if no safety state device is attached
+ */
+const struct device *fault_mgmt_safety_device(const struct device *dev);
+
 /** @} */
 
 #endif /* FAULT_MGMT_H_ */

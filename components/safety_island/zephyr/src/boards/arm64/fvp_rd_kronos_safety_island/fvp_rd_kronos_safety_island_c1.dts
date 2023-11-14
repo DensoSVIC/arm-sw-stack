@@ -162,6 +162,7 @@
 					<GIC_SPI 102 IRQ_TYPE_LEVEL IRQ_DEFAULT_PRIORITY>;
 			interrupt-names = "critical", "non_critical";
 			upstream = <&pc_gic_fmu>;
+			safety = <&ssu>;
 			status = "disabled";
 		};
 
