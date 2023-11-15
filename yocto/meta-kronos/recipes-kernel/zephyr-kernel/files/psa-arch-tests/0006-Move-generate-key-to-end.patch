@@ -1,0 +1,38 @@
+From c0649fc04b0a5faec8c4131412656e821621bf1e Mon Sep 17 00:00:00 2001
+From: Jiamei Xie <jiamei.xie@arm.com>
+Date: Tue, 14 Nov 2023 18:24:10 +0800
+Subject: [PATCH] Move generate key to end
+
+The psa_generate_key with RSA 2048 Keypair takes a lot of time and
+occupies the RSS, which defer the primary compute to boot. Move
+this test case to end.
+
+Upstream-Status: Inappropriate [Kronos-specific]
+Signed-off-by: Jiamei Xie <jiamei.xie@arm.com>
+---
+ api-tests/dev_apis/crypto/testsuite.db | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/api-tests/dev_apis/crypto/testsuite.db b/api-tests/dev_apis/crypto/testsuite.db
+index 47ee724..aaf2450 100644
+--- a/api-tests/dev_apis/crypto/testsuite.db
++++ b/api-tests/dev_apis/crypto/testsuite.db
+@@ -35,7 +35,6 @@ test_c012
+ test_c013
+ test_c014
+ test_c015
+-test_c016
+ test_c017
+ test_c018
+ test_c019
+@@ -81,6 +80,7 @@ test_c058
+ test_c059
+ test_c060
+ test_c061
++test_c016
+ test_c062, skip
+ test_c063, skip
+ 
+-- 
+2.25.1
+
