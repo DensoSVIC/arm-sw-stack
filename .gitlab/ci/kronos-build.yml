@@ -71,15 +71,6 @@
     - echo "Persistent cache volume could be empty, create directories required"
     - mkdir --verbose --parents
         $IMAGE_DIR
-    # Infer the FVP_PV and DEPLOY_DIR for the build. Export these to be used in
-    # Image-Upload. This must be done before the build in case it fails.
-    - KASFILES=$(./.gitlab/scripts/jobs-to-kas "${KAS_CONFIGS}")
-    - |
-      export FVP_PV=\
-      $(kas shell --update --force-checkout "${KASFILES}" -c \
-        "bitbake-getvar --value -r fvp-rd-kronos-native PV")
-    - echo "DEPLOY_DIR=${DEPLOY_DIR}" >> Image-Upload.env
-    - echo "FVP_PV=${FVP_PV}" >> Image-Upload.env
 
 .kas_image_build_kronos:
   extends: .kas_build_kronos
@@ -100,17 +91,19 @@
       - $KAS_WORK_DIR/build/tmp*/log
       - $KAS_WORK_DIR/build/tmp*/work/*/*/*/temp/log.*
       - $KAS_WORK_DIR/build/tmp*/work/*/*/*/testimage
-      - $KAS_WORK_DIR/build/tmp*/deploy/licenses/fvp-rd-kronos-native
-      - $KAS_WORK_DIR/build/tmp*/deploy/images
     reports:
       junit:
         - TEST-autotest-${CI_JOB_NAME_SLUG}.xml
-      dotenv: Image-Upload.env
     expire_in: '1 day'
   after_script:
     - python3 .gitlab/scripts/yoctoqa-to-junit.py
         "${KAS_WORK_DIR}/build/tmp*/log/cooker/*/console-latest.log"
         "TEST-autotest-${CI_JOB_NAME_SLUG}.xml"
+    # Don't upload images unless specified at the global-level config and
+    - |
+      if [[ ${GENERATE_BUILD_INFO} != "true" ||
+        ${GENERATE_BUILD_INFO_JOB} != "true" ]]; then exit; fi
+    - .gitlab/scripts/upload_image.sh
   rules:
     - !reference [".build-image:rules", rules]
 
@@ -134,56 +127,17 @@ Image-Build-baremetal-hipc-validation:
   variables:
     KAS_CONFIGS: baremetal/hipc-validation
     DEPLOY_DIR: $CI_PROJECT_DIR/work/build/tmp_baremetal/deploy
+    IMAGE_TARFILE_NAME: "baremetal-hipc-images"
+  rules:
+    - if: '$BUILD_HOST_ARCH == "x86_64"'
+      variables:
+        GENERATE_BUILD_INFO_JOB: "true"
+    - when: on_success
 
 Image-Build-baremetal-si-psa-storage-tests:
   extends: .kas_image_build_kronos
   variables:
     KAS_CONFIGS: baremetal/si-psa-storage-tests
-
-Image-Upload:
-  image: releases-docker.jfrog.io/jfrog/jfrog-cli-v2-jf:2.42.0
-  stage: Release
-  tags:
-    - x86_64
-  dependencies:
-    - "Image-Build-baremetal-hipc-validation: [arm64]"
-  rules:
-    - if: '$GENERATE_BUILD_INFO == "true"'
-      when: always
-  script:
-    # Upload the deploy dir images
-    - |
-      jf config add --interactive=false \
-        --artifactory-url="${ARTIFACTORY_BASE_URL}" \
-        --user="${ARTIFACTORY_USER}" --password="${ARTIFACTORY_KEY}"
-    - |
-      if [[ -d "${DEPLOY_DIR}" ]]; then
-        TARFILE="${CI_PROJECT_DIR}/baremetal-hipc-images-${CI_PIPELINE_ID}.tgz"
-        tar -zcvf "${TARFILE}" -C "${DEPLOY_DIR}/images" fvp-rd-kronos
-        cat << EOF > ./upload_spec.json
-      {
-        "files": [
-          {
-            "pattern": "${TARFILE}",
-            "target": "${ARTIFACTORY_ARTIFACT_PATH}/"
-          }
-        ]
-      }
-      EOF
-        jf rt upload --spec=./upload_spec.json \
-          --build-name="${ARTIFACTORY_IMAGE_BUILD_PATH}" \
-          --build-number="${CI_PIPELINE_ID}"
-      fi
-    # Collect environment variables and attach them to the build
-    - RECIPEINFO="${DEPLOY_DIR}/licenses/fvp-rd-kronos-native/recipeinfo"
-    - |
-      jf rt build-collect-env \
-        "${ARTIFACTORY_IMAGE_BUILD_PATH}" "${CI_PIPELINE_ID}"
-    # Publish build to Artifactory
-    - |
-      jf rt build-publish --build-url "${CI_PIPELINE_URL}" \
-        --url "${ARTIFACTORY_BASE_URL}" --password "${ARTIFACTORY_KEY}" \
-        "${ARTIFACTORY_IMAGE_BUILD_PATH}" "${CI_PIPELINE_ID}"
 
 fvp-summary-render:
   image: ${MIRROR_DOCKER}/python:3.8
