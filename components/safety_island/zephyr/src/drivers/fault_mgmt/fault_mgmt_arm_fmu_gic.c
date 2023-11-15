@@ -11,7 +11,7 @@ LOG_MODULE_DECLARE(fault_mgmt_arm_fmu, CONFIG_FAULT_MGMT_LOG_LEVEL);
 #include <zephyr/devicetree.h>
 #include <zephyr/kernel.h>
 
-#include "zephyr/drivers/fault_mgmt/fault_mgmt_arm_fmu.h"
+#include "zephyr/drivers/fault_mgmt/fault_mgmt_device.h"
 #include "fault_mgmt_arm_fmu_priv.h"
 
 static int fault_mgmt_arm_fmu_device_wait_busy(const struct device *dev)
@@ -80,7 +80,7 @@ static int fault_mgmt_arm_fmu_device_next_fault(const struct device *dev, bool c
 	*next_id = FIELD_PREP(FAULT_MGMT_ARM_FMU_GIC_BLKTYPE_MASK, blktype) |
 		   FIELD_PREP(FAULT_MGMT_ARM_FMU_GIC_BLKID_MASK, blkid) |
 		   FIELD_PREP(FAULT_MGMT_ARM_FMU_GIC_SMID_MASK, smid) |
-		   (critical ? FAULT_MGMT_ARM_FMU_FAULT_CRITICAL_MASK : 0x0);
+		   (critical ? FAULT_MGMT_FAULT_CRITICAL_MASK : 0x0);
 	LOG_DBG("Fault detected: 0x%x\n", *next_id);
 
 	status &= ~FAULT_MGMT_ARM_FMU_STATUS_V_MASK;

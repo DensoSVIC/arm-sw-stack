@@ -10,10 +10,10 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/sys/hash_map.h>
-#include "zephyr/drivers/fault_mgmt/fault_mgmt_arm_fmu.h"
+#include "zephyr/drivers/fault_mgmt/fault_mgmt_device.h"
 
-#define GENERATE_FMU_STORAGE_KEY(handle, prot_id) ((uint64_t)(handle) << 32 | (prot_id))
-extern struct sys_hashmap fmu_fault_map;
+#define GENERATE_FAULT_STORAGE_KEY(handle, prot_id) ((uint64_t)(handle) << 32 | (prot_id))
+extern struct sys_hashmap fault_map;
 extern struct k_mutex fault_mgmt_storage_mutex;
 
 /**
@@ -22,7 +22,7 @@ extern struct k_mutex fault_mgmt_storage_mutex;
  * @param fault A pointer to the fault data structure to be written.
  * @return The updated count for the given fault.
  */
-uint64_t fault_mgmt_storage_write(struct fault_mgmt_arm_fmu_fault *fault);
+uint64_t fault_mgmt_storage_write(struct fault_mgmt_fault *fault);
 
 #ifdef CONFIG_FAULT_MGMT_PSA_PROTECTED_STORAGE
 /**

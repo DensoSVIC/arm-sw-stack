@@ -12,7 +12,7 @@ LOG_MODULE_REGISTER(fault_mgmt_arm_fmu, CONFIG_FAULT_MGMT_LOG_LEVEL);
 #include <zephyr/kernel.h>
 #include <zephyr/spinlock.h>
 
-#include "zephyr/drivers/fault_mgmt/fault_mgmt_arm_fmu.h"
+#include "zephyr/drivers/fault_mgmt/fault_mgmt_device.h"
 #include "fault_mgmt_arm_fmu_priv.h"
 
 struct fault_mgmt_arm_fmu_config {
@@ -23,7 +23,7 @@ struct fault_mgmt_arm_fmu_config {
 struct fault_mgmt_arm_fmu_data {
 	DEVICE_MMIO_RAM;
 	struct k_spinlock lock;
-	fault_mgmt_arm_fmu_callback_t callback;
+	fault_mgmt_fault_callback_t callback;
 	void *user_data;
 	const struct fault_mgmt_arm_fmu_internal_api *internal_api;
 };
@@ -88,7 +88,7 @@ static void fault_mgmt_arm_fmu_isr(const struct device *root_dev, bool critical)
 	uint64_t num_iterations = 0;
 	struct fault_mgmt_arm_fmu_data *data;
 	struct fault_mgmt_arm_fmu_data *root_data = FAULT_MGMT_ARM_FMU_DEV_DATA(root_dev);
-	struct fault_mgmt_arm_fmu_fault fault;
+	struct fault_mgmt_fault fault;
 	struct stack_state {
 		const struct device *dev;
 		k_spinlock_key_t key;
@@ -126,7 +126,7 @@ static void fault_mgmt_arm_fmu_isr(const struct device *root_dev, bool critical)
 			data = FAULT_MGMT_ARM_FMU_DEV_DATA(stack_ptr->dev);
 			stack_ptr->key = k_spin_lock(&data->lock);
 		} else if (ret == 0) {
-			if (next_id == FAULT_MGMT_ARM_FMU_FAULT_PROTECTION_ID_INVALID) {
+			if (next_id == FAULT_MGMT_FAULT_PROTECTION_ID_INVALID) {
 				/* No more errors so rewind the stack */
 				k_spin_unlock(&data->lock, stack_ptr->key);
 				stack_ptr--;
@@ -195,7 +195,7 @@ static int fault_mgmt_arm_fmu_set_critical(const struct device *dev, uint32_t pr
 }
 
 static int fault_mgmt_arm_fmu_fault_callback_set(const struct device *dev,
-						 fault_mgmt_arm_fmu_callback_t callback,
+						 fault_mgmt_fault_callback_t callback,
 						 void *user_data)
 {
 	struct fault_mgmt_arm_fmu_data *data = FAULT_MGMT_ARM_FMU_DEV_DATA(dev);
@@ -209,7 +209,7 @@ static int fault_mgmt_arm_fmu_fault_callback_set(const struct device *dev,
 	return 0;
 }
 
-static const struct fault_mgmt_arm_fmu_api fault_mgmt_arm_fmu_system_api = {
+static const struct fault_mgmt_device_api fault_mgmt_arm_fmu_system_api = {
 	.inject = fault_mgmt_arm_fmu_inject,
 	.set_enabled = fault_mgmt_arm_fmu_set_enabled,
 	.set_critical = fault_mgmt_arm_fmu_set_critical,

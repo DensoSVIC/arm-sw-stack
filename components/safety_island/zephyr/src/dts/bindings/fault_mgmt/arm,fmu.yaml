@@ -13,5 +13,5 @@ properties:
   reg:
     required: true
 
-  upstream-fmus:
+  upstream:
     type: phandles

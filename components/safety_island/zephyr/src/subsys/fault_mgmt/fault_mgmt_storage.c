@@ -11,7 +11,7 @@
 #include "zephyr/subsys/fault_mgmt/fault_mgmt_storage.h"
 #include "fault_mgmt_priv.h"
 
-SYS_HASHMAP_DEFINE(fmu_fault_map);
+SYS_HASHMAP_DEFINE(fault_map);
 K_MUTEX_DEFINE(fault_mgmt_storage_mutex);
 
 /**
@@ -38,7 +38,7 @@ static void fault_mgmt_storage_fault_count_callback(uint64_t key, uint64_t count
 void fault_mgmt_storage_stats(fault_storage_stats_t *stats)
 {
 	k_mutex_lock(&fault_mgmt_storage_mutex, K_FOREVER);
-	sys_hashmap_foreach(&fmu_fault_map, fault_mgmt_storage_fault_count_callback, stats);
+	sys_hashmap_foreach(&fault_map, fault_mgmt_storage_fault_count_callback, stats);
 	k_mutex_unlock(&fault_mgmt_storage_mutex);
 }
 
@@ -64,6 +64,6 @@ void fault_mgmt_storage_foreach(fault_mgmt_storage_callback callback, uint64_t t
 	k_mutex_lock(&fault_mgmt_storage_mutex, K_FOREVER);
 	params.callback = callback;
 	params.max_count = threshold;
-	sys_hashmap_foreach(&fmu_fault_map, fault_mgmt_storage_list_conditional_cb, cookie);
+	sys_hashmap_foreach(&fault_map, fault_mgmt_storage_list_conditional_cb, cookie);
 	k_mutex_unlock(&fault_mgmt_storage_mutex);
 }

@@ -6,7 +6,6 @@
 
 menuconfig FAULT_MGMT
 	bool "Fault management"
-	select FAULT_MGMT_ARM_FMU
 	help
 	  Enable the fault management subsystem
 

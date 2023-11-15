@@ -8,5 +8,5 @@ description: Fault management subsystem
 compatible: "zephyr,fault-mgmt"
 
 properties:
-  root-fmus:
+  roots:
     type: phandles

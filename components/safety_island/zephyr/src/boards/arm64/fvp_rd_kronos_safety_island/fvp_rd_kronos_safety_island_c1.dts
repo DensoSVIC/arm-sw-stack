@@ -161,7 +161,7 @@
 			interrupts = <GIC_SPI 96 IRQ_TYPE_LEVEL IRQ_CRITICAL_PRIORITY>,
 					<GIC_SPI 102 IRQ_TYPE_LEVEL IRQ_DEFAULT_PRIORITY>;
 			interrupt-names = "critical", "non_critical";
-			upstream-fmus = <&pc_gic_fmu>;
+			upstream = <&pc_gic_fmu>;
 			status = "disabled";
 		};
 

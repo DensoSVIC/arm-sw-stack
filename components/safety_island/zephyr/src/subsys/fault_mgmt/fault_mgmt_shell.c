@@ -15,7 +15,7 @@
 #include "zephyr/subsys/fault_mgmt/fault_mgmt_storage.h"
 #endif
 
-static int print_fmu(const struct device *dev, size_t depth, size_t index, void *cookie)
+static int print_fault_device(const struct device *dev, size_t depth, size_t index, void *cookie)
 {
 	size_t i;
 	const struct shell *sh = (const struct shell *)cookie;
@@ -36,13 +36,13 @@ static int print_fmu(const struct device *dev, size_t depth, size_t index, void 
 
 static int cmd_fault_tree(const struct shell *sh, size_t argc, char **argv, void *data)
 {
-	fault_mgmt_device_foreach(print_fmu, (void *)sh);
+	fault_mgmt_device_foreach(print_fault_device, (void *)sh);
 
 	return 0;
 }
 
-static int parse_fmu_args(const struct shell *sh, size_t argc, char **argv,
-			  const struct device **dev, uint32_t *prot_id)
+static int parse_fault_args(const struct shell *sh, size_t argc, char **argv,
+			    const struct device **dev, uint32_t *prot_id)
 {
 	int ret = 0;
 
@@ -79,13 +79,13 @@ static int handle_error(const struct shell *sh, int ec)
 	return ec;
 }
 
-static int cmd_fmu_inject(const struct shell *sh, size_t argc, char **argv, void *data)
+static int cmd_fault_inject(const struct shell *sh, size_t argc, char **argv, void *data)
 {
 	int ret;
 	const struct device *dev;
 	uint32_t prot_id;
 
-	ret = parse_fmu_args(sh, argc, argv, &dev, &prot_id);
+	ret = parse_fault_args(sh, argc, argv, &dev, &prot_id);
 	if (ret < 0) {
 		return ret;
 	}
@@ -96,7 +96,7 @@ static int cmd_fmu_inject(const struct shell *sh, size_t argc, char **argv, void
 	return handle_error(sh, ret);
 }
 
-static int cmd_fmu_set_enabled(const struct shell *sh, size_t argc, char **argv, void *data)
+static int cmd_fault_set_enabled(const struct shell *sh, size_t argc, char **argv, void *data)
 {
 	int ret;
 	const struct device *dev;
@@ -104,7 +104,7 @@ static int cmd_fmu_set_enabled(const struct shell *sh, size_t argc, char **argv,
 	bool enabled;
 	const char *action;
 
-	ret = parse_fmu_args(sh, argc, argv, &dev, &prot_id);
+	ret = parse_fault_args(sh, argc, argv, &dev, &prot_id);
 	if (ret < 0) {
 		return ret;
 	}
@@ -122,7 +122,7 @@ static int cmd_fmu_set_enabled(const struct shell *sh, size_t argc, char **argv,
 	return handle_error(sh, ret);
 }
 
-static int cmd_fmu_set_critical(const struct shell *sh, size_t argc, char **argv, void *data)
+static int cmd_fault_set_critical(const struct shell *sh, size_t argc, char **argv, void *data)
 {
 	int ret;
 	const struct device *dev;
@@ -130,7 +130,7 @@ static int cmd_fmu_set_critical(const struct shell *sh, size_t argc, char **argv
 	bool critical;
 	const char *status;
 
-	ret = parse_fmu_args(sh, argc, argv, &dev, &prot_id);
+	ret = parse_fault_args(sh, argc, argv, &dev, &prot_id);
 	if (ret < 0) {
 		return ret;
 	}
@@ -148,7 +148,7 @@ static int cmd_fmu_set_critical(const struct shell *sh, size_t argc, char **argv
 	return handle_error(sh, ret);
 }
 
-static void cmd_fmu_device_name(size_t idx, struct shell_static_entry *entry)
+static void cmd_fault_device_name(size_t idx, struct shell_static_entry *entry)
 {
 	const struct device *dev = shell_device_lookup(idx, NULL);
 
@@ -162,17 +162,16 @@ static void cmd_fmu_device_name(size_t idx, struct shell_static_entry *entry)
 void fault_history_read_callback(const struct fault_mgmt_storage_info *fault_info, void *cookie)
 {
 	const struct shell *sh = (const struct shell *)cookie;
-	uint32_t protection_id = FAULT_MGMT_ARM_FMU_FAULT_PROTECTION_ID(&(fault_info->fault));
-	const char *criticality = FAULT_MGMT_ARM_FMU_FAULT_IS_CRITICAL(&(fault_info->fault))
-					  ? "critical"
-					  : "non-critical";
+	uint32_t protection_id = FAULT_MGMT_FAULT_PROTECTION_ID(&(fault_info->fault));
+	const char *criticality =
+		FAULT_MGMT_FAULT_IS_CRITICAL(&(fault_info->fault)) ? "critical" : "non-critical";
 	const struct device *dev = device_from_handle(fault_info->fault.handle);
 
 	shell_info(sh, "Fault received (%s): 0x%x on %s : count %llu\n", criticality, protection_id,
 		   dev->name, fault_info->count);
 }
 
-static int cmd_fmu_fault_listed(const struct shell *sh, size_t argc, char **argv, void *data)
+static int cmd_fault_listed(const struct shell *sh, size_t argc, char **argv, void *data)
 {
 	uint64_t threshold_value;
 	int ret = 0;
@@ -196,7 +195,7 @@ static int cmd_fmu_fault_listed(const struct shell *sh, size_t argc, char **argv
 	return ret;
 }
 
-static void cmd_fmu_fault_summary(const struct shell *sh)
+static void cmd_fault_summary(const struct shell *sh)
 {
 	fault_storage_stats_t record_stats = {0};
 
@@ -239,7 +238,7 @@ static void cmd_fmu_fault_summary(const struct shell *sh)
 		   "____________________________________________________________________________");
 }
 
-static void cmd_fmu_total_reported_fault(const struct shell *sh)
+static void cmd_total_reported_fault(const struct shell *sh)
 {
 	fault_storage_stats_t record_stats = {0};
 
@@ -247,7 +246,7 @@ static void cmd_fmu_total_reported_fault(const struct shell *sh)
 	shell_info(sh, "Number of fault reported: %llu", record_stats.total_fault);
 }
 
-static void cmd_fmu_clear_stored_fault(const struct shell *sh)
+static void cmd_clear_stored_fault(const struct shell *sh)
 {
 	shell_info(sh, "Erasing the storage...");
 	fault_mgmt_storage_clear();
@@ -255,20 +254,20 @@ static void cmd_fmu_clear_stored_fault(const struct shell *sh)
 }
 #endif
 
-SHELL_DYNAMIC_CMD_CREATE(dsub_device_name, cmd_fmu_device_name);
+SHELL_DYNAMIC_CMD_CREATE(dsub_device_name, cmd_fault_device_name);
 
 SHELL_STATIC_SUBCMD_SET_CREATE(
 	fault, SHELL_CMD_ARG(tree, NULL, "Enumerate the fault tree", cmd_fault_tree, 1, 0),
-	SHELL_CMD_ARG(inject, &dsub_device_name, "Inject a fault", cmd_fmu_inject, 3, 0),
-	SHELL_CMD_ARG(set_enabled, &dsub_device_name, "Enable/disable a fault", cmd_fmu_set_enabled,
-		      4, 0),
+	SHELL_CMD_ARG(inject, &dsub_device_name, "Inject a fault", cmd_fault_inject, 3, 0),
+	SHELL_CMD_ARG(set_enabled, &dsub_device_name, "Enable/disable a fault",
+		      cmd_fault_set_enabled, 4, 0),
 	SHELL_CMD_ARG(set_critical, &dsub_device_name, "Set fault criticality",
-		      cmd_fmu_set_critical, 4, 0),
+		      cmd_fault_set_critical, 4, 0),
 #ifdef CONFIG_FAULT_MGMT_STORAGE
-	SHELL_CMD_ARG(list, NULL, "List all reported faults", cmd_fmu_fault_listed, 0, 1),
-	SHELL_CMD_ARG(summary, NULL, "Show fault summary", cmd_fmu_fault_summary, 0, 0),
-	SHELL_CMD_ARG(count, NULL, "Total faults reported", cmd_fmu_total_reported_fault, 0, 0),
-	SHELL_CMD_ARG(clear, NULL, "Clear the storage", cmd_fmu_clear_stored_fault, 0, 0),
+	SHELL_CMD_ARG(list, NULL, "List all reported faults", cmd_fault_listed, 0, 1),
+	SHELL_CMD_ARG(summary, NULL, "Show fault summary", cmd_fault_summary, 0, 0),
+	SHELL_CMD_ARG(count, NULL, "Total faults reported", cmd_total_reported_fault, 0, 0),
+	SHELL_CMD_ARG(clear, NULL, "Clear the storage", cmd_clear_stored_fault, 0, 0),
 #endif
 	SHELL_SUBCMD_SET_END);
 

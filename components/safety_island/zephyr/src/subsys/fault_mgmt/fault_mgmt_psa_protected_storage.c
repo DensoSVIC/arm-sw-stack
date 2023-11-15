@@ -10,7 +10,7 @@
 #include <psa/protected_storage.h>
 #include <zephyr/sys/hash_map.h>
 
-#include "zephyr/drivers/fault_mgmt/fault_mgmt_arm_fmu.h"
+#include "zephyr/drivers/fault_mgmt/fault_mgmt_device.h"
 #include "zephyr/subsys/fault_mgmt/fault_mgmt_storage.h"
 #include "fault_mgmt_priv.h"
 
@@ -41,15 +41,15 @@ static void fault_mgmt_storage_serialize(void)
 {
 	memset(ps_storage_map, 0, sizeof(ps_storage_map));
 	hash_map_index = 0;
-	sys_hashmap_foreach(&fmu_fault_map, hashmap_to_serialize_callback, NULL);
+	sys_hashmap_foreach(&fault_map, hashmap_to_serialize_callback, NULL);
 }
 
 static void fault_mgmt_storage_deserialize(void)
 {
 	for (int idx = 0;
 	     idx < CONFIG_MAX_PSA_PROTECTED_STORAGE_SIZE && ps_storage_map[idx].key != 0; idx++) {
-		sys_hashmap_insert(&fmu_fault_map, ps_storage_map[idx].key,
-				   ps_storage_map[idx].value, NULL);
+		sys_hashmap_insert(&fault_map, ps_storage_map[idx].key, ps_storage_map[idx].value,
+				   NULL);
 	}
 }
 
@@ -81,7 +81,7 @@ void fault_mgmt_storage_init_psa_protected_storage(void)
 	/* No action needed if status is PSA_ERROR_DOES_NOT_EXIST at this point */
 }
 
-uint64_t fault_mgmt_storage_write(struct fault_mgmt_arm_fmu_fault *fault)
+uint64_t fault_mgmt_storage_write(struct fault_mgmt_fault *fault)
 {
 	psa_status_t status;
 	uint64_t counter;
@@ -91,15 +91,15 @@ uint64_t fault_mgmt_storage_write(struct fault_mgmt_arm_fmu_fault *fault)
 	int ret;
 
 	k_mutex_lock(&fault_mgmt_storage_mutex, K_FOREVER);
-	combined_key = GENERATE_FMU_STORAGE_KEY(fault->handle, fault->prot_id);
-	if (sys_hashmap_get(&fmu_fault_map, combined_key, &counter)) {
+	combined_key = GENERATE_FAULT_STORAGE_KEY(fault->handle, fault->prot_id);
+	if (sys_hashmap_get(&fault_map, combined_key, &counter)) {
 		inc_overflow = u64_add_overflow(counter, 1, &counter);
 		if (inc_overflow) {
 			LOG_ERR("%s: Incrementing counter caused overflow", __func__);
 			k_oops();
 		}
 	} else {
-		storage_size = sys_hashmap_size(&fmu_fault_map);
+		storage_size = sys_hashmap_size(&fault_map);
 		if (storage_size >= CONFIG_MAX_PSA_PROTECTED_STORAGE_SIZE) {
 			LOG_ERR("PSA Protected Storage capacity reached");
 			k_oops();
@@ -107,7 +107,7 @@ uint64_t fault_mgmt_storage_write(struct fault_mgmt_arm_fmu_fault *fault)
 		counter = 1;
 	}
 
-	ret = sys_hashmap_insert(&fmu_fault_map, combined_key, counter, NULL);
+	ret = sys_hashmap_insert(&fault_map, combined_key, counter, NULL);
 	if (ret < 0) {
 		LOG_ERR("Failed to write log to storage");
 		k_oops();
@@ -132,7 +132,7 @@ void fault_mgmt_storage_clear(void)
 	k_mutex_lock(&fault_mgmt_storage_mutex, K_FOREVER);
 	status = psa_ps_remove(FAULT_MGMT_STATIC_UID);
 	if (status == PSA_SUCCESS || status == PSA_ERROR_DOES_NOT_EXIST) {
-		sys_hashmap_clear(&fmu_fault_map, NULL, NULL);
+		sys_hashmap_clear(&fault_map, NULL, NULL);
 	} else {
 		LOG_ERR("%s: Failed to clear UID records: status: %d\n", __func__, status);
 		k_oops();

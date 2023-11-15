@@ -8,10 +8,10 @@
 #ifndef FAULT_MGMT_STORAGE_H_
 #define FAULT_MGMT_STORAGE_H_
 
-#include "zephyr/drivers/fault_mgmt/fault_mgmt_arm_fmu.h"
+#include "zephyr/drivers/fault_mgmt/fault_mgmt_device.h"
 
 struct fault_mgmt_storage_info {
-	struct fault_mgmt_arm_fmu_fault fault;
+	struct fault_mgmt_fault fault;
 	uint64_t count;
 };
 

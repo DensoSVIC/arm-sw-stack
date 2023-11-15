@@ -8,7 +8,7 @@
 / {
 	fault_mgmt {
 		compatible = "zephyr,fault-mgmt";
-		root-fmus = <&system_fmu>;
+		roots = <&system_fmu>;
 		status = "okay";
 	};
 };

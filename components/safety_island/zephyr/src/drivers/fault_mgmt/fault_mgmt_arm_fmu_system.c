@@ -11,7 +11,7 @@ LOG_MODULE_DECLARE(fault_mgmt_arm_fmu, CONFIG_FAULT_MGMT_LOG_LEVEL);
 #include <zephyr/devicetree.h>
 #include <zephyr/kernel.h>
 
-#include "zephyr/drivers/fault_mgmt/fault_mgmt_arm_fmu.h"
+#include "zephyr/drivers/fault_mgmt/fault_mgmt_device.h"
 #include "fault_mgmt_arm_fmu_priv.h"
 
 static int fault_mgmt_arm_system_fmu_init(const struct device *dev)
