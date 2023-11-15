@@ -5,21 +5,55 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * @file
+ *
+ * @brief Fault management storage API
+ */
+
 #ifndef FAULT_MGMT_STORAGE_H_
 #define FAULT_MGMT_STORAGE_H_
 
 #include "zephyr/drivers/fault_mgmt/fault_mgmt_device.h"
 
+/**
+ * @defgroup fault_mgmt_storage Storage
+ * @ingroup fault_mgmt
+ *
+ * @brief Fault management storage component
+ * @{
+ */
+
+/**
+ * @brief Information about a stored fault
+ *
+ * Populated by @ref fault_mgmt_storage_foreach and passed to @ref fault_mgmt_storage_callback
+ */
 struct fault_mgmt_storage_info {
+	/** @brief Fault metadata */
 	struct fault_mgmt_fault fault;
+	/** @brief The number of occurrences of the fault */
 	uint64_t count;
 };
 
+/**
+ * @brief A container of fault storage statistics
+ *
+ * Populated by @ref fault_mgmt_storage_stats
+ */
 typedef struct {
+	/** @brief The total number of faults */
 	uint64_t total_fault;
+	/** @brief The highest fault count */
 	uint64_t highest_count;
 } fault_storage_stats_t;
 
+/**
+ * @brief The callback type of @ref fault_mgmt_storage_foreach
+ *
+ * @param fault_info Information about the stored fault
+ * @param cookie     User-specific context
+ */
 typedef void (*fault_mgmt_storage_callback)(const struct fault_mgmt_storage_info *fault_info,
 					    void *cookie);
 
@@ -45,8 +79,10 @@ void fault_mgmt_storage_foreach(fault_mgmt_storage_callback callback, uint64_t t
 				void *cookie);
 
 /**
- * Clear all fault entries from the storage.
+ * @brief Clear all fault entries from the storage.
  */
 void fault_mgmt_storage_clear(void);
+
+/** @} */
 
 #endif /* FAULT_MGMT_STORAGE_H_ */

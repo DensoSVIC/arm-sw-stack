@@ -190,6 +190,7 @@ elfutils
 elif
 enablement
 endchoice
+endcond
 endline
 endmenu
 ENDPROC
