@@ -5,4 +5,4 @@
 # SPDX-License-Identifier: MIT
 
 BRANCH_CAM ?= "branch=main"
-SRCREV_CAM ?= "535cafc4f9f4147db416ad357b3cdc8125921b5f"
+SRCREV_CAM ?= "5f550ce2edf756c269b0034bd1ba1cf5a31f7390"
