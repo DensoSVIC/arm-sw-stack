@@ -44,7 +44,7 @@ struct fault_mgmt_arm_fmu_implementation {
 static const mem_addr_t FAULT_MGMT_ARM_FMU_FIELD_PID[] = {0xFE0, 0xFE4, 0xFE8, 0xFEC};
 static const mem_addr_t FAULT_MGMT_ARM_FMU_FIELD_CID[] = {0xFF0, 0xFF4, 0xFF8, 0xFFC};
 
-#define FAULT_MGMT_ARM_FMU_RECORD_FIELD(record_id, offset) ((record_id)*0x40 + (offset))
+#define FAULT_MGMT_ARM_FMU_RECORD_FIELD(record_id, offset) ((record_id) * 0x40 + (offset))
 #define FAULT_MGMT_ARM_FMU_RECORD_FIELD_FR(record_id)                                              \
 	FAULT_MGMT_ARM_FMU_RECORD_FIELD(record_id, 0x0)
 #define FAULT_MGMT_ARM_FMU_RECORD_FIELD_CONTROL(record_id)                                         \

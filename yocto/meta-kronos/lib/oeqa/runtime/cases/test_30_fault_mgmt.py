@@ -126,7 +126,7 @@ class FaultMgmtTest(OERuntimeTestCase):
             self.target.expect(self.console, pattern, timeout=60)
 
         # For the address "2a570000" (critical and non-critical)
-        for fault_id in ['0x100', '0x10000600', '0x20000a00', \
+        for fault_id in ['0x100', '0x10000600', '0x20000a00',
                          '0x40001300', '0x50000300']:
             non_critical_pattern = (fr"Fault received \(non-critical\): "
                                     fr"{fault_id} on fmu@2a570000 : count 1")

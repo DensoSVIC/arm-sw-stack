@@ -47,7 +47,7 @@ static void fault_mgmt_storage_serialize(void)
 static void fault_mgmt_storage_deserialize(void)
 {
 	for (int idx = 0;
-		 idx < CONFIG_MAX_PSA_PROTECTED_STORAGE_SIZE && ps_storage_map[idx].key != 0; idx++) {
+	     idx < CONFIG_MAX_PSA_PROTECTED_STORAGE_SIZE && ps_storage_map[idx].key != 0; idx++) {
 		sys_hashmap_insert(&fmu_fault_map, ps_storage_map[idx].key,
 				   ps_storage_map[idx].value, NULL);
 	}

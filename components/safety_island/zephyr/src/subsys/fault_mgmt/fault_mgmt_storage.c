@@ -67,4 +67,3 @@ void fault_mgmt_storage_foreach(fault_mgmt_storage_callback callback, uint64_t t
 	sys_hashmap_foreach(&fmu_fault_map, fault_mgmt_storage_list_conditional_cb, cookie);
 	k_mutex_unlock(&fault_mgmt_storage_mutex);
 }
-
