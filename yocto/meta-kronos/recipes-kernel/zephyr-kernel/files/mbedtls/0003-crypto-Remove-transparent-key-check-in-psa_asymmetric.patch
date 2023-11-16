@@ -1,0 +1,51 @@
+From fb5763d804ff4a80da14970147a0336ccee6806d Mon Sep 17 00:00:00 2001
+From: Michael Zhao <michael.zhao@arm.com>
+Date: Mon, 6 Nov 2023 07:14:05 +0000
+Subject: [PATCH] crypto: Remove transparent key check in
+ psa_asymmetric_encrypt()
+
+In `psa_asymmetric_encrypt()` and `psa_asymmetric_decrypt()`,
+`psa_get_and_lock_transparent_key_slot_with_policy()` is called to check
+if the key is transparent. The check is incorrect, it always fails in
+the case of opaque driver.
+
+The commit replaced `psa_get_and_lock_transparent_key_slot_with_policy`
+with `psa_get_and_lock_key_slot_with_policy`.
+
+Upstream-Status: Backport [https://github.com/Mbed-TLS/mbedtls/pull/8481]
+Signed-off-by: Michael Zhao <michael.zhao@arm.com>
+---
+ library/psa_crypto.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/library/psa_crypto.c b/library/psa_crypto.c
+index a700a3ce0..3884fa250 100644
+--- a/library/psa_crypto.c
++++ b/library/psa_crypto.c
+@@ -3065,8 +3065,9 @@ psa_status_t psa_asymmetric_encrypt( mbedtls_svc_key_id_t key,
+     if( ! PSA_ALG_IS_RSA_OAEP( alg ) && salt_length != 0 )
+         return( PSA_ERROR_INVALID_ARGUMENT );
+ 
+-    status = psa_get_and_lock_transparent_key_slot_with_policy(
+-                 key, &slot, PSA_KEY_USAGE_ENCRYPT, alg );
++    status = psa_get_and_lock_key_slot_with_policy(key, &slot,
++                                                   PSA_KEY_USAGE_ENCRYPT,
++                                                   alg);
+     if( status != PSA_SUCCESS )
+         return( status );
+     if( ! ( PSA_KEY_TYPE_IS_PUBLIC_KEY( slot->attr.type ) ||
+@@ -3115,8 +3116,9 @@ psa_status_t psa_asymmetric_decrypt( mbedtls_svc_key_id_t key,
+     if( ! PSA_ALG_IS_RSA_OAEP( alg ) && salt_length != 0 )
+         return( PSA_ERROR_INVALID_ARGUMENT );
+ 
+-    status = psa_get_and_lock_transparent_key_slot_with_policy(
+-                 key, &slot, PSA_KEY_USAGE_DECRYPT, alg );
++    status = psa_get_and_lock_key_slot_with_policy(key, &slot,
++                                                   PSA_KEY_USAGE_DECRYPT,
++                                                   alg);
+     if( status != PSA_SUCCESS )
+         return( status );
+     if( ! PSA_KEY_TYPE_IS_KEY_PAIR( slot->attr.type ) )
+-- 
+2.25.1
+

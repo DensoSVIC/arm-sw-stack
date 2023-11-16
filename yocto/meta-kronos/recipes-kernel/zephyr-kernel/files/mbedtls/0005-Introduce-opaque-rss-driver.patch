@@ -1,0 +1,2113 @@
+From e8308097da410a714bf34a5d7bdaf7b209783b20 Mon Sep 17 00:00:00 2001
+From: Jiamei Xie <jiamei.xie@arm.com>
+Date: Tue, 10 Oct 2023 14:56:41 +0800
+Subject: [PATCH] Introduce opaque rss driver
+
+This external driver will forward asymmetric operations to psa service.
+The psa service will transfer the requests via MHUv3 channnel to the
+RSS crypto service.
+
+Upstream-Status: Pending
+Signed-off-by: Jiamei Xie <jiamei.xie@arm.com>
+Signed-off-by: Michael Zhao <michael.zhao@arm.com>
+Signed-off-by: Hongda Deng <hongda.deng@arm.com>
+---
+ 3rdparty/CMakeLists.txt                       |   6 +
+ 3rdparty/Makefile.inc                         |   4 +-
+ 3rdparty/rss/CMakeLists.txt                   |  24 +
+ 3rdparty/rss/Makefile.inc                     |   9 +
+ .../rss/driver_jsons/rss_opaque_driver.json   |  14 +
+ .../rss/include/rss/rss_driver_entrypoints.h  | 529 ++++++++++++++++++
+ 3rdparty/rss/rss/rss_driver_entrypoints.c     | 521 +++++++++++++++++
+ 3rdparty/rss/src/rss_driver_entrypoints.c     | 525 +++++++++++++++++
+ include/mbedtls/mbedtls_config.h              |   5 +
+ library/CMakeLists.txt                        |   8 +
+ library/psa_crypto_driver_wrappers.c          | 198 ++++++-
+ library/psa_crypto_driver_wrappers.h          |   4 +
+ scripts/config.py                             |   1 +
+ .../psa_crypto_driver_wrappers.c.jinja        |   4 +-
+ 14 files changed, 1843 insertions(+), 9 deletions(-)
+ create mode 100644 3rdparty/rss/CMakeLists.txt
+ create mode 100644 3rdparty/rss/Makefile.inc
+ create mode 100644 3rdparty/rss/driver_jsons/rss_opaque_driver.json
+ create mode 100644 3rdparty/rss/include/rss/rss_driver_entrypoints.h
+ create mode 100644 3rdparty/rss/rss/rss_driver_entrypoints.c
+ create mode 100644 3rdparty/rss/src/rss_driver_entrypoints.c
+
+diff --git a/3rdparty/CMakeLists.txt b/3rdparty/CMakeLists.txt
+index e81ff513a..d7a6f1e2d 100644
+--- a/3rdparty/CMakeLists.txt
++++ b/3rdparty/CMakeLists.txt
+@@ -1,5 +1,11 @@
+ execute_process(COMMAND ${MBEDTLS_PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/config.py -f ${CMAKE_CURRENT_SOURCE_DIR}/../include/mbedtls/mbedtls_config.h get MBEDTLS_ECDH_VARIANT_EVEREST_ENABLED RESULT_VARIABLE result)
+ 
++execute_process(COMMAND ${MBEDTLS_PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/config.py -f ${CMAKE_CURRENT_SOURCE_DIR}/../include/mbedtls/mbedtls_config.h get MBEDTLS_RSS_DRIVER_ENABLED RESULT_VARIABLE rss_result)
++
+ if(${result} EQUAL 0)
+     add_subdirectory(everest)
+ endif()
++
++if(${rss_result} EQUAL 0)
++    add_subdirectory(rss)
++endif()
+diff --git a/3rdparty/Makefile.inc b/3rdparty/Makefile.inc
+index 0ed85af51..603d46dde 100644
+--- a/3rdparty/Makefile.inc
++++ b/3rdparty/Makefile.inc
+@@ -1,2 +1,4 @@
+-THIRDPARTY_DIR = $(dir $(lastword $(MAKEFILE_LIST)))
++THIRDPARTY_DIR = $(dir $(word 2, $(MAKEFILE_LIST)))
++
+ include $(THIRDPARTY_DIR)/everest/Makefile.inc
++include $(THIRDPARTY_DIR)/rss/Makefile.inc
+diff --git a/3rdparty/rss/CMakeLists.txt b/3rdparty/rss/CMakeLists.txt
+new file mode 100644
+index 000000000..79a2dfb06
+--- /dev/null
++++ b/3rdparty/rss/CMakeLists.txt
+@@ -0,0 +1,24 @@
++add_library(rss
++    src/rss_driver_entrypoints.c)
++
++target_include_directories(rss
++  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
++         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
++         $<BUILD_INTERFACE:${MBEDTLS_DIR}/include>
++         $<INSTALL_INTERFACE:include>
++  PRIVATE ${MBEDTLS_DIR}/library/)
++
++if(INSTALL_MBEDTLS_HEADERS)
++
++  install(DIRECTORY :${CMAKE_CURRENT_SOURCE_DIR}
++    DESTINATION include
++    FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
++    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
++    FILES_MATCHING PATTERN "*.h")
++
++endif(INSTALL_MBEDTLS_HEADERS)
++
++install(TARGETS rss
++EXPORT MbedTLSTargets
++DESTINATION ${CMAKE_INSTALL_LIBDIR}
++PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+diff --git a/3rdparty/rss/Makefile.inc b/3rdparty/rss/Makefile.inc
+new file mode 100644
+index 000000000..2256d8324
+--- /dev/null
++++ b/3rdparty/rss/Makefile.inc
+@@ -0,0 +1,9 @@
++THIRDPARTY_INCLUDES+=-I../3rdparty/rss/include
++
++THIRDPARTY_CRYPTO_OBJECTS+= \
++	../3rdparty/rss/rss/rss_driver_entrypoints.o \
++	../3rdparty/rss/rss/rss_comms.o \
++	../3rdparty/rss/rss/rss_comms_protocol.o \
++	../3rdparty/rss/rss/rss_comms_protocol_embed.o \
++	../3rdparty/rss/rss/rss_comms_protocol_pointer_access.o \
++	../3rdparty/rss/rss/mhu.o
+diff --git a/3rdparty/rss/driver_jsons/rss_opaque_driver.json b/3rdparty/rss/driver_jsons/rss_opaque_driver.json
+new file mode 100644
+index 000000000..28935af28
+--- /dev/null
++++ b/3rdparty/rss/driver_jsons/rss_opaque_driver.json
+@@ -0,0 +1,14 @@
++{
++    "prefix":       "rss",
++    "type":         "opaque",
++    "location":     "0x800000",
++    "mbedtls/h_condition":  "defined(MBEDTLS_RSS_DRIVER_ENABLED)",
++    "headers":      ["rss/include/rss_driver_entrypoints.h"],
++    "capabilities": [
++        {
++            "_comment":     "The driver communicates with RSS via PSA standard interface.",
++            "mbedtls/c_condition":    "defined(MBEDTLS_RSS_DRIVER_ENABLED)",
++            "entry_points": ["import_key", "generate_key", "copy_key", "destroy_key", "export_key", "export_public_key", "sign_message", "verify_message", "sign_hash", "verify_hash", "asymmetric_encrypt", "asymmetric_decrypt"]
++        }
++     ]
++}
+diff --git a/3rdparty/rss/include/rss/rss_driver_entrypoints.h b/3rdparty/rss/include/rss/rss_driver_entrypoints.h
+new file mode 100644
+index 000000000..62abf7606
+--- /dev/null
++++ b/3rdparty/rss/include/rss/rss_driver_entrypoints.h
+@@ -0,0 +1,529 @@
++/** Driver entry points for RSS
++ *
++ *  Copyright The Mbed TLS Contributors
++ *  SPDX-License-Identifier: Apache-2.0
++ *
++ *  Licensed under the Apache License, Version 2.0 (the "License"); you may
++ *  not use this file except in compliance with the License.
++ *  You may obtain a copy of the License at
++ *
++ *  http://www.apache.org/licenses/LICENSE-2.0
++ *
++ *  Unless required by applicable law or agreed to in writing, software
++ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *  See the License for the specific language governing permissions and
++ *  limitations under the License.
++ */
++
++#ifndef RSS_DRIVER_ENTRYPOINTS_H
++#define RSS_DRIVER_ENTRYPOINTS_H
++
++#include "psa/crypto_types.h"
++
++/** Key location for PSA CRYPTO RSS DRIVER
++ *
++ * The PSA specification has the concept of storage locations for keys,
++ * through the type ``psa_key_location_t``, which is used to access keys
++ * that don't have local storage which is used to access keys that don't
++ * have local storage.
++ */
++#define PSA_KEY_LOCATION_RSS                 ((psa_key_location_t) 0x800000)
++
++/** Perform key import via RSS.
++ *
++ * \param[in]  attributes       The attributes for the key to import.
++ * \param[in]  data             The buffer containing the key data in import
++ *                              format.
++ * \param[in]  data_length      Size of the \p data buffer in bytes.
++ * \param[out] key_buffer       The buffer to contain the key data in output
++ *                              format upon successful return.
++ * \param[in]  key_buffer_size  Size of the \p key_buffer buffer in bytes. This
++ *                              size is greater or equal to \p data_length.
++ * \param[out] key_buffer_length  The length of the data written in \p
++ *                                key_buffer in bytes.
++ * \param[out] bits             The key size in number of bits.
++ *
++ * \retval #PSA_SUCCESS  The key was imported successfully.
++ * \retval #PSA_ERROR_INVALID_ARGUMENT
++ *         The key data is not correctly formatted.
++ * \retval #PSA_ERROR_NOT_SUPPORTED
++ * \retval #PSA_ERROR_INSUFFICIENT_MEMORY
++ * \retval #PSA_ERROR_CORRUPTION_DETECTED
++ */
++psa_status_t rss_opaque_import_key(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *data,
++    size_t data_length,
++    uint8_t *key_buffer,
++    size_t key_buffer_size,
++    size_t *key_buffer_length,
++    size_t *bits);
++
++/** Perform key generation via RSS
++ *
++ * \param[in]   attributes          The attributes of the key to use for the
++ *                                  operation.
++ * \param[out]  key_buffer          The buffer to contain the key data in
++ *                                  output format upon successful return.
++ * \param[in]   key_buffer_size     Size of the \p key_buffer buffer in bytes.
++ * \param[out]  key_buffer_length   The length of the data written in \p
++ *                                  key_buffer in bytes.
++ *
++ * \retval  #PSA_SUCCESS
++ *          Success. Keypair generated and stored in buffer.
++ * \retval #PSA_ERROR_NOT_SUPPORTED
++ * \retval #PSA_ERROR_GENERIC_ERROR
++ * \retval #PSA_ERROR_INSUFFICIENT_MEMORY
++ */
++psa_status_t rss_opaque_generate_key(
++    const psa_key_attributes_t *attributes,
++    uint8_t *key_buffer,
++    size_t key_buffer_size,
++    size_t *key_buffer_length);
++
++/** Perform copy key data via RSS
++ *
++ * \param[in]   attributes          The attributes of the key to use for the
++ *                                  operation.
++ * \param[in] source_key_buffer     Buffer containing the source key material.
++ * \param source_key_length         Size of the \p source_key_buffer.
++ *
++ * \param[out] target_key_buffer    Buffer to contain the target key material.
++ * \param target_key_length         Size of the \p target_key_buffer.
++ * \param[out] target_key_buffer_length  The length of the data written in \p
++ *                                  target_key_buffer in bytes.
++ *
++ * \retval #PSA_SUCCESS \emptydescription
++ * \retval #PSA_ERROR_INVALID_HANDLE
++ *         \p source_key is invalid.
++ * \retval #PSA_ERROR_ALREADY_EXISTS
++ *         This is an attempt to create a persistent key, and there is
++ *         already a persistent key with the given identifier.
++ * \retval #PSA_ERROR_INVALID_ARGUMENT
++ *         The lifetime or identifier in \p attributes are invalid, or
++ *         the policy constraints on the source and specified in
++ *         \p attributes are incompatible, or
++ *         \p attributes specifies a key type or key size
++ *         which does not match the attributes of the source key.
++ * \retval #PSA_ERROR_NOT_PERMITTED
++ *         The source key does not have the #PSA_KEY_USAGE_COPY usage flag, or
++ *         the source key is not exportable and its lifetime does not
++ *         allow copying it to the target's lifetime.
++ * \retval #PSA_ERROR_INSUFFICIENT_MEMORY \emptydescription
++ * \retval #PSA_ERROR_INSUFFICIENT_STORAGE \emptydescription
++ * \retval #PSA_ERROR_COMMUNICATION_FAILURE \emptydescription
++ * \retval #PSA_ERROR_HARDWARE_FAILURE \emptydescription
++ * \retval #PSA_ERROR_DATA_INVALID \emptydescription
++ * \retval #PSA_ERROR_DATA_CORRUPT \emptydescription
++ * \retval #PSA_ERROR_STORAGE_FAILURE \emptydescription
++ * \retval #PSA_ERROR_CORRUPTION_DETECTED \emptydescription
++ * \retval #PSA_ERROR_BAD_STATE
++ *         The library has not been previously initialized by psa_crypto_init().
++ *         It is implementation-dependent whether a failure to initialize
++ *         results in this error code.
++ */
++psa_status_t rss_opaque_copy_key(
++    psa_key_attributes_t *attributes,
++    const uint8_t *source_key_buffer,
++    size_t source_key_length,
++    uint8_t *target_key_buffer,
++    size_t target_key_buffer_size,
++    size_t *target_key_buffer_length);
++
++/** Destroy a key via RSS.
++ *
++ * \param[out]  key_buffer          The buffer to contain the identifier of the
++ *                                  key to erase.
++ * \param[in]   key_buffer_size     Size of the \p key_buffer buffer in bytes.
++ *
++ * \retval #PSA_SUCCESS
++ *         \p key was a valid identifier and the key material that it
++ *         referred to has been erased. Alternatively, \p key is \c 0.
++ * \retval #PSA_ERROR_NOT_PERMITTED
++ *         The key cannot be erased because it is
++ *         read-only, either due to a policy or due to physical restrictions.
++ * \retval #PSA_ERROR_INVALID_HANDLE
++ *         \p key is not a valid identifier nor \c 0.
++ * \retval #PSA_ERROR_COMMUNICATION_FAILURE
++ *         There was a failure in communication with the cryptoprocessor.
++ *         The key material may still be present in the cryptoprocessor.
++ * \retval #PSA_ERROR_DATA_INVALID
++ *         This error is typically a result of either storage corruption on a
++ *         cleartext storage backend, or an attempt to read data that was
++ *         written by an incompatible version of the library.
++ * \retval #PSA_ERROR_STORAGE_FAILURE
++ *         The storage is corrupted. Implementations shall make a best effort
++ *         to erase key material even in this stage, however applications
++ *         should be aware that it may be impossible to guarantee that the
++ *         key material is not recoverable in such cases.
++ * \retval #PSA_ERROR_CORRUPTION_DETECTED
++ *         An unexpected condition which is not a storage corruption or
++ *         a communication failure occurred. The cryptoprocessor may have
++ *         been compromised.
++ * \retval #PSA_ERROR_BAD_STATE
++ *         The library has not been previously initialized by psa_crypto_init().
++ *         It is implementation-dependent whether a failure to initialize
++ *         results in this error code.
++ */
++psa_status_t rss_opaque_destroy_key(
++    const uint8_t *key_buffer,
++    size_t key_buffer_size);
++
++/** Perform key export via RSS
++ *
++ * \note The signature of this function is that of a PSA driver export_key
++ *       entry point. This function behaves as an export_key entry point as
++ *       defined in the PSA driver interface specification.
++ *
++ * \param[in]  attributes       The attributes for the key to export.
++ * \param[in]  key_buffer       Material or context of the key to export.
++ * \param[in]  key_buffer_size  Size of the \p key_buffer buffer in bytes.
++ * \param[out] data             Buffer where the key data is to be written.
++ * \param[in]  data_size        Size of the \p data buffer in bytes.
++ * \param[out] data_length      On success, the number of bytes written in
++ *                              \p data
++ *
++ * \retval #PSA_SUCCESS  The key was exported successfully.
++ * \retval #PSA_ERROR_NOT_SUPPORTED
++ * \retval #PSA_ERROR_COMMUNICATION_FAILURE
++ * \retval #PSA_ERROR_HARDWARE_FAILURE
++ * \retval #PSA_ERROR_CORRUPTION_DETECTED
++ * \retval #PSA_ERROR_STORAGE_FAILURE
++ * \retval #PSA_ERROR_INSUFFICIENT_MEMORY
++ */
++psa_status_t rss_opaque_export_key(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer, size_t key_buffer_size,
++    uint8_t *data, size_t data_size, size_t *data_length);
++
++/** Perform public key or the public part of a key pair export via RSS.
++ *
++ * \note The signature of this function is that of a PSA driver
++ *       export_public_key entry point. This function behaves as an
++ *       export_public_key entry point as defined in the PSA driver interface
++ *       specification.
++ *
++ * \param[in]  attributes       The attributes for the key to export.
++ * \param[in]  key_buffer       Material or context of the key to export.
++ * \param[in]  key_buffer_size  Size of the \p key_buffer buffer in bytes.
++ * \param[out] data             Buffer where the key data is to be written.
++ * \param[in]  data_size        Size of the \p data buffer in bytes.
++ * \param[out] data_length      On success, the number of bytes written in
++ *                              \p data
++ *
++ * \retval #PSA_SUCCESS  The public key was exported successfully.
++ * \retval #PSA_ERROR_NOT_SUPPORTED
++ * \retval #PSA_ERROR_COMMUNICATION_FAILURE
++ * \retval #PSA_ERROR_HARDWARE_FAILURE
++ * \retval #PSA_ERROR_CORRUPTION_DETECTED
++ * \retval #PSA_ERROR_STORAGE_FAILURE
++ * \retval #PSA_ERROR_INSUFFICIENT_MEMORY
++ */
++psa_status_t rss_opaque_export_public_key(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer, size_t key_buffer_size,
++    uint8_t *data, size_t data_size, size_t *data_length);
++
++/** Sign a message with a private key via RSS. For hash-and-sign algorithms,
++ *  this includes the hashing step.
++ *
++ * \note The signature of this function is that of a PSA driver
++ *       sign_message entry point. This function behaves as a sign_message
++ *       entry point as defined in the PSA driver interface specification for
++ *       transparent drivers.
++ *
++ * \note This function will call the driver for psa_sign_hash
++ *       and go through driver dispatch again.
++ *
++ * \param[in]  attributes       The attributes of the key to use for the
++ *                              operation.
++ * \param[in]  key_buffer       The buffer containing the key context.
++ * \param[in]  key_buffer_size  Size of the \p key_buffer buffer in bytes.
++ * \param[in]  alg              A signature algorithm that is compatible with
++ *                              the type of the key.
++ * \param[in]  input            The input message to sign.
++ * \param[in]  input_length     Size of the \p input buffer in bytes.
++ * \param[out] signature        Buffer where the signature is to be written.
++ * \param[in]  signature_size   Size of the \p signature buffer in bytes.
++ * \param[out] signature_length On success, the number of bytes
++ *                              that make up the returned signature value.
++ *
++ * \retval #PSA_SUCCESS
++ * \retval #PSA_ERROR_BUFFER_TOO_SMALL
++ *         The size of the \p signature buffer is too small. You can
++ *         determine a sufficient buffer size by calling
++ *         #PSA_SIGN_OUTPUT_SIZE(\c key_type, \c key_bits, \p alg)
++ *         where \c key_type and \c key_bits are the type and bit-size
++ *         respectively of the key.
++ * \retval #PSA_ERROR_NOT_SUPPORTED
++ * \retval #PSA_ERROR_INVALID_ARGUMENT
++ * \retval #PSA_ERROR_INSUFFICIENT_MEMORY
++ * \retval #PSA_ERROR_CORRUPTION_DETECTED
++ * \retval #PSA_ERROR_INSUFFICIENT_ENTROPY
++ */
++psa_status_t rss_opaque_sign_message(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *input,
++    size_t input_length,
++    uint8_t *signature,
++    size_t signature_size,
++    size_t *signature_length);
++
++/** Verify the signature of a message with a public key, using
++ *  a hash-and-sign verification algorithm.
++ *
++ * \note The signature of this function is that of a PSA driver
++ *       verify_message entry point. This function behaves as a verify_message
++ *       entry point as defined in the PSA driver interface specification for
++ *       transparent drivers.
++ *
++ * \note This function will call the driver for psa_verify_hash
++ *       and go through driver dispatch again.
++ *
++ * \param[in]  attributes       The attributes of the key to use for the
++ *                              operation.
++ * \param[in]  key_buffer       The buffer containing the key context.
++ * \param[in]  key_buffer_size  Size of the \p key_buffer buffer in bytes.
++ * \param[in]  alg              A signature algorithm that is compatible with
++ *                              the type of the key.
++ * \param[in]  input            The message whose signature is to be verified.
++ * \param[in]  input_length     Size of the \p input buffer in bytes.
++ * \param[in]  signature        Buffer containing the signature to verify.
++ * \param[in]  signature_length Size of the \p signature buffer in bytes.
++ *
++ * \retval #PSA_SUCCESS
++ *         The signature is valid.
++ * \retval #PSA_ERROR_INVALID_SIGNATURE
++ *         The calculation was performed successfully, but the passed
++ *         signature is not a valid signature.
++ * \retval #PSA_ERROR_NOT_SUPPORTED
++ * \retval #PSA_ERROR_INVALID_ARGUMENT
++ * \retval #PSA_ERROR_INSUFFICIENT_MEMORY
++ */
++psa_status_t rss_opaque_verify_message(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *input,
++    size_t input_length,
++    const uint8_t *signature,
++    size_t signature_length);
++
++/** Sign an already-calculated hash with a private key.
++ *
++ * \note The signature of this function is that of a PSA driver
++ *       sign_hash entry point. This function behaves as a sign_hash
++ *       entry point as defined in the PSA driver interface specification for
++ *       transparent drivers.
++ *
++ * \param[in]  attributes       The attributes of the key to use for the
++ *                              operation.
++ * \param[in]  key_buffer       The buffer containing the key context.
++ * \param[in]  key_buffer_size  Size of the \p key_buffer buffer in bytes.
++ * \param[in]  alg              A signature algorithm that is compatible with
++ *                              the type of the key.
++ * \param[in]  hash             The hash or message to sign.
++ * \param[in]  hash_length      Size of the \p hash buffer in bytes.
++ * \param[out] signature        Buffer where the signature is to be written.
++ * \param[in]  signature_size   Size of the \p signature buffer in bytes.
++ * \param[out] signature_length On success, the number of bytes
++ *                              that make up the returned signature value.
++ *
++ * \retval #PSA_SUCCESS
++ * \retval #PSA_ERROR_BUFFER_TOO_SMALL
++ *         The size of the \p signature buffer is too small. You can
++ *         determine a sufficient buffer size by calling
++ *         #PSA_SIGN_OUTPUT_SIZE(\c key_type, \c key_bits, \p alg)
++ *         where \c key_type and \c key_bits are the type and bit-size
++ *         respectively of the key.
++ * \retval #PSA_ERROR_NOT_SUPPORTED
++ * \retval #PSA_ERROR_INVALID_ARGUMENT
++ * \retval #PSA_ERROR_INSUFFICIENT_MEMORY
++ * \retval #PSA_ERROR_CORRUPTION_DETECTED
++ * \retval #PSA_ERROR_INSUFFICIENT_ENTROPY
++ */
++psa_status_t rss_opaque_sign_hash(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *hash,
++    size_t hash_length,
++    uint8_t *signature,
++    size_t signature_size,
++    size_t *signature_length);
++
++/**
++ * \brief Verify the signature a hash or short message using a public key.
++ *
++ * \note The signature of this function is that of a PSA driver
++ *       verify_hash entry point. This function behaves as a verify_hash
++ *       entry point as defined in the PSA driver interface specification for
++ *       transparent drivers.
++ *
++ * \param[in]  attributes       The attributes of the key to use for the
++ *                              operation.
++ * \param[in]  key_buffer       The buffer containing the key context.
++ * \param[in]  key_buffer_size  Size of the \p key_buffer buffer in bytes.
++ * \param[in]  alg              A signature algorithm that is compatible with
++ *                              the type of the key.
++ * \param[in]  hash             The hash or message whose signature is to be
++ *                              verified.
++ * \param[in]  hash_length      Size of the \p hash buffer in bytes.
++ * \param[in]  signature        Buffer containing the signature to verify.
++ * \param[in]  signature_length Size of the \p signature buffer in bytes.
++ *
++ * \retval #PSA_SUCCESS
++ *         The signature is valid.
++ * \retval #PSA_ERROR_INVALID_SIGNATURE
++ *         The calculation was performed successfully, but the passed
++ *         signature is not a valid signature.
++ * \retval #PSA_ERROR_NOT_SUPPORTED
++ * \retval #PSA_ERROR_INVALID_ARGUMENT
++ * \retval #PSA_ERROR_INSUFFICIENT_MEMORY
++ */
++psa_status_t rss_opaque_verify_hash(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *hash,
++    size_t hash_length,
++    const uint8_t *signature,
++    size_t signature_length);
++
++/**
++ * \brief Encrypt a short message with a public key.
++ *
++ * \param[in]  attributes       The attributes of the key to use for the
++ *                              operation.
++ * \param[in]  key_buffer       The buffer containing the key context.
++ * \param[in]  key_buffer_size  Size of the \p key_buffer buffer in bytes.
++ * \param alg                   An asymmetric encryption algorithm that is
++ *                              compatible with the type of \p key.
++ * \param[in] input             The message to encrypt.
++ * \param input_length          Size of the \p input buffer in bytes.
++ * \param[in] salt              A salt or label, if supported by the
++ *                              encryption algorithm.
++ *                              If the algorithm does not support a
++ *                              salt, pass \c NULL.
++ *                              If the algorithm supports an optional
++ *                              salt and you do not want to pass a salt,
++ *                              pass \c NULL.
++ *
++ *                              - For #PSA_ALG_RSA_PKCS1V15_CRYPT, no salt is
++ *                                supported.
++ * \param salt_length           Size of the \p salt buffer in bytes.
++ *                              If \p salt is \c NULL, pass 0.
++ * \param[out] output           Buffer where the encrypted message is to
++ *                              be written.
++ * \param output_size           Size of the \p output buffer in bytes.
++ * \param[out] output_length    On success, the number of bytes
++ *                              that make up the returned output.
++ *
++ * \retval #PSA_SUCCESS \emptydescription
++ * \retval #PSA_ERROR_INVALID_HANDLE \emptydescription
++ * \retval #PSA_ERROR_NOT_PERMITTED \emptydescription
++ * \retval #PSA_ERROR_BUFFER_TOO_SMALL
++ *         The size of the \p output buffer is too small. You can
++ *         determine a sufficient buffer size by calling
++ *         #PSA_ASYMMETRIC_ENCRYPT_OUTPUT_SIZE(\c key_type, \c key_bits, \p alg)
++ *         where \c key_type and \c key_bits are the type and bit-size
++ *         respectively of \p key.
++ * \retval #PSA_ERROR_NOT_SUPPORTED \emptydescription
++ * \retval #PSA_ERROR_INVALID_ARGUMENT \emptydescription
++ * \retval #PSA_ERROR_INSUFFICIENT_MEMORY \emptydescription
++ * \retval #PSA_ERROR_COMMUNICATION_FAILURE \emptydescription
++ * \retval #PSA_ERROR_HARDWARE_FAILURE \emptydescription
++ * \retval #PSA_ERROR_CORRUPTION_DETECTED \emptydescription
++ * \retval #PSA_ERROR_STORAGE_FAILURE \emptydescription
++ * \retval #PSA_ERROR_INSUFFICIENT_ENTROPY \emptydescription
++ * \retval #PSA_ERROR_BAD_STATE
++ *         The library has not been previously initialized by psa_crypto_init().
++ *         It is implementation-dependent whether a failure to initialize
++ *         results in this error code.
++ */
++psa_status_t rss_opaque_asymmetric_encrypt(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *input,
++    size_t input_length,
++    const uint8_t *salt,
++    size_t salt_length,
++    uint8_t *output,
++    size_t output_size,
++    size_t *output_length);
++
++/**
++ * \brief Decrypt a short message with a private key.
++ *
++ * \param[in]  attributes       The attributes of the key to use for the
++ *                              operation.
++ * \param[in]  key_buffer       The buffer containing the key context.
++ * \param[in]  key_buffer_size  Size of the \p key_buffer buffer in bytes.
++ * \param alg                   An asymmetric encryption algorithm that is
++ *                              compatible with the type of \p key.
++ * \param[in] input             The message to decrypt.
++ * \param input_length          Size of the \p input buffer in bytes.
++ * \param[in] salt              A salt or label, if supported by the
++ *                              encryption algorithm.
++ *                              If the algorithm does not support a
++ *                              salt, pass \c NULL.
++ *                              If the algorithm supports an optional
++ *                              salt and you do not want to pass a salt,
++ *                              pass \c NULL.
++ *
++ *                              - For #PSA_ALG_RSA_PKCS1V15_CRYPT, no salt is
++ *                                supported.
++ * \param salt_length           Size of the \p salt buffer in bytes.
++ *                              If \p salt is \c NULL, pass 0.
++ * \param[out] output           Buffer where the decrypted message is to
++ *                              be written.
++ * \param output_size           Size of the \c output buffer in bytes.
++ * \param[out] output_length    On success, the number of bytes
++ *                              that make up the returned output.
++ *
++ * \retval #PSA_SUCCESS \emptydescription
++ * \retval #PSA_ERROR_INVALID_HANDLE \emptydescription
++ * \retval #PSA_ERROR_NOT_PERMITTED \emptydescription
++ * \retval #PSA_ERROR_BUFFER_TOO_SMALL
++ *         The size of the \p output buffer is too small. You can
++ *         determine a sufficient buffer size by calling
++ *         #PSA_ASYMMETRIC_DECRYPT_OUTPUT_SIZE(\c key_type, \c key_bits, \p alg)
++ *         where \c key_type and \c key_bits are the type and bit-size
++ *         respectively of \p key.
++ * \retval #PSA_ERROR_NOT_SUPPORTED \emptydescription
++ * \retval #PSA_ERROR_INVALID_ARGUMENT \emptydescription
++ * \retval #PSA_ERROR_INSUFFICIENT_MEMORY \emptydescription
++ * \retval #PSA_ERROR_COMMUNICATION_FAILURE \emptydescription
++ * \retval #PSA_ERROR_HARDWARE_FAILURE \emptydescription
++ * \retval #PSA_ERROR_CORRUPTION_DETECTED \emptydescription
++ * \retval #PSA_ERROR_STORAGE_FAILURE \emptydescription
++ * \retval #PSA_ERROR_INSUFFICIENT_ENTROPY \emptydescription
++ * \retval #PSA_ERROR_INVALID_PADDING \emptydescription
++ * \retval #PSA_ERROR_BAD_STATE
++ *         The library has not been previously initialized by psa_crypto_init().
++ *         It is implementation-dependent whether a failure to initialize
++ *         results in this error code.
++ */
++psa_status_t rss_opaque_asymmetric_decrypt(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *input,
++    size_t input_length,
++    const uint8_t *salt,
++    size_t salt_length,
++    uint8_t *output,
++    size_t output_size,
++    size_t *output_length);
++
++#endif /* RSS_DRIVER_ENTRYPOINTS_H */
+diff --git a/3rdparty/rss/rss/rss_driver_entrypoints.c b/3rdparty/rss/rss/rss_driver_entrypoints.c
+new file mode 100644
+index 000000000..e5110ffd0
+--- /dev/null
++++ b/3rdparty/rss/rss/rss_driver_entrypoints.c
+@@ -0,0 +1,521 @@
++/*
++ *  Driver entry points for RSS
++ *
++ *  Copyright The Mbed TLS Contributors
++ *  SPDX-License-Identifier: Apache-2.0
++ *
++ *  Licensed under the Apache License, Version 2.0 (the "License"); you may
++ *  not use this file except in compliance with the License.
++ *  You may obtain a copy of the License at
++ *
++ *  http://www.apache.org/licenses/LICENSE-2.0
++ *
++ *  Unless required by applicable law or agreed to in writing, software
++ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *  See the License for the specific language governing permissions and
++ *  limitations under the License.
++ */
++
++#include "mbedtls/platform.h"
++#include "rss/rss_driver_entrypoints.h"
++#include <psa/crypto.h>
++#include <stddef.h>
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
++
++#include "zephyr/subsys/ipc/psa_service/psa/client.h"
++#include "zephyr/subsys/ipc/psa_service/psa/mbedtls_crypto_defs.h"
++#include "zephyr/subsys/ipc/psa_service/psa/crypto_client_struct.h"
++
++#ifndef ARRAY_SIZE
++#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
++#endif
++
++typedef uint32_t rss_psa_key_id_t;
++
++/*
++ * The attributes definitions are different between RSS and Mbedtls.
++ * This function converts Mbedtls attributes to RSS attributes.
++ */
++static void convert_to_rss_attr(
++    const psa_key_attributes_t *attributes,
++    struct psa_client_key_attributes_s *rss_attributes)
++{
++    rss_attributes->type = psa_get_key_type(attributes);
++    rss_attributes->bits = psa_get_key_bits(attributes);
++    /* The lifetime contains two information:
++     *   the upper 8-bits: key location
++     *   the lower 8-bits: persistence level
++     * For RSS, it doesn't need the location we set in the application.
++     * Set location to 0 and it will be handled locally.
++     */
++    rss_attributes->lifetime = psa_get_key_lifetime(attributes) & 0xff;
++    rss_attributes->usage = psa_get_key_usage_flags(attributes);
++    rss_attributes->alg = psa_get_key_algorithm(attributes);
++    rss_attributes->id = psa_get_key_id(attributes);
++}
++
++psa_status_t rss_opaque_import_key(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *data,
++    size_t data_length,
++    uint8_t *key_buffer,
++    size_t key_buffer_size,
++    size_t *key_buffer_length,
++    size_t *bits)
++{
++    (void) key_buffer_length;
++    (void) bits;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_IMPORT_KEY_SID,
++    };
++
++    struct psa_client_key_attributes_s rss_attributes;
++    convert_to_rss_attr(attributes, &rss_attributes);
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = &rss_attributes, .len = sizeof(struct psa_client_key_attributes_s)},
++        {.base = data, .len = data_length}
++    };
++
++    struct psa_outvec out_vec[] = {
++        {.base = key_buffer, .len = key_buffer_size}
++    };
++
++    return psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++                    in_vec, IOVEC_LEN(in_vec),        \
++                    out_vec, IOVEC_LEN(out_vec));
++
++}
++
++psa_status_t rss_opaque_generate_key(
++    const psa_key_attributes_t *attributes,
++    uint8_t *key_buffer,
++    size_t key_buffer_size,
++    size_t *key_buffer_length)
++{
++    psa_status_t status = PSA_SUCCESS;
++
++    struct psa_client_key_attributes_s rss_attributes;
++    convert_to_rss_attr(attributes, &rss_attributes);
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_GENERATE_KEY_SID,
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = &rss_attributes, .len = sizeof(struct psa_client_key_attributes_s)},
++    };
++
++    struct psa_outvec out_vec[] = {
++        {.base = key_buffer, .len = key_buffer_size},
++    };
++
++    status = psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++                      in_vec, IOVEC_LEN(in_vec),        \
++                      out_vec, IOVEC_LEN(out_vec));
++
++    *key_buffer_length = out_vec[0].len;
++
++    return status;
++}
++
++psa_status_t rss_opaque_copy_key(
++    psa_key_attributes_t *attributes,
++    const uint8_t *source_key_buffer,
++    size_t source_key_length,
++    uint8_t *target_key_buffer,
++    size_t target_key_buffer_size,
++    size_t *target_key_buffer_length)
++{
++    (void) source_key_length;
++    (void) target_key_buffer_length;
++
++    /* Convert uint8_t [4] to uint32_t */
++    rss_psa_key_id_t source_key_id = *(uint32_t *)source_key_buffer;
++
++    struct psa_client_key_attributes_s rss_attributes;
++    convert_to_rss_attr(attributes, &rss_attributes);
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_COPY_KEY_SID,
++        .key_id = source_key_id,
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = &rss_attributes, .len = sizeof(struct psa_client_key_attributes_s)},
++    };
++
++    struct psa_outvec out_vec[] = {
++        {.base = target_key_buffer, .len = target_key_buffer_size},
++    };
++
++    return psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++                    in_vec, IOVEC_LEN(in_vec),        \
++                    out_vec, IOVEC_LEN(out_vec));
++}
++
++psa_status_t rss_opaque_destroy_key(
++    const uint8_t *key_buffer,
++    size_t key_buffer_size)
++{
++    (void) key_buffer_size;
++
++    /* Convert uint8_t [4] to uint32_t */
++    rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_DESTROY_KEY_SID,
++        .key_id = key,
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++    };
++
++    return psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++                    in_vec, IOVEC_LEN(in_vec),        \
++                    (struct psa_outvec *)NULL, 0);
++
++}
++
++psa_status_t rss_opaque_export_key(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    uint8_t *data,
++    size_t data_size,
++    size_t *data_length)
++{
++    (void) attributes;
++    (void) key_buffer_size;
++
++    psa_status_t status = PSA_SUCCESS;
++
++    /* Convert uint8_t [4] to uint32_t */
++    rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_EXPORT_KEY_SID,
++        .key_id = key,
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++    };
++
++    struct psa_outvec out_vec[] = {
++        {.base = data, .len = data_size}
++    };
++
++    status = psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++             in_vec, IOVEC_LEN(in_vec),        \
++             out_vec, IOVEC_LEN(out_vec));
++
++    *data_length = out_vec[0].len;
++
++    return status;
++}
++
++psa_status_t rss_opaque_export_public_key(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    uint8_t *data,
++    size_t data_size,
++    size_t *data_length)
++{
++    (void) attributes;
++    (void) key_buffer_size;
++
++    psa_status_t status = PSA_SUCCESS;
++
++    /* Convert uint8_t [4] to uint32_t */
++    rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_EXPORT_PUBLIC_KEY_SID,
++        .key_id = key,
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++    };
++    struct psa_outvec out_vec[] = {
++        {.base = data, .len = data_size}
++    };
++
++    status = psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++             in_vec, IOVEC_LEN(in_vec),        \
++             out_vec, IOVEC_LEN(out_vec));
++
++    *data_length = out_vec[0].len;
++
++    return status;
++}
++
++psa_status_t rss_opaque_sign_message(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *input,
++    size_t input_length,
++    uint8_t *signature,
++    size_t signature_size,
++    size_t *signature_length)
++{
++    (void) attributes;
++    (void) key_buffer_size;
++
++    psa_status_t status = PSA_SUCCESS;
++
++    /* Convert uint8_t [4] to uint32_t */
++    rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_ASYMMETRIC_SIGN_MESSAGE_SID,
++        .key_id = key,
++        .alg = alg,
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = input, .len = input_length},
++    };
++    struct psa_outvec out_vec[] = {
++        {.base = signature, .len = signature_size},
++    };
++
++    status = psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++             in_vec, IOVEC_LEN(in_vec),        \
++             out_vec, IOVEC_LEN(out_vec));
++
++    *signature_length = out_vec[0].len;
++    return status;
++}
++
++psa_status_t rss_opaque_verify_message(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *input,
++    size_t input_length,
++    const uint8_t *signature,
++    size_t signature_length)
++{
++    (void) attributes;
++    (void) key_buffer_size;
++
++    /* Convert uint8_t [4] to uint32_t */
++    rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_ASYMMETRIC_VERIFY_MESSAGE_SID,
++        .key_id = key,
++        .alg = alg
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = input, .len = input_length},
++        {.base = signature, .len = signature_length}
++    };
++
++    return psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++                    in_vec, IOVEC_LEN(in_vec),        \
++                    (struct psa_outvec *)NULL, 0);
++}
++
++psa_status_t rss_opaque_sign_hash(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *hash,
++    size_t hash_length,
++    uint8_t *signature,
++    size_t signature_size,
++    size_t *signature_length)
++{
++    (void) attributes;
++    (void) key_buffer_size;
++
++    psa_status_t status = PSA_SUCCESS;
++
++    /* Convert key id to key buffer */
++    rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_ASYMMETRIC_SIGN_HASH_SID,
++        .key_id = key,
++        .alg = alg,
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = hash, .len = hash_length},
++    };
++    struct psa_outvec out_vec[] = {
++        {.base = signature, .len = signature_size},
++    };
++
++    status = psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++             in_vec, IOVEC_LEN(in_vec),        \
++             out_vec, IOVEC_LEN(out_vec));
++
++    *signature_length = out_vec[0].len;
++
++    return status;
++}
++
++psa_status_t rss_opaque_verify_hash(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *hash,
++    size_t hash_length,
++    const uint8_t *signature,
++    size_t signature_length)
++{
++    (void) attributes;
++    (void) key_buffer_size;
++
++    /* Convert key id to key buffer */
++    rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_ASYMMETRIC_VERIFY_HASH_SID,
++        .key_id = key,
++        .alg = alg
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = hash, .len = hash_length},
++        {.base = signature, .len = signature_length}
++    };
++
++    return psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++                    in_vec, IOVEC_LEN(in_vec),        \
++                    (struct psa_outvec *)NULL, 0);
++}
++
++psa_status_t rss_opaque_asymmetric_encrypt(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *input,
++    size_t input_length,
++    const uint8_t *salt,
++    size_t salt_length,
++    uint8_t *output,
++    size_t output_size,
++    size_t *output_length)
++{
++    (void) attributes;
++    (void) key_buffer_size;
++
++    psa_status_t status = PSA_SUCCESS;
++
++   /* Convert key id to key buffer */
++   rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_ASYMMETRIC_ENCRYPT_SID,
++        .key_id = key,
++        .alg = alg
++    };
++
++    /* Sanitize the optional input */
++    if ((salt == NULL) && (salt_length != 0)) {
++        return PSA_ERROR_INVALID_ARGUMENT;
++    }
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = input, .len = input_length},
++        {.base = salt, .len = salt_length}
++    };
++
++    struct psa_outvec out_vec[] = {
++        {.base = output, .len = output_size},
++    };
++
++    size_t in_len = IOVEC_LEN(in_vec);
++
++    if (salt == NULL) {
++        in_len--;
++    }
++
++    status = psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL, in_vec, in_len,
++                      out_vec, IOVEC_LEN(out_vec));
++
++    *output_length = out_vec[0].len;
++
++    return status;
++}
++
++psa_status_t rss_opaque_asymmetric_decrypt(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *input,
++    size_t input_length,
++    const uint8_t *salt,
++    size_t salt_length,
++    uint8_t *output,
++    size_t output_size,
++    size_t *output_length)
++{
++    (void) attributes;
++    (void) key_buffer_size;
++
++    psa_status_t status = PSA_SUCCESS;
++
++    /* Convert key id to key buffer */
++    rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_ASYMMETRIC_DECRYPT_SID,
++        .key_id = key,
++        .alg = alg
++    };
++
++    /* Sanitize the optional input */
++    if ((salt == NULL) && (salt_length != 0)) {
++        return PSA_ERROR_INVALID_ARGUMENT;
++    }
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = input, .len = input_length},
++        {.base = salt, .len = salt_length}
++    };
++
++    struct psa_outvec out_vec[] = {
++        {.base = output, .len = output_size},
++    };
++
++    size_t in_len = IOVEC_LEN(in_vec);
++
++    if (salt == NULL) {
++        in_len--;
++    }
++    status = psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL, in_vec, in_len,
++                      out_vec, IOVEC_LEN(out_vec));
++
++    *output_length = out_vec[0].len;
++
++    return status;
++}
++
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
+diff --git a/3rdparty/rss/src/rss_driver_entrypoints.c b/3rdparty/rss/src/rss_driver_entrypoints.c
+new file mode 100644
+index 000000000..89c292507
+--- /dev/null
++++ b/3rdparty/rss/src/rss_driver_entrypoints.c
+@@ -0,0 +1,525 @@
++/*
++ *  Driver entry points for RSS
++ *
++ *  Copyright The Mbed TLS Contributors
++ *  SPDX-License-Identifier: Apache-2.0
++ *
++ *  Licensed under the Apache License, Version 2.0 (the "License"); you may
++ *  not use this file except in compliance with the License.
++ *  You may obtain a copy of the License at
++ *
++ *  http://www.apache.org/licenses/LICENSE-2.0
++ *
++ *  Unless required by applicable law or agreed to in writing, software
++ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *  See the License for the specific language governing permissions and
++ *  limitations under the License.
++ */
++
++#include "mbedtls/platform.h"
++#include "rss/rss_driver_entrypoints.h"
++#include <psa/crypto.h>
++#include <stddef.h>
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
++
++#if defined(MBEDTLS_RSS_DRIVER_STUB)
++#include "rss/rss_driver_stub.h"
++#else
++#include "zephyr/subsys/ipc/psa_service/psa/client.h"
++#include "zephyr/subsys/ipc/psa_service/psa/mbedtls_crypto_defs.h"
++#include "zephyr/subsys/ipc/psa_service/psa/crypto_client_struct.h"
++#endif
++
++#ifndef ARRAY_SIZE
++#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
++#endif
++
++typedef uint32_t rss_psa_key_id_t;
++
++/*
++ * The attributes definitions are different between RSS and Mbedtls.
++ * This function converts Mbedtls attributes to RSS attributes.
++ */
++static void convert_to_rss_attr(
++    const psa_key_attributes_t *attributes,
++    struct psa_client_key_attributes_s *rss_attributes)
++{
++    rss_attributes->type = psa_get_key_type(attributes);
++    rss_attributes->bits = psa_get_key_bits(attributes);
++    /* The lifetime contains two information:
++     *   the upper 8-bits: key location
++     *   the lower 8-bits: persistence level
++     * For RSS, it doesn't need the location we set in the application.
++     * Set location to 0 and it will be handled locally.
++     */
++    rss_attributes->lifetime = psa_get_key_lifetime(attributes) & 0xff;
++    rss_attributes->usage = psa_get_key_usage_flags(attributes);
++    rss_attributes->alg = psa_get_key_algorithm(attributes);
++    rss_attributes->id = psa_get_key_id(attributes);
++}
++
++psa_status_t rss_opaque_import_key(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *data,
++    size_t data_length,
++    uint8_t *key_buffer,
++    size_t key_buffer_size,
++    size_t *key_buffer_length,
++    size_t *bits)
++{
++    (void) key_buffer_length;
++    (void) bits;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_IMPORT_KEY_SID,
++    };
++
++    struct psa_client_key_attributes_s rss_attributes;
++    convert_to_rss_attr(attributes, &rss_attributes);
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = &rss_attributes, .len = sizeof(struct psa_client_key_attributes_s)},
++        {.base = data, .len = data_length}
++    };
++
++    struct psa_outvec out_vec[] = {
++        {.base = key_buffer, .len = key_buffer_size}
++    };
++
++    return psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++                    in_vec, IOVEC_LEN(in_vec),        \
++                    out_vec, IOVEC_LEN(out_vec));
++
++}
++
++psa_status_t rss_opaque_generate_key(
++    const psa_key_attributes_t *attributes,
++    uint8_t *key_buffer,
++    size_t key_buffer_size,
++    size_t *key_buffer_length)
++{
++    psa_status_t status = PSA_SUCCESS;
++
++    struct psa_client_key_attributes_s rss_attributes;
++    convert_to_rss_attr(attributes, &rss_attributes);
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_GENERATE_KEY_SID,
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = &rss_attributes, .len = sizeof(struct psa_client_key_attributes_s)},
++    };
++
++    struct psa_outvec out_vec[] = {
++        {.base = key_buffer, .len = key_buffer_size},
++    };
++
++    status = psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++                      in_vec, IOVEC_LEN(in_vec),        \
++                      out_vec, IOVEC_LEN(out_vec));
++
++    *key_buffer_length = out_vec[0].len;
++
++    return status;
++}
++
++psa_status_t rss_opaque_copy_key(
++    psa_key_attributes_t *attributes,
++    const uint8_t *source_key_buffer,
++    size_t source_key_length,
++    uint8_t *target_key_buffer,
++    size_t target_key_buffer_size,
++    size_t *target_key_buffer_length)
++{
++    (void) source_key_length;
++    (void) target_key_buffer_length;
++
++    /* Convert uint8_t [4] to uint32_t */
++    rss_psa_key_id_t source_key_id = *(uint32_t *)source_key_buffer;
++
++    struct psa_client_key_attributes_s rss_attributes;
++    convert_to_rss_attr(attributes, &rss_attributes);
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_COPY_KEY_SID,
++        .key_id = source_key_id,
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = &rss_attributes, .len = sizeof(struct psa_client_key_attributes_s)},
++    };
++
++    struct psa_outvec out_vec[] = {
++        {.base = target_key_buffer, .len = target_key_buffer_size},
++    };
++
++    return psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++                    in_vec, IOVEC_LEN(in_vec),        \
++                    out_vec, IOVEC_LEN(out_vec));
++}
++
++psa_status_t rss_opaque_destroy_key(
++    const uint8_t *key_buffer,
++    size_t key_buffer_size)
++{
++    (void) key_buffer_size;
++
++    /* Convert uint8_t [4] to uint32_t */
++    rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_DESTROY_KEY_SID,
++        .key_id = key,
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++    };
++
++    return psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++                    in_vec, IOVEC_LEN(in_vec),        \
++                    (struct psa_outvec *)NULL, 0);
++
++}
++
++psa_status_t rss_opaque_export_key(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    uint8_t *data,
++    size_t data_size,
++    size_t *data_length)
++{
++    (void) attributes;
++    (void) key_buffer_size;
++
++    psa_status_t status = PSA_SUCCESS;
++
++    /* Convert uint8_t [4] to uint32_t */
++    rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_EXPORT_KEY_SID,
++        .key_id = key,
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++    };
++
++    struct psa_outvec out_vec[] = {
++        {.base = data, .len = data_size}
++    };
++
++    status = psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++             in_vec, IOVEC_LEN(in_vec),        \
++             out_vec, IOVEC_LEN(out_vec));
++
++    *data_length = out_vec[0].len;
++
++    return status;
++}
++
++psa_status_t rss_opaque_export_public_key(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    uint8_t *data,
++    size_t data_size,
++    size_t *data_length)
++{
++    (void) attributes;
++    (void) key_buffer_size;
++
++    psa_status_t status = PSA_SUCCESS;
++
++    /* Convert uint8_t [4] to uint32_t */
++    rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_EXPORT_PUBLIC_KEY_SID,
++        .key_id = key,
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++    };
++    struct psa_outvec out_vec[] = {
++        {.base = data, .len = data_size}
++    };
++
++    status = psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++             in_vec, IOVEC_LEN(in_vec),        \
++             out_vec, IOVEC_LEN(out_vec));
++
++    *data_length = out_vec[0].len;
++
++    return status;
++}
++
++psa_status_t rss_opaque_sign_message(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *input,
++    size_t input_length,
++    uint8_t *signature,
++    size_t signature_size,
++    size_t *signature_length)
++{
++    (void) attributes;
++    (void) key_buffer_size;
++
++    psa_status_t status = PSA_SUCCESS;
++
++    /* Convert uint8_t [4] to uint32_t */
++    rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_ASYMMETRIC_SIGN_MESSAGE_SID,
++        .key_id = key,
++        .alg = alg,
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = input, .len = input_length},
++    };
++    struct psa_outvec out_vec[] = {
++        {.base = signature, .len = signature_size},
++    };
++
++    status = psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++             in_vec, IOVEC_LEN(in_vec),        \
++             out_vec, IOVEC_LEN(out_vec));
++
++    *signature_length = out_vec[0].len;
++    return status;
++}
++
++psa_status_t rss_opaque_verify_message(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *input,
++    size_t input_length,
++    const uint8_t *signature,
++    size_t signature_length)
++{
++    (void) attributes;
++    (void) key_buffer_size;
++
++    /* Convert uint8_t [4] to uint32_t */
++    rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_ASYMMETRIC_VERIFY_MESSAGE_SID,
++        .key_id = key,
++        .alg = alg
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = input, .len = input_length},
++        {.base = signature, .len = signature_length}
++    };
++
++    return psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++                    in_vec, IOVEC_LEN(in_vec),        \
++                    (struct psa_outvec *)NULL, 0);
++}
++
++psa_status_t rss_opaque_sign_hash(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *hash,
++    size_t hash_length,
++    uint8_t *signature,
++    size_t signature_size,
++    size_t *signature_length)
++{
++    (void) attributes;
++    (void) key_buffer_size;
++
++    psa_status_t status = PSA_SUCCESS;
++
++    /* Convert key id to key buffer */
++    rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_ASYMMETRIC_SIGN_HASH_SID,
++        .key_id = key,
++        .alg = alg,
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = hash, .len = hash_length},
++    };
++    struct psa_outvec out_vec[] = {
++        {.base = signature, .len = signature_size},
++    };
++
++    status = psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++             in_vec, IOVEC_LEN(in_vec),        \
++             out_vec, IOVEC_LEN(out_vec));
++
++    *signature_length = out_vec[0].len;
++
++    return status;
++}
++
++psa_status_t rss_opaque_verify_hash(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *hash,
++    size_t hash_length,
++    const uint8_t *signature,
++    size_t signature_length)
++{
++    (void) attributes;
++    (void) key_buffer_size;
++
++    /* Convert key id to key buffer */
++    rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_ASYMMETRIC_VERIFY_HASH_SID,
++        .key_id = key,
++        .alg = alg
++    };
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = hash, .len = hash_length},
++        {.base = signature, .len = signature_length}
++    };
++
++    return psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL,  \
++                    in_vec, IOVEC_LEN(in_vec),        \
++                    (struct psa_outvec *)NULL, 0);
++}
++
++psa_status_t rss_opaque_asymmetric_encrypt(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *input,
++    size_t input_length,
++    const uint8_t *salt,
++    size_t salt_length,
++    uint8_t *output,
++    size_t output_size,
++    size_t *output_length)
++{
++    (void) attributes;
++    (void) key_buffer_size;
++
++    psa_status_t status = PSA_SUCCESS;
++
++   /* Convert key id to key buffer */
++   rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_ASYMMETRIC_ENCRYPT_SID,
++        .key_id = key,
++        .alg = alg
++    };
++
++    /* Sanitize the optional input */
++    if ((salt == NULL) && (salt_length != 0)) {
++        return PSA_ERROR_INVALID_ARGUMENT;
++    }
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = input, .len = input_length},
++        {.base = salt, .len = salt_length}
++    };
++
++    struct psa_outvec out_vec[] = {
++        {.base = output, .len = output_size},
++    };
++
++    size_t in_len = IOVEC_LEN(in_vec);
++
++    if (salt == NULL) {
++        in_len--;
++    }
++
++    status = psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL, in_vec, in_len,
++                      out_vec, IOVEC_LEN(out_vec));
++
++    *output_length = out_vec[0].len;
++
++    return status;
++}
++
++psa_status_t rss_opaque_asymmetric_decrypt(
++    const psa_key_attributes_t *attributes,
++    const uint8_t *key_buffer,
++    size_t key_buffer_size,
++    psa_algorithm_t alg,
++    const uint8_t *input,
++    size_t input_length,
++    const uint8_t *salt,
++    size_t salt_length,
++    uint8_t *output,
++    size_t output_size,
++    size_t *output_length)
++{
++    (void) attributes;
++    (void) key_buffer_size;
++
++    psa_status_t status = PSA_SUCCESS;
++
++    /* Convert key id to key buffer */
++    rss_psa_key_id_t key = *(uint32_t *)key_buffer;
++
++    struct mbedtls_crypto_pack_iovec iov = {
++        .function_id = MBEDTLS_CRYPTO_ASYMMETRIC_DECRYPT_SID,
++        .key_id = key,
++        .alg = alg
++    };
++
++    /* Sanitize the optional input */
++    if ((salt == NULL) && (salt_length != 0)) {
++        return PSA_ERROR_INVALID_ARGUMENT;
++    }
++
++    struct psa_invec in_vec[] = {
++        {.base = &iov, .len = sizeof(struct mbedtls_crypto_pack_iovec)},
++        {.base = input, .len = input_length},
++        {.base = salt, .len = salt_length}
++    };
++
++    struct psa_outvec out_vec[] = {
++        {.base = output, .len = output_size},
++    };
++
++    size_t in_len = IOVEC_LEN(in_vec);
++
++    if (salt == NULL) {
++        in_len--;
++    }
++    status = psa_call(PSA_CRYPTO_HANDLE, PSA_IPC_CALL, in_vec, in_len,
++                      out_vec, IOVEC_LEN(out_vec));
++
++    *output_length = out_vec[0].len;
++
++    return status;
++}
++
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
+diff --git a/include/mbedtls/mbedtls_config.h b/include/mbedtls/mbedtls_config.h
+index f6dd1e14d..a719f3579 100644
+--- a/include/mbedtls/mbedtls_config.h
++++ b/include/mbedtls/mbedtls_config.h
+@@ -3849,4 +3849,9 @@
+  */
+ //#define MBEDTLS_ECDH_VARIANT_EVEREST_ENABLED
+ 
++/**
++ * Uncomment to enable rss driver
++ */
++// #define MBEDTLS_RSS_DRIVER_ENABLED
++
+ /** \} name SECTION: Module configuration options */
+diff --git a/library/CMakeLists.txt b/library/CMakeLists.txt
+index c9714bbfb..bde2465ea 100644
+--- a/library/CMakeLists.txt
++++ b/library/CMakeLists.txt
+@@ -270,6 +270,10 @@ if(USE_STATIC_MBEDTLS_LIBRARY)
+         target_link_libraries(${mbedcrypto_static_target} PUBLIC everest)
+     endif()
+ 
++    if(TARGET rss)
++        target_link_libraries(${mbedcrypto_static_target} PUBLIC rss)
++    endif()
++
+     add_library(${mbedx509_static_target} STATIC ${src_x509})
+     set_target_properties(${mbedx509_static_target} PROPERTIES OUTPUT_NAME mbedx509)
+     target_link_libraries(${mbedx509_static_target} PUBLIC ${libs} ${mbedcrypto_static_target})
+@@ -289,6 +293,10 @@ if(USE_SHARED_MBEDTLS_LIBRARY)
+         target_link_libraries(${mbedcrypto_target} PUBLIC everest)
+     endif()
+ 
++    if(TARGET rss)
++        target_link_libraries(${mbedcrypto_target} PUBLIC rss)
++    endif()
++
+     add_library(${mbedx509_target} SHARED ${src_x509})
+     set_target_properties(${mbedx509_target} PROPERTIES VERSION 3.3.0 SOVERSION 4)
+     target_link_libraries(${mbedx509_target} PUBLIC ${libs} ${mbedcrypto_target})
+diff --git a/library/psa_crypto_driver_wrappers.c b/library/psa_crypto_driver_wrappers.c
+index 5d99b3028..aba0fb4cf 100644
+--- a/library/psa_crypto_driver_wrappers.c
++++ b/library/psa_crypto_driver_wrappers.c
+@@ -236,6 +236,24 @@ psa_status_t psa_driver_wrapper_sign_message(
+             break;
+ #endif /* PSA_CRYPTO_DRIVER_TEST */
+ #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
++
++#if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
++        case PSA_KEY_LOCATION_RSS:
++            status = rss_opaque_sign_message( attributes,
++                                              key_buffer,
++                                              key_buffer_size,
++                                              alg,
++                                              input,
++                                              input_length,
++                                              signature,
++                                              signature_size,
++                                              signature_length );
++            return( status );
++
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
++#endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
++
+         default:
+             /* Key is declared with a lifetime not known to us */
+             (void)status;
+@@ -324,6 +342,23 @@ psa_status_t psa_driver_wrapper_verify_message(
+             break;
+ #endif /* PSA_CRYPTO_DRIVER_TEST */
+ #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
++
++#if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
++        case PSA_KEY_LOCATION_RSS:
++            status = rss_opaque_verify_message( attributes,
++                                                key_buffer,
++                                                key_buffer_size,
++                                                alg,
++                                                input,
++                                                input_length,
++                                                signature,
++                                                signature_length );
++            return( status );
++
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
++#endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
++
+         default:
+             /* Key is declared with a lifetime not known to us */
+             (void)status;
+@@ -425,6 +460,25 @@ psa_status_t psa_driver_wrapper_sign_hash(
+                                                              signature_length ) );
+ #endif /* PSA_CRYPTO_DRIVER_TEST */
+ #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
++
++#if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
++        case PSA_KEY_LOCATION_RSS:
++
++            status = rss_opaque_sign_hash( attributes,
++                                           key_buffer,
++                                           key_buffer_size,
++                                           alg,
++                                           hash,
++                                           hash_length,
++                                           signature,
++                                           signature_size,
++                                           signature_length );
++            return( status );
++
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
++#endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
++
+         default:
+             /* Key is declared with a lifetime not known to us */
+             (void)status;
+@@ -521,6 +575,23 @@ psa_status_t psa_driver_wrapper_verify_hash(
+                                                                signature_length ) );
+ #endif /* PSA_CRYPTO_DRIVER_TEST */
+ #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
++
++#if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
++        case PSA_KEY_LOCATION_RSS:
++            status = rss_opaque_verify_hash( attributes,
++                                             key_buffer,
++                                             key_buffer_size,
++                                             alg,
++                                             hash,
++                                             hash_length,
++                                             signature,
++                                             signature_length );
++            return( status );
++
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
++#endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
++
+         default:
+             /* Key is declared with a lifetime not known to us */
+             (void)status;
+@@ -561,6 +632,12 @@ psa_status_t psa_driver_wrapper_get_key_buffer_size_from_key_data(
+                     PSA_SUCCESS : PSA_ERROR_NOT_SUPPORTED );
+ #endif /* PSA_CRYPTO_DRIVER_TEST */
+ 
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
++       case PSA_KEY_LOCATION_RSS:
++             *key_buffer_size = 4;
++             return PSA_SUCCESS;
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
++
+         default:
+             (void)key_type;
+             (void)data;
+@@ -617,7 +694,13 @@ psa_status_t psa_driver_wrapper_get_key_buffer_size(
+             return tfm_builtin_key_loader_get_key_buffer_size(psa_get_key_id(attributes),
+                                                               key_buffer_size);
+ #endif /* PSA_CRYPTO_DRIVER_TFM_BUILTIN_KEY_LOADER */
+-        default:
++
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
++       case PSA_KEY_LOCATION_RSS:
++             *key_buffer_size = 4;
++             return PSA_SUCCESS;
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
++	default:
+             (void)key_type;
+             (void)key_bits;
+             return( PSA_ERROR_INVALID_ARGUMENT );
+@@ -694,6 +777,22 @@ psa_status_t psa_driver_wrapper_generate_key(
+                 attributes, key_buffer, key_buffer_size, key_buffer_length );
+             break;
+ #endif /* PSA_CRYPTO_DRIVER_TEST */
++#endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
++
++#if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
++        case PSA_KEY_LOCATION_RSS:
++            status = rss_opaque_generate_key(
++                attributes, key_buffer, key_buffer_size, key_buffer_length );
++            if( status != PSA_ERROR_NOT_SUPPORTED )
++                break;
++
++            /* Software fallback */
++            status = psa_generate_key_internal(
++                attributes, key_buffer, key_buffer_size, key_buffer_length );
++            break;
++
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
+ #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
+ 
+         default:
+@@ -797,6 +896,18 @@ psa_status_t psa_driver_wrapper_import_key(
+         ));
+ #endif
+ 
++#if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
++        case PSA_KEY_LOCATION_RSS:
++                status = rss_opaque_import_key( attributes,
++                                                data, data_length,
++                                                key_buffer, key_buffer_size,
++                                                key_buffer_length, bits );
++                return( status );
++
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
++#endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
++
+ 
+ #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
+         default:
+@@ -865,6 +976,19 @@ psa_status_t psa_driver_wrapper_export_key(
+         ));
+ #endif
+ 
++#if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
++        case PSA_KEY_LOCATION_RSS:
++                status = rss_opaque_export_key( attributes,
++                                                key_buffer,
++                                                key_buffer_size,
++                                                data,
++                                                data_size,
++                                                data_length );
++                return( status );
++
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
++#endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
+ 
+ #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
+         default:
+@@ -964,6 +1088,19 @@ psa_status_t psa_driver_wrapper_export_public_key(
+         ));
+ #endif
+ 
++#if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
++        case PSA_KEY_LOCATION_RSS:
++            status = rss_opaque_export_public_key( attributes,
++                                                   key_buffer,
++                                                   key_buffer_size,
++                                                   data,
++                                                   data_size,
++                                                   data_length );
++            return( status );
++
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
++#endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
+ 
+ #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
+         default:
+@@ -985,14 +1122,13 @@ psa_status_t psa_driver_wrapper_destroy_key(
+     switch( location )
+     {
+ #if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
+-#if defined(MBEDTLS_RSS_EXAMPLE_DRIVER_ENABLED)
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
+         case PSA_KEY_LOCATION_RSS:
+-            status = rss_opaque_destroy_key( attributes,
+-                                             key_buffer,
+-                                             key_buffer_size );
++            status = rss_opaque_destroy_key(key_buffer,
++                                            key_buffer_size );
+             return( status );
+ 
+-#endif /* MBEDTLS_RSS_EXAMPLE_DRIVER_ENABLED */
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
+ #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
+ 
+         case PSA_KEY_LOCATION_LOCAL_STORAGE:
+@@ -1082,6 +1218,20 @@ psa_status_t psa_driver_wrapper_copy_key(
+         ));
+ #endif
+ 
++#if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
++        case PSA_KEY_LOCATION_RSS:
++            status = rss_opaque_copy_key( attributes,
++                                          source_key,
++                                          source_key_length,
++                                          target_key_buffer,
++                                          target_key_buffer_size,
++                                          target_key_buffer_length);
++            return( status );
++
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
++#endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
++
+ 
+ #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
+         default:
+@@ -2909,6 +3059,24 @@ psa_status_t psa_driver_wrapper_asymmetric_encrypt(
+                         salt, salt_length, output, output_size, output_length )
+                   );
+ #endif /* PSA_CRYPTO_DRIVER_TEST */
++#endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
++
++#if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
++        case PSA_KEY_LOCATION_RSS:
++                status = rss_opaque_asymmetric_encrypt( attributes,
++                                                        key_buffer,
++                                                        key_buffer_size,
++                                                        alg, input,
++                                                        input_length,
++                                                        salt,
++                                                        salt_length,
++                                                        output,
++                                                        output_size,
++                                                        output_length );
++                return( status );
++
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
+ #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
+ 
+         default:
+@@ -2986,6 +3154,24 @@ psa_status_t psa_driver_wrapper_asymmetric_decrypt(
+                         salt, salt_length, output, output_size,
+                         output_length ) );
+ #endif /* PSA_CRYPTO_DRIVER_TEST */
++#endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
++
++#if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
++        case PSA_KEY_LOCATION_RSS:
++                status = rss_opaque_asymmetric_decrypt( attributes,
++                                                        key_buffer,
++                                                        key_buffer_size,
++                                                        alg, input,
++                                                        input_length,
++                                                        salt,
++                                                        salt_length,
++                                                        output,
++                                                        output_size,
++                                                        output_length );
++                return( status );
++
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
+ #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
+ 
+         default:
+diff --git a/library/psa_crypto_driver_wrappers.h b/library/psa_crypto_driver_wrappers.h
+index f2d2847eb..d6cdc05c8 100644
+--- a/library/psa_crypto_driver_wrappers.h
++++ b/library/psa_crypto_driver_wrappers.h
+@@ -24,6 +24,10 @@
+ #include "psa/crypto.h"
+ #include "psa/crypto_driver_common.h"
+ 
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
++#include "../3rdparty/rss/include/rss/rss_driver_entrypoints.h"
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
++
+ /*
+  * Initialization and termination functions
+  */
+diff --git a/scripts/config.py b/scripts/config.py
+index 7e58acd0a..5082de901 100755
+--- a/scripts/config.py
++++ b/scripts/config.py
+@@ -216,6 +216,7 @@ EXCLUDE_FROM_FULL = frozenset([
+     'MBEDTLS_TEST_CONSTANT_FLOW_MEMSAN', # build dependency (clang+memsan)
+     'MBEDTLS_TEST_CONSTANT_FLOW_VALGRIND', # build dependency (valgrind headers)
+     'MBEDTLS_X509_REMOVE_INFO', # removes a feature
++    'MBEDTLS_RSS_DRIVER_ENABLED' # influences rss async psa crypto accelerator
+ ])
+ 
+ def is_seamless_alt(name):
+diff --git a/scripts/data_files/driver_templates/psa_crypto_driver_wrappers.c.jinja b/scripts/data_files/driver_templates/psa_crypto_driver_wrappers.c.jinja
+index fb370f220..a306d1337 100644
+--- a/scripts/data_files/driver_templates/psa_crypto_driver_wrappers.c.jinja
++++ b/scripts/data_files/driver_templates/psa_crypto_driver_wrappers.c.jinja
+@@ -1550,13 +1550,13 @@ psa_status_t psa_driver_wrapper_destroy_key(
+     switch( location )
+     {
+ #if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
+-#if defined(MBEDTLS_RSS_EXAMPLE_DRIVER_ENABLED)
++#if defined(MBEDTLS_RSS_DRIVER_ENABLED)
+         case PSA_KEY_LOCATION_RSS:
+             status = rss_opaque_destroy_key(key_buffer,
+                                              key_buffer_size );
+             return( status );
+ 
+-#endif /* MBEDTLS_RSS_EXAMPLE_DRIVER_ENABLED */
++#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
+ #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
+ 
+         case PSA_KEY_LOCATION_LOCAL_STORAGE:
+-- 
+2.25.1
+

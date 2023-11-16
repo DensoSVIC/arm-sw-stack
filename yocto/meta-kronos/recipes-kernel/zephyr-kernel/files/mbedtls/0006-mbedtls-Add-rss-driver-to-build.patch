@@ -1,0 +1,72 @@
+From 50fc92111b4a04577fe49765a7936b540e7dde3b Mon Sep 17 00:00:00 2001
+From: Jiamei Xie <jiamei.xie@arm.com>
+Date: Tue, 14 Nov 2023 10:53:33 +0800
+Subject: [PATCH] mbedtls: Add rss driver to build
+
+Add RSS driver code to build and link it to mbedtls library.
+Enable the related configs at the same time.
+
+Upstream-Status: Inappropriate [Kronos-specific]
+Signed-off-by: Jiamei Xie <jiamei.xie@arm.com>
+---
+ modules/mbedtls/CMakeLists.txt               | 12 ++++++++++++
+ modules/mbedtls/configs/config-tls-generic.h |  6 ++++++
+ 2 files changed, 18 insertions(+)
+
+diff --git a/modules/mbedtls/CMakeLists.txt b/modules/mbedtls/CMakeLists.txt
+index aee2f78bd11..06e2bc9a563 100644
+--- a/modules/mbedtls/CMakeLists.txt
++++ b/modules/mbedtls/CMakeLists.txt
+@@ -21,6 +21,7 @@ zephyr_interface_library_named(mbedTLS)
+         ${ZEPHYR_CURRENT_MODULE_DIR}/include
+         configs
+         include
++        ${ZEPHYR_CURRENT_MODULE_DIR}/3rdparty/rss/include
+     )
+ 
+     # Add base library with files required by all drivers/backends.
+@@ -162,6 +163,16 @@ zephyr_interface_library_named(mbedTLS)
+ 
+     zephyr_library_link_libraries(mbedTLS)
+ 
++    zephyr_library_named(mbedTLSRSS)
++
++    list(APPEND rss_source
++      ${ZEPHYR_CURRENT_MODULE_DIR}/3rdparty/rss/rss/rss_driver_entrypoints.c
++    )
++
++    zephyr_library_sources(${rss_source})
++
++    zephyr_library_link_libraries(mbedTLS)
++
+     zephyr_library()
+ 
+     list(APPEND mbedtls_source
+@@ -189,6 +200,7 @@ zephyr_interface_library_named(mbedTLS)
+       mbedTLSCrypto
+       mbedTLSBase
+       mbedTLS
++      mbedTLSRSS
+     )
+ 
+ elseif (CONFIG_MBEDTLS_LIBRARY)
+diff --git a/modules/mbedtls/configs/config-tls-generic.h b/modules/mbedtls/configs/config-tls-generic.h
+index 5c09c55e651..d2cd0c41b85 100644
+--- a/modules/mbedtls/configs/config-tls-generic.h
++++ b/modules/mbedtls/configs/config-tls-generic.h
+@@ -78,6 +78,12 @@
+ #define MBEDTLS_SSL_COOKIE_C
+ #endif
+ 
++
++/* RSS driver */
++#define MBEDTLS_RSS_DRIVER_ENABLED
++#define PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT
++#define MBEDTLS_PSA_CRYPTO_DRIVERS
++
+ /* Supported key exchange methods */
+ 
+ #if defined(CONFIG_MBEDTLS_KEY_EXCHANGE_PSK_ENABLED)
+-- 
+2.25.1
+

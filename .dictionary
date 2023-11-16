@@ -28,6 +28,7 @@ armffa
 armlmd
 armv
 Artifactory
+Asym
 Autonegotiation
 autosectionlabel
 autotools
@@ -134,6 +135,7 @@ DCONFIG
 DCONTROL
 DDSPERF
 DDTC
+decrypt
 defconfig
 definit
 DEFR
@@ -304,6 +306,7 @@ kcalloc
 kconf
 kconfig
 kernelcfg
+Keypair
 KFEATURE
 kfree
 kinfo
@@ -347,6 +350,7 @@ maxdepth
 MAXSIZE
 MBED
 mbedtls
+mbedtlsxxx
 mbid
 mbox
 mboxes
@@ -617,6 +621,7 @@ sysroots
 systemready
 sysvinit
 testimage
+tfmxxx
 THISDIR
 THRTL
 tickless
