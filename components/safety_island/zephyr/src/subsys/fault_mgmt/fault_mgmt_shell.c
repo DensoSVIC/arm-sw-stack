@@ -116,7 +116,7 @@ static int cmd_fmu_set_enabled(const struct shell *sh, size_t argc, char **argv,
 	}
 
 	action = enabled ? "Enabling" : "Disabling";
-	shell_info(sh, "%s fault %x on device %s", action, prot_id, dev->name);
+	shell_info(sh, "%s fault 0x%x on device %s", action, prot_id, dev->name);
 
 	ret = fault_mgmt_set_enabled(dev, prot_id, enabled);
 	return handle_error(sh, ret);
@@ -142,7 +142,7 @@ static int cmd_fmu_set_critical(const struct shell *sh, size_t argc, char **argv
 	}
 
 	status = critical ? "critical" : "non-critical";
-	shell_info(sh, "Setting fault %x on device %s as %s", prot_id, dev->name, status);
+	shell_info(sh, "Setting fault 0x%x on device %s as %s", prot_id, dev->name, status);
 
 	ret = fault_mgmt_set_critical(dev, prot_id, critical);
 	return handle_error(sh, ret);
