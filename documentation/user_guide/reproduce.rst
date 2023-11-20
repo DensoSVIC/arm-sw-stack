@@ -1245,6 +1245,112 @@ The following message is expected to validate this Use-Case:
 
         2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.00s)
 
+Safety Island PSA Crypto APIs Architecture Test Suite
+=====================================================
+
+The demo is always available when the ``Baremetal Architecture`` is selected.
+See :ref:`design_applications_psa_arch_tests` for further details.
+
+Baremetal Architecture
+----------------------
+
+Build
+^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To build a Baremetal Architecture image:
+
+1. Select ``Safety Island PSA Crypto APIs Architecture Test Suite``
+   from the ``Use-Case`` menu.
+2. Choose ``Save & Build``.
+
+Run FVP
+^^^^^^^
+
+To start the FVP:
+
+.. code-block:: console
+
+  kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
+
+The ``PSA Crypto APIs Architecture Test Suite`` is deployed on all the 3 Safety
+Island (SI) Clusters. The test result can be seen on the following tmux windows:
+
+  * ``terminal_uart_si_cluster0``
+  * ``terminal_uart_si_cluster1``
+  * ``terminal_uart_si_cluster2``
+
+The user can navigate through the panes by pressing ``Ctrl-b w`` and arrow keys
+followed by the ``Enter`` key.
+
+Run the tests
+^^^^^^^^^^^^^
+
+The tests will automatically run after the FVP is started. The complete test
+suite takes around 8 minutes to complete. When the tests finish, a log similar
+to the following should be visible. Normally no failure should be seen::
+
+.. code-block:: console
+
+  ************ Crypto Suite Report **********
+  TOTAL TESTS     : 61
+  TOTAL PASSED    : 61
+  TOTAL SIM ERROR : 0
+  TOTAL FAILED    : 0
+  TOTAL SKIPPED   : 0
+  ******************************************
+
+Automated Validation
+^^^^^^^^^^^^^^^^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To enable the validation tests:
+  1. Select ``Safety Island PSA Crypto APIs Architecture Test Suite`` from the
+     ``Use-Case`` menu.
+  2. Choose ``Run Automated Validation`` from the ``Runtime Validation Setup``
+     menu.
+  3. Choose ``Save & Build``.
+
+The complete test suite takes around 9 minutes to complete. See
+:ref:`validation_psa_arch_tests` for more details. A similar output to the
+following is printed out:
+
+.. code-block:: console
+
+  2023-11-21 07:08:11 - INFO     - RESULTS:
+  2023-11-21 07:08:11 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (20.98s)
+  2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster0: PASSED (233.00s)
+  2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster1: PASSED (0.01s)
+  2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.01s)
+  2023-11-21 07:08:11 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
+  2023-11-21 07:08:11 - INFO     - RESULTS - test_00_rss.RssTest.test_gic_multiple_view: PASSED (0.00s)
+  2023-11-21 07:08:11 - INFO     - RESULTS - test_00_rss.RssTest.test_ni710ae: PASSED (0.00s)
+  2023-11-21 07:08:11 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+  2023-11-21 07:08:11 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+  2023-11-21 07:08:11 - INFO     - RESULTS - test_00_secure_partition.OpteeTest.test_optee_normal: PASSED (0.00s)
+  2023-11-21 07:08:11 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+  2023-11-21 07:08:11 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (284.33s)
+  2023-11-21 07:08:11 - INFO     - SUMMARY:
+  2023-11-21 07:08:11 - INFO     - baremetal-image () - Ran 12 tests in 538.328s
+
+The following messages are expected to validate this Use-Case:
+
+.. code-block:: console
+    
+  2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster0: PASSED (233.00s)
+  2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster1: PASSED (0.01s)
+  2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.01s)
+
 |Arm SystemReadyTM| IR Validation
 =================================
 
