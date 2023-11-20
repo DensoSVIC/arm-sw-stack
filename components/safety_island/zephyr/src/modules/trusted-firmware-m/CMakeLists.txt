@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+if (CONFIG_TFM_PSA_PROTECTED_STORAGE_API OR CONFIG_TFM_PSA_INTERNAL_TRUSTED_STORAGE_API)
 zephyr_library_named(tfm)
 
 zephyr_include_directories(
@@ -19,3 +20,4 @@ zephyr_library_sources_ifdef(
         CONFIG_TFM_PSA_INTERNAL_TRUSTED_STORAGE_API
         ${ZEPHYR_TRUSTED_FIRMWARE_M_MODULE_DIR}/interface/src/tfm_its_api.c
 )
+endif()
