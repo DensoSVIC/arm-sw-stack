@@ -40,6 +40,7 @@ LOG_MODULE_REGISTER(veth_rpmsg, LOG_LEVEL_INF);
 #define SHM_NODE        DT_CHOSEN(zephyr_rpmsg_shm)
 #define VETH_RPMSG_DEVICE_NAME "veth_rpmsg"
 #define VETH_RPMSG_MEM_REGION_NUM 2
+#define VETH_RPMSG_DEVICE_ADDRESS DT_REG_ADDR(DT_NODELABEL(shared_ram0))
 
 #define RPMSG_DETACH_CH_ID  2
 #define RPMSG_ATTACH_CH_ID  3
@@ -368,8 +369,10 @@ static int veth_rpmsg_setup_vdev(struct veth_rpmsg_ctx *ctx)
 
 	vring_rsc = rsc_table_get_vring0(cfg->rsc_table_addr);
 	ret = rproc_virtio_init_vring(vdev, 0, vring_rsc->notifyid,
-				      (void *)vring_rsc->da, ctx->rsc_io,
-				      vring_rsc->num, vring_rsc->align);
+				      (void *)vring_rsc->da +
+				      VETH_RPMSG_DEVICE_ADDRESS,
+				      ctx->rsc_io, vring_rsc->num,
+				      vring_rsc->align);
 	if (ret) {
 		LOG_ERR("Failed to init vring 0.\n");
 		goto failed;
@@ -377,14 +380,16 @@ static int veth_rpmsg_setup_vdev(struct veth_rpmsg_ctx *ctx)
 
 	vring_rsc = rsc_table_get_vring1(cfg->rsc_table_addr);
 	ret = rproc_virtio_init_vring(vdev, 1, vring_rsc->notifyid,
-				      (void *)vring_rsc->da, ctx->rsc_io,
-				      vring_rsc->num, vring_rsc->align);
+				      (void *)vring_rsc->da +
+				      VETH_RPMSG_DEVICE_ADDRESS,
+				      ctx->rsc_io, vring_rsc->num,
+				      vring_rsc->align);
 	if (ret) {
 		LOG_ERR("Failed to init vring 1.\n");
 		goto failed;
 	}
 
-	rpmsg_virtio_init_shm_pool(&ctx->shpool, NULL, cfg->shm_size);
+	rpmsg_virtio_init_shm_pool(&ctx->shpool, cfg->shm_addr, cfg->shm_size);
 	ret = rpmsg_init_vdev(&ctx->rvdev, vdev, NULL, ctx->shm_io,
 			      &ctx->shpool);
 	if (ret) {
@@ -566,9 +571,9 @@ int veth_rpmsg_platform_init(struct veth_rpmsg_conf *cfg, struct veth_rpmsg_ctx 
 		return -1;
 	}
 
-	ctx->shm_physmap = (metal_phys_addr_t)cfg->shm_addr +
-			   (metal_phys_addr_t)cfg->shm_bus_addr_delta_l +
-			   (metal_phys_addr_t)(cfg->shm_bus_addr_delta_h << 32);
+	ctx->shm_physmap = (metal_phys_addr_t)cfg->shm_addr -
+			   ((metal_phys_addr_t)cfg->shm_bus_addr_delta_l +
+			   (metal_phys_addr_t)(cfg->shm_bus_addr_delta_h << 32));
 	/* declare shared memory region */
 	metal_io_init(&device->regions[0], (void *)cfg->shm_addr, &ctx->shm_physmap,
 		      cfg->shm_size, -1, 0, NULL);
