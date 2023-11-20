@@ -123,13 +123,26 @@ Safety Island PSA Secure Storage APIs Architecture Test Suite
 
 The PSA Secure Storage architecture test suite is a set of examples of
 the invariant behaviors that are specified in the PSA Secure Storage
-Certified APIs specifications.
+APIs specification.
 
 We use this suite to verify whether these behaviors are implemented
 correctly in our system. This suite contains self-checking and portable
 C-based tests with directed stimulus.
 
-Please refer to :ref:`design_applications_psa_arch_tests` for more information.
+Please refer to :ref:`design_applications_psa_arch_tests_secure_storage` for
+more information.
+
+Safety Island PSA Crypto APIs Architecture Test Suite
+=====================================================
+
+The PSA Crypto architecture test suite is a set of examples of the invariant
+behaviors that are specified in the PSA Crypto APIs specification.
+
+We use this suite to verify whether the PSA Crypto APIs provided on Safety
+Island are correctly implemented.
+
+Please refer to :ref:`design_applications_psa_arch_tests_crypto` for more
+information.
 
 Parsec-enabled TLS Demo
 =======================
