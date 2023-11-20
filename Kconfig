@@ -28,6 +28,9 @@ config EXTRA_IMAGE_FEATURES_ACTUATION
 config EXTRA_IMAGE_FEATURES_HIPC
     bool "Safety Island Communication Demo (using HIPC)"
 
+config EXTRA_IMAGE_FEATURES_SI_PSA_STORAGE_TESTS
+    bool "Safety Island PSA Secure Storage APIs Architecture Test Suite"
+
 comment "Arm SystemReady IR Validation"
 
 config USE_CASE_IR_FIRMWARE
@@ -47,7 +50,7 @@ config USE_CASE_LINUX_DISTRO_OPENSUSE
 endchoice
 
 choice
-    depends on EXTRA_IMAGE_FEATURES_ACTUATION || EXTRA_IMAGE_FEATURES_HIPC
+    depends on EXTRA_IMAGE_FEATURES_ACTUATION || EXTRA_IMAGE_FEATURES_HIPC || EXTRA_IMAGE_FEATURES_SI_PSA_STORAGE_TESTS
     prompt "Reference Stack Architecture"
     default ARCHITECTURE_BAREMETAL
 
@@ -55,15 +58,16 @@ config ARCHITECTURE_BAREMETAL
     bool "Baremetal"
 
 config ARCHITECTURE_VIRTUALIZATION
+    depends on !EXTRA_IMAGE_FEATURES_SI_PSA_STORAGE_TESTS
     bool "Virtualization"
 
 endchoice
 
 comment "Runtime Validation Setup"
-    depends on EXTRA_IMAGE_FEATURES_ACTUATION || EXTRA_IMAGE_FEATURES_HIPC
+    depends on EXTRA_IMAGE_FEATURES_ACTUATION || EXTRA_IMAGE_FEATURES_HIPC || EXTRA_IMAGE_FEATURES_SI_PSA_STORAGE_TESTS
 
 config RUN_TESTS
-    depends on EXTRA_IMAGE_FEATURES_ACTUATION || EXTRA_IMAGE_FEATURES_HIPC
+    depends on EXTRA_IMAGE_FEATURES_ACTUATION || EXTRA_IMAGE_FEATURES_HIPC || EXTRA_IMAGE_FEATURES_SI_PSA_STORAGE_TESTS
     bool "Run Automated Validation"
     default n
 
@@ -83,6 +87,7 @@ config KAS_INCLUDE_ARCHITECTURE
 config KAS_INCLUDE_APPLICATION
     string
     default "yocto/kas/hipc-validation.yml" if EXTRA_IMAGE_FEATURES_HIPC
+    default "yocto/kas/si-psa-storage-tests.yml" if EXTRA_IMAGE_FEATURES_SI_PSA_STORAGE_TESTS
 
 if RUN_TESTS
     config TESTIMAGE_AUTO
