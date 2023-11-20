@@ -40,6 +40,8 @@ Diagram
 
 |
 
+.. _design_applications_psa_arch_tests_secure_storage:
+
 ***********************************************
 PSA Secure Storage APIs Architecture Test Suite
 ***********************************************
@@ -114,6 +116,40 @@ Please refer to `Trusted Firmware-M PSA Protected Storage Interfaces`_ and
 `Trusted Firmware-M PSA Internal Trusted Storage Interfaces`_ for more
 information.
 
+.. _design_applications_psa_arch_tests_crypto:
+
+***************************************
+PSA Crypto APIs Architecture Test Suite
+***************************************
+
+The `PSA Crypto APIs Architecture Test Suite`_ is integrated in a Zephyr
+application. The application is deployed on all the 3 Safety Island Clusters.
+
+The test suite contains 61 test cases in total. The test cases are executed in
+sequence. At the end of the test suite, a log similar to the following should be
+visible on all the 3 Safety Island terminals. Normally, no failure should be
+seen::
+
+.. code-block:: console
+
+  ************ Crypto Suite Report **********
+  TOTAL TESTS     : 61
+  TOTAL PASSED    : 61
+  TOTAL SIM ERROR : 0
+  TOTAL FAILED    : 0
+  TOTAL SKIPPED   : 0
+  ******************************************
+
+PSA Crypto APIs
+===============
+
+The PSA Crypto APIs are implemented by `Mbed TLS`_. In Mbed TLS, different
+crypto APIs are handled in different ways. For asymmetric crypto operations, the
+RSS secure service is invoked by calling the ``psa_call()`` interface. The other
+crypto operations are handled on Safety Island by Mbed TLS software
+implementation. For more information on the Mbed TLS implementation, please
+refer to :ref:`design_safety_island_secure_services_psa_crypto_apis`.
+
 **********
 Validation
 **********
@@ -131,3 +167,7 @@ to:
 * Add PSA Arch Tests as a Zephyr module.
 * Move a Secure Storage test to be the final one in the test suite as it causes
   Denial of Service to the Primary Compute.
+* Change the key location of asymmetric crypto operation test cases, so the RSS
+  secure service can be called.
+* Postpone the time-consuming crypto test case for ``psa_generate_key`` to the
+  end of the execution sequence.
