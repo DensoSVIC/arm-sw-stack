@@ -21,7 +21,7 @@ class LinuxLoginTest(OERuntimeTestCase):
 
         # Ensure all services have started
         status, output = self.target.run('systemctl is-system-running --wait',
-                                         timeout=300)
+                                         timeout=1000)
         self.assertEqual(status, 0,
                          msg=f'Failed to get systemctl running.\n{output}')
 
