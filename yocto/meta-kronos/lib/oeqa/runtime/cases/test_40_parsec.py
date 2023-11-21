@@ -34,19 +34,34 @@ class ParsecTest(OERuntimeTestCase):
             self.mirror_docker = (self.td.get('MIRROR_DOCKER') or
                                   'docker.io/library')
 
-            status, output = self.run_cmd('ssl_server &', timeout=120)
+            # Workaround: ssh won't return if 'ssl_server &' is run, using this
+            # commands below, redirecting the stderr and stdout, will make
+            # ssh return but ssl_server will remain running
+            cmd = 'ssl_server &>/tmp/ssl_server.log &'
+            status, output = self.run_cmd(cmd, timeout=120)
             self.assertEqual(status, 0, msg='ssl_server failed to start.\n %s'
                              % output)
+
+            status, pid = self.run_cmd('pidof ssl_server', timeout=20)
+            self.assertEqual(status, 0, msg='Failed to get ssl_server pid.\n %s'
+                             % pid)
+
+            status, output = self.run_cmd(f'ps -P {pid}', timeout=30)
+            self.assertEqual(status, 0, msg='ssl_server is not running!.\n %s'
+                             % output)
+
             status, output = self.run_cmd(f'docker run --rm \
                     -v /run/parsec/parsec.sock:/run/parsec/parsec.sock \
                     -v /usr/bin/ssl_client1:/usr/bin/ssl_client1 \
                     --network host \
                     {self.mirror_docker}/ubuntu:22.04 \
                     ssl_client1', \
-                    timeout=240)
+                    timeout=800)
             self.assertEqual(status, 0, msg='ssl_client1 failed.\n %s'
                              % output)
         finally:
+            # If this call fails, it means that ssl_server was not running
+            # for some reason probably described in the log file
             status, output = self.run_cmd('pkill ssl_server', timeout=30)
             self.assertEqual(status, 0, msg='ssl_server failed to stop.\n %s'
                              % output)
@@ -54,4 +69,8 @@ class ParsecTest(OERuntimeTestCase):
             # Synchronize cached writes to persistent storage
             status, output = self.run_cmd('sync', timeout=120)
             self.assertEqual(status, 0, msg='Synchronizing caches failed.\n %s'
+                             % output)
+
+            status, output = self.run_cmd('cat /tmp/ssl_server.log', timeout=30)
+            self.assertEqual(status, 0, msg='Failed to get ssl_server logs.\n%s'
                              % output)
