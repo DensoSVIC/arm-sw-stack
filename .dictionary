@@ -460,6 +460,7 @@ phandle
 phandles
 physinfo
 physmap
+pidof
 pkgconfig
 pkgs
 pkill

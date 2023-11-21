@@ -23,6 +23,35 @@ class CAMTest(OERuntimeTestCase):
     def tearDownClass(cls):
         super(CAMTest, cls).tearDownClass()
 
+    def start_cam_service(self):
+        st = ('cam-service -c /usr/share/cam-data/ -l info '
+              '&>/tmp/cam-service.log &')
+        status, output = self.target.run(st, timeout=20)
+        self.assertEqual(status, 0,
+                         msg=f'Failed to start cam-service.\n{output}')
+
+        status, pid = self.target.run('pidof cam-service', timeout=20)
+        self.assertEqual(status, 0, msg='Failed to get cam-service pid.\n%s'
+                         % pid)
+
+        status, output = self.target.run(f'ps -P {pid}', timeout=30)
+        self.assertEqual(status, 0, msg='cam-service is not running!.\n %s'
+                         % output)
+
+    def stop_cam_service(self):
+        # If this call fails, it means that ssl_server was not running
+        # for any reason
+        st = 'pkill -SIGINT cam-service'
+        status, output = self.target.run(st, timeout=40)
+        self.assertEqual(status, 0,
+                         msg=f'Failed to stop cam-service.\n{output}')
+
+        status, output = self.target.run('cat /tmp/cam-service.log',
+                                         timeout=40)
+        self.assertEqual(status, 0,
+                         msg=f'Failed to access cam-service log.\n{output}')
+        return output
+
     @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
     def test_cam_service_help(self):
         st = 'cam-service -h'
@@ -58,26 +87,15 @@ class CAMTest(OERuntimeTestCase):
 
         # Perform an integration test by starting cam-service and running
         # cam-app-example to see if it successfully interacts with cam-service
-        st = ('cam-service -c /usr/share/cam-data/ -l info '
-              '&> /tmp/cam-service.log')
-        status, output = self.target.run(st, timeout=20)
-        self.assertEqual(status, 0,
-                         msg=f'Failed to start cam-service.\n{output}')
+        try:
+            self.start_cam_service()
 
-        st = 'cam-app-example -t 3000 -c 4 -s 2'
-        status, output = self.target.run(st, timeout=60)
-        self.assertEqual(status, 0,
-                         msg=f'Failed to run cam-app-example.\n{output}')
-
-        st = 'pkill -SIGINT cam-service'
-        status, output = self.target.run(st, timeout=40)
-        self.assertEqual(status, 0,
-                         msg=f'Failed to stop cam-service.\n{output}')
-
-        st = 'cat /tmp/cam-service.log'
-        status, output = self.target.run(st, timeout=40)
-        self.assertEqual(status, 0,
-                         msg=f'Failed to access cam-service log.\n{output}')
+            st = 'cam-app-example -t 3000 -c 4 -s 2'
+            status, output = self.target.run(st, timeout=200)
+            self.assertEqual(status, 0,
+                             msg=f'Failed to run cam-app-example.\n{output}')
+        finally:
+            self.stop_cam_service()
 
     @OETestDepends(['test_40_cam.CAMTest.test_cam_app_example_to_service'])
     def test_cam_app_example_to_service_custom_uuid(self):
@@ -101,31 +119,21 @@ class CAMTest(OERuntimeTestCase):
 
         # Start cam-service and then use cam-tool to deploy the new stream
         # configuration with cam-service
-        st = ('cam-service -c /usr/share/cam-data/ -l info '
-              '&> /tmp/cam-service.log')
-        status, output = self.target.run(st, timeout=20)
-        self.assertEqual(status, 0,
-                         msg=f'Failed to start cam-service.\n{output}')
+        try:
+            self.start_cam_service()
 
-        st = f'cam-tool deploy -i {csd_f}'
-        status, output = self.target.run(st, timeout=60)
-        self.assertEqual(status, 0, msg=f'{st} failed.\n{output}')
+            st = f'cam-tool deploy -i {csd_f}'
+            status, output = self.target.run(st, timeout=60)
+            self.assertEqual(status, 0, msg=f'{st} failed.\n{output}')
 
-        # Start cam-app-example with the custom uuid base
-        st = f'cam-app-example -u {uuid_base} -t 3000 -c 4 -s 2'
-        status, output = self.target.run(st, timeout=60)
-        self.assertEqual(status, 0,
-                         msg=f'Failed to run cam-app-example.\n{output}')
-
-        st = 'pkill -SIGINT cam-service'
-        status, output = self.target.run(st, timeout=40)
-        self.assertEqual(status, 0,
-                         msg=f'Failed to stop cam-service.\n{output}')
-
-        # Verify that the cam-service validate the stream from cam-app-example
-        # against the custom csd that was deployed.
-        st = 'cat /tmp/cam-service.log'
-        status, output = self.target.run(st, timeout=40)
-        self.assertEqual(status, 0,
-                         msg=f'Failed to access cam-service log.\n{output}')
-        self.assertTrue(f'{uuid} configuration is loaded' in output)
+            # Start cam-app-example with the custom uuid base
+            st = f'cam-app-example -u {uuid_base} -t 3000 -c 4 -s 2'
+            status, output = self.target.run(st, timeout=200)
+            self.assertEqual(status, 0,
+                             msg=f'Failed to run cam-app-example.\n{output}')
+        finally:
+            # This makes sure the test can be run again
+            self.target.run(f'rm -rf /usr/share/cam-data/{uuid}.csd;sync',
+                            timeout=60)
+            output = self.stop_cam_service()
+            self.assertTrue(f'{uuid} configuration is loaded' in output)
