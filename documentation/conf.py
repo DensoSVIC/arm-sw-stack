@@ -244,6 +244,7 @@ rst_prolog = f"""
 .. _PSA Secure Storage APIs Architecture Test Suite: https://github.com/ARM-software/psa-arch-tests/blob/{psa_arch_tests_version}/api-tests/docs/psa_storage_testlist.md
 .. _Parsec Secure Element Driver: https://github.com/parallaxsecond/parsec-se-driver
 .. _Parsec: https://parallaxsecond.github.io/parsec-book/index.html
+.. _Platform Security Firmware Update Specification: https://developer.arm.com/documentation/den0118/latest
 .. _Power Control System Architecture (PCSA): https://developer.arm.com/documentation/den0050/latest
 .. _Pure Pursuit: https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/pure-pursuit.html
 .. _RSS provisioning: https://tf-m-user-guide.trustedfirmware.org/platform/arm/rss/rss_provisioning.html

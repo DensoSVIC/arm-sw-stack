@@ -15,6 +15,7 @@ Solution Design
 
    boot_process
    secure_services
+   secure_firmware_update
    fault_mgmt
    hipc
    components

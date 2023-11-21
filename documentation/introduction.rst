@@ -204,6 +204,14 @@ Linux Distribution Installation
 Demonstrates the installation of two unmodified generic UEFI distribution
 images, Debian and openSUSE, fulfilling |Arm SystemReadyTM| requirements.
 
+Secure Firmware Update
+======================
+
+Demonstrates an implementation of Secure Firmware Update initiated from
+the Primary Compute and follows the
+`Platform Security Firmware Update Specification`_. Please refer to
+:ref:`design_secure_firmware_update` for more information.
+
 **********************
 Documentation Overview
 **********************
