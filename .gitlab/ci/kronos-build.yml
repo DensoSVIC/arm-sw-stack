@@ -175,7 +175,7 @@ Image-Build-virtualization-hipc-validation:
 # should only be run in the nightly or when triggered manually
 Prune-Cache:
   rules:
-    - if: $FREQUENCY == "nightly"
+    - if: $FREQUENCY == "weekly"
     - when: manual
 
 Update-Repos:
