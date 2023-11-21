@@ -15,15 +15,8 @@ Introduction
 ************
 
 The Reference Software Stack provides the implementation of Secure Services
-through both the Primary Compute and Safety Island.
-
-***************
-Primary Compute
-***************
-
-The Primary Compute provides the implementation of `Crypto Service`_ and
-`Secure Storage Service`_ via the SE Proxy secure partition. These services
-are aligned to the following specifications:
+through both the Primary Compute and Safety Island. These services are aligned
+to the following specifications:
 
 * `PSA Crypto API`_: The API provides a portable programming interface to
   cryptographic operations, and key storage functionality on a wide range of
@@ -37,6 +30,13 @@ are aligned to the following specifications:
       the Platform Root of Trust (PRoT). For now the ITS API is not supported by
       the Reference Stack on the Primary Compute.
     * Protected Storage (PS) API: An interface for external protected storage.
+
+***************
+Primary Compute
+***************
+
+On Primary Compute, the implementation of `Crypto Service`_ and `Secure Storage
+Service`_ is based on the SE Proxy secure partition.
 
 The Primary Compute also provides the implementation of
 `UEFI SMM Services`_ via the SMM Gateway secure partition to support UEFI System
@@ -122,16 +122,8 @@ secure enclave as explained above.
 Safety Island
 *************
 
-The Safety Island provides the implementation of Secure Storage service.
-This service is aligned to the following specifications:
-
-* `PSA Secure Storage API`_: The API provides key/value storage
-  interfaces for use with device-protected storage. The Secure Storage API
-  describes two interfaces for storage:
-
-    * Internal Trusted Storage (ITS) API: An interface for storage provided by
-      the Platform Root of Trust (PRoT).
-    * Protected Storage (PS) API: An interface for external protected storage.
+The Safety Island provides the implementation of `Crypto Service`_ and
+`Secure Storage Service`_. The data paths of the services are different.
 
 Architecture
 ------------
@@ -145,6 +137,48 @@ the Safety Island Secure Services.
    :align: center
 
 |
+
+.. _design_safety_island_secure_services_psa_crypto_apis:
+
+PSA Crypto APIs
+---------------
+
+The `PSA Crypto API`_ is implemented by the ``libmbedcrypto`` library of
+`Mbed TLS`_.
+
+Mbed TLS supports drivers for cryptographic accelerators, secure elements and
+random generators. An `RSS Communication Driver` is created to communicate with
+RSS for calling the crypto service that is provided there. The driver invokes
+the ``psa_call()`` interface to communicate with the RSS via MHUv3.
+
+By introducing the driver, different crypto operations can be handled in
+different ways:
+
+* Asymmetric crypto operations can be handled in RSS for enhanced security,
+  because the private key cannot leave RSS. The following Crypto APIs are
+  supported by the driver:
+
+  Key management:
+    * ``psa_import_key``
+    * ``psa_generate_key``
+    * ``psa_copy_key``
+    * ``psa_destroy_key``
+    * ``psa_export_key``
+    * ``psa_export_public_key``
+
+  Asymmetric signature:
+    * ``psa_sign_message``
+    * ``psa_verify_message``
+    * ``psa_sign_hash``
+    * ``psa_verify_hash``
+
+  Asymmetric encryption:
+    * ``psa_asymmetric_encrypt``
+    * ``psa_asymmetric_decrypt``
+
+* Symmetric and other crypto operations are handled in Safety Island locally
+  with the Mbed TLS software implementation, where the runtime performance is
+  optimized.
 
 PSA Secure Storage APIs
 -----------------------
