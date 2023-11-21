@@ -6,6 +6,7 @@
 
 from oeqa.core.decorator.depends import OETestDepends
 from oeqa.runtime.case import OERuntimeTestCase
+from oeqa.utils.zephyr_shell import Shell
 import pexpect
 
 SYSTEM_FMU_INTERNAL_FAULTS = [
@@ -36,27 +37,26 @@ GIC_FMU_FAULT_SAMPLE = [
 
 
 class FaultMgmtTest(OERuntimeTestCase):
-    si_prompt = r'uart:~\$ '
     console = 'safety_island_c1'
 
+    def setUp(self):
+        super().setUp()
+        self.shell = Shell(self.target, self.console, self.logger)
+        self.shell.wait_for_prompt(timeout=60)
+
     def fmu_fault_clear(self):
-        self.target.expect(self.console, self.si_prompt, timeout=60)
-        self.target.sendline(self.console, "fault clear")
-        self.target.expect(self.console, r"Done!", timeout=120)
+        output = self.shell.exec_command("fault clear", timeout=120)
+        self.assertIn("Done!", output)
 
     def test_tree(self):
-        self.target.expect(self.console, self.si_prompt, timeout=60)
-
-        self.target.sendline(self.console, "fault tree")
-        self.target.expect(self.console, self.si_prompt, timeout=60)
-        tree = self.target.before(self.console)
-        for fmu in [b"fmu@2a510000", b"fmu@2a570000"]:
+        tree = self.shell.exec_command("fault tree")
+        for fmu in ["fmu@2a510000", "fmu@2a570000"]:
             self.assertIn(fmu, tree)
 
     def test_system_fmu_internal_inject(self):
         self.fmu_fault_clear()
         for fault_id in SYSTEM_FMU_INTERNAL_FAULTS:
-            self.target.expect(self.console, self.si_prompt, timeout=60)
+            self.shell.wait_for_prompt()
             self.target.sendline(self.console,
                                  f"fault inject fmu@2a510000 {fault_id}")
             self.target.expect(self.console,
@@ -65,18 +65,17 @@ class FaultMgmtTest(OERuntimeTestCase):
                                timeout=90)
 
     def test_system_fmu_internal_set_enabled(self):
-        self.target.expect(self.console, self.si_prompt, timeout=60)
-        self.target.sendline(self.console,
-                             f"fault set_enabled fmu@2a510000 0x2 0")
-        self.target.expect(self.console, 'Disabling fault', timeout=30)
-        self.target.expect(self.console, self.si_prompt, timeout=30)
+        output = self.shell.exec_command(
+                "fault set_enabled fmu@2a510000 0x2 0")
+        self.assertIn('Disabling fault', output)
+
         self.target.sendline(self.console, f"fault inject fmu@2a510000 0x2")
         # Wait 10 seconds to ensure the fault is not triggered
         match = self.target.expect(self.console,
                                    ["Fault received", pexpect.TIMEOUT],
                                    timeout=10)
         self.assertEqual(match, 1)
-        self.target.expect(self.console, self.si_prompt, timeout=30)
+        self.shell.wait_for_prompt()
 
         # Re-enable the fault and ensure it is now received
         self.target.sendline(self.console,
@@ -89,34 +88,26 @@ class FaultMgmtTest(OERuntimeTestCase):
     def test_gic_fmu_inject(self):
         for fault_id in GIC_FMU_FAULT_SAMPLE:
             # Enable fault
-            self.target.expect(self.console, self.si_prompt, timeout=60)
-            self.target.sendline(
-                self.console,
+            output = self.shell.exec_command(
                 f"fault set_enabled fmu@2a570000 {fault_id} 1")
-            self.target.expect(self.console, "Enabling fault", timeout=30)
+            self.assertIn("Enabling fault", output)
 
             # Configure fault as non-critical and inject
-            self.target.expect(self.console, self.si_prompt, timeout=30)
-            self.target.sendline(
-                self.console,
-                f"fault set_critical fmu@2a570000 {fault_id} 0")
-            self.target.expect(self.console, "Setting fault", timeout=30)
-            self.target.expect(self.console, self.si_prompt, timeout=30)
-            self.target.sendline(
-                self.console,
-                f"fault inject fmu@2a570000 {fault_id}")
+            output = self.shell.exec_command(
+                f"fault set_critical fmu@2a570000 {fault_id} 0", timeout=30)
+            self.assertIn("Setting fault", output)
+            self.target.sendline(self.console,
+                                 f"fault inject fmu@2a570000 {fault_id}")
             self.target.expect(self.console,
                                r"Fault received \(non-critical\): "
                                fr"{fault_id} on fmu@2a570000 : count 1",
                                timeout=90)
 
             # Configure fault as critical and inject
-            self.target.expect(self.console, self.si_prompt, timeout=30)
-            self.target.sendline(
-                self.console,
-                f"fault set_critical fmu@2a570000 {fault_id} 1")
-            self.target.expect(self.console, "Setting fault", timeout=30)
-            self.target.expect(self.console, self.si_prompt, timeout=30)
+            self.shell.wait_for_prompt()
+            output = self.shell.exec_command(
+                f"fault set_critical fmu@2a570000 {fault_id} 1", timeout=30)
+            self.assertIn("Setting fault", output)
             self.target.sendline(self.console,
                                  f"fault inject fmu@2a570000 {fault_id}")
             self.target.expect(self.console,
@@ -126,71 +117,54 @@ class FaultMgmtTest(OERuntimeTestCase):
 
     def test_fmu_fault_count(self):
         self.test_system_fmu_internal_inject()
-        self.target.expect(self.console, self.si_prompt, timeout=60)
-        self.target.sendline(self.console, "fault count")
+        output = self.shell.exec_command("fault count", timeout=60)
         count = len(SYSTEM_FMU_INTERNAL_FAULTS)
-        self.target.expect(self.console,
-                           fr"Number of fault reported: {count}",
-                           timeout=60)
+        self.assertIn(f"Number of fault reported: {count}", output)
 
     @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
     def test_fmu_fault_list(self):
         self.test_system_fmu_internal_inject()
         self.test_gic_fmu_inject()
-        self.target.expect(self.console, self.si_prompt, timeout=60)
-        self.target.sendline(self.console, "fault list")
-        self.target.expect(self.console, r"Fault history:", timeout=30)
+        output = self.shell.exec_command("fault list", timeout=60)
 
         # Fault patterns for the address "2a510000" (only non-critical)
         for fault_id in SYSTEM_FMU_INTERNAL_FAULTS:
-            pattern = (fr"Fault received \(non-critical\): {fault_id} on "
-                       fr"fmu@2a510000 : count 1")
-            self.target.expect(self.console, pattern, timeout=60)
+            pattern = (f"Fault received (non-critical): {fault_id} on "
+                       "fmu@2a510000 : count 1")
+            self.assertIn(pattern, output)
 
         # For the address "2a570000" (critical and non-critical)
         for fault_id in GIC_FMU_FAULT_SAMPLE:
-            non_critical_pattern = (fr"Fault received \(non-critical\): "
-                                    fr"{fault_id} on fmu@2a570000 : count 1")
-            critical_pattern = (fr"Fault received \(critical\): {fault_id} "
-                                fr"on fmu@2a570000 : count 1")
-            self.target.expect(self.console, non_critical_pattern, timeout=60)
-            self.target.expect(self.console, critical_pattern, timeout=60)
-        self.target.expect(self.console, self.si_prompt, timeout=60)
-        self.target.sendline(self.console, f"fault inject fmu@2a510000 0x2")
-        self.target.expect(self.console, self.si_prompt, timeout=90)
-        self.target.sendline(self.console, "fault list 2")
-        self.target.expect(self.console,
-                           r"Fault received \(non-critical\): "
-                           fr"0x2 on fmu@2a510000 : count 2",
-                           timeout=90)
+            non_critical_pattern = ("Fault received (non-critical): "
+                                    f"{fault_id} on fmu@2a570000 : count 1")
+            critical_pattern = (f"Fault received (critical): {fault_id} "
+                                "on fmu@2a570000 : count 1")
+            self.assertIn(non_critical_pattern, output)
+            self.assertIn(critical_pattern, output)
+
+        self.shell.exec_command("fault inject fmu@2a510000 0x2")
+        output = self.shell.exec_command("fault list 2")
+        self.assertIn("Fault received (non-critical): "
+                      "0x2 on fmu@2a510000 : count 2",
+                      output)
 
     def test_fmu_fault_summary(self):
         self.test_system_fmu_internal_inject()
-        self.target.expect(self.console, self.si_prompt, timeout=60)
-        self.target.sendline(self.console, f"fault inject fmu@2a510000 0x20")
-        self.target.expect(self.console, self.si_prompt, timeout=60)
-        self.target.sendline(self.console, "fault summary")
+        self.shell.exec_command("fault inject fmu@2a510000 0x20")
+        output = self.shell.exec_command("fault summary", timeout=60)
         count = len(SYSTEM_FMU_INTERNAL_FAULTS)
-        self.target.expect(self.console,
-                           fr"Number of fault reported: {count + 1}",
-                           timeout=30)
-        self.target.expect(self.console,
-                           r"Most reported faults:\r\n",
-                           timeout=60)
-        self.target.expect(self.console,
-                           r"Fault history:\s*\r?\n(?:Fault "
-                           r"received \(non-critical\): [x\d]+ on "
-                           fr"fmu@2a510000 : count \d+\s*\r?\n){{{count}}}",
-                           timeout=60)
+        self.assertIn(f"Number of fault reported: {count + 1}", output)
+        self.assertIn("Most reported faults:\r\n", output)
+        self.assertRegex(output, r"Fault history:\s*\r?\n(?:Fault "
+                         r"received \(non-critical\): [x\d]+ on "
+                         fr"fmu@2a510000 : count \d+\s*\r?\n){{{count}}}")
 
     def test_fmu_fault_clear(self):
         self.test_system_fmu_internal_inject()
-        self.target.expect(self.console, self.si_prompt, timeout=60)
-        self.target.sendline(self.console, "fault clear")
-        self.target.expect(self.console, r"Erasing the storage...",
-                           timeout=30)
-        self.target.expect(self.console, r"Done!", timeout=30)
-        self.target.expect(self.console, self.si_prompt, timeout=60)
-        self.target.sendline(self.console, "fault list")
-        self.target.expect(self.console, r"No fault reported",
-                           timeout=90)
+
+        output = self.shell.exec_command("fault clear")
+        self.assertIn("Erasing the storage...", output)
+        self.assertIn("Done!", output)
+
+        output = self.shell.exec_command("fault list")
+        self.assertIn("No fault reported", output)
