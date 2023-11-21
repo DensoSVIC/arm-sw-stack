@@ -67,3 +67,16 @@ void fault_mgmt_storage_foreach(fault_mgmt_storage_callback callback, uint64_t t
 	sys_hashmap_foreach(&fault_map, fault_mgmt_storage_list_conditional_cb, cookie);
 	k_mutex_unlock(&fault_mgmt_storage_mutex);
 }
+
+uint64_t fault_mgmt_storage_get(const struct fault_mgmt_fault *fault)
+{
+	uint64_t count = 0;
+	uint64_t combined_key = GENERATE_FAULT_STORAGE_KEY(fault->handle, fault->prot_id);
+
+	k_mutex_lock(&fault_mgmt_storage_mutex, K_FOREVER);
+	/* Ignore return value - the count for non-existent faults is zero */
+	sys_hashmap_get(&fault_map, combined_key, &count);
+	k_mutex_unlock(&fault_mgmt_storage_mutex);
+
+	return count;
+}

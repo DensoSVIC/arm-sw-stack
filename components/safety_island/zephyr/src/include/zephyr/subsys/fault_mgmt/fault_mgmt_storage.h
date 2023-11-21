@@ -79,6 +79,14 @@ void fault_mgmt_storage_foreach(fault_mgmt_storage_callback callback, uint64_t t
 				void *cookie);
 
 /**
+ * @brief To read a single fault count
+ *
+ * @param fault A description of the fault for which to read a count
+ * @return The corresponding fault count
+ */
+uint64_t fault_mgmt_storage_get(const struct fault_mgmt_fault *fault);
+
+/**
  * @brief Clear all fault entries from the storage.
  */
 void fault_mgmt_storage_clear(void);
