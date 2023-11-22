@@ -636,6 +636,7 @@ timesyncd
 titlesonly
 tmpdir
 tmpfiles
+tmux
 toctree
 TOOLNG
 topdir

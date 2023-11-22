@@ -194,7 +194,7 @@ available via the tmux window titled ``terminal_uart_si_cluster2``. For ease of
 navigation, we recommend joining the SI Cluster 2 terminal window to Primary
 Compute terminal window and to create a tmux pane attached to the build host
 machine in order to issue commands on it. User can navigate through the panes
-by pressing ``Ctrl-b`` and arrow keys followed by the ``Enter`` key.
+by pressing ``Ctrl-b w`` and arrow keys followed by the ``Enter`` key.
 
 Follow the steps below to achieve the same:
 
@@ -438,7 +438,7 @@ available via the tmux window titled ``terminal_uart_si_cluster2``. For ease of
 navigation, we recommend joining the SI Cluster 2 terminal window to Primary
 Compute terminal window and to create a tmux pane attached to the build host
 machine in order to issue commands on it. User can navigate through the panes
-by pressing ``Ctrl-b`` and arrow keys followed by the ``Enter`` key.
+by pressing ``Ctrl-b w`` and arrow keys followed by the ``Enter`` key.
 
 Follow the steps below to achieve the same:
 
@@ -1137,7 +1137,7 @@ To start the FVP:
 The Safety Island (SI) Cluster 2 terminal running the ``PSA Secure Storage APIs
 Architecture Test Suite`` is available via the tmux window titled
 ``terminal_uart_si_cluster2``. User can navigate through the panes by pressing
-``Ctrl-b`` and arrow keys followed by the ``Enter`` key.
+``Ctrl-b w`` and arrow keys followed by the ``Enter`` key.
 
 Run the tests
 ^^^^^^^^^^^^^
