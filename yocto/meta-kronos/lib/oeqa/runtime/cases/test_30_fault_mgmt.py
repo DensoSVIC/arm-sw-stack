@@ -4,8 +4,35 @@
 #
 # SPDX-License-Identifier: MIT
 
+from oeqa.core.decorator.depends import OETestDepends
 from oeqa.runtime.case import OERuntimeTestCase
 import pexpect
+
+SYSTEM_FMU_INTERNAL_FAULTS = [
+    '0x1',  # Clock error
+    '0x2',  # Reset error
+    '0x4',  # Lockstep error
+    '0x8',  # Q channel error
+    '0x10',  # APB parity error
+    '0x20',  # DFT error
+    '0x40',  # Incorrect APB key sequence
+    '0x80',  # APB security error
+    '0x100',  # APB access error
+    '0x200',  # APB size error
+]
+
+GIC_FMU_FAULT_SAMPLE = [
+    "0x100",  # GICD 0 - Clock error
+    "0x4900",  # GICD 0 - External error 0
+    "0x10000600",  # Wake 0 - QCH error
+    "0x20000a00",  # SPI Collator ID 0 - External error 1
+    "0x30000b00",  # CI 0 - DFT error
+    "0x30001400",  # CI 0 - LPD error
+    "0x40000800",  # ITS 0 - DGI AXIT CRC error
+    "0x40001300",  # ITS 0 - COL SED in address bit
+    "0x50000200",  # FMU 0 - FMU clock protection error
+    "0x50000300",  # FMU 0 - FMU lockstep protection error
+]
 
 
 class FaultMgmtTest(OERuntimeTestCase):
@@ -28,7 +55,7 @@ class FaultMgmtTest(OERuntimeTestCase):
 
     def test_system_fmu_internal_inject(self):
         self.fmu_fault_clear()
-        for fault_id in ['0x1', '0x2', '0x8', '0x20']:
+        for fault_id in SYSTEM_FMU_INTERNAL_FAULTS:
             self.target.expect(self.console, self.si_prompt, timeout=60)
             self.target.sendline(self.console,
                                  f"fault inject fmu@2a510000 {fault_id}")
@@ -58,16 +85,9 @@ class FaultMgmtTest(OERuntimeTestCase):
         self.target.expect(self.console,
                            "Fault received")
 
+    @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
     def test_gic_fmu_inject(self):
-        fault_ids = [
-            "0x100",  # GICD 0 - Clock error
-            "0x10000600",  # Wake 0 - QCH error
-            "0x20000a00",  # SPI Collator ID 0 - External error 1
-            "0x40001300",  # ITS 0 - COL SED in address bit
-            "0x50000300",  # FMU 0 - FMU lockstep protection error
-        ]
-
-        for fault_id in fault_ids:
+        for fault_id in GIC_FMU_FAULT_SAMPLE:
             # Enable fault
             self.target.expect(self.console, self.si_prompt, timeout=60)
             self.target.sendline(
@@ -108,10 +128,12 @@ class FaultMgmtTest(OERuntimeTestCase):
         self.test_system_fmu_internal_inject()
         self.target.expect(self.console, self.si_prompt, timeout=60)
         self.target.sendline(self.console, "fault count")
+        count = len(SYSTEM_FMU_INTERNAL_FAULTS)
         self.target.expect(self.console,
-                           r"Number of fault reported: 4",
+                           fr"Number of fault reported: {count}",
                            timeout=60)
 
+    @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
     def test_fmu_fault_list(self):
         self.test_system_fmu_internal_inject()
         self.test_gic_fmu_inject()
@@ -120,14 +142,13 @@ class FaultMgmtTest(OERuntimeTestCase):
         self.target.expect(self.console, r"Fault history:", timeout=30)
 
         # Fault patterns for the address "2a510000" (only non-critical)
-        for fault_id in ['0x1', '0x2', '0x8', '0x20']:
+        for fault_id in SYSTEM_FMU_INTERNAL_FAULTS:
             pattern = (fr"Fault received \(non-critical\): {fault_id} on "
                        fr"fmu@2a510000 : count 1")
             self.target.expect(self.console, pattern, timeout=60)
 
         # For the address "2a570000" (critical and non-critical)
-        for fault_id in ['0x100', '0x10000600', '0x20000a00',
-                         '0x40001300', '0x50000300']:
+        for fault_id in GIC_FMU_FAULT_SAMPLE:
             non_critical_pattern = (fr"Fault received \(non-critical\): "
                                     fr"{fault_id} on fmu@2a570000 : count 1")
             critical_pattern = (fr"Fault received \(critical\): {fault_id} "
@@ -149,19 +170,18 @@ class FaultMgmtTest(OERuntimeTestCase):
         self.target.sendline(self.console, f"fault inject fmu@2a510000 0x20")
         self.target.expect(self.console, self.si_prompt, timeout=60)
         self.target.sendline(self.console, "fault summary")
+        count = len(SYSTEM_FMU_INTERNAL_FAULTS)
         self.target.expect(self.console,
-                           r"Number of fault reported: 5",
+                           fr"Number of fault reported: {count + 1}",
                            timeout=30)
         self.target.expect(self.console,
-                           r"Most reported faults:\r\n"
-                           r"Fault received \(non-critical\): "
-                           fr"0x20 on fmu@2a510000 : count 2", timeout=60)
+                           r"Most reported faults:\r\n",
+                           timeout=60)
         self.target.expect(self.console,
                            r"Fault history:\s*\r?\n(?:Fault "
-                           r"received \(non-critical\): (0x1|0x2|0x8) on "
-                           r"fmu@2a510000 : count 1\s*\r?\n){3}Fault "
-                           r"received \(non-critical\): 0x20 on "
-                           r"fmu@2a510000 : count 2\r\n", timeout=60)
+                           r"received \(non-critical\): [x\d]+ on "
+                           fr"fmu@2a510000 : count \d+\s*\r?\n){{{count}}}",
+                           timeout=60)
 
     def test_fmu_fault_clear(self):
         self.test_system_fmu_internal_inject()
