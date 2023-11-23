@@ -16,10 +16,10 @@ Introduction
 
 The Kronos FVP contains Armv9-A (Primary Compute) and Armv8-R64 (Safety Island)
 heterogeneous processing elements which share data via the Message Handling
-Unit (MHUv3) and shared Dynamic Random-Access Memory (DRAM). The MHUv3 is a
+Unit (MHUv3) and shared Static Random-Access Memory (SRAM). The MHUv3 is a
 mailbox controller used for signal transmission and the shared memory is used
 for data exchange. Safety Island clusters also share data via the MHUv3 and
-shared DRAM.
+shared SRAM.
 
 The HIPC demonstrates the communication between:
 
@@ -81,11 +81,13 @@ control or by the protocol layers. At this time, network statistics will
 increase the dropped packet counter.
 
 As shown in the above diagram each Safety Island cluster has its own shared
-memory and MHUv3 device to communicate with the Primary Compute. Each shared
-memory instance has a resource table, vring and message buffer that are used to
-transfer/receive information between the Primary Compute and the Safety Island.
-On the Primary Compute, the Safety Island remoteproc driver and RPMsg based
-virtual interface driver are added to communicate with the Safety Island.
+memory and MHUv3 device to communicate with the Primary Compute. The size of
+the shared memory is 16MB and Safety Island clusters 0, 1 and 2 have access to
+it. Each shared memory instance has a resource table (4KB), two vrings
+(1MB each) and message buffer (3MB) that are used to transmit/receive
+information between the Primary Compute and the Safety Island Cluster. On the
+Primary Compute, the Safety Island remoteproc driver and RPMsg-based virtual
+interface driver are added to communicate with the Safety Island.
 
 RPMsg-net driver on the Primary Compute and Veth-RPMsg on the Safety Island
 clusters implement the virtual ethernet device that is base for communication
@@ -124,7 +126,7 @@ Virtualization Architecture
 In the Virtualization Architecture of the Reference Stack, virtual network
 interfaces based on Xen drivers created in the control domain (Dom0) are
 exposed to the domUs. These virtual network interfaces are added to an Open
-vSwitch virtual switch along with an RPmsg virtual interface to communicate
+vSwitch virtual switch along with an RPMsg virtual interface to communicate
 with the Safety Island.
 
 Dom0 has a communication channel with the Safety Island which is the same as
