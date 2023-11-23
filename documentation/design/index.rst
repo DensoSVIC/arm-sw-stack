@@ -15,6 +15,7 @@ Solution Design
 
    boot_process
    secure_services
+   fault_mgmt
    hipc
    components
    applications/index
