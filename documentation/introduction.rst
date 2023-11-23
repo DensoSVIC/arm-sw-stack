@@ -28,9 +28,25 @@ Further technical details of the Kronos Reference Design FVP can be found at
 `Arm Kronos Reference Design Technical Overview`_, with an
 introduction to FVPs available in the `Fast Models FVP Reference Guide`_.
 
-.. note::
-  Users of this software stack must consider safety and security implications
-  according to their own usage goals.
+.. _introduction_safety_considerations:
+
+**********************************
+Safety and Security Considerations
+**********************************
+
+The Kronos Reference Design contains features that users may wish to reference
+as part of the design of secure safety-critical systems. This documentation
+additionally contains information about these features. Reasonable efforts have
+been made to review the information and implementations but:
+
+ * A reference design is not a complete implementation and will inevitably have
+   limitations, simplifications, missing features and bugs that would need to
+   be addressed to achieve a deployable system design.
+ * The information and any limitations documented should be treated as
+   non-exhaustive.
+ * No formal verification methods have been attempted.
+ * Users are fully responsible for validating the design of a system derived
+   from any of the work contained within.
 
 .. _introduction_reference_software_stack_overview:
 
