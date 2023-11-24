@@ -119,6 +119,7 @@ CPUS
 cpython
 crosstool
 crypto
+csel
 cspell
 CSSELR
 csumonidr
@@ -221,6 +222,7 @@ ethsi
 EVNT
 extlinks
 Fancellu
+fatfs
 fbaa
 ffch
 fileextrapaths
@@ -297,6 +299,7 @@ IOMMU
 ioremap
 ioremapped
 iounmap
+ipaddr
 iperf
 IPPROTO
 IRQN
