@@ -349,7 +349,7 @@ To enable the validation tests:
      menu.
   4. Then choose ``Save & Build``.
 
-The complete test suit takes around 16 minutes to complete. See
+The complete test suite takes around 16 minutes to complete. See
 :ref:`validation_actuation_demo` for more details. A similar output to the
 following is printed out.
 
@@ -607,7 +607,7 @@ To enable the validation tests:
      menu.
   4. Then choose ``Save & Build``.
 
-The complete test suit takes around 41 minutes to complete. See
+The complete test suite takes around 41 minutes to complete. See
 :ref:`validation_actuation_demo` for more details. A similar output to the
 following is printed out.
 
@@ -721,7 +721,7 @@ To enable the validation tests:
      menu.
   4. Then choose ``Save & Build``.
 
-A similar output to the following is printed out. The complete test suit takes
+A similar output to the following is printed out. The complete test suite takes
 around 17 minutes to complete. See
 :ref:`validation_hipc_demo` for more details.
 
@@ -819,7 +819,7 @@ To enable the validation tests:
      menu.
   4. Then choose ``Save & Build``.
 
-The complete test suit takes around 41 minutes to complete. See
+The complete test suite takes around 41 minutes to complete. See
 :ref:`validation_hipc_demo` for more details. A similar output to the
 following is printed out.
 
@@ -1055,7 +1055,7 @@ To enable the validation tests:
      menu.
   4. Then choose ``Save & Build``.
 
-The complete test suit takes around 16 minutes to complete. See
+The complete test suite takes around 16 minutes to complete. See
 :ref:`validation_parsec_enabled_tls_demo` for more details. A similar output to
 the following is printed out.
 
@@ -1205,7 +1205,7 @@ To enable the validation tests:
      menu.
   3. Then choose ``Save & Build``.
 
-The complete test suit takes around 10 minutes to complete. See
+The complete test suite takes around 10 minutes to complete. See
 :ref:`validation_psa_arch_tests` for more details. A similar output to the
 following is printed out.
 
