@@ -330,3 +330,40 @@ verify that the psa-arch-tests suite report is as expected.
 
 This test waits until the ``psa-arch-tests`` finish successfully
 and there are no failures in the tests suite report.
+
+.. _validation_fault_management:
+
+Integration Tests Validating the Fault Management Subsystem
+===========================================================
+
+The Fault Management test suite at
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_10_fault_mgmt.py`
+contains a test class to validate the FMUs and another to validate the SSUs
+using the Zephyr shell commands described in the
+:ref:`design_applications_fault_mgmt_shell_reference`.
+
+``FaultMgmtTest`` validates the configuration, injection, reporting and storage
+of faults in the FMU device tree:
+
+  * ``test_tree`` minimally validates the existence of the expected devices.
+  * ``test_system_fmu_internal_inject`` validates the injection and reporting
+    of internal faults of the System FMU.
+  * ``test_system_fmu_internal_set_enabled`` validates disabling System FMU
+    faults.
+  * ``test_gic_fmu_inject`` validates the injection and reporting of GIC-700AE
+    FMU faults (critical and non-critical).
+  * ``test_fmu_fault_count`` validates the reporting of the overall fault
+    count.
+  * ``test_fmu_fault_list`` validates the list of reported fault counts.
+  * ``test_fmu_fault_summary`` validates the fault summarization.
+  * ``test_fmu_fault_clear`` validates that injected faults can be cleared.
+
+``FaultMgmtSSUTest`` validates all possible transitions in the SSU state
+machine using three test cases (with a full system reset between each one to
+transition from ``ERRC`` back to ``TEST``):
+
+ * ``test_ssu_compl_ok``, which triggers a non-critical fault, recovers then
+   triggers a critical fault.
+ * ``test_ssu_nce_ok``, in which the self-test fails with a non-critical fault
+   which is then signaled as critical.
+ * ``test_ssu_ce_not_ok``, in which the self-test fails with a critical fault.
