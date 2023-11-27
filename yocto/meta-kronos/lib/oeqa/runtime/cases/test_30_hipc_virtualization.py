@@ -38,47 +38,56 @@ class HIPCTestDomU1(HIPCTestBase):
                                     cls.linux_prompt, cls.domu_hostname)
         super(HIPCTestDomU1, cls).tearDownClass()
 
-    @OETestDepends(
-            ['test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster0'])
+    @OETestDepends([
+        'test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster0'])
     @skipIfDataVar('FREQUENCY', 'adhoc', 'Skip iperf tests in adhoc builds')
     def test_hipc_cluster0(self):
         super().test_hipc_cluster0()
 
-    @OETestDepends(
-            ['test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster1'])
+    @OETestDepends([
+        'test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster1'])
     @skipIfDataVar('FREQUENCY', 'adhoc', 'Skip iperf tests in adhoc builds')
     def test_hipc_cluster1(self):
         super().test_hipc_cluster1()
 
-    @OETestDepends(
-            ['test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster2'])
+    @OETestDepends([
+        'test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster2'])
     @skipIfDataVar('FREQUENCY', 'adhoc', 'Skip iperf tests in adhoc builds')
     def test_hipc_cluster2(self):
         super().test_hipc_cluster2()
 
+    @OETestDepends([
+        'test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster0'])
     def test_ping_cl0_cl1(self):
         super().test_ping_cl0_cl1()
 
+    @OETestDepends([
+        'test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl1'])
     def test_ping_cl0_cl2(self):
         super().test_ping_cl0_cl2()
 
+    @OETestDepends([
+        'test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster1'])
     def test_ping_cl1_cl2(self):
         super().test_ping_cl1_cl2()
 
-    @OETestDepends(
-            ['test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl1'])
+    @OETestDepends([
+        'test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl2',
+        'test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl1_cl2'])
     @skipIfDataVar('FREQUENCY', 'adhoc', 'Skip iperf tests in adhoc builds')
     def test_hipc_cluster_cl0_cl1(self):
         super().test_hipc_cluster_cl0_cl1()
 
-    @OETestDepends(
-            ['test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl2'])
+    @OETestDepends([
+        'test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl1',
+        'test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster2'])
     @skipIfDataVar('FREQUENCY', 'adhoc', 'Skip iperf tests in adhoc builds')
     def test_hipc_cluster_cl0_cl2(self):
         super().test_hipc_cluster_cl0_cl2()
 
-    @OETestDepends(
-            ['test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl1_cl2'])
+    @OETestDepends([
+        'test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl1',
+        'test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl2'])
     @skipIfDataVar('FREQUENCY', 'adhoc', 'Skip iperf tests in adhoc builds')
     def test_hipc_cluster_cl1_cl2(self):
         super().test_hipc_cluster_cl1_cl2()
