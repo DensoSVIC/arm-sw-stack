@@ -355,46 +355,47 @@ following is printed out.
 
       .. code-block:: console
 
-        NOTE: Executing Tasks
-        2023-09-11 20:13:00 - INFO     - Creating terminal default on terminal_ns_uart0
-        2023-09-11 20:13:09 - INFO     - Creating terminal tf-a on terminal_sec_uart
-        2023-09-11 20:13:09 - INFO     - Creating terminal scp on terminal_uart_scp
-        2023-09-11 20:13:09 - INFO     - Creating terminal lcp on terminal_uart_lcp
-        2023-09-11 20:13:09 - INFO     - Creating terminal rss on terminal_rss_uart
-        2023-09-11 20:13:09 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
-        2023-09-11 20:13:10 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
-        2023-09-11 20:13:10 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
-        2023-09-11 20:13:10 - INFO     - default: Waiting for login prompt
-        2023-09-11 20:29:25 - INFO     - RESULTS:
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (17.63s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_10_safety_island_c1.SafetyIslandC1Test.test_cluster1: PASSED (0.00s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_10_safety_island_c2.SafetyIslandC2Test.test_cluster2: PASSED (0.00s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.28s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (17.19s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (100.88s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: PASSED (374.00s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_00_secure_partition.OpteeTest.test_optee_normal: PASSED (0.00s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (297.81s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_cpu_hotplug: PASSED (115.08s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_networking: PASSED (16.50s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_rtc: PASSED (9.51s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_virtiorng: PASSED (10.21s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_watchdog: PASSED (6.50s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec: SKIPPED (0.00s)
-        2023-09-11 20:29:25 - INFO     - SUMMARY:
-        2023-09-11 20:29:25 - INFO     - baremetal-image () - Ran 19 tests in 965.595s
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_ce_not_ok: PASSED (31.07s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_compl_ok: PASSED (28.97s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_nce_ok: PASSED (26.67s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_clear: PASSED (19.21s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_count: PASSED (14.02s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_list: PASSED (18.59s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_summary: PASSED (5.29s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_gic_fmu_inject: PASSED (9.28s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_system_fmu_internal_inject: PASSED (5.38s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_system_fmu_internal_set_enabled: PASSED (10.40s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_tree: PASSED (0.16s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (14.99s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_10_safety_island_c2.SafetyIslandC2Test.test_cluster2: PASSED (0.00s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.31s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (16.25s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (102.50s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: PASSED (267.34s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_00_rss.RssTest.test_gic_multiple_view: PASSED (0.00s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_00_rss.RssTest.test_ni710ae: PASSED (0.00s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_00_secure_partition.OpteeTest.test_optee_normal: PASSED (0.00s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (219.67s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_20_bsp.BspTest.test_cpu_hotplug: PASSED (121.75s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_20_bsp.BspTest.test_networking: PASSED (46.73s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_20_bsp.BspTest.test_rtc: PASSED (10.78s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_20_bsp.BspTest.test_virtiorng: PASSED (10.90s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_20_bsp.BspTest.test_watchdog: PASSED (6.55s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec: SKIPPED (0.00s)
+        2023-11-26 21:28:21 - INFO     - SUMMARY:
+        2023-11-26 21:28:21 - INFO     - baremetal-image () - Ran 31 tests in 986.951s
 
 The following messages are expected to validate this Use-Case:
 
       .. code-block:: console
     
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.28s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (17.19s)
-        2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (100.88s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.31s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (16.25s)
+        2023-11-26 21:28:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (102.50s)
 
 Virtualization Architecture
 ---------------------------
@@ -1348,6 +1349,242 @@ The following messages are expected to validate this Use-Case:
   2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster0: PASSED (233.00s)
   2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster1: PASSED (0.01s)
   2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.01s)
+
+
+Fault Management Demo
+=====================
+
+The demo uses the Safety Island Cluster 1 console and it can be run on the
+Baremetal Architecture of the Safety Island Actuation Demo. Refer to
+:ref:`design_applications_fault_mgmt` for further details.
+
+Build
+-----
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To build the Baremetal Architecture image:
+
+1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
+2. Choose ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+3. Then choose ``Save & Build``.
+
+Run FVP
+-------
+
+To start the FVP:
+
+.. code-block:: console
+
+  kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
+
+The Fault Management subsystem is deployed on Safety Island Cluster 1 so the
+instructions below should be executed on its terminal. This can be accessed in
+tmux by typing ``Ctrl-b w``, using the arrow keys to select
+``terminal_uart_si_cluster1`` then pressing the ``Enter`` key.
+
+Run the demo
+------------
+
+The instructions below demonstrate injecting faults into both the System FMU
+and GIC-700AE FMU and how this affects the SSU safety state.
+
+ 1. Start by enumerating the configured fault device tree:
+
+    .. code-block:: shell
+
+      fault tree
+
+    The output shows the root fault device ``fmu@2a510000`` (the System FMU),
+    after which are the attached safety state device ``ssu@2a500000`` and
+    fault device ``fmu@2a570000`` (the GIC-700AE FMU):
+
+    .. code-block:: shell
+
+      Root 0: fmu@2a510000
+              Safety: ssu@2a500000
+              Slot 0: fmu@2a570000
+
+ 2. After booting, query the initial state of the SSU:
+
+    .. code-block:: shell
+
+      fault safety_status ssu@2a500000
+
+    The initial state is TEST:
+
+    .. code-block:: shell
+
+      Status: TEST (0x0)
+
+ 3. It is expected that a Fault Management deployment would perform a self-test
+    after boot then signal its outcome to the SSU. For demonstration purposes,
+    simulate a successful self-test completion by issuing the
+    ``compl_ok`` signal to the SSU:
+
+    .. code-block:: shell
+
+      fault safety_control ssu@2a500000 compl_ok
+
+    The system is now ``SAFE`` for operation:
+
+    .. code-block:: shell
+
+      Signal: compl_ok (0x0)
+      State: SAFE (0x3)
+
+ 4. Simulate an internal *Lockstep error* (``0x4``) in the System FMU:
+
+    .. code-block:: shell
+
+      fault inject fmu@2a510000 0x4
+
+    Three events are logged:
+
+     * The subsystem reports that it received the fault and that it was
+       non-critical (all System FMU internal faults are non-critical)
+     * The safety component reports that this caused the SSU to enter the
+       ``ERRN`` state.
+     * The storage component reports that the total historical fault count for
+       this fault on this device is now ``1``.
+
+    .. code-block:: shell
+
+      Injecting fault 0x4 to device fmu@2a510000
+      [00:04:49.110,000] <inf> fault_mgmt: Fault received (non-critical): 0x4 on fmu@2a510000
+
+      [00:04:49.110,000] <inf> fault_mgmt_safety: Safety status: ERRN (0x5) on ssu@2a500000
+
+      [00:04:49.160,000] <inf> fault_mgmt_protected_storage: Fault count for 0x4 on fmu@2a510000: 1
+
+ 5. The SSU will remain in the ``ERRN`` state until signaled (unless a critical
+    fault occurs). Send a ``compl_ok`` signal again to recover from this fault:
+
+    .. code-block:: shell
+
+      fault safety_control ssu@2a500000 compl_ok
+
+    The SSU is now in the ``SAFE`` state again:
+
+    .. code-block:: shell
+
+      Signal: compl_ok (0x0)
+      State: SAFE (0x3)
+
+ 6. Next, inject an *SPI collator external error* (``0x20000a00``) into the
+    GIC-700AE FMU:
+
+    .. code-block:: shell
+
+      fault inject fmu@2a570000 0x20000a00
+
+    This results in a similar output to above, except that the received fault
+    was critical and the safety status is now ``ERRC``. (GIC-700AE FMU faults
+    are critical by default, but this can be changed from the shell using the
+    ``fault set_critical`` sub-command).
+
+    .. code-block:: shell
+
+      Injecting fault 0x20000a00 to device fmu@2a570000
+      [00:09:13.210,000] <inf> fault_mgmt: Fault received (critical): 0x20000a00 on fmu@2a570000
+
+      [00:09:13.210,000] <inf> fault_mgmt_safety: Safety status: ERRC (0x6) on ssu@2a500000
+
+      [00:09:13.270,000] <inf> fault_mgmt_protected_storage: Fault count for 0x20000a00 on fmu@2a570000: 1
+
+ 7. The number of occurrences of each fault is tracked per device by the
+    storage component. Inject the same fault into the System FMU again:
+
+    .. code-block:: shell
+
+      fault inject fmu@2a510000 0x4
+
+    The fault count is now ``2``. Note that the safety status is still
+    ``ERRC``.
+
+    .. code-block:: shell
+
+      Injecting fault 0x4 to device fmu@2a510000
+      [00:14:02.800,000] <inf> fault_mgmt: Fault received (non-critical): 0x4 on fmu@2a510000
+
+      [00:14:02.800,000] <inf> fault_mgmt_safety: Safety status:  ERRC (0x6) on ssu@2a500000
+
+      [00:14:02.860,000] <inf> fault_mgmt_protected_storage: Fault count for 0x4 on fmu@2a510000: 2
+
+    The full list of stored faults can also be queried:
+
+    .. code-block:: shell
+
+      fault list
+
+    This shows all the faults injected into both FMUs above:
+
+    .. code-block:: shell
+
+      Fault history:
+      Fault received (non-critical): 0x4 on fmu@2a510000 : count 2
+
+      Fault received (critical): 0x20000a00 on fmu@2a570000 : count 1
+
+ 8. The ``ERRC`` represents a critical system failure and cannot be recovered
+    by the software - confirm this by trying to issue ``compl_ok`` again:
+
+    .. code-block:: shell
+
+      fault safety_control ssu@2a500000 compl_ok
+
+    The SSU status is still ``ERRC``:
+
+    .. code-block:: shell
+
+      Signal: compl_ok (0x0)
+      State: ERRC (0x6)
+
+    The state can now only be affected through a full system reset (e.g. by
+    stopping and starting the FVP), after which the state will be ``TEST``
+    once again.
+
+See the :ref:`design_applications_fault_mgmt_shell_reference` for more details
+about these and other Fault Management shell sub-commands.
+
+Automated Validation
+--------------------
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To enable the validation tests:
+
+  1. Select ``Safety Island Actuation Demo`` as ``Use-Case``.
+  2. Choose ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+  3. Choose ``Run Automated Validation`` from the ``Runtime Validation Setup``
+     menu.
+  4. Then choose ``Save & Build``.
+
+The following messages are expected in the output to validate this Use-Case:
+
+.. code-block:: console
+
+  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_ce_not_ok: PASSED (31.07s)
+  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_compl_ok: PASSED (28.97s)
+  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_nce_ok: PASSED (26.67s)
+  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_clear: PASSED (19.21s)
+  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_count: PASSED (14.02s)
+  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_list: PASSED (18.59s)
+  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_summary: PASSED (5.29s)
+  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_gic_fmu_inject: PASSED (9.28s)
+  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_system_fmu_internal_inject: PASSED (5.38s)
+  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_system_fmu_internal_set_enabled: PASSED (10.40s)
+  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_tree: PASSED (0.16s)
+
+See :ref:`validation_fault_management` for more details.
 
 |Arm SystemReadyTM| IR Validation
 =================================
