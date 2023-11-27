@@ -172,6 +172,15 @@ carried out by `Parsec`_. While the backend of the Parsec service is based on
 RSS cryptographic runtime service. Please refer to
 :ref:`design_applications_parsec_enabled_tls` for more information.
 
+Fault Management Demo
+=====================
+
+The Fault Management subsystem for the Safety Island demonstrates the
+injection, reporting and collation of faults from supported hardware to support
+the design of safety-critical systems.
+
+Please refer to :ref:`design_applications_fault_mgmt` for more information.
+
 |Arm SystemReadyTM| IR Validation
 =================================
 |Arm SystemReadyTM| is a compliance certification program based on a set of
