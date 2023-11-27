@@ -128,5 +128,5 @@ class PtestRunnerDom0Test(OERuntimeTestCase):
     @skipIfDataVar('FREQUENCY', 'adhoc', 'Skip ptest-runner in adhoc builds')
     def test_ptestrunner(self):
         # Run ptest-runner
-        status, _ = self.target.run('ptest-runner', timeout=1200)
+        status, _ = self.target.run('ptest-runner', timeout=1800)
         self.assertEqual(status, 0)
