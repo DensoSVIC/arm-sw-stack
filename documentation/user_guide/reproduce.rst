@@ -2421,3 +2421,184 @@ main steps and tips for installing openSUSE.
 
 12. Select the terminal titled as ``python3`` where the ``runfvp`` was launched
     by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP process.
+
+.. _user_guide_reproduce_secure_firmware_update:
+
+Secure Firmware Update
+======================
+
+Currently, :ref:`design_secure_firmware_update` is only available in the
+Baremetal Architecture.
+
+Baremetal Architecture
+----------------------
+
+Build
+^^^^^
+
+The to be updated firmware capsule for testing will be generated together with
+the image for the software stack when building. The firmware capsule is placed
+on a removable storage device (in the case of Kronos, an MMC card). To support
+MMC, the user needs to append the
+``-C ros.board.mmc.p_mmc_file=/path/to/mmc-image-fvp-rd-kronos.wic`` parameter
+when running FVP.
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To build a Baremetal Architecture image:
+
+1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
+2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+3. Select ``Save & Build``.
+
+Run FVP
+^^^^^^^
+
+To start the FVP and connect to the Primary Compute terminal (running Linux):
+
+.. code-block:: console
+
+  kas shell -c \
+    "../layers/meta-arm/scripts/runfvp -t tmux --verbose \
+       -- -C ros.board.mmc.p_mmc_file=${PWD}/build/tmp_baremetal/deploy/images/fvp-rd-kronos/mmc-image-fvp-rd-kronos.wic"
+
+Note that the main consoles involved in the Secure Firmware Update are the
+``terminal_ns_uart0`` and the ``terminal_rss_uart``. For ease of navigation,
+we recommend joining these two terminal windows and to create a tmux pane
+attached to the build host machine in order to issue commands on it. User can
+navigate through the panes by pressing ``Ctrl-b w`` and arrow keys followed by
+the ``Enter`` key.
+
+Follow the steps below to achieve the same:
+
+ 1. Press ``Ctrl-b w`` from the tmux session, navigate to the tmux window
+    titled ``terminal_ns_uart0`` followed by pressing ``Enter`` key.
+ 2. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_rss_uart -h``
+    followed by pressing ``Enter`` key to join the RSS window to Primary
+    Compute terminal window.
+
+Run the Demo
+^^^^^^^^^^^^
+
+To start Secure Firmware Update:
+
+1. The user should wait for the system to boot and for the Linux prompt to
+   appear.
+2. Login Linux with the ``root`` account.
+
+   Note: The Reference Stack running on the Primary Compute can be logged
+   into as ``root`` user without password in the Linux terminal. Run the
+   below command to guarantee that all the expected services have been
+   initialized.
+
+   .. code-block:: shell
+
+      systemctl is-system-running --wait
+
+   Wait for it to return expecting ``running`` to be printed in the terminal.
+
+   Run the following commands to copy the capsules to the EFI UpdateCapsule
+   directory as the firmware update preparation:
+
+   .. code-block:: console
+
+      mount /dev/vda1 /boot
+      mount /dev/mmcblk0p1 /mnt
+      mkdir -p /boot/EFI/UpdateCapsule
+      cp -f /mnt/fw.cap /boot/EFI/UpdateCapsule/
+      reboot
+
+3. Wait for the system to reboot and for the U-Boot ``Hit any key to stop
+   autoboot`` to appear.
+4. Press any key before the time limit to enter the U-Boot shell.
+5. In the U-Boot shell, run the following commands to start Secure Firmware
+   Update:
+
+   .. note::
+
+      Each command should be copied and pasted individually to the U-Boot shell.
+
+   .. code-block:: console
+
+      efidebug boot add -b 1001 cap virtio 0:1 EFI/UpdateCapsule
+      efidebug boot next 1001
+      setenv -e -nv -bs -rt -v OsIndications =0x0000000000000004
+      reset
+
+6. Wait for the system to reboot to U-Boot again. The system will automatically
+   start upgrading the firmware capsule that was prepared in step 2.
+   **Note: This time there is no need to press any keys.**
+
+   The following logs indicate that the upgrade process has started and is in
+   progress.
+
+   In ``terminal_ns_uart0``:
+
+   .. code-block:: console
+
+      FF-A driver 1.0
+      FF-A framework 1.0
+      FF-A versions are compatible
+      EFI: MM partition ID 0x8003
+      EFI: FVP: Capsule shared buffer at 0x81000000 , size 8192 pages
+
+   In ``terminal_rss_uart``:
+
+   .. code-block:: console
+
+      uefi_capsule_retrieve_images: enter, capsule ptr = 0x0x65000000
+      uefi_capsule_retrieve_images: capsule size = 18284656, image count = 1
+      uefi_capsule_retrieve_images: image 0 version = 3
+      uefi_capsule_retrieve_images: image 0 at 0x65000070, size=18284560
+      uefi_capsule_retrieve_images: exit
+      flash_rss_capsule: enter: image = 0x65000070, size = 16187408, version = 3
+      erase_bank: enter
+      erase_bank: erasing sectors = 4080, from offset = 16748544
+      erase_bank: exit
+      flash_rss_capsule: writing capsule to the flash at offset = 16748544...
+      flash_rss_capsule: images are written to bank offset = 16748544
+      metadata_write: enter: flash addr = 20480, size = 822576996
+      metadata_write: enter: flash addr = 24576, size = 576
+      metadata_write: enter: flash addr = 24576, size = 576
+      metadata_write: success: active = 1, previous = 0
+      flash_rss_capsule: exit
+      flash_fip_capsule: enter: image = 0x65f70070, size = 2097152, version = 3
+      erase_bank: enter
+      erase_bank: erasing sectors = 4080, from offset = 2125824
+      erase_bank: exit
+      flash_fip_capsule: writing capsule to the flash at offset = 2125824...
+
+   **Note: This step will take about 20 minutes.**
+
+7. The system will reset after a successful firmware update and boot with the
+   updated firmware. This can be confirmed by checking the terminal logs: If
+   there are lines in the log like below, then the upgrade was successful and
+   the system has successfully rebooted with the updated firmware.
+
+   In ``terminal_ns_uart0``:
+
+   .. code-block:: console
+
+      Applying capsule fw.cap succeeded.
+      Reboot after firmware update.
+
+   In ``terminal_rss_uart``:
+
+   .. code-block:: console
+
+      metadata_validate: enter:
+      metadata_validate: success
+      metadata_read: success: active = 1, previous = 0
+      private_metadata_read: enter
+      private_metadata_read: success: boot_index = 1
+      get_fwu_agent_state: enter, boot_index=1
+      get_fwu_agent_state: exit: FWU_AGENT_STATE_REGULAR
+
+8. The system will eventually boot into Linux using the upgraded firmware.
+
+9. Select the terminal titled as ``python3`` where the ``runfvp`` was launched
+   by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP process.

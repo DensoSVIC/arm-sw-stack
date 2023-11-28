@@ -29,6 +29,7 @@ armlmd
 armv
 Artifactory
 Asym
+autoboot
 Autonegotiation
 autosectionlabel
 autotools
@@ -187,6 +188,7 @@ EBUSY
 ECDH
 ECJPAKE
 EFAULT
+efidebug
 eigen
 EINVAL
 elfutils
@@ -249,6 +251,7 @@ gntdev
 gnueabi
 GPTP
 grubaa
+GUUID
 HARDLIM
 helloworld
 heredocs
@@ -561,6 +564,7 @@ SCMI
 sendbits
 sendcontrol
 sendline
+setenv
 setuptools
 shimaa
 SHMEM
