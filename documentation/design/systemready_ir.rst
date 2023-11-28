@@ -83,16 +83,9 @@ The Reference Stack is currently known to have the following non-alignments:
 
 * Reference stack
 
-    1. Kronos software implementation does not currently support capsule
-       updates, so the ``UpdateCapsule()`` method is currently being invoked
-       with invalid parameters (``CapsuleCount - 0``).
-    2. Kronos system does not have an EFI System Partition, and EFI variables
-       are stored in the Protected Storage Service provided by the RSS. However,
-       the current FVP version does not provide a reliable reset, and a forced
-       restart is used during the ACS test, which will result in 'Failed to
-       persist EFI variables', which in turn will cause the BootServicesTest
-       case ``BS.ExitBootServices - ConsistencyTestCheckpoint1`` and several
-       RuntimeServicesTest ``SetVariable``/``GetVariable`` cases to fail.
+    1. Kronos system does not support to populate the list for runtime
+       variables, which will lead to "Can't populate EFI variables. No runtime
+       variables will be available".
 
 * Devicetree
     1. Missing schemas for components which have not yet or are not appropriate
@@ -115,9 +108,6 @@ The Reference Stack is currently known to have the following non-alignments:
        `EBBR Specification - Required Platform Specific Elements`_.
     2. ``AES``, ``SHA1`` and ``SHA2`` instructions are marked as unavailable in
        the FVP ``ID_AA64ISAR0_EL1``.
-    3. The unreliability of the reset function needs a workaround in the test
-       methodology, which leads to the failure of several
-       ``SetVariable``/``GetVariable`` cases, as described above.
 
 * Test environment
 
