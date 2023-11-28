@@ -14,6 +14,7 @@ Applications
    :caption: Contents
 
    actuation
+   cam
    bridge
    parsec_enabled_tls
    psa_arch_tests

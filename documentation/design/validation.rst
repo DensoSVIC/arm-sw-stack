@@ -161,6 +161,26 @@ forwarded to the host via BSD socket. These Control Commands are then captured
 by the Packet Analyzer which validates them against a recorded Control Commands
 list that is stored in the form of a CSV file.
 
+.. _validation_cam_tests:
+
+Integration Tests Validating the Critical Application Monitoring Demo
+=====================================================================
+
+The script that implements the tests is
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_40_cam.py`.
+
+The tests verify:
+
+* The help output of ``cam-service``, ``cam-tool`` and ``cam-app-example`` on
+  the Primary Compute.
+* Application monitoring from the Primary Compute.
+* The pack command of ``cam-tool`` on the Primary Compute.
+* The stream data calibration on the Primary Compute.
+* The startup of ``cam-service`` on the Safety Island Cluster 1.
+* Application monitoring from the Safety Island Cluster 1.
+* Application monitoring with multiple connections.
+* Logical and temporal failure detection.
+
 .. _validation_hipc_demo:
 
 Integration Tests Validating the Safety Island Communication Demo

@@ -189,6 +189,8 @@ following VLAN identifiers:
  * VLAN **200**: Traffic from/to **Safety Island Cluster 1**
  * VLAN **300**: Traffic from/to **Safety Island Cluster 2**
 
+.. _hipc_network_topology_gptp:
+
 gPTP
 ====
 

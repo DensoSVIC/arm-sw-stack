@@ -123,6 +123,16 @@ firmware along with Linux-based software on the Primary Compute and Zephyr
 application on the Safety Island to demonstrate automotive workloads.  Please
 refer to :ref:`design_applications_actuation` for more information.
 
+Critical Application Monitoring Demo
+====================================
+
+Critical Application Monitoring (CAM) is a project that implements a solution
+for monitoring critical applications using a service running on a higher safety
+level system. This Demo deploys CAM components on the Kronos FVP to demonstrate
+the feasibility of the Safety Island monitoring solution.
+
+Please refer to :ref:`design_applications_cam` for more information.
+
 Safety Island Communication Demo
 ================================
 
@@ -188,13 +198,11 @@ hardware and firmware standards that enable interoperability with generic
 off-the-shelf operating systems and hypervisors. Please refer to
 :ref:`design_systemready_ir` for more information.
 
-
 Linux Distribution Installation
 ===============================
 
 Demonstrates the installation of two unmodified generic UEFI distribution
 images, Debian and openSUSE, fulfilling |Arm SystemReadyTM| requirements.
-
 
 **********************
 Documentation Overview

@@ -392,7 +392,7 @@ following is printed out.
 The following messages are expected to validate this Use-Case:
 
       .. code-block:: console
-    
+
         2023-11-26 21:28:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.31s)
         2023-11-26 21:28:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (16.25s)
         2023-11-26 21:28:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (102.50s)
@@ -677,6 +677,399 @@ The following messages are expected to validate this Use-Case:
     2023-09-11 21:02:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.28s)
     2023-09-11 21:02:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (30.62s)
     2023-09-11 21:02:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (170.71s)
+
+.. _user_guide_reproduce_cam:
+
+Critical Application Monitoring Demo
+====================================
+
+The demo can be run on the Baremetal Architecture. See
+:ref:`design_applications_cam` for further details.
+
+Baremetal Architecture
+----------------------
+
+Build
+^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To build a Baremetal Architecture image:
+
+1. Select ``Critical Application Monitoring Demo`` from the ``Use-Case`` menu.
+2. Choose ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+3. Choose ``Save & Build``.
+
+Run FVP
+^^^^^^^
+
+To start the FVP and connect to the Primary Compute terminal (running Linux):
+
+.. code-block:: console
+
+  kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
+
+The user should wait for the system to boot and for the Linux prompt to appear.
+
+The Safety Island (SI) Cluster 1 terminal running ``cam-service`` is available
+via the tmux window titled ``terminal_uart_si_cluster1``. For ease of
+navigation, we recommend joining the ``cam-service`` terminal window to Primary
+Compute terminal window in order to issue commands on it. The user can navigate
+through the panes by pressing ``Ctrl-b w`` and arrow keys followed by the
+``Enter`` key.
+
+Follow the steps below to achieve the same:
+
+1. Press ``Ctrl-b w`` from the tmux session, navigate to the tmux window titled
+   ``terminal_ns_uart0`` followed by pressing ``Enter`` key.
+2. Press ``Ctrl-b :`` and then type
+   ``join-pane -s :terminal_uart_si_cluster1 -h`` followed by pressing ``Enter``
+   key to join the ``cam-service`` terminal window to Primary Compute terminal
+   window.
+
+Please refer to the following image of the tmux panes re-arrangement.
+
+.. image:: ../images/cam_reproduce_startup.png
+  :align: center
+
+|
+
+The Reference Stack running on the Primary Compute can be logged into as
+``root`` user without password in the Linux terminal. Run the below
+command to guarantee that all the expected services have been
+initialized.
+
+   .. code-block:: shell
+
+      systemctl is-system-running --wait
+
+Wait for it to return expecting ``running`` to be printed in the terminal.
+
+Run the Demo
+^^^^^^^^^^^^
+
+Monitoring
+""""""""""
+
+1. Run ``cam-tool deploy`` command from the Primary Compute terminal to transfer
+   the stream deployment data (.csd) to ``cam-service``:
+
+   .. code-block:: shell
+
+      cam-tool deploy -i /usr/share/cam-data/84085ddc-bc10-11ed-9a44-7ef9696e0000.csd -a 192.168.1.1
+
+   The output should look like as below:
+
+   .. code-block:: shell
+
+      Connection 4 is created.
+      Deploy Message
+      Connection 4 is closed.
+
+   After that, the stream data of ``84085ddc-bc10-11ed-9a44-7ef9696e0000`` is
+   deployed to the ``cam-service`` file system.
+
+   Running ``cam-tool deploy`` three more times can deploy the data of three
+   other streams to ``cam-service``.
+
+   .. code-block:: shell
+
+      cam-tool deploy -i /usr/share/cam-data/84085ddc-bc10-11ed-9a44-7ef9696e0001.csd -a 192.168.1.1
+      cam-tool deploy -i /usr/share/cam-data/84085ddc-bc10-11ed-9a44-7ef9696e0002.csd -a 192.168.1.1
+      cam-tool deploy -i /usr/share/cam-data/84085ddc-bc10-11ed-9a44-7ef9696e0003.csd -a 192.168.1.1
+
+   List all the files from the ``cam-service`` terminal:
+
+   .. code-block:: shell
+
+      fs ls RAM:/
+
+   The stream deployment data can be shown as below:
+
+   .. code-block:: shell
+
+      84085ddc-bc10-11ed-9a44-7ef9696e0000.csd
+      84085ddc-bc10-11ed-9a44-7ef9696e0001.csd
+      84085ddc-bc10-11ed-9a44-7ef9696e0002.csd
+      84085ddc-bc10-11ed-9a44-7ef9696e0003.csd
+
+2. Start ``cam-app-example`` from the Primary Compute terminal to create an
+   application with four streams. Each stream sends an event message 10 times
+   with a period of 3000 milliseconds.
+
+   .. code-block:: shell
+
+      cam-app-example -t 3000 -c 10 -s 4 -a 192.168.1.1
+
+   The following configure messages are expected from the Primary Compute
+   terminal:
+
+   .. code-block:: shell
+
+      Cam application configuration:
+          Service IP address: 192.168.1.1
+          Service port: 21604
+          UUID base: 84085ddc-bc10-11ed-9a44-7ef9696e
+          Stream count: 4
+          Processing period (ms): 3000
+          Processing count: 10
+          Multiple connection support: false
+          Calibration mode support: false
+          Fault injection support: false
+          Event(s) interval time (ms): 0
+      Using libcam v0.1
+      Starting activity...
+      Starting activity...
+      Starting activity...
+      Starting activity...
+
+   And the log of sending event messages are shown repeatedly:
+
+   .. code-block:: shell
+
+    Stream 0 sends event 0
+    Stream 1 sends event 0
+    Stream 2 sends event 0
+    Stream 3 sends event 0
+    Stream 0 sends event 0
+    Stream 1 sends event 0
+    Stream 2 sends event 0
+    Stream 3 sends event 0
+    ...
+
+   As observed from the ``cam-service`` terminal, ``cam-service`` is loading
+   four stream deployment files for monitoring. In the following log, the stream
+   messages are received and processed by it:
+
+   .. code-block:: shell
+
+      Connection 4 is created.
+      Init Message
+      Stream 84085ddc-bc10-11ed-9a44-7ef9696e0001 configuration is loaded.
+      Init Message
+      Stream 84085ddc-bc10-11ed-9a44-7ef9696e0000 configuration is loaded.
+      Init Message
+      Stream 84085ddc-bc10-11ed-9a44-7ef9696e0002 configuration is loaded.
+      Init Message
+      Stream 84085ddc-bc10-11ed-9a44-7ef9696e0003 configuration is loaded.
+      Start Message
+      Start Message
+      Start Message
+      Start Message
+      Event Message
+      Event Message
+      Event Message
+      Event Message
+      Event Message
+      # Repeated event messages
+      ...
+
+3. Run ``cam-app-example`` again from the Primary Compute terminal with fault
+   injection to event stream 0:
+
+   .. code-block:: shell
+
+      cam-app-example -t 3000 -c 10 -s 4 -f -S 0 -T 1000 -a 192.168.1.1
+
+   The fault happens 100ms after stream initialization. At that time
+   ``cam-service`` should detect a stream temporal error with the following
+   output from the ``cam-service`` terminal.
+
+   .. code-block:: shell
+
+      #Repeated event messages
+      ...
+      Stream temporal error:
+      stream_name: CAM STREAM 0
+      stream_uuid: 84085ddc-bc10-11ed-9a44-7ef9696e0000
+      event_id: 0
+      time_received: 0
+      time_expected: 1701066141314201
+      ...
+
+Data calibration
+""""""""""""""""
+
+The Critical Application Monitoring project provides a mechanism to improve the
+efficiency of creating large amounts of stream data. This section describes the
+steps to automatically generate stream configuration data (.csc.yml).
+
+1. Start ``cam-app-example`` calibration mode from the Primary Compute terminal:
+
+   .. code-block:: shell
+
+      cam-app-example -t 3000 -c 10 -s 4 -C
+
+   The stream event log files (.csel) for each stream are generated. The output
+   should look like as below:
+
+   .. code-block:: shell
+
+      Cam application configuration:
+          Service IP address: 127.0.0.1
+          Service port: 21604
+          UUID base: 84085ddc-bc10-11ed-9a44-7ef9696e
+          Stream count: 4
+          Processing period (ms): 3000
+          Processing count: 10
+          Multiple connection support: false
+          Calibration mode support: true
+          Calibration directory: ./[uuid].csel
+          Fault injection support: false
+          Event(s) interval time (ms): 0
+      Using libcam v0.1
+      Starting activity...
+      Starting activity...
+      Starting activity...
+      Starting activity...
+          Stream 0 sends event 0
+          Stream 1 sends event 0
+          Stream 2 sends event 0
+          Stream 3 sends event 0
+          ...
+
+   List the files generated:
+
+   .. code-block:: shell
+
+      ls *.csel
+
+   The stream event log files can be shown as below:
+
+   .. code-block:: shell
+
+      84085ddc-bc10-11ed-9a44-7ef9696e0000.csel  84085ddc-bc10-11ed-9a44-7ef9696e0002.csel
+      84085ddc-bc10-11ed-9a44-7ef9696e0001.csel  84085ddc-bc10-11ed-9a44-7ef9696e0003.csel
+
+2. Run ``cam-tool`` from the Primary Compute terminal to analyze stream event
+log files and convert them to stream configuration files (.csc.yml).
+
+   .. code-block:: shell
+
+      cam-tool analyze -i 84085ddc-bc10-11ed-9a44-7ef9696e0000.csel -o 84085ddc-bc10-11ed-9a44-7ef9696e0000.csc.yml
+
+   The analysis result is reported from the Primary Compute terminal as below:
+
+   .. code-block:: shell
+
+      CAM event log analyze report:
+      Input event log file:                   84085ddc-bc10-11ed-9a44-7ef9696e0000.csel
+      Output configuration file:              84085ddc-bc10-11ed-9a44-7ef9696e0000.csc.yml
+      Stream UUID:                            84085ddc-bc10-11ed-9a44-7ef9696e0000
+      Stream name:                            CAM STREAM  0
+      Timeout between init and start:         300000
+      Timeout between start and event:        450000
+      Application running times:              1
+      Processing count in each run:           [2]
+
+   The stream configuration files contain human-readable settings used for the
+   deployment phase of a critical application. Users can modify this
+   configuration to include network jitter for the current platform. Then, use
+   the ``cam-tool pack`` command to generate deployment data.
+
+   .. code-block:: shell
+
+      cam-tool pack -i 84085ddc-bc10-11ed-9a44-7ef9696e0000.csc.yml -o 84085ddc-bc10-11ed-9a44-7ef9696e0000.csd
+
+3. Run ``cam-tool deploy`` command from the Primary Compute terminal to transfer
+   the new stream deployment data to ``cam-service``:
+
+   .. code-block:: shell
+
+      cam-tool deploy -i 84085ddc-bc10-11ed-9a44-7ef9696e0000.csd -a 192.168.1.1 -o
+
+4. To shutdown the FVP and terminate the emulation, follow the below step:
+
+    * Issue a ``shutdown now`` on the Primary Compute terminal. The below
+      messages indicate the shutdown process is complete.
+
+      .. code-block:: shell
+
+         [  OK  ] Finished System Power Off.
+         [  OK  ] Reached target System Power Off.
+
+    * Select the terminal titled as ``python3`` where the ``runfvp`` was
+      launched by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP
+      process.
+
+Automated Validation
+^^^^^^^^^^^^^^^^^^^^
+
+To run the configuration menu:
+
+.. code-block:: console
+
+  kas menu kronos/Kconfig
+
+To enable the validation tests:
+  1. Select ``Critical Application Monitoring Demo`` as ``Use-Case``.
+  2. Choose ``Run Automated Validation`` from the ``Runtime Validation Setup``
+     menu.
+  3. Choose ``Save & Build``.
+
+The complete test suite takes around 10 minutes to complete. See
+:ref:`validation_cam_tests` for more details. A similar output to the
+following is printed out:
+
+.. code-block:: console
+
+   NOTE: Executing Tasks
+   Creating terminal default on terminal_ns_uart0
+   Creating terminal tf-a on terminal_sec_uart
+   Creating terminal scp on terminal_uart_scp
+   Creating terminal lcp on terminal_uart_lcp
+   Creating terminal rss on terminal_rss_uart
+   Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+   Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+   Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+   default: Waiting for login prompt
+   RESULTS:
+   RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (21.10s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_help: PASSED (3.34s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_pc: PASSED (48.03s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si: PASSED (41.69s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_with_custom_uuid_to_service_on_pc: PASSED (55.20s)
+   RESULTS - test_40_cam.CAMTest.test_cam_service_boot_on_si: PASSED (0.00s)
+   RESULTS - test_40_cam.CAMTest.test_cam_service_help: PASSED (3.47s)
+   RESULTS - test_40_cam.CAMTest.test_cam_tool_deploy_to_si: PASSED (31.30s)
+   RESULTS - test_40_cam.CAMTest.test_cam_tool_help: PASSED (13.88s)
+   RESULTS - test_40_cam.CAMTest.test_cam_tool_pack: PASSED (18.55s)
+   RESULTS - test_40_cam.CAMTest.test_data_calibration_on_pc: PASSED (15.97s)
+   RESULTS - test_40_cam.CAMTest.test_logical_check_on_si: PASSED (2.25s)
+   RESULTS - test_40_cam.CAMTest.test_temporal_check_on_si: PASSED (31.34s)
+   RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
+   RESULTS - test_00_rss.RssTest.test_gic_multiple_view: PASSED (0.00s)
+   RESULTS - test_00_rss.RssTest.test_ni710ae: PASSED (0.00s)
+   RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+   RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+   RESULTS - test_00_secure_partition.OpteeTest.test_optee_normal: PASSED (0.00s)
+   RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+   RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (258.01s)
+   SUMMARY:
+   baremetal-image () - Ran 21 tests in 544.133s
+   baremetal-image - OK - All required tests passed (successes=21, skipped=0, failures=0, errors=0)
+   NOTE: Tasks Summary: Attempted 4178 tasks of which 4126 didn't need to be rerun and all succeeded.
+
+The following messages are expected to validate this Use-Case:
+
+.. code-block:: console
+
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_help: PASSED (3.34s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_pc: PASSED (48.03s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si: PASSED (41.69s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_with_custom_uuid_to_service_on_pc: PASSED (55.20s)
+   RESULTS - test_40_cam.CAMTest.test_cam_service_boot_on_si: PASSED (0.00s)
+   RESULTS - test_40_cam.CAMTest.test_cam_service_help: PASSED (3.47s)
+   RESULTS - test_40_cam.CAMTest.test_cam_tool_deploy_to_si: PASSED (31.30s)
+   RESULTS - test_40_cam.CAMTest.test_cam_tool_help: PASSED (13.88s)
+   RESULTS - test_40_cam.CAMTest.test_cam_tool_pack: PASSED (18.55s)
+   RESULTS - test_40_cam.CAMTest.test_data_calibration_on_pc: PASSED (15.97s)
+   RESULTS - test_40_cam.CAMTest.test_logical_check_on_si: PASSED (2.25s)
+   RESULTS - test_40_cam.CAMTest.test_temporal_check_on_si: PASSED (31.34s)
 
 Safety Island Communication Demo (using HIPC)
 =============================================
@@ -974,7 +1367,7 @@ this application.
       ssl_server &
 
    A message similar to the following should appear:
-   
+
    .. code-block:: shell
 
         . Seeding the random number generator... ok
@@ -1345,7 +1738,7 @@ following is printed out:
 The following messages are expected to validate this Use-Case:
 
 .. code-block:: console
-    
+
   2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster0: PASSED (233.00s)
   2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster1: PASSED (0.01s)
   2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.01s)

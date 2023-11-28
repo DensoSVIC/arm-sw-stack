@@ -278,6 +278,7 @@ rst_prolog = f"""
 .. _Xen repository: https://xenbits.xen.org/gitweb/?p=xen.git;a=tree;h=refs/heads/stable-{xen_version}
 .. _Yocto Project Quick Start: https://docs.yoctoproject.org/{yocto_doc_version}brief-yoctoprojectqs/index.html
 .. _Yocto Project: https://docs.yoctoproject.org/{yocto_doc_version}/index.html
+.. _Zephyr file system: https://docs.zephyrproject.org/{zephyr_version}/services/file_system/index.html
 .. _Zephyr gPTP subsystem: https://docs.zephyrproject.org/{zephyr_version}/connectivity/networking/api/gptp.html
 .. _Zephyr repository: https://github.com/zephyrproject-rtos/zephyr/tree/v{zephyr_version}
 .. _Zephyr: https://docs.zephyrproject.org/{zephyr_version}/
