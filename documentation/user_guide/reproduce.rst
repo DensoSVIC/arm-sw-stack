@@ -1017,7 +1017,7 @@ this application.
    persistent storage:
 
      .. code-block:: shell
-  
+
         pkill ssl_server
         sync
 
@@ -1209,41 +1209,41 @@ The complete test suite takes around 10 minutes to complete. See
 :ref:`validation_psa_arch_tests` for more details. A similar output to the
 following is printed out.
 
-      .. code-block:: console
+.. code-block:: console
 
-        NOTE: Executing Tasks
-        2023-11-13 11:43:15 - INFO     - Creating terminal default on terminal_ns_uart0
-        2023-11-13 11:43:23 - INFO     - Creating terminal tf-a on terminal_sec_uart
-        2023-11-13 11:43:23 - INFO     - Creating terminal scp on terminal_uart_scp
-        2023-11-13 11:43:23 - INFO     - Creating terminal lcp on terminal_uart_lcp
-        2023-11-13 11:43:23 - INFO     - Creating terminal rss on terminal_rss_uart
-        2023-11-13 11:43:24 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
-        2023-11-13 11:43:24 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
-        2023-11-13 11:43:24 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
-        2023-11-13 11:43:24 - INFO     - default: Waiting for login prompt
-        2023-11-13 11:53:36 - INFO     - Skip as ZEPHYR_APP_SAFETY_ISLAND_CL0 is not psa-storage-tests
-        2023-11-13 11:53:36 - INFO     - Skip as ZEPHYR_APP_SAFETY_ISLAND_CL1 is not psa-storage-tests
-        2023-11-13 11:53:48 - INFO     - RESULTS:
-        2023-11-13 11:53:48 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (38.58s)
-        2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.00s)
-        2023-11-13 11:53:48 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
-        2023-11-13 11:53:48 - INFO     - RESULTS - test_00_rss.RssTest.test_gic_multiple_view: PASSED (0.00s)
-        2023-11-13 11:53:48 - INFO     - RESULTS - test_00_rss.RssTest.test_ni710ae: PASSED (0.00s)
-        2023-11-13 11:53:48 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
-        2023-11-13 11:53:48 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
-        2023-11-13 11:53:48 - INFO     - RESULTS - test_00_secure_partition.OpteeTest.test_optee_normal: PASSED (0.00s)
-        2023-11-13 11:53:48 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
-        2023-11-13 11:53:48 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (573.76s)
-        2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster0: SKIPPED (0.00s)
-        2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster1: SKIPPED (0.00s)
-        2023-11-13 11:53:48 - INFO     - SUMMARY:
-        2023-11-13 11:53:48 - INFO     - baremetal-image () - Ran 12 tests in 612.344s
+  NOTE: Executing Tasks
+  2023-11-13 11:43:15 - INFO     - Creating terminal default on terminal_ns_uart0
+  2023-11-13 11:43:23 - INFO     - Creating terminal tf-a on terminal_sec_uart
+  2023-11-13 11:43:23 - INFO     - Creating terminal scp on terminal_uart_scp
+  2023-11-13 11:43:23 - INFO     - Creating terminal lcp on terminal_uart_lcp
+  2023-11-13 11:43:23 - INFO     - Creating terminal rss on terminal_rss_uart
+  2023-11-13 11:43:24 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+  2023-11-13 11:43:24 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+  2023-11-13 11:43:24 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+  2023-11-13 11:43:24 - INFO     - default: Waiting for login prompt
+  2023-11-13 11:53:36 - INFO     - Skip as ZEPHYR_APP_SAFETY_ISLAND_CL0 is not psa-storage-tests
+  2023-11-13 11:53:36 - INFO     - Skip as ZEPHYR_APP_SAFETY_ISLAND_CL1 is not psa-storage-tests
+  2023-11-13 11:53:48 - INFO     - RESULTS:
+  2023-11-13 11:53:48 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (38.58s)
+  2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.00s)
+  2023-11-13 11:53:48 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
+  2023-11-13 11:53:48 - INFO     - RESULTS - test_00_rss.RssTest.test_gic_multiple_view: PASSED (0.00s)
+  2023-11-13 11:53:48 - INFO     - RESULTS - test_00_rss.RssTest.test_ni710ae: PASSED (0.00s)
+  2023-11-13 11:53:48 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
+  2023-11-13 11:53:48 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
+  2023-11-13 11:53:48 - INFO     - RESULTS - test_00_secure_partition.OpteeTest.test_optee_normal: PASSED (0.00s)
+  2023-11-13 11:53:48 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
+  2023-11-13 11:53:48 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (573.76s)
+  2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster0: SKIPPED (0.00s)
+  2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster1: SKIPPED (0.00s)
+  2023-11-13 11:53:48 - INFO     - SUMMARY:
+  2023-11-13 11:53:48 - INFO     - baremetal-image () - Ran 12 tests in 612.344s
 
 The following message is expected to validate this Use-Case:
 
-      .. code-block:: console
+.. code-block:: console
 
-        2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.00s)
+  2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.00s)
 
 Safety Island PSA Crypto APIs Architecture Test Suite
 =====================================================
@@ -1294,8 +1294,6 @@ Run the tests
 The tests will automatically run after the FVP is started. The complete test
 suite takes around 8 minutes to complete. When the tests finish, a log similar
 to the following should be visible. Normally no failure should be seen::
-
-.. code-block:: console
 
   ************ Crypto Suite Report **********
   TOTAL TESTS     : 61
