@@ -137,3 +137,21 @@ class HIPCTestDomU2(HIPCTestDomU1):
 
     def test_hipc_cluster2(self):
         self.skipTest("HIPC to Cluster 2 not tested for DomU2")
+
+    def test_ping_cl0_cl1(self):
+        self.skipTest("HIPC R<->R not tested for DomU2")
+
+    def test_ping_cl0_cl2(self):
+        self.skipTest("HIPC R<->R not tested for DomU2")
+
+    def test_ping_cl1_cl2(self):
+        self.skipTest("HIPC R<->R not tested for DomU2")
+
+    def test_hipc_cluster_cl0_cl1(self):
+        self.skipTest("HIPC R<->R not tested for DomU2")
+
+    def test_hipc_cluster_cl0_cl2(self):
+        self.skipTest("HIPC R<->R not tested for DomU2")
+
+    def test_hipc_cluster_cl1_cl2(self):
+        self.skipTest("HIPC R<->R not tested for DomU2")
