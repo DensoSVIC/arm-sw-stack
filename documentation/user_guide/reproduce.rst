@@ -2056,55 +2056,56 @@ A similar output to the following is printed out:
 
 .. code-block:: console
 
-  2023-09-09 23:10:03 - INFO     - NOTE: recipe arm-systemready-ir-acs-1.0-r0: task do_testimage: Started
-  2023-09-09 23:10:05 - INFO     - Creating terminal default on terminal_ns_uart0
-  2023-09-09 23:10:16 - INFO     - Creating terminal tf-a on terminal_sec_uart
-  2023-09-09 23:10:16 - INFO     - Creating terminal scp on terminal_uart_scp
-  2023-09-09 23:10:16 - INFO     - Creating terminal lcp on terminal_uart_lcp
-  2023-09-09 23:10:16 - INFO     - Creating terminal rss on terminal_rss_uart
-  2023-09-09 23:10:16 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
-  2023-09-09 23:10:16 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
-  2023-09-09 23:10:17 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
-  2023-09-09 23:17:42 - INFO     - Test Group (PlatformSpecificElements): FAILED
-  2023-09-09 23:18:47 - INFO     - Test Group (RequiredElements): FAILED
-  2023-09-09 23:19:52 - INFO     - Test Group (CheckEvent_Conf): PASSED
-  2023-09-09 23:21:03 - INFO     - Test Group (CheckEvent_Func): PASSED
-  2023-09-09 23:22:07 - INFO     - Test Group (CloseEvent_Func): PASSED
-  2023-09-09 23:23:13 - INFO     - Test Group (CreateEventEx_Conf): PASSED
-  2023-09-09 23:24:15 - INFO     - Test Group (CreateEventEx_Func): PASSED
-  2023-09-09 23:25:24 - INFO     - Test Group (CreateEvent_Conf): PASSED
-  2023-09-09 23:26:26 - INFO     - Test Group (CreateEvent_Func): PASSED
-  2023-09-09 23:27:29 - INFO     - Test Group (RaiseTPL_Func): PASSED
-  2023-09-09 23:28:31 - INFO     - Test Group (RestoreTPL_Func): PASSED
-  2023-09-09 23:29:33 - INFO     - Test Group (SetTimer_Conf): PASSED
-  2023-09-09 23:37:17 - INFO     - Test Group (SetTimer_Func): PASSED
-  2023-09-09 23:38:14 - INFO     - Test Group (SignalEvent_Func): PASSED
-  2023-09-09 23:39:11 - INFO     - Test Group (WaitForEvent_Conf): PASSED
-  2023-09-09 23:40:39 - INFO     - Test Group (WaitForEvent_Func): PASSED
-  2023-09-09 23:41:36 - INFO     - Test Group (AllocatePages_Conf): PASSED
-  2023-09-09 23:43:18 - INFO     - Test Group (AllocatePages_Func): PASSED
-  2023-09-09 23:44:15 - INFO     - Test Group (AllocatePool_Conf): PASSED
-  2023-09-09 23:45:14 - INFO     - Test Group (AllocatePool_Func): PASSED
-  2023-09-09 23:46:11 - INFO     - Test Group (FreePages_Conf): PASSED
-  2023-09-09 23:47:11 - INFO     - Test Group (FreePages_Func): PASSED
-  2023-09-09 23:48:08 - INFO     - Test Group (GetMemoryMap_Conf): PASSED
-  2023-09-09 23:49:06 - INFO     - Test Group (GetMemoryMap_Func): PASSED
+  2023-11-30 00:33:53 - INFO     - NOTE: recipe arm-systemready-ir-acs-2.1.0-r0: task do_testimage: Started
+  2023-11-30 00:33:53 - INFO     - Creating terminal default on terminal_ns_uart0
+  2023-11-30 00:33:58 - INFO     - Creating terminal tf-a on terminal_sec_uart
+  2023-11-30 00:33:59 - INFO     - Creating terminal scp on terminal_uart_scp
+  2023-11-30 00:33:59 - INFO     - Creating terminal lcp on terminal_uart_lcp
+  2023-11-30 00:33:59 - INFO     - Creating terminal rss on terminal_rss_uart
+  2023-11-30 00:33:59 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+  2023-11-30 00:33:59 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+  2023-11-30 00:34:00 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+  2023-11-30 00:40:38 - INFO     - Test Group (PlatformSpecificElements): FAILED
+  2023-11-30 00:41:38 - INFO     - Test Group (RequiredElements): FAILED
+  2023-11-30 00:42:37 - INFO     - Test Group (CheckEvent_Conf): PASSED
+  2023-11-30 00:43:36 - INFO     - Test Group (CheckEvent_Func): PASSED
+  2023-11-30 00:44:37 - INFO     - Test Group (CloseEvent_Func): PASSED
+  2023-11-30 00:45:40 - INFO     - Test Group (CreateEventEx_Conf): PASSED
+  2023-11-30 00:46:39 - INFO     - Test Group (CreateEventEx_Func): PASSED
+  2023-11-30 00:47:42 - INFO     - Test Group (CreateEvent_Conf): PASSED
+  2023-11-30 00:48:41 - INFO     - Test Group (CreateEvent_Func): PASSED
+  2023-11-30 00:49:41 - INFO     - Test Group (RaiseTPL_Func): PASSED
+  2023-11-30 00:50:43 - INFO     - Test Group (RestoreTPL_Func): PASSED
+  2023-11-30 00:51:42 - INFO     - Test Group (SetTimer_Conf): PASSED
+  2023-11-30 00:57:32 - INFO     - Test Group (SetTimer_Func): PASSED
+  2023-11-30 00:58:30 - INFO     - Test Group (SignalEvent_Func): PASSED
+  2023-11-30 00:59:29 - INFO     - Test Group (WaitForEvent_Conf): PASSED
+  2023-11-30 01:00:43 - INFO     - Test Group (WaitForEvent_Func): PASSED
+  2023-11-30 01:01:42 - INFO     - Test Group (AllocatePages_Conf): PASSED
+  2023-11-30 01:04:06 - INFO     - Test Group (AllocatePages_Func): PASSED
+  2023-11-30 01:05:08 - INFO     - Test Group (AllocatePool_Conf): PASSED
+  2023-11-30 01:06:10 - INFO     - Test Group (AllocatePool_Func): PASSED
+  2023-11-30 01:07:08 - INFO     - Test Group (FreePages_Conf): PASSED
+  2023-11-30 01:08:08 - INFO     - Test Group (FreePages_Func): PASSED
+  2023-11-30 01:09:06 - INFO     - Test Group (GetMemoryMap_Conf): PASSED
+  2023-11-30 01:10:05 - INFO     - Test Group (GetMemoryMap_Func): PASSED
   ...
   ...
-  2023-09-10 08:13:13 - INFO     - Test Group (virtio_blk virtio1): vda
-  2023-09-10 08:13:29 - INFO     - Linux tests complete
-  2023-09-10 08:13:39 - INFO     - RESULTS:
-  2023-09-10 08:13:39 - INFO     - RESULTS - arm_systemready_ir_acs.SystemReadyACSTest.test_acs: PASSED (32592.00s)
-  2023-09-10 08:13:39 - INFO     - SUMMARY:
-  2023-09-10 08:13:39 - INFO     - arm-systemready-ir-acs () - Ran 1 test in 32591.997s
-  2023-09-10 08:13:39 - INFO     - arm-systemready-ir-acs - OK - All required tests passed (successes=1, skipped=0, failures=0, errors=0)
+  2023-11-30 09:06:14 - INFO     - Test Group (virtio_blk virtio1): vda
+  2023-11-30 09:33:50 - INFO     - Test Group (Supported ports):
+  2023-11-30 09:34:17 - INFO     - Linux tests complete
+  2023-11-30 09:34:25 - INFO     - RESULTS:
+  2023-11-30 09:34:25 - INFO     - RESULTS - arm_systemready_ir_acs.SystemReadyACSTest.test_acs: PASSED (32417.37s)
+  2023-11-30 09:34:25 - INFO     - SUMMARY:
+  2023-11-30 09:34:25 - INFO     - arm-systemready-ir-acs () - Ran 1 test in 32417.375s
+  2023-11-30 09:34:25 - INFO     - arm-systemready-ir-acs - OK - All required tests passed (successes=1, skipped=0, failures=0, errors=0)
 
 As seen in the above logs, some Test Groups are expected to fail. The following
 messages are expected to validate this Use-Case:
 
 .. code-block:: console
 
-  2023-09-10 08:13:39 - INFO     - RESULTS - arm_systemready_ir_acs.SystemReadyACSTest.test_acs: PASSED (32592.00s)
+  2023-11-30 09:34:25 - INFO     - RESULTS - arm_systemready_ir_acs.SystemReadyACSTest.test_acs: PASSED (32417.37s)
 
 .. note::
 
