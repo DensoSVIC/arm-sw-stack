@@ -105,15 +105,24 @@ this Heterogeneous Inter-processor Communication (HIPC) between subsystems.
 Use-Cases
 *********
 
-The solution contains all the instructions necessary to fetch and build the
-source as well as to download the required FVP and launch the
-:ref:`Use-Cases <introduction_use_cases>`. Instructions for achieving these
-:ref:`Use-Cases <introduction_use_cases>` are given in the
-:ref:`Reproduce <user_guide/reproduce:Reproduce>` section of the User Guide,
-subject to relevant assumed technical knowledge as listed later in this
-introduction at `Documentation Overview`_.
+The Reference Software Stack demonstrates the following capabilities of how a
+high-performance compute platform can be enhanced to improve functional safety:
 
-Following are the main Use-Cases implemented by the Reference Stack.
+  * Critical Applications Monitoring
+  * High reliability compute subsystem
+  * Safety Island Communication
+  * Transport Layer Security (TLS) with hardware cryptography support
+  * RSS Secure Services providing PSA Secure Storage and Crypto compliant APIs
+  * |Arm SystemReadyTM| IR-aligned software stack
+  * Secure firmware update following Arm's Security Firmware Update
+    Specification
+  * System Fault Handling for increased safety
+
+:ref:`Reproduce <user_guide/reproduce:Reproduce>` section of the User Guide
+contains all the instructions necessary to fetch and build the source as well
+as to download the required FVP and launch the Use-Cases.
+
+Following are the main Use-Cases implemented by the Reference Software Stack.
 
 Safety Island Actuation Demo
 ============================
