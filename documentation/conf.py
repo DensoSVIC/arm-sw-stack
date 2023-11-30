@@ -101,12 +101,19 @@ copybutton_remove_prompts = True
 # there are variables that refer to it later.
 yocto_version = "mickledore"
 
+kronos_version = os.environ.get(
+    'RTD_ENV_KRONOS_VERSION',
+    'main')
+
+meta_arm_version = os.environ.get(
+    'RTD_ENV_META_ARM_VERSION',
+    f'kronos-{yocto_version}')
+
 # Common variables for rst_prolog
 actuation_version = "main"
 cassini_version = yocto_version + "-dev"
 fvp_version = "0.0"
 kas_version = "3.3"
-kronos_version = "main"
 linux_version = "6.1"
 linux_version_patch = "46"
 mbedtls_base_version = "3.4.0"
@@ -300,9 +307,8 @@ meta_arm_url_repo_pattern = os.environ.get(
     'https://git.yoctoproject.org/meta-arm/tree/{path}?h={ref}')
 # Read the Docs sometimes adds extra quotes to environment variables
 meta_arm_url_repo_pattern = meta_arm_url_repo_pattern.strip("'")
-meta_arm_ref = os.environ.get('META_ARM_REF', yocto_version)
 
 extlinks = {
-            'meta-arm-repo': (meta_arm_url_repo_pattern.format(path='%s', ref=meta_arm_ref), '%s'),  # noqa
+            'meta-arm-repo': (meta_arm_url_repo_pattern.format(path='%s', ref=meta_arm_version), '%s'),  # noqa
             'kronos-repo': (repo_url_pattern.format(path='%s', ref=kronos_version), '%s'),  # noqa
             }
