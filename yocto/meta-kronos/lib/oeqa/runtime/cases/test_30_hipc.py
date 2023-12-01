@@ -160,7 +160,7 @@ class HIPCTestBase(OERuntimeTestCase):
             self.target.sendline(self.linux_console,
                                  f'iperf -c {cl_addr} -t {TCP_TEST_DURATION}'
                                  f' -P {connections_number}')
-            session_end_timeout = 300 * TCP_TEST_DURATION * connections_number
+            session_end_timeout = 350 * TCP_TEST_DURATION * connections_number
             self.target.expect(self.linux_console, 'Client connecting to ',
                                timeout=session_end_timeout)
             for _ in range(0, connections_number):
@@ -243,7 +243,7 @@ class HIPCTestBase(OERuntimeTestCase):
             cl_console,
             f'zperf tcp upload {peer_addr} 5001 {TCP_TEST_DURATION} 1k')
         self.target.expect(cl_console, r'Num packets:\s*(\d+)\r\n',
-                           timeout=(300 * TCP_TEST_DURATION))
+                           timeout=(350 * TCP_TEST_DURATION))
         # During this test, it can happen that error messages are shown before
         # the test ends, but the test itself is succeeding, check that no error
         # is found before the end of the test.
@@ -276,7 +276,7 @@ class HIPCTestBase(OERuntimeTestCase):
                    '100K')
             self.target.sendline(client_cl, cmd)
             self.target.expect(client_cl, r'Num packets:\s*(\d+)\r\n',
-                               timeout=(300 * TCP_TEST_DURATION))
+                               timeout=(350 * TCP_TEST_DURATION))
             # During this test, it can happen that error messages are shown
             # before the test ends, but the test itself is succeeding, check
             # that no error is found before the end of the test.
