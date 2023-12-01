@@ -325,7 +325,7 @@ Integration Tests Validating PSA APIs Architecture Test Suite
 =============================================================
 
 The ``test_psa_si_cluster{N}`` integration tests in
-:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_si_psa_arch_tests.py`
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_10_si_psa_arch_tests.py`
 verify that the psa-arch-tests suite report is as expected.
 
 This test waits until the ``psa-arch-tests`` finish successfully
