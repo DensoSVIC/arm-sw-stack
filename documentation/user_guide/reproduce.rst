@@ -2241,9 +2241,8 @@ installation process and how to solve them:
 
   When the installation reaches the ``Install the GRUB boot loader`` phase,
   there will be an error ``Unable to install GRUB in dummy``.
-  This is because on EBBR platform, ``UEFI SetVariable()`` is not required at
-  runtime (however, it is required at boot time), and Kronos happens to not
-  support ``UEFI SetVariable()`` yet.
+  This is because on an EBBR platform, UEFI ``SetVariable()`` is not required at
+  runtime (however, it is required at boot time).
 
   .. image:: ../images/sr-ir-linux-distro-debian-install-grub-0.png
      :align: center
