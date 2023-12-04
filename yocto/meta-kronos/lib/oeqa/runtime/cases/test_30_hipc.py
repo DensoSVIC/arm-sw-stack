@@ -100,24 +100,41 @@ class HIPCTestBase(OERuntimeTestCase):
             self.target.expect(self.linux_console, self.linux_prompt, timeout=120)
 
     def check_error_messages(self, server, client):
+        def error_check(allow_list, messages):
+            error_lines = []
+            # This regex matches linux shell possible errors:
+            # 'ERROR: [...]', 'WARN: [...]', 'WARNING: [...]'
+            # and also zephyr shell possible errors:
+            # '<err> [...]', '<wrn> [...]'
+            msg_regex = br'(ERROR:|WARN:|WARNING:|<err>|<wrn>)\s(?P<msg>.*)\r\n'
+            matches = re.finditer(msg_regex, messages)
+
+            for line in [match.group("msg") for match in matches]:
+                if not any(re.match(allow, line) for allow in allow_list):
+                    decode_line = line.decode("utf-8", errors="replace").strip()
+                    error_lines.append(decode_line)
+
+            return error_lines
+
         # This function checks the console output between two expect
         # function call.
         # A list of error messages that are permitted to occur in either
-        # iperf or zperf
+        # iperf or zperf, this list can contain regex, please write them to
+        # match the whole error message and not only part of it.
         allowed_messages = [
             b'net_tcp: context->tcp == NULL',
         ]
-        linux_output = self.target.before(server)
-        matches = re.findall(br'(?:ERROR|WARN(ING)?): (.*)' b'\r\n',
-                                linux_output)
-        self.assertTrue(
-            all(match in allowed_messages for match in matches))
+        server_output = self.target.before(server)
+        errors = error_check(allowed_messages, server_output)
+        self.assertEqual(len(errors), 0,
+                         msg="Errors found in the server console:\n{}"
+                         .format('\n'.join(errors)))
 
-        zephyr_output = self.target.before(client)
-        matches = re.findall(br'<(?:err|wrn)> (.*)' b'\r\n',
-                                zephyr_output)
-        self.assertTrue(
-            all(match in allowed_messages for match in matches))
+        client_output = self.target.before(client)
+        errors = error_check(allowed_messages, client_output)
+        self.assertEqual(len(errors), 0,
+                         msg="Errors found in the client console:\n{}"
+                         .format('\n'.join(errors)))
 
     def hipc(self, cl_addr, cl_console, peer_addr):
         """
