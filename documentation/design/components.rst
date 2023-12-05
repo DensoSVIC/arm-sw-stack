@@ -189,6 +189,7 @@ to:
 * Configure GIC View-1/2/3 for Safety Island.
 * Configure the NI-710AE of the Safety Island.
 * Support the runtime services listed above.
+* Add Secure Firmware Update support for RSS, SCP, LCP, Safety Island and Primary Compute.
 
 .. _design_components_scp-firmware:
 
@@ -283,6 +284,7 @@ Patches for the SCP are included at
 * Power on Safety Island.
 * Reset LCP.
 * Power on PC.
+* Add Primary Compute and Safety Island shared SRAM to CMN memory region map.
 
 ***************
 Primary Compute
@@ -343,6 +345,7 @@ to:
 
 * Assign the shared buffer for the Management Mode (MM) communication between
   U-Boot and OP-TEE.
+* Add Secure Firmware Update support for Primary Compute.
 
 .. _design_components_op-tee:
 
@@ -400,6 +403,7 @@ to:
 * Support MHUv3 doorbell communication.
 * Support RSS communication protocol.
 * Support crypto and secure storage backends for the RD-Kronos platform.
+* Support transfer capsule update FF-A protocol.
 
 .. _design_components_u-boot:
 
@@ -596,6 +600,7 @@ to:
  * Discover GICv4.1 feature
  * Initialize GICv4.1 at Xen boot time
  * Support GICv4.1 features of vLPI and vSGI Direct Injection
+ * Support EFI capsule update from runtime and on disk
 
 .. _design_components_linux:
 
