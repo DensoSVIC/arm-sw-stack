@@ -1639,6 +1639,12 @@ The following message is expected to validate this Use-Case:
 
   2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.00s)
 
+Terminate the FVP
+^^^^^^^^^^^^^^^^^
+
+Select the terminal titled as ``python3`` where the ``runfvp`` was launched
+by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP process.
+
 Safety Island PSA Crypto APIs Architecture Test Suite
 =====================================================
 
