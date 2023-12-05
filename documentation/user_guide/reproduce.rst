@@ -1950,6 +1950,12 @@ and GIC-700AE FMU and how this affects the SSU safety state.
 See the :ref:`design_applications_fault_mgmt_shell_reference` for more details
 about these and other Fault Management shell sub-commands.
 
+Terminate the FVP
+-----------------
+
+Select the terminal titled as ``python3`` where the ``runfvp`` was launched
+by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP process.
+
 Automated Validation
 --------------------
 
