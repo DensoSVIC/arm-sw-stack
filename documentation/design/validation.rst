@@ -222,8 +222,8 @@ Integration Tests Validating gPTP
 =================================
 
 The scripts that implement the tests are
-:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_gptp_base.py` and
-:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_gptp.py`.
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_ptp_base.py` and
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_30_ptp.py`.
 
 * test_ptp_linux_services
       The test ensures the ``ptp4l`` services are running.
