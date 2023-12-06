@@ -2602,3 +2602,9 @@ To start Secure Firmware Update:
 
 9. Select the terminal titled as ``python3`` where the ``runfvp`` was launched
    by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP process.
+
+   .. note::
+
+      Due to the limitations of the FVP, the updated firmware is lost when FVP
+      is terminated, so it is not expected to boot with the updated firmware
+      when re-running FVP again after ``Ctrl-c``.
