@@ -146,6 +146,24 @@ For example, the file
 :meta-arm-repo:`meta-arm-bsp/conf/machine/fvp-rd-kronos.conf` adds the
 ``test_10_linuxboot`` test to the ``TEST_SUITES`` variable.
 
+Before running integration tests, some basic tests will be run firstly:
+
+* test_linux_login
+   The test logs in the Linux with root. If it fails, the tests that depend
+   on it will be cancelled. The test is implemented in
+   :kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_10_linuxlogin.py`.
+
+* test_cluster{N}
+   The test verifies the output when Zephyr boots on Safety Island Cluster N.
+   The N is the Safety Island clusters number. Those tests are implemented in:
+
+   :kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_10_safety_island_c0.py`
+
+   :kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_10_safety_island_c1.py`
+
+   :kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_10_safety_island_c2.py`
+
+
 .. _validation_actuation_demo:
 
 Integration Tests Validating the Safety Island Actuation Demo
