@@ -1749,6 +1749,11 @@ The following messages are expected to validate this Use-Case:
   2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster1: PASSED (0.01s)
   2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.01s)
 
+Terminate the FVP
+^^^^^^^^^^^^^^^^^
+
+Select the terminal titled as ``python3`` where the ``runfvp`` was launched
+by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP process.
 
 Fault Management Demo
 =====================
