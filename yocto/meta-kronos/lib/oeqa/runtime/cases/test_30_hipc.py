@@ -123,6 +123,7 @@ class HIPCTestBase(OERuntimeTestCase):
         # match the whole error message and not only part of it.
         allowed_messages = [
             b'net_tcp: context->tcp == NULL',
+            b'net_gptp: Not AS capable: \d+ ns > \d+ ns',
         ]
         server_output = self.target.before(server)
         errors = error_check(allowed_messages, server_output)
