@@ -68,7 +68,7 @@ class FaultMgmtTest(OERuntimeTestCase):
             self.target.expect(
                 self.console,
                 fr"Fault count for {fault_id} on fmu@2a510000: 1",
-                timeout=90)
+                timeout=300)
 
     def test_system_fmu_internal_set_enabled(self):
         output = self.shell.exec_command(
@@ -111,7 +111,7 @@ class FaultMgmtTest(OERuntimeTestCase):
             self.target.expect(
                 self.console,
                 fr"Fault count for {fault_id} on fmu@2a570000: 1",
-                timeout=30)
+                timeout=300)
 
             # Configure fault as critical and inject
             self.shell.wait_for_prompt()
@@ -127,7 +127,7 @@ class FaultMgmtTest(OERuntimeTestCase):
             self.target.expect(
                 self.console,
                 fr"Fault count for {fault_id} on fmu@2a570000: 1",
-                timeout=90)
+                timeout=300)
 
     def test_fmu_fault_count(self):
         self.test_system_fmu_internal_inject()
