@@ -13,8 +13,8 @@ Applications
    :maxdepth: 1
    :caption: Contents
 
-   actuation
    cam
+   actuation
    bridge
    parsec_enabled_tls
    psa_arch_tests

@@ -124,14 +124,6 @@ as to download the required FVP and launch the Use-Cases.
 
 Following are the main Use-Cases implemented by the Reference Software Stack.
 
-Safety Island Actuation Demo
-============================
-
-The Safety Island Actuation Demo consists of the |Arm SystemReadyTM| IR-aligned
-firmware along with Linux-based software on the Primary Compute and Zephyr
-application on the Safety Island to demonstrate automotive workloads.  Please
-refer to :ref:`design_applications_actuation` for more information.
-
 Critical Application Monitoring Demo
 ====================================
 
@@ -141,6 +133,14 @@ level system. This Demo deploys CAM components on the Kronos FVP to demonstrate
 the feasibility of the Safety Island monitoring solution.
 
 Please refer to :ref:`design_applications_cam` for more information.
+
+Safety Island Actuation Demo
+============================
+
+The Safety Island Actuation Demo consists of the |Arm SystemReadyTM| IR-aligned
+firmware along with Linux-based software on the Primary Compute and Zephyr
+application on the Safety Island to demonstrate automotive workloads.  Please
+refer to :ref:`design_applications_actuation` for more information.
 
 Safety Island Communication Demo
 ================================
