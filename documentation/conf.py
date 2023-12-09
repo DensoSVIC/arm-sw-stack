@@ -112,17 +112,17 @@ meta_arm_version = os.environ.get(
 # Common variables for rst_prolog
 actuation_version = "main"
 cassini_version = yocto_version + "-dev"
-fvp_version = "0.0"
+fvp_version = "12.24"
 kas_version = "3.3"
 linux_version = "6.1"
-linux_version_patch = "46"
+linux_version_patch = "57"
 mbedtls_base_version = "3.4.0"
 mbedtls_version = "63a21f4cda8b3d21fe5f85e6efc62d924b492757"
 optee_version = "3.20.0"
 psa_arch_tests_version = "v23.06_API1.5_ADAC_EAC"
 # /* cspell:disable-next-line */
-scp_firmware_base_version = "master branch post v2.11.0"
-scp_firmware_version = "f71f34237365b2c4b54be798aba79b740dcc4020"
+scp_firmware_base_version = "master branch post v2.13.0"
+scp_firmware_version = "cc4c9e017348d92054f74026ee1beb081403c168"
 systemready_ir_acs_version = "2.1.0"
 trusted_firmware_a_version = "2.8.0"
 # /* cspell:disable-next-line */
