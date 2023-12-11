@@ -17,6 +17,7 @@
   image: ${MIRROR_GHCR}/siemens/kas/kas:3.3
   variables:
     KUBERNETES_MEMORY_REQUEST: 32Gi
+    KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 50Gi
     USER_ID:
     GROUP_ID:
 
