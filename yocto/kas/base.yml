@@ -12,6 +12,7 @@ header:
       file: meta-cassini-config/kas/cassini.yml
     - repo: meta-arm
       file: kas/fvp-rd-kronos.yml
+    - yocto/kas/ref-stack-pinned-repos.yml
 
 defaults:
   repos:
@@ -21,7 +22,6 @@ repos:
   meta-cassini:
     url: https://gitlab.com/Linaro/cassini/meta-cassini
     path: layers/meta-cassini
-    refspec: c9c1a57f1fce6e2f21edfef30962e74382c8639c
     layers:
       meta-cassini-distro:
       meta-cassini-bsp: excluded

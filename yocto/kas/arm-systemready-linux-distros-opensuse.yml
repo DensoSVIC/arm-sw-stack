@@ -11,11 +11,15 @@ header:
       file: kas/fvp-rd-kronos.yml
     - repo: meta-arm
       file: kas/arm-systemready-linux-distros-opensuse.yml
+    - yocto/kas/bsp-pinned-repos.yml
+
+defaults:
+  repos:
+    refspec: mickledore
 
 repos:
   meta-arm:
     url: https://git.yoctoproject.org/git/meta-arm
-    refspec: mickledore
 
 local_conf_header:
   arm-systemready-linux-distros: |

@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: MIT
+
+---
+header:
+  version: 14
+  includes:
+   - yocto/kas/bsp-pinned-repos.yml
+
+repos:
+  meta-cassini:
+    refspec: c9c1a57f1fce6e2f21edfef30962e74382c8639c
+  meta-clang:
+    refspec: af4dcba009ba98250315520f3003fde4ee164cce
+  meta-security:
+    refspec: d7db0a3bd1a8639df7570483f003ce00cbe274a2
+  meta-virtualization:
+    refspec: b8db7002764712f2902fe9dea098c171b1128076
+  meta-zephyr:
+    refspec: 8fb5559e3278fa0263f4236611641227e294aff0
+
