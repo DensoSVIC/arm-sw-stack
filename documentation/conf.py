@@ -204,7 +204,7 @@ rst_prolog = f"""
 .. _Autoware: https://autowarefoundation.github.io/autoware-documentation
 .. _Base Boot Requirements (BBR): https://developer.arm.com/documentation/den0044/latest
 .. _Base System Architecture (BSA): https://developer.arm.com/documentation/den0094/latest
-.. _Cassini: https://cassini.readthedocs.io/en/{cassini_version}
+.. _Cassini: https://cassini.readthedocs.io/en/latest
 .. _Crypto Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/crypto-service-description.html
 .. _CycloneDDS: https://cyclonedds.io/docs/cyclonedds/latest/about_dds/eclipse_cyclone_dds.html
 .. _Data Distribution Service: https://www.dds-foundation.org/what-is-dds-3
