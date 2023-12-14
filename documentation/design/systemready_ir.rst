@@ -83,40 +83,44 @@ The Reference Stack is currently known to have the following non-alignments:
 
 * Reference stack
 
-    1. Kronos system does not support to populate the list for runtime
-       variables, which will lead to "Can't populate EFI variables. No runtime
-       variables will be available".
+  1. Kronos system does not support populating the list of runtime variables,
+     which will lead to "Can't populate EFI variables. No runtime variables will
+     be available".
 
 * Devicetree
-    1. Missing schemas for components which have not yet or are not appropriate
-       to be upstreamed (``arm,mhuv3``, ``arm,mpam-msc``, ``arm,rd-kronos``,
-       ``arm,slc``, ``arm,si-channel``, ``arm,si-rproc``).
+
+  1. Missing schemas for components which have not yet been or are not
+     appropriate to be upstreamed (``arm,mhuv3``, ``arm,mpam-msc``,
+     ``arm,rd-kronos``, ``arm,slc``, ``arm,si-channel``, ``arm,si-rproc``).
 
 * U-Boot
 
-    1. Known limitations of EFI implementation which are excluded in the
-       `EBBR Specification - UEFI Runtime Services`_.
-    2. Known limitations of EFI implementation which are noted as 'Explicit
-       justification in a future revision of EBBR is pending' by
-       `edk2-test-parser`_.
-    3. The ``UpdateCapsule()`` method does not currently support certain
-       invocations with invalid parameters.
+  1. Known limitations of EFI implementation which are excluded in the `EBBR
+     Specification - UEFI Runtime Services`_.
+
+  2. Known limitations of EFI implementation which are noted as 'Explicit
+     justification in a future revision of EBBR is pending' by
+     `edk2-test-parser`_.
+
+  3. The ``UpdateCapsule()`` method does not currently support certain
+     invocations with invalid parameters.
 
 * Model - FVP
 
-    1. Platform-specific limitations, which are noted as excluded in the
-       `EBBR Specification - Required Platform Specific Elements`_.
-    2. ``AES``, ``SHA1`` and ``SHA2`` instructions are marked as unavailable in
-       the FVP ``ID_AA64ISAR0_EL1``.
+  1. Platform-specific limitations, which are noted as excluded in the `EBBR
+     Specification - Required Platform Specific Elements`_.
+
+  2. ``AES``, ``SHA1`` and ``SHA2`` instructions are marked as unavailable in
+     the FVP ``ID_AA64ISAR0_EL1``.
 
 * Test environment
 
-    1. No text input is available in the test environment for Simple Text
-       Input Ex protocol.
+  1. No text input is available in the test environment for Simple Text Input Ex
+     protocol.
 
 * BSA tests
 
-    1. Tests are not compatible with certain devices in the RD-Kronos model.
+  1. Tests are not compatible with certain devices in the RD-Kronos model.
 
 ****************************
 |Arm SystemReadyTM| IR Tests
