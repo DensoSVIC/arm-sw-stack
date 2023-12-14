@@ -59,18 +59,18 @@ Reference Design and is composed of multiple Open Source components which
 together form the proposed solution, including:
 
 
-  * The `Runtime Security Subsystem (RSS)`_ runs an instance of Trusted
+  * The `Runtime Security Subsystem (RSS)`_, running an instance of Trusted
     Firmware-M, which offers boot, cryptography, and secure storage services.
 
-  * The Safety Island subsystem runs three instances of the Zephyr real-time
+  * The Safety Island subsystem, running three instances of the Zephyr real-time
     operating system (RTOS).
 
-  * The firmware for the Primary Compute uses Trusted Firmware-A, U-Boot, OP-TEE
-    and Trusted Services. These are configured to be aligned with
-    `Arm SystemReady IR`_.
+  * The firmware for the Primary Compute, using Trusted Firmware-A, U-Boot,
+    OP-TEE and Trusted Services. These are configured to be aligned with `Arm
+    SystemReady IR`_.
 
 The remaining software in the Primary Compute subsystem, based on the
-`Cassini`_  distribution, is available in two main architectures:
+`Cassini`_ distribution, is available in two main architectures:
 
   **Baremetal Architecture**
 
@@ -96,8 +96,9 @@ The remaining software in the Primary Compute subsystem, based on the
 
 In both architectures the Primary Compute (Linux) can communicate with the
 Safety Island subsystem (Zephyr) via a bi-directional communication channel. The
-:ref:`design_applications_actuation` is integrated into the stack to show-case
-this Heterogeneous Inter-processor Communication (HIPC) between subsystems.
+:ref:`design_applications_actuation` and :ref:`design_applications_cam` are
+integrated into the stack to show-case this Heterogeneous Inter-processor
+Communication (HIPC) between subsystems.
 
 .. _introduction_use_cases:
 
@@ -157,7 +158,7 @@ Parsec-enabled TLS Demo
 =======================
 
 The Parsec-enabled TLS demo illustrates a HTTPS session where a Transport
-Layer Security (TLS) connection is established, and simple webpage is
+Layer Security (TLS) connection is established, and a simple webpage is
 transferred. The TLS session consists of both symmetric and asymmetric
 cryptographic operations. The symmetric operations are executed by Mbed TLS
 in Linux userspace on the Primary Compute. The asymmetric operations are
