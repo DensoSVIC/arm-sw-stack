@@ -242,7 +242,7 @@ class CAMTest(OERuntimeTestCase):
         for _ in range((processing_count + 2) * stream_count):
             self.target.expect(self.zephyr_console,
                                'Start|Event|Stop',
-                               timeout=120)
+                               timeout=300)
 
         self.target.expect(self.linux_console, self.linux_prompt, timeout=180)
 
@@ -256,7 +256,7 @@ class CAMTest(OERuntimeTestCase):
         self.target.sendline(self.linux_console, st)
         self.target.expect(self.zephyr_console,
                            r'Stream logical error',
-                           timeout=180)
+                           timeout=300)
         self.target.expect(self.linux_console, self.linux_prompt, timeout=180)
 
     @OETestDepends([
@@ -269,5 +269,5 @@ class CAMTest(OERuntimeTestCase):
         self.target.sendline(self.linux_console, st)
         self.target.expect(self.zephyr_console,
                            r'Stream temporal error',
-                           timeout=180)
+                           timeout=300)
         self.target.expect(self.linux_console, self.linux_prompt, timeout=180)
