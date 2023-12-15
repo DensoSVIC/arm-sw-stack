@@ -169,6 +169,16 @@ Image-Build-virtualization-hipc-validation:
   variables:
     KAS_CONFIGS: virtualization/hipc-validation
 
+
+# Override deletion jobs so they only run manually
+Delete-DL-Dir:
+  rules:
+    - when: manual
+
+Delete-SState:
+  rules:
+    - when: manual
+
 # Suppress the use of the gitlab/kas helper jobs as they
 # should only be run in the nightly or when triggered manually
 Prune-Cache:
