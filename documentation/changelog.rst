@@ -222,3 +222,113 @@ Known Issues
       CPU features: 0x00000,00050cf7,e29e7727
       Memory Limit: 2016 MB
       Connection closed by foreign host.
+
+  * During the Linux boot process, an error might occur leading to an IRQ
+    getting disabled, with the boot process completing successfully after that.
+    This has been observed during the Firmware Update demo, but may be unrelated
+    to this specific scenario. A workaround is to rerun the FVP again. When this
+    issue occurs, something similar to the following appears in the kernel logs:
+
+    .. code-block:: text
+
+      irq 33: nobody cared (try booting with the "irqpoll" option)
+      CPU: 0 PID: 0 Comm: swapper/0 Tainted: G      D    O       6.1.57-rt10-yocto-preempt-rt #1
+      Hardware name: Unknown Unknown Product/Unknown Product, BIOS 2023.07.02 07/01/2023
+      Call trace:
+      dump_backtrace.part.0+0xc8/0xd4
+      show_stack+0x20/0x30
+      dump_stack_lvl+0x6c/0x88
+      dump_stack+0x18/0x34
+      __report_bad_irq+0x54/0xe4
+      note_interrupt+0x2d8/0x330
+      handle_irq_event+0xf4/0x120
+      handle_fasteoi_irq+0xc4/0x2a0
+      generic_handle_domain_irq+0x34/0x50
+      gic_handle_irq+0x6c/0x168
+      call_on_irq_stack+0x24/0x50
+      do_interrupt_handler+0xdc/0xec
+      el1_interrupt+0x34/0x70
+      el1h_64_irq_handler+0x18/0x2c
+      el1h_64_irq+0x64/0x68
+      arch_cpu_idle+0x18/0x2c
+      default_idle_call+0x54/0x1d8
+      do_idle+0x23c/0x2b0
+      cpu_startup_entry+0x40/0x4c
+      rest_init+0xe8/0xf0
+      arch_post_acpi_subsys_init+0x0/0x28
+      start_kernel+0x6e0/0x724
+      __primary_switched+0xb4/0xbc
+      handlers:
+      [<00000000ff5edda5>] irq_default_primary_handler threaded [<00000000d1460963>] mhuv3_pbx_comb_interrupt [arm_mhuv3]
+      Disabling IRQ #33
+
+  * During the Linux boot process, an error might occur leading to a kernel
+    panic. This has been observed in the distribution installation demos. A
+    workaround is to clean the build artifacts and try again. When this issue
+    occurs, something similar to the following gets printed:
+
+    .. code-block:: text
+
+      [    0.753199] SError Interrupt on CPU0, code 0xbe000211 -- SError
+      [    0.753199] CPU: 0 PID: 168 Comm: systemd-udevd Not tainted 5.10.0-22-arm64 #1 Debian 5.10.178-3
+      [    0.753199] Hardware name: Unknown Unknown Product/Unknown Product, BIOS 2023.07.02 07/01/2023
+      [    0.753199] pstate: a0400009 (NzCv daif +PAN -UAO -TCO BTYPE=--)
+      [    0.753199] pc : ahci_save_initial_config+0x38/0x3c0 [libahci]
+      [    0.753199] lr : ahci_save_initial_config+0x38/0x3c0 [libahci]
+      [    0.753199] sp : ffff800010d337c0 [    0.753199] x29: ffff800010d337c0 x28: ffff79b7c1130080
+      [    0.753199] x27: ffffbd91761a1090 x26: 0000000000000000
+      [    0.753199] x25: ffffbd911fc04000 x24: ffffbd911fbfd628
+      [    0.753199] x23: ffff79b7c54650b8 x22: ffff8000100d2000
+      [    0.753199] x21: 0000000000000005 x20: ffff79b7c1130080
+      [    0.753199] x19: ffff79b7c5465000 x18: 0000000000000003
+      [    0.753199] x17: 00000000a3442770 x16: ffffbd9176795630
+      [    0.753199] x15: 0000000000000030 x14: ffffffffffffffff
+      [    0.753199] x13: ffff800010000000 x12: 0000000000000028
+      [    0.753199] x11: 0101010101010101 x10: 7f7f7f7f7f7f7f7f
+      [    0.753199] x9 : ffffbd911fbc95d8 x8 : 7f7f7f7f7f7f7f7f
+      [    0.753199] x7 : 63646f6f606c6471 x6 : 0000000000808080
+      [    0.753199] x5 : 0000000000000000 x4 : ffff79b7c1753d00
+      [    0.753199] x3 : 0000000000000000 x2 : 0000000000000000
+      [    0.753199] x1 : ffff79b7c1130080 x0 : 000000000000000a
+      [    0.753199] Kernel panic - not syncing: Asynchronous SError Interrupt
+      [    0.753199] CPU: 0 PID: 168 Comm: systemd-udevd Not tainted 5.10.0-22-arm64 #1 Debian 5.10.178-3
+      [    0.753199] Hardware name: Unknown Unknown Product/Unknown Product, BIOS 2023.07.02 07/01/2023
+      [    0.753199] Call trace:
+      [    0.753199]  dump_backtrace+0x0/0x200
+      [    0.753199]  show_stack+0x20/0x30
+      [    0.753199]  dump_stack+0xe8/0x124
+      [    0.753199]  panic+0x190/0x378
+      [    0.753199]  nmi_panic+0xb8/0xc0
+      [    0.753199]  arm64_serror_panic+0x88/0x94
+      [    0.753199]  arm64_is_fatal_ras_serror+0x30/0xb0
+      [    0.753199]  do_serror+0x48/0x6c
+      [    0.753199]  el1_error+0x90/0x110
+      [    0.753199]  ahci_save_initial_config+0x38/0x3c0 [libahci]
+      [    0.753199]  ahci_init_one+0x334/0xd20 [ahci]
+      [    0.753199]  local_pci_probe+0x48/0xb4
+      [    0.753199]  pci_device_probe+0x11c/0x1bc
+      [    0.753199]  really_probe+0xf8/0x530
+      [    0.753199]  driver_probe_device+0xfc/0x170
+      [    0.753199]  device_driver_attach+0xc8/0xd0
+      [    0.753199]  __driver_attach+0xd0/0x190
+      [    0.753199]  bus_for_each_dev+0x78/0xdc
+      [    0.753199]  driver_attach+0x2c/0x40
+      [    0.753199]  bus_add_driver+0x154/0x254
+      [    0.753199]  driver_register+0x80/0x13c
+      [    0.753199]  __pci_register_driver+0x4c/0x60
+      [    0.753199]  ahci_pci_driver_init+0x34/0x1000 [ahci]
+      [    0.753199]  do_one_initcall+0x4c/0x270
+      [    0.753199]  do_init_module+0x50/0x260
+      [    0.753199]  load_module+0x2248/0x26e0
+      [    0.753199]  __do_sys_finit_module+0xbc/0x130
+      [    0.753199]  __arm64_sys_finit_module+0x28/0x34
+      [    0.753199]  el0_svc_common.constprop.0+0x80/0x1d0
+      [    0.753199]  do_el0_svc+0x2c/0xa4
+      [    0.753199]  el0_svc+0x20/0x30
+      [    0.753199]  el0_sync_handler+0xb0/0xb4
+      [    0.753199]  el0_sync+0x180/0x1c0
+      [    0.753299] SMP: stopping secondary CPUs
+      [    0.753299] Kernel Offset: 0x3d9166160000 from 0xffff800010000000
+      [    0.753299] PHYS_OFFSET: 0xffff86c8c0000000
+      [    0.753299] CPU features: 0x03df0a97,6a208a38
+      [    0.753299] Memory Limit: none

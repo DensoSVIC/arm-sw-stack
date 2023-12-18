@@ -1970,6 +1970,10 @@ Run the following command to start the installation:
 
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
+.. note::
+
+  In case of a kernel error message during system boot, refer to the
+  :ref:`changelog_knownissues` for possible workarounds.
 
 The whole process of installing Debian will probably take about 5 hours. The
 install process begins when you see something like the below picture:
@@ -2127,6 +2131,11 @@ Run the following command to start the installation:
 
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
+.. note::
+
+  In case of a kernel error message during system boot, refer to the
+  :ref:`changelog_knownissues` for possible workarounds.
+
 The whole process of installing openSUSE will take several hours. Below are the
 main steps and tips for installing openSUSE.
 
@@ -2255,6 +2264,11 @@ To start the FVP and connect to the Primary Compute terminal (running Linux):
   kas shell -c \
     "../layers/meta-arm/scripts/runfvp -t tmux --verbose \
        -- -C ros.board.mmc.p_mmc_file=${PWD}/build/tmp_baremetal/deploy/images/fvp-rd-kronos/mmc-image-fvp-rd-kronos.wic"
+
+.. note::
+
+  In case of a kernel error message during system boot, refer to the
+  :ref:`changelog_knownissues` for possible workarounds.
 
 Note that the main tmux windows involved in the Secure Firmware Update are
 ``terminal_ns_uart0`` and ``terminal_rss_uart``. For ease of navigation, we

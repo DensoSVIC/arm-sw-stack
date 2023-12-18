@@ -104,6 +104,7 @@ condvar
 conf
 configfile
 configu
+constprop
 contex
 copybutton
 cortexa
@@ -226,12 +227,14 @@ ethsi
 EVNT
 extlinks
 Fancellu
+fasteoi
 fatfs
 fbaa
 ffch
 fileextrapaths
 FILESEXTRAPATHS
 filesystems
+finit
 fiptool
 fmu
 fmus
@@ -310,6 +313,7 @@ ipaddr
 iperf
 IPPROTO
 IRQN
+irqpoll
 irqrestore
 irqreturn
 IRQS
@@ -333,6 +337,7 @@ kzalloc
 LAYERDEPENDS
 LAYERDIR
 LAYERSERIES
+libahci
 libc
 libcam
 libcpp
@@ -665,6 +670,7 @@ uart
 uartclk
 ubfx
 uboot
+udevd
 uefi
 uintptr
 unitdir
