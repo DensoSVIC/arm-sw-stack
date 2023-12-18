@@ -21,8 +21,6 @@ options provided in the configuration menu.
 
 .. note::
   All command examples on this page can be copied by clicking the copy button.
-  Any console prompts at the start of each line, comments, or empty lines will
-  be automatically excluded from the copied text.
 
 .. _user_guide_reproduce_environment_setup:
 
@@ -53,7 +51,7 @@ Install Dependencies
 
   * Install the kas tool and its optional dependency (to use the "menu" plugin):
 
-    .. code-block:: console
+    .. code-block:: text
       :substitutions:
 
       sudo -H pip3 install --upgrade kas==|kas version| && sudo apt install python3-newt
@@ -62,7 +60,7 @@ Install Dependencies
     `kas Dependencies & installation`_.
   * Install tmux (required for ``runfvp`` tool):
 
-    .. code-block:: console
+    .. code-block:: text
 
       sudo apt install tmux
 
@@ -85,7 +83,7 @@ Download
 Download the ``kronos`` repository using Git and checkout on the kronos branch,
 via:
 
-.. code-block:: shell
+.. code-block:: text
   :substitutions:
 
   # Change the tag or branch to be fetched by replacing the value supplied to
@@ -112,7 +110,7 @@ different Reference Stack Architecture types.
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -163,7 +161,7 @@ Build
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -178,7 +176,7 @@ Run the FVP
 
 To start the FVP and connect to the Primary Compute terminal (running Linux):
 
-.. code-block:: console
+.. code-block:: text
 
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
@@ -211,9 +209,9 @@ The Reference Stack running on the Primary Compute can be logged into as
 command to guarantee that all the expected services have been
 initialized.
 
-   .. code-block:: shell
+.. code-block:: text
 
-      systemctl is-system-running --wait
+  systemctl is-system-running --wait
 
 Wait for it to return. The expected terminal output is ``running``.
 
@@ -226,13 +224,13 @@ Monitoring
 1. Run ``cam-tool deploy`` command from the Primary Compute terminal to transfer
    the stream deployment data (.csd) to ``cam-service``:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       cam-tool deploy -i /usr/share/cam-data/84085ddc-bc10-11ed-9a44-7ef9696e0000.csd -a 192.168.1.1
 
    The output on the ``cam-service`` terminal should look like as below:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       Connection 4 is created.
       Deploy Message
@@ -244,7 +242,7 @@ Monitoring
    Running ``cam-tool deploy`` three more times can deploy the data of three
    other streams to ``cam-service``.
 
-   .. code-block:: shell
+   .. code-block:: text
 
       cam-tool deploy -i /usr/share/cam-data/84085ddc-bc10-11ed-9a44-7ef9696e0001.csd -a 192.168.1.1
       cam-tool deploy -i /usr/share/cam-data/84085ddc-bc10-11ed-9a44-7ef9696e0002.csd -a 192.168.1.1
@@ -252,13 +250,13 @@ Monitoring
 
    List all the files from the ``cam-service`` terminal:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       fs ls RAM:/
 
    The stream deployment data can be shown as below:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       84085ddc-bc10-11ed-9a44-7ef9696e0000.csd
       84085ddc-bc10-11ed-9a44-7ef9696e0001.csd
@@ -269,14 +267,14 @@ Monitoring
    application with four streams. Each stream sends an event message 10 times
    with a period of 3000 milliseconds.
 
-   .. code-block:: shell
+   .. code-block:: text
 
       cam-app-example -t 3000 -c 10 -s 4 -a 192.168.1.1
 
    The following configure messages are expected from the Primary Compute
    terminal:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       Cam application configuration:
           Service IP address: 192.168.1.1
@@ -297,7 +295,7 @@ Monitoring
 
    And the log of sent event messages are shown repeatedly:
 
-   .. code-block:: shell
+   .. code-block:: text
 
     Stream 0 sends event 0
     Stream 1 sends event 0
@@ -313,7 +311,7 @@ Monitoring
    four stream deployment files for monitoring. In the following log, the stream
    messages are received and processed by it:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       Connection 4 is created.
       Init Message
@@ -339,7 +337,7 @@ Monitoring
 3. Run ``cam-app-example`` again from the Primary Compute terminal with fault
    injection to event stream 0:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       cam-app-example -t 3000 -c 10 -s 4 -f -S 0 -T 1000 -a 192.168.1.1
 
@@ -347,7 +345,7 @@ Monitoring
    ``cam-service`` should detect a stream temporal error with the following
    output from the ``cam-service`` terminal.
 
-   .. code-block:: shell
+   .. code-block:: text
 
       #Repeated event messages
       ...
@@ -369,14 +367,14 @@ steps to automatically generate stream configuration data (.csc.yml).
 1. Start ``cam-app-example`` in calibration mode from the Primary Compute
    terminal:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       cam-app-example -t 3000 -c 10 -s 4 -C
 
    The stream event log files (.csel) for each stream are generated. The output
    should look like as below:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       Cam application configuration:
           Service IP address: 127.0.0.1
@@ -403,13 +401,13 @@ steps to automatically generate stream configuration data (.csc.yml).
 
    List the files generated:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       ls *.csel
 
    The stream event log files can be shown as below:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       84085ddc-bc10-11ed-9a44-7ef9696e0000.csel  84085ddc-bc10-11ed-9a44-7ef9696e0002.csel
       84085ddc-bc10-11ed-9a44-7ef9696e0001.csel  84085ddc-bc10-11ed-9a44-7ef9696e0003.csel
@@ -417,13 +415,13 @@ steps to automatically generate stream configuration data (.csc.yml).
 2. Run ``cam-tool`` from the Primary Compute terminal to analyze stream event
 log files and convert them to stream configuration files (.csc.yml).
 
-   .. code-block:: shell
+   .. code-block:: text
 
       cam-tool analyze -i 84085ddc-bc10-11ed-9a44-7ef9696e0000.csel -o 84085ddc-bc10-11ed-9a44-7ef9696e0000.csc.yml
 
    The analysis result is reported from the Primary Compute terminal as below:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       CAM event log analyze report:
       Input event log file:                   84085ddc-bc10-11ed-9a44-7ef9696e0000.csel
@@ -440,14 +438,14 @@ log files and convert them to stream configuration files (.csc.yml).
    configuration to include network jitter for the current platform. Then, use
    the ``cam-tool pack`` command to generate deployment data.
 
-   .. code-block:: shell
+   .. code-block:: text
 
       cam-tool pack -i 84085ddc-bc10-11ed-9a44-7ef9696e0000.csc.yml -o 84085ddc-bc10-11ed-9a44-7ef9696e0000.csd
 
 3. Run the ``cam-tool deploy`` command from the Primary Compute terminal to
    transfer the new stream deployment data to ``cam-service``:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       cam-tool deploy -i 84085ddc-bc10-11ed-9a44-7ef9696e0000.csd -a 192.168.1.1 -o
 
@@ -456,7 +454,7 @@ log files and convert them to stream configuration files (.csc.yml).
     * Issue a ``shutdown now`` on the Primary Compute terminal. The below
       messages indicate the shutdown process is complete.
 
-      .. code-block:: shell
+      .. code-block:: text
 
          [  OK  ] Finished System Power Off.
          [  OK  ] Reached target System Power Off.
@@ -470,7 +468,7 @@ Automated Validation
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -485,7 +483,7 @@ The complete test suite takes around 10 minutes to complete. See
 
 The following messages are expected in the output to validate this Use-Case:
 
-.. code-block:: console
+.. code-block:: text
 
    RESULTS - test_40_cam.CAMTest.test_cam_app_example_help: PASSED (3.34s)
    RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_pc: PASSED (48.03s)
@@ -516,7 +514,7 @@ Build
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -531,7 +529,7 @@ Run the FVP
 
 To start the FVP and connect to the Primary Compute terminal (running Linux):
 
-.. code-block:: console
+.. code-block:: text
 
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
@@ -573,9 +571,9 @@ The Reference Stack running on the Primary Compute can be logged into as
 command to guarantee that all the expected services have been
 initialized.
 
-   .. code-block:: shell
+.. code-block:: text
 
-      systemctl is-system-running --wait
+  systemctl is-system-running --wait
 
 Wait for it to return. The expected terminal output is ``running``.
 
@@ -585,29 +583,27 @@ Run the demo
 1. Run the ``ping`` command from the Primary Compute terminal (running Linux)
    to verify that it can communicate with the Safety Island (running Zephyr):
 
-   .. code-block:: shell
+   .. code-block:: text
 
-      # On the Primary Compute terminal
       ping 192.168.2.1 -c 10
 
    The output should look like the following line, repeated 10 times:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       64 bytes from 192.168.2.1 seq=0 ttl=64 time=0.151 ms
 
 2. From the tmux pane started for the build host machine terminal, start the
    Packet Analyzer:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       cd ~/kronos/
-      # Start the Packet Analyzer
       kas shell -c "oe-run-native packet-analyzer-native start_analyzer -L debug -a localhost -c ./data"
 
    The following messages are expected from the host terminal:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       INFO : analyzer_client.py/_connect_to: Starting analyze, use Ctrl-C to stop the process.
       INFO : analyzer_client.py/_connect_to: Attempting a connect to (localhost : 49152)
@@ -616,7 +612,7 @@ Run the demo
    A message similar to the following should appear on the SI Cluster 2
    terminal:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       Actuation Service initialized.
       Accepted tcp connection from the Packet Analyzer: <11>
@@ -632,14 +628,14 @@ Run the demo
 3. Start the Player on the Primary Compute terminal which replays a recording
    of a driving scenario:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       actuation_player -p /usr/share/actuation_player/
 
    A message similar to the following should appear on the SI Cluster 2
    terminal:
 
-   .. code-block:: shell
+   .. code-block:: text
 
     51572682601: -0.0000 (m/s^2) |  0.0000 (rad)
     51597466928: -0.0000 (m/s^2) |  0.0000 (rad)
@@ -655,7 +651,7 @@ Run the demo
    A message similar to the following should appear on the host terminal where
    the Packet Analyzer is running:
 
-   .. code-block:: shell
+   .. code-block:: text
 
     INFO : analyzer_client.py/_connect_to: Starting analyze, use Ctrl-C to stop the process.
     INFO : analyzer_client.py/_connect_to: Attempting a connect to (localhost : 49152)
@@ -675,7 +671,7 @@ Run the demo
     * Issue a ``shutdown now`` on the Primary Compute terminal. The below
       messages indicate the shutdown process is complete.
 
-      .. code-block:: shell
+      .. code-block:: text
 
          [  OK  ] Finished System Power Off.
          [  OK  ] Reached target System Power Off.
@@ -691,7 +687,7 @@ Automated Validation
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -707,7 +703,7 @@ The complete test suite takes around 16 minutes to complete. See
 
 The following messages are expected in the output to validate this Use-Case:
 
-      .. code-block:: console
+      .. code-block:: text
 
         2023-11-26 21:28:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.31s)
         2023-11-26 21:28:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (16.25s)
@@ -721,7 +717,7 @@ Build
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -736,7 +732,7 @@ Run the FVP
 
 To start the FVP and connect to the Primary Compute terminal (running Linux):
 
-.. code-block:: console
+.. code-block:: text
 
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
@@ -779,9 +775,9 @@ The Reference Stack running on the Primary Compute can be logged into as
 command to guarantee that all the expected services have been
 initialized.
 
-   .. code-block:: shell
+.. code-block:: text
 
-      systemctl is-system-running --wait
+  systemctl is-system-running --wait
 
 Wait for it to return. The expected terminal output is ``running``.
 
@@ -790,7 +786,7 @@ Run the Demo
 
 1. Enter the DomU1 console using the ``xl`` tool:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       xl console domu1
 
@@ -803,29 +799,27 @@ Run the Demo
 2. Run the ``ping`` command from the DomU1 terminal (running Linux)
    to verify that it can communicate with the Safety Island (running Zephyr):
 
-   .. code-block:: shell
+   .. code-block:: text
 
-      # On the DomU1 terminal
       ping 192.168.2.1 -c 10
 
    The output should look like the following line, repeated 10 times:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       64 bytes from 192.168.2.1 seq=0 ttl=64 time=0.151 ms
 
 3. From the tmux pane started for the build host machine terminal, start the
    Packet Analyzer:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       cd ~/kronos/
-      # Start the Packet Analyzer
       kas shell -c "oe-run-native packet-analyzer-native start_analyzer -L debug -a localhost -c ./data"
 
    The following messages are expected from the host terminal:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       INFO : analyzer_client.py/_connect_to: Starting analyze, use Ctrl-C to stop the process.
       INFO : analyzer_client.py/_connect_to: Attempting a connect to (localhost : 49152)
@@ -834,7 +828,7 @@ Run the Demo
    A message similar to the following should appear on the SI Cluster 2
    terminal:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       Actuation Service initialized.
       Accepted tcp connection from the Packet Analyzer: <11>
@@ -849,14 +843,14 @@ Run the Demo
 
 4. Start the Player on DomU1 which replays a recording of a driving scenario:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       actuation_player -p /usr/share/actuation_player/
 
    A message similar to the following should appear on the SI Cluster 2
    terminal:
 
-   .. code-block:: shell
+   .. code-block:: text
 
     51572682601: -0.0000 (m/s^2) |  0.0000 (rad)
     51597466928: -0.0000 (m/s^2) |  0.0000 (rad)
@@ -872,7 +866,7 @@ Run the Demo
    A message similar to the following should appear on the host terminal where
    the Packet Analyzer is running:
 
-   .. code-block:: shell
+   .. code-block:: text
 
     INFO : analyzer_client.py/_connect_to: Starting analyze, use Ctrl-C to stop the process.
     INFO : analyzer_client.py/_connect_to: Attempting a connect to (localhost : 49152)
@@ -894,7 +888,7 @@ Run the Demo
     * Issue a ``shutdown now`` on the Primary Compute terminal. The below
       messages indicate the shutdown process is complete.
 
-      .. code-block:: shell
+      .. code-block:: text
 
          [  OK  ] Finished System Power Off.
          [  OK  ] Reached target System Power Off.
@@ -910,7 +904,7 @@ Automated Validation
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -926,7 +920,7 @@ The complete test suite takes around 41 minutes to complete. See
 
 The following messages are expected in the output to validate this Use-Case:
 
-  .. code-block:: console
+  .. code-block:: text
 
     2023-09-11 21:02:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.28s)
     2023-09-11 21:02:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (30.62s)
@@ -950,7 +944,7 @@ Build
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -966,7 +960,7 @@ Automated Validation
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -983,7 +977,7 @@ The complete test suite takes around 17 minutes to complete. See
 
 The following messages are expected in the output to validate this Use-Case:
 
-.. code-block:: console
+.. code-block:: text
 
   2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster0: PASSED (116.47s)
   2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster1: PASSED (129.01s)
@@ -1008,7 +1002,7 @@ Build
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -1024,7 +1018,7 @@ Automated Validation
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -1040,7 +1034,7 @@ The complete test suite takes around 41 minutes to complete. See
 
 The following messages are expected in the output to validate this Use-Case:
 
-.. code-block:: console
+.. code-block:: text
 
   2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster0: PASSED (177.82s)
   2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster1: PASSED (133.61s)
@@ -1087,7 +1081,7 @@ Build
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -1102,7 +1096,7 @@ Run the FVP
 
 To start the FVP and connect to the Primary Compute terminal (running Linux):
 
-.. code-block:: console
+.. code-block:: text
 
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
@@ -1113,9 +1107,9 @@ The Reference Stack running on the Primary Compute can be logged into as
 command to guarantee that all the expected services have been
 initialized.
 
-   .. code-block:: shell
+.. code-block:: text
 
-      systemctl is-system-running --wait
+  systemctl is-system-running --wait
 
 Wait for it to return. The expected terminal output is ``running``.
 
@@ -1129,13 +1123,13 @@ this application.
 1. Run ``ssl_server`` from the Primary Compute terminal in the background and
    press the ``Enter`` key to continue:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       ssl_server &
 
    A message similar to the following should appear:
 
-   .. code-block:: shell
+   .. code-block:: text
 
         . Seeding the random number generator... ok
         . Loading the server cert. and key... ok
@@ -1148,13 +1142,13 @@ this application.
 
 2. Run ``ssl_client1`` from the Primary Compute terminal in a container:
 
-   .. code-block:: shell
+   .. code-block:: text
 
       docker run  --rm -v /run/parsec/parsec.sock:/run/parsec/parsec.sock -v /usr/bin/ssl_client1:/usr/bin/ssl_client1 --network host docker.io/library/ubuntu:22.04 ssl_client1
 
    A message similar to the following should appear:
 
-   .. code-block:: shell
+   .. code-block:: text
 
          . Seeding the random number generator... ok
          . Loading the CA root certificate ... ok (0 skipped)
@@ -1177,7 +1171,7 @@ this application.
 3. Stop the TLS server and synchronize the container image to the
    persistent storage:
 
-     .. code-block:: shell
+     .. code-block:: text
 
         pkill ssl_server
         sync
@@ -1187,7 +1181,7 @@ this application.
     * Issue a ``shutdown now`` on the Primary Compute terminal. The below
       messages indicate the shutdown process is complete.
 
-      .. code-block:: shell
+      .. code-block:: text
 
          [  OK  ] Finished System Power Off.
          [  OK  ] Reached target System Power Off.
@@ -1204,7 +1198,7 @@ For more details about the validation of Parsec demo, refer to
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -1220,7 +1214,7 @@ The complete test suite takes around 16 minutes to complete. See
 :ref:`validation_parsec_enabled_tls_demo` for more details. A similar output to
 the following is printed out.
 
-.. code-block:: console
+.. code-block:: text
 
   NOTE: Executing Tasks
   2023-09-11 20:13:00 - INFO     - Creating terminal default on terminal_ns_uart0
@@ -1257,7 +1251,7 @@ the following is printed out.
 
 The following messages are expected to validate this Use-Case:
 
-.. code-block:: console
+.. code-block:: text
 
   2023-09-11 20:29:25 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: PASSED (374.00s)
 
@@ -1277,7 +1271,7 @@ Build
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -1292,7 +1286,7 @@ Run the FVP
 
 To start the FVP:
 
-.. code-block:: console
+.. code-block:: text
 
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
@@ -1306,50 +1300,52 @@ Run the tests
 
 The tests will automatically run. A log similar to the following should be
 visible; it is normal for some tests to be skipped but there should be no
-failed tests::
+failed tests:
 
-    ***** PSA Architecture Test Suite - Version 1.4 *****
-    Running.. Storage Suite
-    ******************************************
-    TEST: 401 | DESCRIPTION: UID not found check | UT: STORAGE
-    [Info] Executing tests from non-secure
-    [Info] Executing ITS Tests
-    [Check 1] Call get API for UID 6 which is not set
-    [Check 2] Call get_info API for UID 6 which is not set
-    [Check 3] Call remove API for UID 6 which is not set
-    [Check 4] Call get API for UID 6 which is removed
-    [Check 5] Call get_info API for UID 6 which is removed
-    [Check 6] Call remove API for UID 6 which is removed
-    Set storage for UID 6
-    [Check 7] Call get API for different UID 5
-    [Check 8] Call get_info API for different UID 5
-    [Check 9] Call remove API for different UID 5
+.. code-block:: text
 
-    [Info] Executing PS Tests
-    [Check 1] Call get API for UID 6 which is not set
-    [Check 2] Call get_info API for UID 6 which is not set
-    [Check 3] Call remove API for UID 6 which is not set
-    [Check 4] Call get API for UID 6 which is removed
-    [Check 5] Call get_info API for UID 6 which is removed
-    [Check 6] Call remove API for UID 6 which is removed
-    Set storage for UID 6
-    [Check 7] Call get API for different UID 5
-    [Check 8] Call get_info API for different UID 5
-    [Check 9] Call remove API for different UID 5
+  ***** PSA Architecture Test Suite - Version 1.4 *****
+  Running.. Storage Suite
+  ******************************************
+  TEST: 401 | DESCRIPTION: UID not found check | UT: STORAGE
+  [Info] Executing tests from non-secure
+  [Info] Executing ITS Tests
+  [Check 1] Call get API for UID 6 which is not set
+  [Check 2] Call get_info API for UID 6 which is not set
+  [Check 3] Call remove API for UID 6 which is not set
+  [Check 4] Call get API for UID 6 which is removed
+  [Check 5] Call get_info API for UID 6 which is removed
+  [Check 6] Call remove API for UID 6 which is removed
+  Set storage for UID 6
+  [Check 7] Call get API for different UID 5
+  [Check 8] Call get_info API for different UID 5
+  [Check 9] Call remove API for different UID 5
 
-    TEST RESULT: PASSED
+  [Info] Executing PS Tests
+  [Check 1] Call get API for UID 6 which is not set
+  [Check 2] Call get_info API for UID 6 which is not set
+  [Check 3] Call remove API for UID 6 which is not set
+  [Check 4] Call get API for UID 6 which is removed
+  [Check 5] Call get_info API for UID 6 which is removed
+  [Check 6] Call remove API for UID 6 which is removed
+  Set storage for UID 6
+  [Check 7] Call get API for different UID 5
+  [Check 8] Call get_info API for different UID 5
+  [Check 9] Call remove API for different UID 5
 
-    ******************************************
+  TEST RESULT: PASSED
 
-    <further tests removed from log for brevity>
+  ******************************************
 
-    ************ Storage Suite Report **********
-    TOTAL TESTS     : 17
-    TOTAL PASSED    : 11
-    TOTAL SIM ERROR : 0
-    TOTAL FAILED    : 0
-    TOTAL SKIPPED   : 6
-    ******************************************
+  <further tests removed from log for brevity>
+
+  ************ Storage Suite Report **********
+  TOTAL TESTS     : 17
+  TOTAL PASSED    : 11
+  TOTAL SIM ERROR : 0
+  TOTAL FAILED    : 0
+  TOTAL SKIPPED   : 6
+  ******************************************
 
 To shutdown the FVP and terminate the emulation, select the terminal titled as
 ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0`` and press
@@ -1364,7 +1360,7 @@ Automated Validation
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -1379,7 +1375,7 @@ The complete test suite takes around 10 minutes to complete. See
 :ref:`validation_psa_arch_tests` for more details. A similar output to the
 following is printed out.
 
-.. code-block:: console
+.. code-block:: text
 
   NOTE: Executing Tasks
   2023-11-13 11:43:15 - INFO     - Creating terminal default on terminal_ns_uart0
@@ -1411,7 +1407,7 @@ following is printed out.
 
 The following message is expected to validate this Use-Case:
 
-.. code-block:: console
+.. code-block:: text
 
   2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.00s)
 
@@ -1435,7 +1431,7 @@ Build
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -1450,7 +1446,7 @@ Run the FVP
 
 To start the FVP:
 
-.. code-block:: console
+.. code-block:: text
 
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
@@ -1488,7 +1484,7 @@ Automated Validation
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -1503,7 +1499,7 @@ The complete test suite takes around 9 minutes to complete. See
 :ref:`validation_psa_arch_tests` for more details. A similar output to the
 following is printed out:
 
-.. code-block:: console
+.. code-block:: text
 
   2023-11-21 07:08:11 - INFO     - RESULTS:
   2023-11-21 07:08:11 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (20.98s)
@@ -1523,7 +1519,7 @@ following is printed out:
 
 The following messages are expected to validate this Use-Case:
 
-.. code-block:: console
+.. code-block:: text
 
   2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster0: PASSED (233.00s)
   2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster1: PASSED (0.01s)
@@ -1546,7 +1542,7 @@ Build
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -1561,7 +1557,7 @@ Run the FVP
 
 To start the FVP:
 
-.. code-block:: console
+.. code-block:: text
 
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
@@ -1578,7 +1574,7 @@ and GIC-700AE FMU and how this affects the SSU safety state.
 
  1. Start by enumerating the configured fault device tree:
 
-    .. code-block:: shell
+    .. code-block:: text
 
       fault tree
 
@@ -1586,7 +1582,7 @@ and GIC-700AE FMU and how this affects the SSU safety state.
     after which are the attached safety state device ``ssu@2a500000`` and
     fault device ``fmu@2a570000`` (the GIC-700AE FMU):
 
-    .. code-block:: shell
+    .. code-block:: text
 
       Root 0: fmu@2a510000
               Safety: ssu@2a500000
@@ -1594,13 +1590,13 @@ and GIC-700AE FMU and how this affects the SSU safety state.
 
  2. After booting, query the initial state of the SSU:
 
-    .. code-block:: shell
+    .. code-block:: text
 
       fault safety_status ssu@2a500000
 
     The initial state is TEST:
 
-    .. code-block:: shell
+    .. code-block:: text
 
       Status: TEST (0x0)
 
@@ -1609,20 +1605,20 @@ and GIC-700AE FMU and how this affects the SSU safety state.
     simulate a successful self-test completion by issuing the
     ``compl_ok`` signal to the SSU:
 
-    .. code-block:: shell
+    .. code-block:: text
 
       fault safety_control ssu@2a500000 compl_ok
 
     The system is now ``SAFE`` for operation:
 
-    .. code-block:: shell
+    .. code-block:: text
 
       Signal: compl_ok (0x0)
       State: SAFE (0x3)
 
  4. Simulate an internal *Lockstep error* (``0x4``) in the System FMU:
 
-    .. code-block:: shell
+    .. code-block:: text
 
       fault inject fmu@2a510000 0x4
 
@@ -1635,7 +1631,7 @@ and GIC-700AE FMU and how this affects the SSU safety state.
      * The storage component reports that the total historical fault count for
        this fault on this device is now ``1``.
 
-    .. code-block:: shell
+    .. code-block:: text
 
       Injecting fault 0x4 to device fmu@2a510000
       [00:04:49.110,000] <inf> fault_mgmt: Fault received (non-critical): 0x4 on fmu@2a510000
@@ -1647,13 +1643,13 @@ and GIC-700AE FMU and how this affects the SSU safety state.
  5. The SSU will remain in the ``ERRN`` state until signaled (unless a critical
     fault occurs). Send a ``compl_ok`` signal again to recover from this fault:
 
-    .. code-block:: shell
+    .. code-block:: text
 
       fault safety_control ssu@2a500000 compl_ok
 
     The SSU is now in the ``SAFE`` state again:
 
-    .. code-block:: shell
+    .. code-block:: text
 
       Signal: compl_ok (0x0)
       State: SAFE (0x3)
@@ -1661,7 +1657,7 @@ and GIC-700AE FMU and how this affects the SSU safety state.
  6. Next, inject an *SPI collator external error* (``0x20000a00``) into the
     GIC-700AE FMU:
 
-    .. code-block:: shell
+    .. code-block:: text
 
       fault inject fmu@2a570000 0x20000a00
 
@@ -1670,7 +1666,7 @@ and GIC-700AE FMU and how this affects the SSU safety state.
     are critical by default, but this can be changed from the shell using the
     ``fault set_critical`` sub-command).
 
-    .. code-block:: shell
+    .. code-block:: text
 
       Injecting fault 0x20000a00 to device fmu@2a570000
       [00:09:13.210,000] <inf> fault_mgmt: Fault received (critical): 0x20000a00 on fmu@2a570000
@@ -1682,14 +1678,14 @@ and GIC-700AE FMU and how this affects the SSU safety state.
  7. The number of occurrences of each fault is tracked per device by the
     storage component. Inject the same fault into the System FMU again:
 
-    .. code-block:: shell
+    .. code-block:: text
 
       fault inject fmu@2a510000 0x4
 
     The fault count is now ``2``. Note that the safety status is still
     ``ERRC``.
 
-    .. code-block:: shell
+    .. code-block:: text
 
       Injecting fault 0x4 to device fmu@2a510000
       [00:14:02.800,000] <inf> fault_mgmt: Fault received (non-critical): 0x4 on fmu@2a510000
@@ -1700,13 +1696,13 @@ and GIC-700AE FMU and how this affects the SSU safety state.
 
     The full list of stored faults can also be queried:
 
-    .. code-block:: shell
+    .. code-block:: text
 
       fault list
 
     This shows all the faults injected into both FMUs above:
 
-    .. code-block:: shell
+    .. code-block:: text
 
       Fault history:
       Fault received (non-critical): 0x4 on fmu@2a510000 : count 2
@@ -1716,13 +1712,13 @@ and GIC-700AE FMU and how this affects the SSU safety state.
  8. The ``ERRC`` represents a critical system failure and cannot be recovered
     by the software - confirm this by trying to issue ``compl_ok`` again:
 
-    .. code-block:: shell
+    .. code-block:: text
 
       fault safety_control ssu@2a500000 compl_ok
 
     The SSU status is still ``ERRC``:
 
-    .. code-block:: shell
+    .. code-block:: text
 
       Signal: compl_ok (0x0)
       State: ERRC (0x6)
@@ -1742,7 +1738,7 @@ Automated Validation
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -1756,7 +1752,7 @@ To enable the validation tests:
 
 The following messages are expected in the output to validate this Use-Case:
 
-.. code-block:: console
+.. code-block:: text
 
   2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_ce_not_ok: PASSED (31.07s)
   2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_compl_ok: PASSED (28.97s)
@@ -1795,7 +1791,7 @@ Build
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -1825,7 +1821,7 @@ Build and Automated Validation
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -1837,7 +1833,7 @@ To build and run the |Arm SystemReadyTM| IR ACS tests:
 
 A similar output to the following is printed out:
 
-.. code-block:: console
+.. code-block:: text
 
   2023-11-30 00:33:53 - INFO     - NOTE: recipe arm-systemready-ir-acs-2.1.0-r0: task do_testimage: Started
   2023-11-30 00:33:53 - INFO     - Creating terminal default on terminal_ns_uart0
@@ -1886,7 +1882,7 @@ A similar output to the following is printed out:
 As seen in the above logs, some Test Groups are expected to fail. The following
 messages are expected to validate this Use-Case:
 
-.. code-block:: console
+.. code-block:: text
 
   2023-11-30 09:34:25 - INFO     - RESULTS - arm_systemready_ir_acs.SystemReadyACSTest.test_acs: PASSED (32417.37s)
 
@@ -1899,7 +1895,7 @@ messages are expected to validate this Use-Case:
   the tests with the following command on the build host terminal. The example
   command below changes the timeout setting to 16 hours.
 
-  .. code-block:: shell
+  .. code-block:: text
 
      TEST_OVERALL_TIMEOUT="\${@16*60*60}" kas shell -c "bitbake arm-systemready-ir-acs -C unpack"
 
@@ -1944,7 +1940,7 @@ Distro Installation Media Preparation
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -1966,7 +1962,7 @@ Distro Installation
 
 Run the following command to start the installation:
 
-.. code-block:: console
+.. code-block:: text
 
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
@@ -2043,16 +2039,16 @@ installation process and how to solve them:
   throws the above error. To execute a shell, press ``Ctrl-a n`` to switch the
   debug shell, and run the following commands:
 
-  .. code-block:: console
+  .. code-block:: text
 
-     # chroot /target
-     # update-grub
-     # mkdir /boot/efi/EFI/BOOT
-     # cp -v /boot/efi/EFI/debian/grubaa64.efi /boot/efi/EFI/BOOT/bootaa64.efi
+     chroot /target
+     update-grub
+     mkdir /boot/efi/EFI/BOOT
+     cp -v /boot/efi/EFI/debian/grubaa64.efi /boot/efi/EFI/BOOT/bootaa64.efi
 
   A snapshot is as below:
 
-  .. code-block:: console
+  .. code-block:: text
 
      [           1- installer   (2*shell)  3 shell  4 log           ][ Jun 06 23:13 ]
      #
@@ -2105,7 +2101,7 @@ Distro Installation Media Preparation
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -2127,7 +2123,7 @@ Distro Installation
 
 Run the following command to start the installation:
 
-.. code-block:: console
+.. code-block:: text
 
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
@@ -2244,7 +2240,7 @@ when running the FVP.
 
 To run the configuration menu:
 
-.. code-block:: console
+.. code-block:: text
 
   kas menu kronos/Kconfig
 
@@ -2259,7 +2255,7 @@ Run the FVP
 
 To start the FVP and connect to the Primary Compute terminal (running Linux):
 
-.. code-block:: console
+.. code-block:: text
 
   kas shell -c \
     "../layers/meta-arm/scripts/runfvp -t tmux --verbose \
@@ -2298,7 +2294,7 @@ To start Secure Firmware Update:
    below command to guarantee that all the expected services have been
    initialized.
 
-   .. code-block:: shell
+   .. code-block:: text
 
       systemctl is-system-running --wait
 
@@ -2307,7 +2303,7 @@ To start Secure Firmware Update:
    Run the following commands to copy the capsules to the EFI UpdateCapsule
    directory as the firmware update preparation:
 
-   .. code-block:: console
+   .. code-block:: text
 
       mount /dev/vda1 /boot
       mount /dev/mmcblk0p1 /mnt
@@ -2325,7 +2321,7 @@ To start Secure Firmware Update:
 
       Each command should be copied and pasted individually to the U-Boot shell.
 
-   .. code-block:: console
+   .. code-block:: text
 
       efidebug boot add -b 1001 cap virtio 0:1 EFI/UpdateCapsule
       efidebug boot next 1001
@@ -2341,7 +2337,7 @@ To start Secure Firmware Update:
 
    In ``terminal_ns_uart0``:
 
-   .. code-block:: console
+   .. code-block:: text
 
       FF-A driver 1.0
       FF-A framework 1.0
@@ -2351,7 +2347,7 @@ To start Secure Firmware Update:
 
    In ``terminal_rss_uart``:
 
-   .. code-block:: console
+   .. code-block:: text
 
       uefi_capsule_retrieve_images: enter, capsule ptr = 0x0x65000000
       uefi_capsule_retrieve_images: capsule size = 18284656, image count = 1
@@ -2384,14 +2380,14 @@ To start Secure Firmware Update:
 
    In ``terminal_ns_uart0``:
 
-   .. code-block:: console
+   .. code-block:: text
 
       Applying capsule fw.cap succeeded.
       Reboot after firmware update.
 
    In ``terminal_rss_uart``:
 
-   .. code-block:: console
+   .. code-block:: text
 
       metadata_validate: enter:
       metadata_validate: success

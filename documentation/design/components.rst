@@ -493,7 +493,7 @@ The stack offers several methods for users to configure MPAM for domains:
    to configure the cache portion bit mask (CPBM) for Dom0. The format of the
    ``dom0_mpam`` parameter is:
 
-   .. code-block:: console
+   .. code-block:: text
 
      dom0_mpam=slc:<CPBM in hexadecimal>
 
@@ -501,7 +501,7 @@ The stack offers several methods for users to configure MPAM for domains:
    ``options`` of the ``[xen]`` section in xen.cfg config file. An example to
    assign the first 4 portions of SLC to Dom0 at Xen boot time is shown below:
 
-   .. code-block:: console
+   .. code-block:: text
 
      [xen]
      options=(...) dom0_mpam=slc:0xf
@@ -510,7 +510,7 @@ The stack offers several methods for users to configure MPAM for domains:
    guest VM configuration file using an optional configuration ``mpam``. An
    example is shown below:
 
-   .. code-block:: console
+   .. code-block:: text
 
      mpam = ['slc=0xf']
 
@@ -521,13 +521,13 @@ The stack offers several methods for users to configure MPAM for domains:
 
    The format of ``xl psr-cat-set`` is (``-l 0`` refers to SLC):
 
-   .. code-block:: console
+   .. code-block:: text
 
      xl psr-cat-set -l 0 <Domain ID> <CPBM in hexadecimal>
 
    The format of ``xl psr-cat-show`` is (``-l 0`` refers to SLC):
 
-   .. code-block:: console
+   .. code-block:: text
 
      xl psr-cat-show -l 0
 
@@ -574,7 +574,7 @@ direct injection for DomU1:
     PCI passthrough method, by adding the following to the Dom0 Linux kernel
     command line:
 
-    .. code-block:: console
+    .. code-block:: text
 
       xen-pciback.hide=(0000:00:1f.0)
 

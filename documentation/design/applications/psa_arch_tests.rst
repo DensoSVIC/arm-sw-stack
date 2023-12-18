@@ -55,50 +55,52 @@ communication protocol.
 The PSA Secure Storage API tests are linked into the Trusted Firmware-M PSA
 Secure Storage APIs binaries and will automatically run. A log similar to the
 following should be visible; it is normal for some tests to be skipped but
-there should be no failed tests::
+there should be no failed tests:
 
-    ***** PSA Architecture Test Suite - Version 1.4 *****
-    Running.. Storage Suite
-    ******************************************
-    TEST: 401 | DESCRIPTION: UID not found check | UT: STORAGE
-    [Info] Executing tests from non-secure
-    [Info] Executing ITS tests
-    [Check 1] Call get API for UID 6 which is not set
-    [Check 2] Call get_info API for UID 6 which is not set
-    [Check 3] Call remove API for UID 6 which is not set
-    [Check 4] Call get API for UID 6 which is removed
-    [Check 5] Call get_info API for UID 6 which is removed
-    [Check 6] Call remove API for UID 6 which is removed
-    Set storage for UID 6
-    [Check 7] Call get API for different UID 5
-    [Check 8] Call get_info API for different UID 5
-    [Check 9] Call remove API for different UID 5
+.. code-block:: text
 
-    [Info] Executing PS tests
-    [Check 1] Call get API for UID 6 which is not set
-    [Check 2] Call get_info API for UID 6 which is not set
-    [Check 3] Call remove API for UID 6 which is not set
-    [Check 4] Call get API for UID 6 which is removed
-    [Check 5] Call get_info API for UID 6 which is removed
-    [Check 6] Call remove API for UID 6 which is removed
-    Set storage for UID 6
-    [Check 7] Call get API for different UID 5
-    [Check 8] Call get_info API for different UID 5
-    [Check 9] Call remove API for different UID 5
+  ***** PSA Architecture Test Suite - Version 1.4 *****
+  Running.. Storage Suite
+  ******************************************
+  TEST: 401 | DESCRIPTION: UID not found check | UT: STORAGE
+  [Info] Executing tests from non-secure
+  [Info] Executing ITS tests
+  [Check 1] Call get API for UID 6 which is not set
+  [Check 2] Call get_info API for UID 6 which is not set
+  [Check 3] Call remove API for UID 6 which is not set
+  [Check 4] Call get API for UID 6 which is removed
+  [Check 5] Call get_info API for UID 6 which is removed
+  [Check 6] Call remove API for UID 6 which is removed
+  Set storage for UID 6
+  [Check 7] Call get API for different UID 5
+  [Check 8] Call get_info API for different UID 5
+  [Check 9] Call remove API for different UID 5
 
-    TEST RESULT: PASSED
+  [Info] Executing PS tests
+  [Check 1] Call get API for UID 6 which is not set
+  [Check 2] Call get_info API for UID 6 which is not set
+  [Check 3] Call remove API for UID 6 which is not set
+  [Check 4] Call get API for UID 6 which is removed
+  [Check 5] Call get_info API for UID 6 which is removed
+  [Check 6] Call remove API for UID 6 which is removed
+  Set storage for UID 6
+  [Check 7] Call get API for different UID 5
+  [Check 8] Call get_info API for different UID 5
+  [Check 9] Call remove API for different UID 5
 
-    ******************************************
+  TEST RESULT: PASSED
 
-    <further tests removed from log for brevity>
+  ******************************************
 
-    ************ Storage Suite Report **********
-    TOTAL TESTS     : 17
-    TOTAL PASSED    : 11
-    TOTAL SIM ERROR : 0
-    TOTAL FAILED    : 0
-    TOTAL SKIPPED   : 6
-    ******************************************
+  <further tests removed from log for brevity>
+
+  ************ Storage Suite Report **********
+  TOTAL TESTS     : 17
+  TOTAL PASSED    : 11
+  TOTAL SIM ERROR : 0
+  TOTAL FAILED    : 0
+  TOTAL SKIPPED   : 6
+  ******************************************
 
 There are some limitations behind running
 ``PSA Secure Storage APIs Architecture Test Suite`` on Safety Island Cluster 2
@@ -128,9 +130,9 @@ application. The application is deployed on all the 3 Safety Island Clusters.
 The test suite contains 61 test cases in total. The test cases are executed in
 sequence. At the end of the test suite, a log similar to the following should be
 visible on all the 3 Safety Island terminals. Normally, no failure should be
-seen::
+seen:
 
-.. code-block:: console
+.. code-block:: text
 
   ************ Crypto Suite Report **********
   TOTAL TESTS     : 61
