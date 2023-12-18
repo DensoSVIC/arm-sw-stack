@@ -147,3 +147,78 @@ Resolved and Known Issues
 
 Known Issues
 ------------
+  * The automated validation for Safety Island PSA Secure Storage APIs
+    Architecture Test Suite might fail on the linux boot test. This has been
+    observed on an AWS aarch64 Graviton 2 build host. The failure output is as
+    follows:
+
+    .. code-block:: text
+
+      RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: ERROR (1800.09s)
+      SUMMARY:
+      baremetal-image () - Ran 10 tests in 1800.103s
+      baremetal-image - FAIL - Required tests failed (successes=6, skipped=3, failures=0, errors=1)
+
+    The Primary Compute console log in this case shows an SError resulting in a
+    kernel panic:
+
+    .. code-block:: text
+
+      ahci 0000:00:1f.0: Adding to iommu group 0
+      ahci 0000:00:1f.0: of_irq_parse_pci: failed with rc=-22
+      ahci 0000:00:1f.0: version 3.0
+      ahci 0000:00:1f.0: enabling device (0000 -> 0002)
+      SError Interrupt on CPU2, code 0x00000000be000211 -- SError
+      CPU: 2 PID: 1 Comm: swapper/0 Not tainted 6.1.57-rt10-yocto-preempt-rt #1
+      Hardware name: Unknown Unknown Product/Unknown Product, BIOS 2023.07.02 07/01/2023
+      pstate: a0400009 (NzCv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+      pc : ahci_save_initial_config+0x38/0x440
+      lr : ahci_save_initial_config+0x38/0x440
+      sp : ffff80000949ba80
+      x29: ffff80000949ba80 x28: 0000000000000000 x27: ffff000040b03c80
+      x26: ffff800008e86060 x25: ffff8000093041d0 x24: ffff800009492000
+      x23: ffff800008bdb328 x22: ffff0000433950b0 x21: 0000000000000005
+      x20: 0000000000000000 x19: ffff000040b03c80 x18: 0000000000000004
+      x17: 0000000000000001 x16: 0000000000000040 x15: 0140000000000000
+      x14: 0000000000000001 x13: 0040000000000001 x12: 0000800057404000
+      x11: ffff800009692000 x10: ffff80000955d000 x9 : ffff8000087b7c08
+      x8 : ffff80000949b8b8 x7 : 0000000000000000 x6 : fefeff646c756d5e
+      x5 : ffff80000949c000 x4 : 0000000000000000 x3 : 0000000000000000
+      x2 : 0000000000000000 x1 : ffff000040b03c80 x0 : 0000000000000000
+      Kernel panic - not syncing: Asynchronous SError Interrupt
+      CPU: 2 PID: 1 Comm: swapper/0 Not tainted 6.1.57-rt10-yocto-preempt-rt #1
+      Hardware name: Unknown Unknown Product/Unknown Product, BIOS 2023.07.02 07/01/2023
+      Call trace:
+       dump_backtrace.part.0+0xc8/0xd4
+       show_stack+0x20/0x30
+       dump_stack_lvl+0x6c/0x88
+       dump_stack+0x18/0x34
+       panic+0x178/0x358
+       add_taint+0x0/0xc0
+       arm64_serror_panic+0x6c/0x80
+       arm64_is_fatal_ras_serror+0x8c/0x90
+       do_serror+0x3c/0x60
+       el1h_64_error_handler+0x30/0x4c
+       el1h_64_error+0x64/0x68
+       ahci_save_initial_config+0x38/0x440
+       ahci_init_one+0x304/0xd60
+       pci_device_probe+0xa4/0x140
+       really_probe+0xb4/0x2e0
+       __driver_probe_device+0x80/0x120
+       driver_probe_device+0x48/0x130
+       __driver_attach+0x9c/0x1b0
+       bus_for_each_dev+0x80/0xe0
+       driver_attach+0x2c/0x40
+       bus_add_driver+0x15c/0x210
+       driver_register+0x80/0x13c
+       __pci_register_driver+0x54/0x64
+       ahci_pci_driver_init+0x2c/0x38
+       do_one_initcall+0x7c/0x2f0
+       kernel_init_freeable+0x224/0x294
+       kernel_init+0x30/0x140
+       ret_from_fork+0x10/0x20
+      SMP: stopping secondary CPUs
+      Kernel Offset: disabled
+      CPU features: 0x00000,00050cf7,e29e7727
+      Memory Limit: 2016 MB
+      Connection closed by foreign host.

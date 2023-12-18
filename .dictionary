@@ -68,6 +68,7 @@ brext
 brsi
 BTCPUPOOLS
 btrfs
+BTYPE
 BUFS
 BUILDIN
 buildpaths
@@ -127,6 +128,7 @@ csumonidr
 ctxt
 curbank
 CYCLONEDDS
+daif
 DAST
 datadir
 Datagram
@@ -234,6 +236,7 @@ fiptool
 fmu
 fmus
 fprintf
+freeable
 fstype
 FSTYPES
 fullfill
@@ -288,6 +291,7 @@ includedir
 includenotfound
 inclusivity
 inet
+initcall
 initdata
 Initialise
 initialised
@@ -509,6 +513,7 @@ PRODUCTID
 protid
 prtad
 PSCI
+pstate
 ptable
 ptest
 ptestrunner
@@ -564,6 +569,7 @@ SCMI
 sendbits
 sendcontrol
 sendline
+serror
 setenv
 setuptools
 shimaa
@@ -601,6 +607,7 @@ SRCREV
 srcurichecksum
 srcuridomains
 SSBD
+SSBS
 sstate
 staticdev
 stdbool

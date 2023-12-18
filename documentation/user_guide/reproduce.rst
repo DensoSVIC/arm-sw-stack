@@ -1355,6 +1355,10 @@ To shutdown the FVP and terminate the emulation, select the terminal titled as
 ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0`` and press
 ``Ctrl-c`` to stop the FVP process.
 
+.. note::
+    There is a known failure whereby a kernel panic is seen from the Primary
+    Compute terminal. Refer to :ref:`changelog_knownissues`.
+
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -1410,6 +1414,10 @@ The following message is expected to validate this Use-Case:
 .. code-block:: console
 
   2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.00s)
+
+.. note::
+    There are currently known failures in the automated validation. Refer to
+    :ref:`changelog_knownissues`.
 
 .. _user_guide_reproduce_si_psa_crypto_api_test:
 
