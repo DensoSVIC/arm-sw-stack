@@ -1888,6 +1888,17 @@ messages are expected to validate this Use-Case:
 
 .. note::
 
+  Running the ACS tests more than once will have them resume from where they
+  last stopped. Additionally, consecutive runs are not supported by the ACS
+  logs; it will result in a failure after the end of the tests. Use the
+  following to re-start the entire test suite properly:
+
+  .. code-block:: text
+
+    kas shell -c "bitbake arm-systemready-ir-acs -C unpack"
+
+.. note::
+
   The ACS tests take hours to complete. The actual time taken will vary
   depending on the performance of the build host. The default timeout setting
   for the tests is 12 hours for an x86_64 host or 24 hours for an aarch64 host.
