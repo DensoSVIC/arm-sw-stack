@@ -7,7 +7,7 @@
 header:
   version: 14
   includes:
-   - yocto/kas/bsp-pinned-repos.yml
+    - yocto/kas/bsp-pinned-repos.yml
 
 repos:
   meta-cassini:
@@ -20,4 +20,3 @@ repos:
     refspec: b8db7002764712f2902fe9dea098c171b1128076
   meta-zephyr:
     refspec: 8fb5559e3278fa0263f4236611641227e294aff0
-

@@ -8,9 +8,8 @@ header:
 
 repos:
   meta-arm:
-    refspec: 358332f464419d0d756610a1eb0a60e2beff835d
+    refspec: b86f6dd7ce80469b082492d1e4dfd82388d9ce69
   meta-openembedded:
     refspec: f29290563cb821fae95340ba959749641c69ed7f
   poky:
     refspec: 7235399a86b134e57d5eb783d7f1f57ca0439ae5
-
