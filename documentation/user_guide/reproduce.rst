@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -435,8 +435,9 @@ log files and convert them to stream configuration files (.csc.yml).
 
    The stream configuration files contain human-readable settings used for the
    deployment phase of a critical application. Users can modify this
-   configuration to include network jitter for the current platform. Then, use
-   the ``cam-tool pack`` command to generate deployment data.
+   configuration, for example to fine tune timeout values depending on the
+   system capabilities. Then, use the ``cam-tool pack`` command to generate
+   deployment data.
 
    .. code-block:: text
 
@@ -451,7 +452,7 @@ log files and convert them to stream configuration files (.csc.yml).
 
 4. To shutdown the FVP and terminate the emulation, follow the below steps:
 
-    * Issue a ``shutdown now`` on the Primary Compute terminal. The below
+    * Issue a ``shutdown --halt now`` on the Primary Compute terminal. The below
       messages indicate the shutdown process is complete.
 
       .. code-block:: text
@@ -668,7 +669,7 @@ Run the demo
 
 4. To shutdown the FVP and terminate the emulation, follow the below steps:
 
-    * Issue a ``shutdown now`` on the Primary Compute terminal. The below
+    * Issue a ``shutdown --halt now`` on the Primary Compute terminal. The below
       messages indicate the shutdown process is complete.
 
       .. code-block:: text
@@ -703,11 +704,11 @@ The complete test suite takes around 16 minutes to complete. See
 
 The following messages are expected in the output to validate this Use-Case:
 
-      .. code-block:: text
+.. code-block:: text
 
-        2023-11-26 21:28:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.31s)
-        2023-11-26 21:28:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (16.25s)
-        2023-11-26 21:28:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (102.50s)
+  RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.31s)
+  RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (16.25s)
+  RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (102.50s)
 
 Virtualization Architecture
 ---------------------------
@@ -885,7 +886,7 @@ Run the Demo
 
 6. To shutdown the FVP and terminate the emulation, follow the below steps:
 
-    * Issue a ``shutdown now`` on the Primary Compute terminal. The below
+    * Issue a ``shutdown --halt now`` on the Primary Compute terminal. The below
       messages indicate the shutdown process is complete.
 
       .. code-block:: text
@@ -920,11 +921,11 @@ The complete test suite takes around 41 minutes to complete. See
 
 The following messages are expected in the output to validate this Use-Case:
 
-  .. code-block:: text
+.. code-block:: text
 
-    2023-09-11 21:02:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.28s)
-    2023-09-11 21:02:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (30.62s)
-    2023-09-11 21:02:21 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (170.71s)
+  RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.28s)
+  RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (30.62s)
+  RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (170.71s)
 
 .. _user_guide_reproduce_hipc:
 
@@ -979,20 +980,20 @@ The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
-  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster0: PASSED (116.47s)
-  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster1: PASSED (129.01s)
-  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster2: PASSED (146.54s)
-  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl1: PASSED (27.87s)
-  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl2: PASSED (32.90s)
-  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl1_cl2: PASSED (54.07s)
-  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl1: PASSED (18.51s)
-  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl2: PASSED (18.73s)
-  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl1_cl2: PASSED (18.92s)
-  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster0: PASSED (50.29s)
-  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster1: PASSED (47.85s)
-  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster2: PASSED (46.58s)
-  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_ptp.PTPTest.test_ptp_linux_services: PASSED (1.87s)
-  2023-11-05 21:34:42 - INFO     - RESULTS - test_30_ptp.PTPTest.test_ptp_si_clients: PASSED (16.93s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster0: PASSED (116.47s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster1: PASSED (129.01s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster2: PASSED (146.54s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl1: PASSED (27.87s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl2: PASSED (32.90s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl1_cl2: PASSED (54.07s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl1: PASSED (18.51s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl2: PASSED (18.73s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl1_cl2: PASSED (18.92s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster0: PASSED (50.29s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster1: PASSED (47.85s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster2: PASSED (46.58s)
+  RESULTS - test_30_ptp.PTPTest.test_ptp_linux_services: PASSED (1.87s)
+  RESULTS - test_30_ptp.PTPTest.test_ptp_si_clients: PASSED (16.93s)
 
 Virtualization Architecture
 ---------------------------
@@ -1036,32 +1037,26 @@ The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster0: PASSED (177.82s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster1: PASSED (133.61s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster2: PASSED (154.19s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl1: PASSED (37.69s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl2: PASSED (34.65s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl1_cl2: PASSED (57.19s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl1: PASSED (35.90s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl2: PASSED (35.35s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl1_cl2: PASSED (35.49s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster0: PASSED (91.98s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster1: PASSED (89.69s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster2: PASSED (89.12s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster1: PASSED (127.11s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl0_cl1: PASSED (37.59s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl0_cl2: PASSED (41.76s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster_cl1_cl2: PASSED (57.34s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl0_cl1: PASSED (35.54s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl0_cl2: PASSED (35.36s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cl1_cl2: PASSED (35.85s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster1: PASSED (90.17s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTest.test_ptp_linux_services: PASSED (3.57s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTest.test_ptp_si_clients: PASSED (25.89s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTestDomU1.test_ptp_domu_client: PASSED (28.75s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTestDomU1.test_ptp_linux_services: PASSED (0.67s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTestDomU2.test_ptp_domu_client: PASSED (25.30s)
-  2023-11-05 21:59:07 - INFO     - RESULTS - test_30_ptp.PTPTestDomU2.test_ptp_linux_services: PASSED (0.69s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster0: PASSED (177.82s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster1: PASSED (133.61s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster2: PASSED (154.19s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl1: PASSED (37.69s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl2: PASSED (34.65s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl1_cl2: PASSED (57.19s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl1: PASSED (35.90s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl2: PASSED (35.35s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl1_cl2: PASSED (35.49s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster0: PASSED (91.98s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster1: PASSED (89.69s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster2: PASSED (89.12s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster1: PASSED (127.11s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster1: PASSED (90.17s)
+  RESULTS - test_30_ptp.PTPTest.test_ptp_linux_services: PASSED (3.57s)
+  RESULTS - test_30_ptp.PTPTest.test_ptp_si_clients: PASSED (25.89s)
+  RESULTS - test_30_ptp.PTPTestDomU1.test_ptp_domu_client: PASSED (28.75s)
+  RESULTS - test_30_ptp.PTPTestDomU1.test_ptp_linux_services: PASSED (0.67s)
+  RESULTS - test_30_ptp.PTPTestDomU2.test_ptp_domu_client: PASSED (25.30s)
+  RESULTS - test_30_ptp.PTPTestDomU2.test_ptp_linux_services: PASSED (0.69s)
 
 .. _user_guide_reproduce_parsec_tls:
 
@@ -1178,7 +1173,7 @@ this application.
 
 4. To shutdown the FVP and terminate the emulation, follow the below steps:
 
-    * Issue a ``shutdown now`` on the Primary Compute terminal. The below
+    * Issue a ``shutdown --halt now`` on the Primary Compute terminal. The below
       messages indicate the shutdown process is complete.
 
       .. code-block:: text
@@ -1211,49 +1206,13 @@ To enable the validation tests:
   4. Select ``Save & Build``.
 
 The complete test suite takes around 16 minutes to complete. See
-:ref:`validation_parsec_enabled_tls_demo` for more details. A similar output to
-the following is printed out.
+:ref:`validation_parsec_enabled_tls_demo` for more details.
+
+The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
-  NOTE: Executing Tasks
-  2023-09-11 20:13:00 - INFO     - Creating terminal default on terminal_ns_uart0
-  2023-09-11 20:13:09 - INFO     - Creating terminal tf-a on terminal_sec_uart
-  2023-09-11 20:13:09 - INFO     - Creating terminal scp on terminal_uart_scp
-  2023-09-11 20:13:09 - INFO     - Creating terminal lcp on terminal_uart_lcp
-  2023-09-11 20:13:09 - INFO     - Creating terminal rss on terminal_rss_uart
-  2023-09-11 20:13:09 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
-  2023-09-11 20:13:10 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
-  2023-09-11 20:13:10 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
-  2023-09-11 20:13:10 - INFO     - default: Waiting for login prompt
-  2023-09-11 20:29:25 - INFO     - RESULTS:
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (17.63s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_10_safety_island_c1.SafetyIslandC1Test.test_cluster1: PASSED (0.00s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_10_safety_island_c2.SafetyIslandC2Test.test_cluster2: PASSED (0.00s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.28s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (17.19s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (100.88s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: PASSED (374.00s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_00_secure_partition.OpteeTest.test_optee_normal: PASSED (0.00s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (297.81s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_cpu_hotplug: PASSED (115.08s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_networking: PASSED (16.50s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_rtc: PASSED (9.51s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_virtiorng: PASSED (10.21s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_20_bsp.BspTest.test_watchdog: PASSED (6.50s)
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec: SKIPPED (0.00s)
-  2023-09-11 20:29:25 - INFO     - SUMMARY:
-  2023-09-11 20:29:25 - INFO     - baremetal-image () - Ran 19 tests in 965.595s
-
-The following messages are expected to validate this Use-Case:
-
-.. code-block:: text
-
-  2023-09-11 20:29:25 - INFO     - RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: PASSED (374.00s)
+  RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: PASSED (374.00s)
 
 .. _user_guide_reproduce_si_psa_ps_api_test:
 
@@ -1372,44 +1331,13 @@ To enable the validation tests:
   3. Select ``Save & Build``.
 
 The complete test suite takes around 10 minutes to complete. See
-:ref:`validation_psa_arch_tests` for more details. A similar output to the
-following is printed out.
+:ref:`validation_psa_arch_tests` for more details.
+
+The following message is expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
-  NOTE: Executing Tasks
-  2023-11-13 11:43:15 - INFO     - Creating terminal default on terminal_ns_uart0
-  2023-11-13 11:43:23 - INFO     - Creating terminal tf-a on terminal_sec_uart
-  2023-11-13 11:43:23 - INFO     - Creating terminal scp on terminal_uart_scp
-  2023-11-13 11:43:23 - INFO     - Creating terminal lcp on terminal_uart_lcp
-  2023-11-13 11:43:23 - INFO     - Creating terminal rss on terminal_rss_uart
-  2023-11-13 11:43:24 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
-  2023-11-13 11:43:24 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
-  2023-11-13 11:43:24 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
-  2023-11-13 11:43:24 - INFO     - default: Waiting for login prompt
-  2023-11-13 11:53:36 - INFO     - Skip as ZEPHYR_APP_SAFETY_ISLAND_CL0 is not psa-storage-tests
-  2023-11-13 11:53:36 - INFO     - Skip as ZEPHYR_APP_SAFETY_ISLAND_CL1 is not psa-storage-tests
-  2023-11-13 11:53:48 - INFO     - RESULTS:
-  2023-11-13 11:53:48 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (38.58s)
-  2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.00s)
-  2023-11-13 11:53:48 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
-  2023-11-13 11:53:48 - INFO     - RESULTS - test_00_rss.RssTest.test_gic_multiple_view: PASSED (0.00s)
-  2023-11-13 11:53:48 - INFO     - RESULTS - test_00_rss.RssTest.test_ni710ae: PASSED (0.00s)
-  2023-11-13 11:53:48 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
-  2023-11-13 11:53:48 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
-  2023-11-13 11:53:48 - INFO     - RESULTS - test_00_secure_partition.OpteeTest.test_optee_normal: PASSED (0.00s)
-  2023-11-13 11:53:48 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
-  2023-11-13 11:53:48 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (573.76s)
-  2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster0: SKIPPED (0.00s)
-  2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster1: SKIPPED (0.00s)
-  2023-11-13 11:53:48 - INFO     - SUMMARY:
-  2023-11-13 11:53:48 - INFO     - baremetal-image () - Ran 12 tests in 612.344s
-
-The following message is expected to validate this Use-Case:
-
-.. code-block:: text
-
-  2023-11-13 11:53:48 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.00s)
+  RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.00s)
 
 .. note::
     There are currently known failures in the automated validation. Refer to
@@ -1496,34 +1424,15 @@ To enable the validation tests:
   3. Select ``Save & Build``.
 
 The complete test suite takes around 9 minutes to complete. See
-:ref:`validation_psa_arch_tests` for more details. A similar output to the
-following is printed out:
+:ref:`validation_psa_arch_tests` for more details.
+
+The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
-  2023-11-21 07:08:11 - INFO     - RESULTS:
-  2023-11-21 07:08:11 - INFO     - RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: PASSED (20.98s)
-  2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster0: PASSED (233.00s)
-  2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster1: PASSED (0.01s)
-  2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.01s)
-  2023-11-21 07:08:11 - INFO     - RESULTS - test_00_lcp.LcpTest.test_normal_boot: PASSED (0.00s)
-  2023-11-21 07:08:11 - INFO     - RESULTS - test_00_rss.RssTest.test_gic_multiple_view: PASSED (0.00s)
-  2023-11-21 07:08:11 - INFO     - RESULTS - test_00_rss.RssTest.test_ni710ae: PASSED (0.00s)
-  2023-11-21 07:08:11 - INFO     - RESULTS - test_00_rss.RssTest.test_normal_boot: PASSED (0.00s)
-  2023-11-21 07:08:11 - INFO     - RESULTS - test_00_scp.ScpTest.test_normal_boot: PASSED (0.00s)
-  2023-11-21 07:08:11 - INFO     - RESULTS - test_00_secure_partition.OpteeTest.test_optee_normal: PASSED (0.00s)
-  2023-11-21 07:08:11 - INFO     - RESULTS - test_00_trusted_firmware_a.TrustedFirmwareTest.test_normal_boot: PASSED (0.00s)
-  2023-11-21 07:08:11 - INFO     - RESULTS - test_10_linuxboot.LinuxBootTest.test_linux_boot: PASSED (284.33s)
-  2023-11-21 07:08:11 - INFO     - SUMMARY:
-  2023-11-21 07:08:11 - INFO     - baremetal-image () - Ran 12 tests in 538.328s
-
-The following messages are expected to validate this Use-Case:
-
-.. code-block:: text
-
-  2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster0: PASSED (233.00s)
-  2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster1: PASSED (0.01s)
-  2023-11-21 07:08:11 - INFO     - RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.01s)
+  RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster0: PASSED (233.00s)
+  RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster1: PASSED (0.01s)
+  RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.01s)
 
 .. _user_guide_reproduce_fault_management:
 
@@ -1754,17 +1663,17 @@ The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
-  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_ce_not_ok: PASSED (31.07s)
-  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_compl_ok: PASSED (28.97s)
-  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_nce_ok: PASSED (26.67s)
-  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_clear: PASSED (19.21s)
-  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_count: PASSED (14.02s)
-  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_list: PASSED (18.59s)
-  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_summary: PASSED (5.29s)
-  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_gic_fmu_inject: PASSED (9.28s)
-  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_system_fmu_internal_inject: PASSED (5.38s)
-  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_system_fmu_internal_set_enabled: PASSED (10.40s)
-  2023-11-26 21:28:21 - INFO     - RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_tree: PASSED (0.16s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_ce_not_ok: PASSED (31.07s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_compl_ok: PASSED (28.97s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_nce_ok: PASSED (26.67s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_clear: PASSED (19.21s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_count: PASSED (14.02s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_list: PASSED (18.59s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_summary: PASSED (5.29s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_gic_fmu_inject: PASSED (9.28s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_system_fmu_internal_inject: PASSED (5.38s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_system_fmu_internal_set_enabled: PASSED (10.40s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_tree: PASSED (0.16s)
 
 See :ref:`validation_fault_management` for more details.
 
@@ -1835,56 +1744,56 @@ A similar output to the following is printed out:
 
 .. code-block:: text
 
-  2023-11-30 00:33:53 - INFO     - NOTE: recipe arm-systemready-ir-acs-2.1.0-r0: task do_testimage: Started
-  2023-11-30 00:33:53 - INFO     - Creating terminal default on terminal_ns_uart0
-  2023-11-30 00:33:58 - INFO     - Creating terminal tf-a on terminal_sec_uart
-  2023-11-30 00:33:59 - INFO     - Creating terminal scp on terminal_uart_scp
-  2023-11-30 00:33:59 - INFO     - Creating terminal lcp on terminal_uart_lcp
-  2023-11-30 00:33:59 - INFO     - Creating terminal rss on terminal_rss_uart
-  2023-11-30 00:33:59 - INFO     - Creating terminal safety_island_c0 on terminal_uart_si_cluster0
-  2023-11-30 00:33:59 - INFO     - Creating terminal safety_island_c1 on terminal_uart_si_cluster1
-  2023-11-30 00:34:00 - INFO     - Creating terminal safety_island_c2 on terminal_uart_si_cluster2
-  2023-11-30 00:40:38 - INFO     - Test Group (PlatformSpecificElements): FAILED
-  2023-11-30 00:41:38 - INFO     - Test Group (RequiredElements): FAILED
-  2023-11-30 00:42:37 - INFO     - Test Group (CheckEvent_Conf): PASSED
-  2023-11-30 00:43:36 - INFO     - Test Group (CheckEvent_Func): PASSED
-  2023-11-30 00:44:37 - INFO     - Test Group (CloseEvent_Func): PASSED
-  2023-11-30 00:45:40 - INFO     - Test Group (CreateEventEx_Conf): PASSED
-  2023-11-30 00:46:39 - INFO     - Test Group (CreateEventEx_Func): PASSED
-  2023-11-30 00:47:42 - INFO     - Test Group (CreateEvent_Conf): PASSED
-  2023-11-30 00:48:41 - INFO     - Test Group (CreateEvent_Func): PASSED
-  2023-11-30 00:49:41 - INFO     - Test Group (RaiseTPL_Func): PASSED
-  2023-11-30 00:50:43 - INFO     - Test Group (RestoreTPL_Func): PASSED
-  2023-11-30 00:51:42 - INFO     - Test Group (SetTimer_Conf): PASSED
-  2023-11-30 00:57:32 - INFO     - Test Group (SetTimer_Func): PASSED
-  2023-11-30 00:58:30 - INFO     - Test Group (SignalEvent_Func): PASSED
-  2023-11-30 00:59:29 - INFO     - Test Group (WaitForEvent_Conf): PASSED
-  2023-11-30 01:00:43 - INFO     - Test Group (WaitForEvent_Func): PASSED
-  2023-11-30 01:01:42 - INFO     - Test Group (AllocatePages_Conf): PASSED
-  2023-11-30 01:04:06 - INFO     - Test Group (AllocatePages_Func): PASSED
-  2023-11-30 01:05:08 - INFO     - Test Group (AllocatePool_Conf): PASSED
-  2023-11-30 01:06:10 - INFO     - Test Group (AllocatePool_Func): PASSED
-  2023-11-30 01:07:08 - INFO     - Test Group (FreePages_Conf): PASSED
-  2023-11-30 01:08:08 - INFO     - Test Group (FreePages_Func): PASSED
-  2023-11-30 01:09:06 - INFO     - Test Group (GetMemoryMap_Conf): PASSED
-  2023-11-30 01:10:05 - INFO     - Test Group (GetMemoryMap_Func): PASSED
+  NOTE: recipe arm-systemready-ir-acs-2.1.0-r0: task do_testimage: Started
+  Creating terminal default on terminal_ns_uart0
+  Creating terminal tf-a on terminal_sec_uart
+  Creating terminal scp on terminal_uart_scp
+  Creating terminal lcp on terminal_uart_lcp
+  Creating terminal rss on terminal_rss_uart
+  Creating terminal safety_island_c0 on terminal_uart_si_cluster0
+  Creating terminal safety_island_c1 on terminal_uart_si_cluster1
+  Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+  Test Group (PlatformSpecificElements): FAILED
+  Test Group (RequiredElements): FAILED
+  Test Group (CheckEvent_Conf): PASSED
+  Test Group (CheckEvent_Func): PASSED
+  Test Group (CloseEvent_Func): PASSED
+  Test Group (CreateEventEx_Conf): PASSED
+  Test Group (CreateEventEx_Func): PASSED
+  Test Group (CreateEvent_Conf): PASSED
+  Test Group (CreateEvent_Func): PASSED
+  Test Group (RaiseTPL_Func): PASSED
+  Test Group (RestoreTPL_Func): PASSED
+  Test Group (SetTimer_Conf): PASSED
+  Test Group (SetTimer_Func): PASSED
+  Test Group (SignalEvent_Func): PASSED
+  Test Group (WaitForEvent_Conf): PASSED
+  Test Group (WaitForEvent_Func): PASSED
+  Test Group (AllocatePages_Conf): PASSED
+  Test Group (AllocatePages_Func): PASSED
+  Test Group (AllocatePool_Conf): PASSED
+  Test Group (AllocatePool_Func): PASSED
+  Test Group (FreePages_Conf): PASSED
+  Test Group (FreePages_Func): PASSED
+  Test Group (GetMemoryMap_Conf): PASSED
+  Test Group (GetMemoryMap_Func): PASSED
   ...
   ...
-  2023-11-30 09:06:14 - INFO     - Test Group (virtio_blk virtio1): vda
-  2023-11-30 09:33:50 - INFO     - Test Group (Supported ports):
-  2023-11-30 09:34:17 - INFO     - Linux tests complete
-  2023-11-30 09:34:25 - INFO     - RESULTS:
-  2023-11-30 09:34:25 - INFO     - RESULTS - arm_systemready_ir_acs.SystemReadyACSTest.test_acs: PASSED (32417.37s)
-  2023-11-30 09:34:25 - INFO     - SUMMARY:
-  2023-11-30 09:34:25 - INFO     - arm-systemready-ir-acs () - Ran 1 test in 32417.375s
-  2023-11-30 09:34:25 - INFO     - arm-systemready-ir-acs - OK - All required tests passed (successes=1, skipped=0, failures=0, errors=0)
+  Test Group (virtio_blk virtio1): vda
+  Test Group (Supported ports):
+  Linux tests complete
+  RESULTS:
+  RESULTS - arm_systemready_ir_acs.SystemReadyACSTest.test_acs: PASSED (32417.37s)
+  SUMMARY:
+  arm-systemready-ir-acs () - Ran 1 test in 32417.375s
+  arm-systemready-ir-acs - OK - All required tests passed (successes=1, skipped=0, failures=0, errors=0)
 
 As seen in the above logs, some Test Groups are expected to fail. The following
 messages are expected to validate this Use-Case:
 
 .. code-block:: text
 
-  2023-11-30 09:34:25 - INFO     - RESULTS - arm_systemready_ir_acs.SystemReadyACSTest.test_acs: PASSED (32417.37s)
+  RESULTS - arm_systemready_ir_acs.SystemReadyACSTest.test_acs: PASSED (32417.37s)
 
 .. note::
 
