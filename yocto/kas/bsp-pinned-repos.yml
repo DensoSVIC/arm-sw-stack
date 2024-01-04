@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -8,7 +8,7 @@ header:
 
 repos:
   meta-arm:
-    refspec: b86f6dd7ce80469b082492d1e4dfd82388d9ce69
+    refspec: d120d34e7e99eb84ba240b569eca83dbed8e5abe
   meta-openembedded:
     refspec: f29290563cb821fae95340ba959749641c69ed7f
   poky:
