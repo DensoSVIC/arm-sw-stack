@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -22,7 +22,7 @@ import sys
 # -- Project information -----------------------------------------------------
 
 project = 'Arm Kronos Reference Stack'
-copyright = '2023, Arm Ltd.'
+copyright = '2023-2024, Arm Ltd.'
 author = 'Arm Ltd.'
 
 
