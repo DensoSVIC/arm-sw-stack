@@ -1,4 +1,4 @@
-From 3a550f95017984a8a782d1806b7aebea21b2fc30 Mon Sep 17 00:00:00 2001
+From 661767c60b65dea568eba44b1a2057b1efe7e338 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Mon, 21 Feb 2022 02:05:55 +0000
 Subject: [PATCH] xen/arm: Apply MPAM config to Dom0
@@ -34,11 +34,11 @@ Issue-Id: SCM-3395
  6 files changed, 165 insertions(+), 8 deletions(-)
 
 diff --git a/xen/arch/arm/domain.c b/xen/arch/arm/domain.c
-index 38e22f12af..8ef4aa1860 100644
+index 28e3aaa5e482..1d5a2e7abd08 100644
 --- a/xen/arch/arm/domain.c
 +++ b/xen/arch/arm/domain.c
-@@ -641,6 +641,10 @@ int arch_sanitise_domain_config(struct xen_domctl_createdomain *config)
-         return -EINVAL;
+@@ -637,6 +637,10 @@ int arch_sanitise_domain_config(struct xen_domctl_createdomain *config)
+         }
      }
  
 +#ifdef CONFIG_MPAM
@@ -48,9 +48,9 @@ index 38e22f12af..8ef4aa1860 100644
      /* The P2M table must always be shared between the CPU and the IOMMU */
      if ( config->iommu_opts & XEN_DOMCTL_IOMMU_no_sharept )
      {
-@@ -783,6 +787,12 @@ int arch_domain_create(struct domain *d,
-     if ( (rc = domain_vpci_init(d)) != 0 )
-         goto fail;
+@@ -785,6 +789,12 @@ int arch_domain_create(struct domain *d,
+     d->arch.sve_vl = config->arch.sve_vl;
+ #endif
  
 +#ifdef CONFIG_MPAM
 +    d->arch.mpam.cfg.l3_cpbm = config->arch.mpam.l3_cpbm;
@@ -62,10 +62,10 @@ index 38e22f12af..8ef4aa1860 100644
  
  fail:
 diff --git a/xen/arch/arm/domain_build.c b/xen/arch/arm/domain_build.c
-index bd30d3798c..e60fa6c707 100644
+index 49792dd590ee..7937cc1bc930 100644
 --- a/xen/arch/arm/domain_build.c
 +++ b/xen/arch/arm/domain_build.c
-@@ -20,6 +20,7 @@
+@@ -21,6 +21,7 @@
  #include <acpi/actables.h>
  #include <asm/device.h>
  #include <asm/kernel.h>
@@ -73,9 +73,9 @@ index bd30d3798c..e60fa6c707 100644
  #include <asm/setup.h>
  #include <asm/tee/tee.h>
  #include <asm/platform.h>
-@@ -4056,6 +4057,11 @@ void __init create_dom0(void)
-     if ( iommu_enabled )
-         dom0_cfg.flags |= XEN_DOMCTL_CDF_iommu;
+@@ -3915,6 +3916,11 @@ void __init create_dom0(void)
+             panic("SVE vector length error\n");
+     }
  
 +#ifdef CONFIG_MPAM
 +    dom0_cfg.arch.mpam.l3_cpbm = dom0_mpam_config.l3_cpbm ?
@@ -83,10 +83,10 @@ index bd30d3798c..e60fa6c707 100644
 +#endif
 +
      dom0 = domain_create(0, &dom0_cfg, CDF_privileged | CDF_directmap);
-     if ( IS_ERR(dom0) || (alloc_dom0_vcpu0(dom0) == NULL) )
-         panic("Error creating domain 0\n");
+     if ( IS_ERR(dom0) )
+         panic("Error creating domain 0 (rc = %ld)\n", PTR_ERR(dom0));
 diff --git a/xen/arch/arm/include/asm/domain.h b/xen/arch/arm/include/asm/domain.h
-index 2ce6764322..c46df77652 100644
+index 99e798ffff68..1d0e46adc5ec 100644
 --- a/xen/arch/arm/include/asm/domain.h
 +++ b/xen/arch/arm/include/asm/domain.h
 @@ -7,6 +7,7 @@
@@ -97,7 +97,7 @@ index 2ce6764322..c46df77652 100644
  #include <asm/gic.h>
  #include <asm/vgic.h>
  #include <asm/vpl011.h>
-@@ -114,6 +115,10 @@ struct arch_domain
+@@ -119,6 +120,10 @@ struct arch_domain
      void *tee;
  #endif
  
@@ -109,7 +109,7 @@ index 2ce6764322..c46df77652 100644
  
  struct arch_vcpu
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index bf5f89953c..24ff85b224 100644
+index bf5f89953c88..24ff85b22491 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
 @@ -319,12 +319,7 @@ struct mpam_props
@@ -147,7 +147,7 @@ index bf5f89953c..24ff85b224 100644
  
  #endif /* __ARM_MPAM_H__ */
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index 2186e30b73..606a8ae20b 100644
+index 2186e30b73e8..606a8ae20b25 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -30,6 +30,7 @@
@@ -313,10 +313,10 @@ index 2186e30b73..606a8ae20b 100644
  {
      int rc = 0;
 diff --git a/xen/include/public/arch-arm.h b/xen/include/public/arch-arm.h
-index 9316920837..06826c4e44 100644
+index 598107e2f756..6f1a4bb642ef 100644
 --- a/xen/include/public/arch-arm.h
 +++ b/xen/include/public/arch-arm.h
-@@ -322,6 +322,8 @@ struct xen_arch_domainconfig {
+@@ -354,6 +354,8 @@ struct xen_arch_domainconfig {
       *
       */
      uint32_t clock_frequency;
@@ -326,5 +326,5 @@ index 9316920837..06826c4e44 100644
  #endif /* __XEN__ || __XEN_TOOLS__ */
  
 -- 
-2.25.1
+2.34.1
 

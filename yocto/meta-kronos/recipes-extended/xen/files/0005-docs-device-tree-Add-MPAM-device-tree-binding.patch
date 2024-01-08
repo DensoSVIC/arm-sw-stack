@@ -1,4 +1,4 @@
-From dc9a6c654d730618ed1294edcf9aae737c857343 Mon Sep 17 00:00:00 2001
+From 64177d67820f516eea3c0b6a88497e3886212997 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Fri, 19 Aug 2022 04:01:43 +0000
 Subject: [PATCH] docs: device-tree: Add MPAM device tree binding
@@ -28,7 +28,7 @@ Issue-Id: SCM-5079
 
 diff --git a/docs/misc/arm/device-tree/mpam.txt b/docs/misc/arm/device-tree/mpam.txt
 new file mode 100644
-index 0000000000..35d82d0a0f
+index 000000000000..89d95261453d
 --- /dev/null
 +++ b/docs/misc/arm/device-tree/mpam.txt
 @@ -0,0 +1,203 @@
@@ -236,5 +236,5 @@ index 0000000000..35d82d0a0f
 +...
 +};
 -- 
-2.25.1
+2.34.1
 

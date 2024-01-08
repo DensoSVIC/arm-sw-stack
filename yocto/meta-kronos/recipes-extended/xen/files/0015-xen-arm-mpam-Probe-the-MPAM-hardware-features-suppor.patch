@@ -1,8 +1,7 @@
-From 894c39d798534fd06ad4e423361c0840017162fc Mon Sep 17 00:00:00 2001
+From e9dd19ebcd8b9c2dac95df77e03306ed98f2abc9 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Tue, 26 Jul 2022 02:22:54 +0000
-Subject: [PATCH] xen/arm: mpam: Probe the MPAM hardware features
- supported
+Subject: [PATCH] xen/arm: mpam: Probe the MPAM hardware features supported
 
 MPAM offers a series of hardware features that can be used in
 different scenarios, including:
@@ -26,7 +25,7 @@ Issue-Id: SCM-5049
  2 files changed, 186 insertions(+)
 
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index 8ce38d2358..1ae5cbecc8 100644
+index 8ce38d2358b4..1ae5cbecc8be 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
 @@ -266,6 +266,61 @@ enum mpam_class_types {
@@ -101,7 +100,7 @@ index 8ce38d2358..1ae5cbecc8 100644
      /* member of mpam_component:ris */
      struct list_head comp_list;
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index 7102e2bc06..0025a2bdfc 100644
+index 7102e2bc0629..0025a2bdfc2d 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -685,6 +685,128 @@ static void __mpam_part_sel(uint8_t ris_idx, uint16_t partid,
@@ -248,5 +247,5 @@ index 7102e2bc06..0025a2bdfc 100644
  
      ACCESS_ONCE(mpam_partid_max) = min(ACCESS_ONCE(mpam_partid_max),
 -- 
-2.25.1
+2.34.1
 

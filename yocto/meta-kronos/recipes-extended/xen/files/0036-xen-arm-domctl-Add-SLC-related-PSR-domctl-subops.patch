@@ -1,4 +1,4 @@
-From df51ae60b0bb06d2980900380e9c1a68f39c9460 Mon Sep 17 00:00:00 2001
+From 97be5ffe66d6ee60465a57cb2360cb2885183732 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Sun, 9 Oct 2022 07:44:22 +0000
 Subject: [PATCH] xen/arm,domctl: Add SLC-related PSR domctl subops
@@ -19,10 +19,10 @@ Issue-Id: SCM-5244
  2 files changed, 17 insertions(+)
 
 diff --git a/xen/arch/arm/arm64/domctl.c b/xen/arch/arm/arm64/domctl.c
-index 8c68ea5d03..68d70d3eef 100644
+index 6a1cde3d712c..b2aa17122bb5 100644
 --- a/xen/arch/arm/arm64/domctl.c
 +++ b/xen/arch/arm/arm64/domctl.c
-@@ -79,6 +79,21 @@ long subarch_do_domctl(struct xen_domctl *domctl, struct domain *d,
+@@ -83,6 +83,21 @@ long subarch_do_domctl(struct xen_domctl *domctl, struct domain *d,
                  if ( __copy_to_guest(u_domctl, domctl, 1) )
                      return -EFAULT;
                  return 0;
@@ -45,10 +45,10 @@ index 8c68ea5d03..68d70d3eef 100644
                  return -EOPNOTSUPP;
          }
 diff --git a/xen/include/public/domctl.h b/xen/include/public/domctl.h
-index 51be28c3de..c40a3f5d27 100644
+index a33f9ec32b08..52834959b19d 100644
 --- a/xen/include/public/domctl.h
 +++ b/xen/include/public/domctl.h
-@@ -1132,6 +1132,8 @@ struct xen_domctl_psr_alloc {
+@@ -1131,6 +1131,8 @@ struct xen_domctl_psr_alloc {
  #define XEN_DOMCTL_PSR_GET_L2_CBM     7
  #define XEN_DOMCTL_PSR_SET_MBA_THRTL  8
  #define XEN_DOMCTL_PSR_GET_MBA_THRTL  9
@@ -58,5 +58,5 @@ index 51be28c3de..c40a3f5d27 100644
      uint32_t target;    /* IN */
      uint64_t data;      /* IN/OUT */
 -- 
-2.25.1
+2.34.1
 

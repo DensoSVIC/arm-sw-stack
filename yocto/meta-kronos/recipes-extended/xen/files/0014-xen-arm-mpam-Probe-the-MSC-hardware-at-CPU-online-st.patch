@@ -1,8 +1,7 @@
-From 284e68ee86e8c302ff27eb61f01169cd7498bf1c Mon Sep 17 00:00:00 2001
+From 8164b45e863c6953ca30845a9bc1d2e7c6bec52b Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Mon, 25 Jul 2022 02:53:08 +0000
-Subject: [PATCH] xen/arm: mpam: Probe the MSC hardware at CPU online
- stage
+Subject: [PATCH] xen/arm: mpam: Probe the MSC hardware at CPU online stage
 
 Because the MMIO registers of an MSC and its RIS can only by accessed
 from the CPUs in the MSC's cpu-affinity set, the full initialization of
@@ -31,7 +30,7 @@ Issue-Id: SCM-3395
  3 files changed, 213 insertions(+)
 
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index 9351855b6a..8ce38d2358 100644
+index 9351855b6ac4..8ce38d2358b4 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
 @@ -282,8 +282,12 @@ struct mpam_msc
@@ -56,7 +55,7 @@ index 9351855b6a..8ce38d2358 100644
  #endif /* __ARM_MPAM_H__ */
  
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index 9a60fec952..7102e2bc06 100644
+index 9a60fec9523f..7102e2bc0629 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -25,6 +25,7 @@
@@ -295,10 +294,10 @@ index 9a60fec952..7102e2bc06 100644
  
  /*
 diff --git a/xen/arch/arm/smpboot.c b/xen/arch/arm/smpboot.c
-index f7bda3a18b..b3fc0b8a4b 100644
+index ec76de3cac12..2e2654d2659b 100644
 --- a/xen/arch/arm/smpboot.c
 +++ b/xen/arch/arm/smpboot.c
-@@ -36,6 +36,7 @@
+@@ -28,6 +28,7 @@
  #include <asm/procinfo.h>
  #include <asm/psci.h>
  #include <asm/acpi.h>
@@ -306,7 +305,7 @@ index f7bda3a18b..b3fc0b8a4b 100644
  
  cpumask_t cpu_online_map;
  cpumask_t cpu_present_map;
-@@ -372,6 +373,13 @@ void start_secondary(void)
+@@ -365,6 +366,13 @@ void start_secondary(void)
  
      gic_init_secondary_cpu();
  
@@ -321,5 +320,5 @@ index f7bda3a18b..b3fc0b8a4b 100644
  
      /* Run local notifiers */
 -- 
-2.25.1
+2.34.1
 

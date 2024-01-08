@@ -1,8 +1,8 @@
-From dd0e0e5bdf8e883864185c27628c26566a943cd4 Mon Sep 17 00:00:00 2001
+From ad7da2efcaed4d0b908674298a5e34be860eaef7 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 21 Jul 2022 05:29:50 +0000
-Subject: [PATCH] xen/arm: Introduce detection of MPAM Memory-System
- Component (MSC)
+Subject: [PATCH] xen/arm: Introduce detection of MPAM Memory-System Component
+ (MSC)
 
 A Memory-System Component (MSC) is a function, unit, or design block
 in a memory system that can have partitionable resources. MSCs consist
@@ -31,7 +31,7 @@ Issue-Id: SCM-5049
 
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
 new file mode 100644
-index 0000000000..1a5f8b20fa
+index 000000000000..1a5f8b20fab8
 --- /dev/null
 +++ b/xen/arch/arm/include/asm/mpam.h
 @@ -0,0 +1,22 @@
@@ -59,7 +59,7 @@ index 0000000000..1a5f8b20fa
 + */
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
 new file mode 100644
-index 0000000000..3df0f59997
+index 000000000000..3df0f599972d
 --- /dev/null
 +++ b/xen/arch/arm/mpam.c
 @@ -0,0 +1,81 @@
@@ -145,10 +145,10 @@ index 0000000000..3df0f59997
 + * End:
 + */
 diff --git a/xen/arch/arm/setup.c b/xen/arch/arm/setup.c
-index b0c784703a..b17b128191 100644
+index 8c586f38e0fe..017bcf3fbe43 100644
 --- a/xen/arch/arm/setup.c
 +++ b/xen/arch/arm/setup.c
-@@ -53,6 +53,7 @@
+@@ -45,6 +45,7 @@
  #include <asm/setup.h>
  #include <xsm/xsm.h>
  #include <asm/acpi.h>
@@ -156,7 +156,7 @@ index b0c784703a..b17b128191 100644
  
  struct bootinfo __initdata bootinfo;
  
-@@ -1081,6 +1082,10 @@ void __init start_xen(unsigned long boot_phys_offset,
+@@ -1165,6 +1166,10 @@ void __init start_xen(unsigned long boot_phys_offset,
      nr_cpu_ids = smp_get_max_cpus();
      printk(XENLOG_INFO "SMP: Allowing %u CPUs\n", nr_cpu_ids);
  
@@ -168,5 +168,5 @@ index b0c784703a..b17b128191 100644
       * Some errata relies on SMCCC version which is detected by psci_init()
       * (called from smp_init_cpus()).
 -- 
-2.25.1
+2.34.1
 

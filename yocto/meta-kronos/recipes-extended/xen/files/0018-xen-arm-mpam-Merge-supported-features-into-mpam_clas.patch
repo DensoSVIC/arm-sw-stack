@@ -1,4 +1,4 @@
-From 42c1fc7c3b9c752f7092ec0f48af2a9bd84dd714 Mon Sep 17 00:00:00 2001
+From 03551804f37d9f54e3d7f8754593f175c1c6a730 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 28 Jul 2022 04:54:34 +0000
 Subject: [PATCH] xen/arm: mpam: Merge supported features into mpam_class
@@ -21,7 +21,7 @@ Issue-Id: SCM-5049
  2 files changed, 106 insertions(+)
 
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index 9c765f6068..681070eeed 100644
+index 9c765f60680d..681070eeed68 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
 @@ -321,6 +321,12 @@ static inline void mpam_set_feature(enum mpam_device_features feat,
@@ -47,7 +47,7 @@ index 9c765f6068..681070eeed 100644
      enum mpam_class_types type;
      /* member of mpam_classes */
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index b2a031d0c3..e7e8e1b040 100644
+index b2a031d0c3e0..e7e8e1b040bb 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -1006,6 +1006,102 @@ static void __init mpam_cpu_online(unsigned int cpu)
@@ -163,5 +163,5 @@ index b2a031d0c3..e7e8e1b040 100644
      mpam_enabled = true;
  
 -- 
-2.25.1
+2.34.1
 

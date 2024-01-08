@@ -1,4 +1,4 @@
-From 07868e0f91d7b12fa4ff7d508c99d35f9170b738 Mon Sep 17 00:00:00 2001
+From d3f5cb954f266e4ebf2ff5431b7280ac31322715 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 23 Jun 2022 09:52:24 +0000
 Subject: [PATCH] xen/arm: Return correct cores_per_socket value in
@@ -21,10 +21,10 @@ Upstream-Status: Pending
  1 file changed, 2 insertions(+)
 
 diff --git a/xen/arch/arm/smpboot.c b/xen/arch/arm/smpboot.c
-index b3fc0b8a4b..91804af5a4 100644
+index 2e2654d2659b..0753d32beee6 100644
 --- a/xen/arch/arm/smpboot.c
 +++ b/xen/arch/arm/smpboot.c
-@@ -94,6 +94,8 @@ static int setup_cpu_sibling_map(int cpu)
+@@ -86,6 +86,8 @@ static int setup_cpu_sibling_map(int cpu)
      cpumask_set_cpu(cpu, per_cpu(cpu_sibling_mask, cpu));
      cpumask_set_cpu(cpu, per_cpu(cpu_core_mask, cpu));
  
@@ -34,5 +34,5 @@ index b3fc0b8a4b..91804af5a4 100644
  }
  
 -- 
-2.25.1
+2.34.1
 

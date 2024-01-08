@@ -1,4 +1,4 @@
-From f72c69dfef2e6c2b0dd216d0b20818da19ad16d0 Mon Sep 17 00:00:00 2001
+From 121ee1c9a5261e52bab35e38303ad4dff6b196ba Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Mon, 20 Jun 2022 06:28:41 +0000
 Subject: [PATCH] xen/arm: Implement MPAM domctls for L3 cache
@@ -17,7 +17,7 @@ Issue-Id: SCM-3763
  1 file changed, 21 insertions(+)
 
 diff --git a/xen/arch/arm/arm64/domctl.c b/xen/arch/arm/arm64/domctl.c
-index 04e12dcc7d..8c68ea5d03 100644
+index 56d993198698..6a1cde3d712c 100644
 --- a/xen/arch/arm/arm64/domctl.c
 +++ b/xen/arch/arm/arm64/domctl.c
 @@ -8,6 +8,7 @@
@@ -27,8 +27,8 @@ index 04e12dcc7d..8c68ea5d03 100644
 +#include <xen/guest_access.h>
  #include <xen/hypercall.h>
  #include <public/domctl.h>
- #include <asm/cpufeature.h>
-@@ -61,6 +62,26 @@ long subarch_do_domctl(struct xen_domctl *domctl, struct domain *d,
+ #include <asm/arm64/sve.h>
+@@ -65,6 +66,26 @@ long subarch_do_domctl(struct xen_domctl *domctl, struct domain *d,
      case XEN_DOMCTL_psr_alloc:
          if ( !cpu_has_mpam )
              return -EOPNOTSUPP;
@@ -56,5 +56,5 @@ index 04e12dcc7d..8c68ea5d03 100644
  #endif
  
 -- 
-2.25.1
+2.34.1
 

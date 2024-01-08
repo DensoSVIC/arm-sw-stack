@@ -1,18 +1,20 @@
-From d079757e03680f147eeb545f955f243da346c9f0 Mon Sep 17 00:00:00 2001
+From 1d543a6112f88b93d69038d34dd7fbe6113a0908 Mon Sep 17 00:00:00 2001
 From: Stewart Hildebrand <stewart.hildebrand@amd.com>
 Date: Wed, 12 Jul 2023 09:52:21 -0400
-Subject: [PATCH 1/2] xen/arm: PCI devices passthrough on Arm
+Subject: [PATCH] xen/arm: PCI devices passthrough on Arm
 
 Aim of this big patch is to introduce PCI support on ARM platform.
 
-upstream-Status: Inappropriate [Kronos-specific]
 Signed-off-by: Rahul Singh <rahul.singh@arm.com>
+Signed-off-by: Luca Fancellu <luca.fancellu@arm.com>
+Upstream-Status: Inappropriate [Kronos-specific]
 ---
  docs/misc/xen-command-line.pandoc           |   7 -
  tools/libs/ctrl/xc_domain.c                 |   9 +
  tools/libs/light/libxl_arm.c                |  47 +-
  xen/arch/arm/Kconfig                        |  10 +
- xen/arch/arm/domain_build.c                 |  40 +-
+ xen/arch/arm/device.c                       |   4 +-
+ xen/arch/arm/domain_build.c                 |  36 +-
  xen/arch/arm/gic-v3-its.c                   |  26 +
  xen/arch/arm/include/asm/device.h           |  14 +
  xen/arch/arm/include/asm/domain.h           |   3 +-
@@ -20,14 +22,14 @@ Signed-off-by: Rahul Singh <rahul.singh@arm.com>
  xen/arch/arm/include/asm/pci.h              |  24 +-
  xen/arch/arm/pci/Makefile                   |   1 +
  xen/arch/arm/pci/pci-access.c               |  42 ++
- xen/arch/arm/pci/pci-host-common.c          |  35 +-
+ xen/arch/arm/pci/pci-host-common.c          |  25 +
  xen/arch/arm/pci/pci.c                      |  12 -
- xen/arch/arm/pci/pcie-n1sdp.c               | 239 +++++++++
+ xen/arch/arm/pci/pcie-n1sdp.c               | 239 ++++++++
  xen/arch/arm/vgic-v3-its.c                  | 153 +++++-
  xen/arch/arm/vgic-v3.c                      |   9 +-
  xen/arch/arm/vpci.c                         |  62 ++-
- xen/arch/x86/hvm/vmsi.c                     | 162 +++++++
- xen/arch/x86/include/asm/msi.h              |  28 --
+ xen/arch/x86/hvm/vmsi.c                     | 162 ++++++
+ xen/arch/x86/include/asm/msi.h              |  28 -
  xen/arch/x86/include/asm/pci.h              |   6 -
  xen/arch/x86/msi.c                          |   2 +-
  xen/common/device_tree.c                    |  71 ++-
@@ -37,38 +39,38 @@ Signed-off-by: Rahul Singh <rahul.singh@arm.com>
  xen/drivers/passthrough/amd/iommu.h         |   1 +
  xen/drivers/passthrough/amd/pci_amd_iommu.c |   9 +-
  xen/drivers/passthrough/arm/ipmmu-vmsa.c    |   4 +-
- xen/drivers/passthrough/arm/smmu-v3.c       |  91 +++-
- xen/drivers/passthrough/arm/smmu.c          | 128 ++++-
- xen/drivers/passthrough/device_tree.c       | 197 +++++++-
+ xen/drivers/passthrough/arm/smmu-v3.c       |  87 ++-
+ xen/drivers/passthrough/arm/smmu.c          | 132 ++++-
+ xen/drivers/passthrough/device_tree.c       | 199 ++++++-
  xen/drivers/passthrough/pci.c               |  96 +++-
  xen/drivers/passthrough/vtd/iommu.c         |   9 +-
  xen/drivers/pci/physdev.c                   |   6 -
  xen/drivers/vpci/Makefile                   |   4 +-
- xen/drivers/vpci/arm_msix.c                 | 108 +++++
- xen/drivers/vpci/arm_vmsi.c                 | 175 +++++++
- xen/drivers/vpci/header.c                   | 508 +++++++++++++++-----
+ xen/drivers/vpci/arm_msix.c                 | 108 ++++
+ xen/drivers/vpci/arm_vmsi.c                 | 171 ++++++
+ xen/drivers/vpci/header.c                   | 570 ++++++++++++++------
  xen/drivers/vpci/msi.c                      |  22 +-
- xen/drivers/vpci/msix.c                     | 216 +++------
- xen/drivers/vpci/vpci.c                     | 183 ++++++-
+ xen/drivers/vpci/msix.c                     | 217 +++-----
+ xen/drivers/vpci/vpci.c                     | 168 +++++-
  xen/include/public/arch-arm.h               |   4 +
  xen/include/public/device_tree_defs.h       |   1 +
  xen/include/xen/device_tree.h               |  48 +-
  xen/include/xen/iommu.h                     |  22 +-
- xen/include/xen/msi.h                       |  28 ++
+ xen/include/xen/msi.h                       |  28 +
  xen/include/xen/pci.h                       |   1 +
  xen/include/xen/rangeset.h                  |   5 +-
  xen/include/xen/sched.h                     |   9 +
  xen/include/xen/vpci.h                      |  75 ++-
- 51 files changed, 2484 insertions(+), 482 deletions(-)
+ 52 files changed, 2474 insertions(+), 528 deletions(-)
  create mode 100644 xen/arch/arm/pci/pcie-n1sdp.c
  create mode 100644 xen/drivers/vpci/arm_msix.c
  create mode 100644 xen/drivers/vpci/arm_vmsi.c
 
 diff --git a/docs/misc/xen-command-line.pandoc b/docs/misc/xen-command-line.pandoc
-index 8ad492f294..9ecda51e9e 100644
+index c918c6bdc0aa..eba6dcce309a 100644
 --- a/docs/misc/xen-command-line.pandoc
 +++ b/docs/misc/xen-command-line.pandoc
-@@ -1899,13 +1899,6 @@ All numbers specified must be hexadecimal ones.
+@@ -1965,13 +1965,6 @@ All numbers specified must be hexadecimal ones.
  
  This option can be specified more than once (up to 8 times at present).
  
@@ -83,10 +85,10 @@ index 8ad492f294..9ecda51e9e 100644
  > `= <boolean> | xpti=<bool>`
  
 diff --git a/tools/libs/ctrl/xc_domain.c b/tools/libs/ctrl/xc_domain.c
-index e939d07157..088acd3514 100644
+index 724fa6f75324..9a2795cbd038 100644
 --- a/tools/libs/ctrl/xc_domain.c
 +++ b/tools/libs/ctrl/xc_domain.c
-@@ -1449,6 +1449,14 @@ int xc_domain_iomem_permission(xc_interface *xch,
+@@ -1400,6 +1400,14 @@ int xc_domain_iomem_permission(xc_interface *xch,
                                 unsigned long nr_mfns,
                                 uint8_t allow_access)
  {
@@ -101,7 +103,7 @@ index e939d07157..088acd3514 100644
      DECLARE_DOMCTL;
  
      domctl.cmd = XEN_DOMCTL_iomem_permission;
-@@ -1458,6 +1466,7 @@ int xc_domain_iomem_permission(xc_interface *xch,
+@@ -1409,6 +1417,7 @@ int xc_domain_iomem_permission(xc_interface *xch,
      domctl.u.iomem_permission.allow_access = allow_access;
  
      return do_domctl(xch, &domctl);
@@ -110,10 +112,10 @@ index e939d07157..088acd3514 100644
  
  int xc_domain_send_trigger(xc_interface *xch,
 diff --git a/tools/libs/light/libxl_arm.c b/tools/libs/light/libxl_arm.c
-index 141d24a231..23d62697c2 100644
+index 026f9190fd2e..8d2510cd5717 100644
 --- a/tools/libs/light/libxl_arm.c
 +++ b/tools/libs/light/libxl_arm.c
-@@ -681,6 +681,38 @@ static int make_gicv2_node(libxl__gc *gc, void *fdt,
+@@ -724,6 +724,38 @@ static int make_gicv2_node(libxl__gc *gc, void *fdt,
      return 0;
  }
  
@@ -152,7 +154,7 @@ index 141d24a231..23d62697c2 100644
  static int make_gicv3_node(libxl__gc *gc, void *fdt)
  {
      int res;
-@@ -699,7 +731,13 @@ static int make_gicv3_node(libxl__gc *gc, void *fdt)
+@@ -742,7 +774,13 @@ static int make_gicv3_node(libxl__gc *gc, void *fdt)
      res = fdt_property_cell(fdt, "#interrupt-cells", 3);
      if (res) return res;
  
@@ -167,7 +169,7 @@ index 141d24a231..23d62697c2 100644
      if (res) return res;
  
      res = fdt_property(fdt, "interrupt-controller", NULL, 0);
-@@ -717,6 +755,9 @@ static int make_gicv3_node(libxl__gc *gc, void *fdt)
+@@ -760,6 +798,9 @@ static int make_gicv3_node(libxl__gc *gc, void *fdt)
      res = fdt_property_cell(fdt, "phandle", GUEST_PHANDLE_GIC);
      if (res) return res;
  
@@ -177,7 +179,7 @@ index 141d24a231..23d62697c2 100644
      res = fdt_end_node(fdt);
      if (res) return res;
  
-@@ -867,6 +908,10 @@ static int make_vpci_node(libxl__gc *gc, void *fdt,
+@@ -910,6 +951,10 @@ static int make_vpci_node(libxl__gc *gc, void *fdt,
          GUEST_VPCI_PREFETCH_MEM_SIZE);
      if (res) return res;
  
@@ -189,10 +191,10 @@ index 141d24a231..23d62697c2 100644
      if (res) return res;
  
 diff --git a/xen/arch/arm/Kconfig b/xen/arch/arm/Kconfig
-index c1b452d8cd..bafd2730eb 100644
+index 0c1f1f3c1884..10b801412b66 100644
 --- a/xen/arch/arm/Kconfig
 +++ b/xen/arch/arm/Kconfig
-@@ -156,6 +156,16 @@ config STATIC_SHM
+@@ -200,6 +200,16 @@ config STATIC_SHM
  	help
  	  This option enables statically shared memory on a dom0less system.
  
@@ -209,11 +211,33 @@ index c1b452d8cd..bafd2730eb 100644
  endmenu
  
  menu "ARM errata workaround via the alternative framework"
+diff --git a/xen/arch/arm/device.c b/xen/arch/arm/device.c
+index 1f631d327441..90c2358bf229 100644
+--- a/xen/arch/arm/device.c
++++ b/xen/arch/arm/device.c
+@@ -330,7 +330,7 @@ int handle_device(struct domain *d, struct dt_device_node *dev, p2m_type_t p2mt,
+         .d = d,
+         .p2mt = p2mt,
+         .skip_mapping = !own_device ||
+-                        (is_pci_passthrough_enabled() &&
++                        (has_vpci(d) &&
+                         (device_get_class(dev) == DEVICE_PCI_HOSTBRIDGE)),
+         .iomem_ranges = iomem_ranges,
+         .irq_ranges = irq_ranges
+@@ -354,7 +354,7 @@ int handle_device(struct domain *d, struct dt_device_node *dev, p2m_type_t p2mt,
+             return res;
+         }
+ 
+-        if ( dt_device_is_protected(dev) )
++        if ( device_is_protected(dt_to_dev(dev)) )
+         {
+             dt_dprintk("%s setup iommu\n", dt_node_full_name(dev));
+             res = iommu_assign_dt_device(d, dev);
 diff --git a/xen/arch/arm/domain_build.c b/xen/arch/arm/domain_build.c
-index 63e732ba64..116d57b9e4 100644
+index 67a6ce1d7ead..c7452f0e4580 100644
 --- a/xen/arch/arm/domain_build.c
 +++ b/xen/arch/arm/domain_build.c
-@@ -1043,6 +1043,33 @@ static void __init assign_static_memory_11(struct domain *d,
+@@ -1066,6 +1066,33 @@ static void __init assign_static_memory_11(struct domain *d,
  
  /*
   * When PCI passthrough is available we want to keep the
@@ -247,7 +271,7 @@ index 63e732ba64..116d57b9e4 100644
   * "linux,pci-domain" in sync for every host bridge.
   *
   * Xen may not have a driver for all the host bridges. So we have
-@@ -1058,9 +1085,6 @@ static int __init handle_linux_pci_domain(struct kernel_info *kinfo,
+@@ -1081,9 +1108,6 @@ static int __init handle_linux_pci_domain(struct kernel_info *kinfo,
      uint16_t segment;
      int res;
  
@@ -257,7 +281,7 @@ index 63e732ba64..116d57b9e4 100644
      if ( !dt_device_type_is_equal(node, "pci") )
          return 0;
  
-@@ -1116,6 +1140,10 @@ static int __init write_properties(struct domain *d, struct kernel_info *kinfo,
+@@ -1139,6 +1163,10 @@ static int __init write_properties(struct domain *d, struct kernel_info *kinfo,
      if ( iommu_node && device_get_class(iommu_node) != DEVICE_IOMMU )
          iommu_node = NULL;
  
@@ -268,25 +292,7 @@ index 63e732ba64..116d57b9e4 100644
      dt_for_each_property_node (node, prop)
      {
          const void *prop_data = prop->value;
-@@ -2458,7 +2486,7 @@ static int __init handle_device(struct domain *d, struct dt_device_node *dev,
-         .d = d,
-         .p2mt = p2mt,
-         .skip_mapping = !own_device ||
--                        (is_pci_passthrough_enabled() &&
-+                        (has_vpci(d) &&
-                         (device_get_class(dev) == DEVICE_PCI_HOSTBRIDGE))
-     };
- 
-@@ -2480,7 +2508,7 @@ static int __init handle_device(struct domain *d, struct dt_device_node *dev,
-             return res;
-         }
- 
--        if ( dt_device_is_protected(dev) )
-+        if ( device_is_protected(dt_to_dev(dev)) )
-         {
-             dt_dprintk("%s setup iommu\n", dt_node_full_name(dev));
-             res = iommu_assign_dt_device(d, dev);
-@@ -2990,7 +3018,7 @@ static int __init handle_passthrough_prop(struct kernel_info *kinfo,
+@@ -2762,7 +2790,7 @@ static int __init handle_passthrough_prop(struct kernel_info *kinfo,
          return res;
  
      /* If xen_force, we allow assignment of devices without IOMMU protection. */
@@ -296,10 +302,10 @@ index 63e732ba64..116d57b9e4 100644
  
      return iommu_assign_dt_device(kinfo->d, node);
 diff --git a/xen/arch/arm/gic-v3-its.c b/xen/arch/arm/gic-v3-its.c
-index e217c21bf8..ef0d7eb415 100644
+index 8afcd9783bc8..58bcf2e4d3dc 100644
 --- a/xen/arch/arm/gic-v3-its.c
 +++ b/xen/arch/arm/gic-v3-its.c
-@@ -613,6 +613,32 @@ static int gicv3_its_map_host_events(struct host_its *its,
+@@ -602,6 +602,32 @@ static int gicv3_its_map_host_events(struct host_its *its,
      return gicv3_its_wait_commands(its);
  }
  
@@ -333,7 +339,7 @@ index e217c21bf8..ef0d7eb415 100644
   * Map a hardware device, identified by a certain host ITS and its device ID
   * to domain d, a guest ITS (identified by its doorbell address) and device ID.
 diff --git a/xen/arch/arm/include/asm/device.h b/xen/arch/arm/include/asm/device.h
-index b5d451e087..8ac8074827 100644
+index b5d451e08776..8ac807482737 100644
 --- a/xen/arch/arm/include/asm/device.h
 +++ b/xen/arch/arm/include/asm/device.h
 @@ -1,6 +1,8 @@
@@ -372,10 +378,10 @@ index b5d451e087..8ac8074827 100644
  static const struct device_desc __dev_desc_##_name __used           \
  __section(".dev.info") = {                                          \
 diff --git a/xen/arch/arm/include/asm/domain.h b/xen/arch/arm/include/asm/domain.h
-index 4c3fe12d2f..0ce4fabef8 100644
+index 2a2532ec0238..278496811648 100644
 --- a/xen/arch/arm/include/asm/domain.h
 +++ b/xen/arch/arm/include/asm/domain.h
-@@ -297,8 +297,7 @@ static inline void arch_vcpu_block(struct vcpu *v) {}
+@@ -307,8 +307,7 @@ static inline void arch_vcpu_block(struct vcpu *v) {}
  
  #define arch_vm_assist_valid_mask(d) (1UL << VMASST_TYPE_runstate_update_flag)
  
@@ -386,7 +392,7 @@ index 4c3fe12d2f..0ce4fabef8 100644
  struct arch_vcpu_io {
      struct instr_details dabt_instr; /* when the instruction is decoded */
 diff --git a/xen/arch/arm/include/asm/gic_v3_its.h b/xen/arch/arm/include/asm/gic_v3_its.h
-index fae3f6ecef..277a6e11b2 100644
+index c24d4752d0e5..7b985275a21a 100644
 --- a/xen/arch/arm/include/asm/gic_v3_its.h
 +++ b/xen/arch/arm/include/asm/gic_v3_its.h
 @@ -104,6 +104,8 @@
@@ -408,7 +414,7 @@ index fae3f6ecef..277a6e11b2 100644
  void gicv3_free_host_lpi_block(uint32_t first_lpi);
  
 diff --git a/xen/arch/arm/include/asm/pci.h b/xen/arch/arm/include/asm/pci.h
-index 8cb46f6b71..911041789d 100644
+index 8cb46f6b7185..911041789d75 100644
 --- a/xen/arch/arm/include/asm/pci.h
 +++ b/xen/arch/arm/include/asm/pci.h
 @@ -21,8 +21,6 @@
@@ -475,7 +481,7 @@ index 8cb46f6b71..911041789d 100644
  
  static inline void arch_pci_init_pdev(struct pci_dev *pdev) {}
 diff --git a/xen/arch/arm/pci/Makefile b/xen/arch/arm/pci/Makefile
-index 1d045ade01..4701219e3b 100644
+index 1d045ade0146..4701219e3b28 100644
 --- a/xen/arch/arm/pci/Makefile
 +++ b/xen/arch/arm/pci/Makefile
 @@ -4,3 +4,4 @@ obj-y += pci-host-generic.o
@@ -484,7 +490,7 @@ index 1d045ade01..4701219e3b 100644
  obj-y += pci-host-zynqmp.o
 +obj-y += pcie-n1sdp.o
 diff --git a/xen/arch/arm/pci/pci-access.c b/xen/arch/arm/pci/pci-access.c
-index 9f9aac43d7..cc0f23950a 100644
+index 9f9aac43d7e9..cc0f23950ae9 100644
 --- a/xen/arch/arm/pci/pci-access.c
 +++ b/xen/arch/arm/pci/pci-access.c
 @@ -73,6 +73,48 @@ int pci_generic_config_write(struct pci_host_bridge *bridge, pci_sbdf_t sbdf,
@@ -537,7 +543,7 @@ index 9f9aac43d7..cc0f23950a 100644
                                  unsigned int len)
  {
 diff --git a/xen/arch/arm/pci/pci-host-common.c b/xen/arch/arm/pci/pci-host-common.c
-index a8ece94303..cbaf128088 100644
+index c0faf0f43675..c2ba66b0c410 100644
 --- a/xen/arch/arm/pci/pci-host-common.c
 +++ b/xen/arch/arm/pci/pci-host-common.c
 @@ -151,6 +151,29 @@ void pci_add_host_bridge(struct pci_host_bridge *bridge)
@@ -570,8 +576,8 @@ index a8ece94303..cbaf128088 100644
  int pci_get_new_domain_nr(void)
  {
      if ( use_dt_domains )
-@@ -242,6 +265,8 @@ int pci_host_common_probe(struct dt_device_node *dev,
-     }
+@@ -244,6 +267,8 @@ int pci_host_common_probe(struct dt_device_node *dev,
+     bridge->segment = domain;
      pci_add_host_bridge(bridge);
  
 +    pci_set_msi_base(bridge);
@@ -579,36 +585,8 @@ index a8ece94303..cbaf128088 100644
      return 0;
  
  err_exit:
-@@ -391,20 +416,24 @@ static int is_bar_valid(const struct dt_device_node *dev,
-     return 0;
- }
- 
--/* TODO: Revisit this function when ACPI PCI passthrough support is added. */
-+/*
-+ * The MFN range [start, end] is inclusive.
-+ *
-+ * TODO: Revisit this function when ACPI PCI passthrough support is added.
-+ */
- bool pci_check_bar(const struct pci_dev *pdev, mfn_t start, mfn_t end)
- {
-     int ret;
-     const struct dt_device_node *dt_node;
-     paddr_t s = mfn_to_maddr(start);
--    paddr_t e = mfn_to_maddr(end);
-+    paddr_t e = mfn_to_maddr(mfn_add(end, 1)) - 1; /* inclusive */
-     struct pdev_bar_check bar_data =  {
-         .start = s,
-         .end = e,
-         .is_valid = false
-     };
- 
--    if ( s >= e )
-+    if ( s > e )
-         return false;
- 
-     dt_node = pci_find_host_bridge_node(pdev);
 diff --git a/xen/arch/arm/pci/pci.c b/xen/arch/arm/pci/pci.c
-index 78b97beaef..e0a63242ab 100644
+index 78b97beaef12..e0a63242ab21 100644
 --- a/xen/arch/arm/pci/pci.c
 +++ b/xen/arch/arm/pci/pci.c
 @@ -16,7 +16,6 @@
@@ -641,7 +619,7 @@ index 78b97beaef..e0a63242ab 100644
      if ( acpi_disabled )
 diff --git a/xen/arch/arm/pci/pcie-n1sdp.c b/xen/arch/arm/pci/pcie-n1sdp.c
 new file mode 100644
-index 0000000000..e3b5826413
+index 000000000000..e3b5826413fc
 --- /dev/null
 +++ b/xen/arch/arm/pci/pcie-n1sdp.c
 @@ -0,0 +1,239 @@
@@ -885,10 +863,10 @@ index 0000000000..e3b5826413
 + * End:
 + */
 diff --git a/xen/arch/arm/vgic-v3-its.c b/xen/arch/arm/vgic-v3-its.c
-index 58d939b85f..882b9dc032 100644
+index 05429030b539..cc83d8cf90de 100644
 --- a/xen/arch/arm/vgic-v3-its.c
 +++ b/xen/arch/arm/vgic-v3-its.c
-@@ -287,6 +287,88 @@ static uint64_t its_cmd_mask_field(uint64_t *its_cmd, unsigned int word,
+@@ -276,6 +276,88 @@ static uint64_t its_cmd_mask_field(uint64_t *its_cmd, unsigned int word,
      return (its_cmd[word] >> shift) & GENMASK(size - 1, 0);
  }
  
@@ -977,7 +955,7 @@ index 58d939b85f..882b9dc032 100644
  #define its_cmd_get_command(cmd)        its_cmd_mask_field(cmd, 0,  0,  8)
  #define its_cmd_get_deviceid(cmd)       its_cmd_mask_field(cmd, 0, 32, 32)
  #define its_cmd_get_size(cmd)           its_cmd_mask_field(cmd, 1,  0,  5)
-@@ -324,6 +406,9 @@ static int its_handle_mapc(struct virt_its *its, uint64_t *cmdptr)
+@@ -313,6 +395,9 @@ static int its_handle_mapc(struct virt_its *its, uint64_t *cmdptr)
      uint32_t collid = its_cmd_get_collection(cmdptr);
      uint64_t rdbase = its_cmd_mask_field(cmdptr, 2, 16, 44);
  
@@ -987,7 +965,7 @@ index 58d939b85f..882b9dc032 100644
      if ( collid >= its->max_collections )
          return -1;
  
-@@ -529,7 +614,6 @@ static int its_handle_invall(struct virt_its *its, uint64_t *cmdptr)
+@@ -518,7 +603,6 @@ static int its_handle_invall(struct virt_its *its, uint64_t *cmdptr)
       * However this command is very rare, also we don't expect many
       * LPIs to be actually mapped, so it's fine for Dom0 to use.
       */
@@ -995,7 +973,7 @@ index 58d939b85f..882b9dc032 100644
  
      /*
       * If no redistributor has its LPIs enabled yet, we can't access the
-@@ -640,14 +724,6 @@ static void its_unmap_device(struct virt_its *its, uint32_t devid)
+@@ -629,14 +713,6 @@ static void its_unmap_device(struct virt_its *its, uint32_t devid)
      if ( its_get_itt(its, devid, &itt) )
          goto out;
  
@@ -1010,7 +988,7 @@ index 58d939b85f..882b9dc032 100644
      for ( evid = 0; evid < DEV_TABLE_ITT_SIZE(itt); evid++ )
          /* Don't care about errors here, clean up as much as possible. */
          its_discard_event(its, devid, evid);
-@@ -659,10 +735,12 @@ out:
+@@ -648,10 +724,12 @@ out:
  static int its_handle_mapd(struct virt_its *its, uint64_t *cmdptr)
  {
      /* size and devid get validated by the functions called below. */
@@ -1024,7 +1002,7 @@ index 58d939b85f..882b9dc032 100644
      int ret;
  
      /* Sanitize the number of events. */
-@@ -671,7 +749,7 @@ static int its_handle_mapd(struct virt_its *its, uint64_t *cmdptr)
+@@ -660,7 +738,7 @@ static int its_handle_mapd(struct virt_its *its, uint64_t *cmdptr)
  
      if ( !valid )
          /* Discard all events and remove pending LPIs. */
@@ -1033,7 +1011,7 @@ index 58d939b85f..882b9dc032 100644
  
      /*
       * There is no easy and clean way for Xen to know the ITS device ID of a
-@@ -681,26 +759,36 @@ static int its_handle_mapd(struct virt_its *its, uint64_t *cmdptr)
+@@ -670,26 +748,36 @@ static int its_handle_mapd(struct virt_its *its, uint64_t *cmdptr)
       * Eventually this will be replaced with a dedicated hypercall to
       * announce pass-through of devices.
       */
@@ -1082,7 +1060,7 @@ index 58d939b85f..882b9dc032 100644
  
      spin_unlock(&its->its_lock);
  
-@@ -1188,7 +1276,6 @@ static bool vgic_v3_verify_its_status(struct virt_its *its, bool status)
+@@ -1177,7 +1265,6 @@ static bool vgic_v3_verify_its_status(struct virt_its *its, bool status)
       * an LPI), which should go away with proper per-IRQ locking.
       * So for now we ignore this issue and rely on Dom0 not doing bad things.
       */
@@ -1090,7 +1068,7 @@ index 58d939b85f..882b9dc032 100644
  
      return true;
  }
-@@ -1516,6 +1603,8 @@ unsigned int vgic_v3_its_count(const struct domain *d)
+@@ -1505,6 +1592,8 @@ unsigned int vgic_v3_its_count(const struct domain *d)
  int vgic_v3_its_init_domain(struct domain *d)
  {
      int ret;
@@ -1099,7 +1077,7 @@ index 58d939b85f..882b9dc032 100644
  
      INIT_LIST_HEAD(&d->arch.vgic.vits_list);
      spin_lock_init(&d->arch.vgic.its_devices_lock);
-@@ -1539,8 +1628,22 @@ int vgic_v3_its_init_domain(struct domain *d)
+@@ -1528,8 +1617,22 @@ int vgic_v3_its_init_domain(struct domain *d)
                  return ret;
              else
                  d->arch.vgic.has_its = true;
@@ -1122,7 +1100,7 @@ index 58d939b85f..882b9dc032 100644
  
      return 0;
  }
-@@ -1558,7 +1661,7 @@ void vgic_v3_its_free_domain(struct domain *d)
+@@ -1547,7 +1650,7 @@ void vgic_v3_its_free_domain(struct domain *d)
          list_del(&pos->vits_list);
          xfree(pos);
      }
@@ -1132,10 +1110,10 @@ index 58d939b85f..882b9dc032 100644
  }
  
 diff --git a/xen/arch/arm/vgic-v3.c b/xen/arch/arm/vgic-v3.c
-index 84dc442fc6..e91ee70771 100644
+index 05a009409ab8..544f54cb1f72 100644
 --- a/xen/arch/arm/vgic-v3.c
 +++ b/xen/arch/arm/vgic-v3.c
-@@ -1718,14 +1718,7 @@ static int vgic_v3_domain_init(struct domain *d)
+@@ -1725,14 +1725,7 @@ static int vgic_v3_domain_init(struct domain *d)
          d->arch.vgic.rdist_regions[0].size = GUEST_GICV3_GICR0_SIZE;
          d->arch.vgic.rdist_regions[0].first_cpu = 0;
  
@@ -1152,10 +1130,10 @@ index 84dc442fc6..e91ee70771 100644
  
      ret = vgic_v3_its_init_domain(d);
 diff --git a/xen/arch/arm/vpci.c b/xen/arch/arm/vpci.c
-index a9fc5817f9..f985315311 100644
+index 3bc4bb55082a..9989494832db 100644
 --- a/xen/arch/arm/vpci.c
 +++ b/xen/arch/arm/vpci.c
-@@ -37,10 +37,33 @@ static int vpci_mmio_read(struct vcpu *v, mmio_info_t *info,
+@@ -28,10 +28,33 @@ static int vpci_mmio_read(struct vcpu *v, mmio_info_t *info,
                            register_t *r, void *p)
  {
      struct pci_host_bridge *bridge = p;
@@ -1190,7 +1168,7 @@ index a9fc5817f9..f985315311 100644
      if ( vpci_ecam_read(sbdf, ECAM_REG_OFFSET(info->gpa),
                          1U << info->dabt.size, &data) )
      {
-@@ -57,7 +80,27 @@ static int vpci_mmio_write(struct vcpu *v, mmio_info_t *info,
+@@ -48,7 +71,27 @@ static int vpci_mmio_write(struct vcpu *v, mmio_info_t *info,
                             register_t r, void *p)
  {
      struct pci_host_bridge *bridge = p;
@@ -1219,7 +1197,7 @@ index a9fc5817f9..f985315311 100644
  
      return vpci_ecam_write(sbdf, ECAM_REG_OFFSET(info->gpa),
                             1U << info->dabt.size, r);
-@@ -109,11 +152,13 @@ static int vpci_get_num_handlers_cb(struct domain *d,
+@@ -100,11 +143,13 @@ static int vpci_get_num_handlers_cb(struct domain *d,
                                      struct pci_host_bridge *bridge)
  {
      /* Each bridge has a single MMIO handler for the configuration space. */
@@ -1234,7 +1212,7 @@ index a9fc5817f9..f985315311 100644
      if ( !has_vpci(d) )
          return 0;
  
-@@ -134,7 +179,16 @@ unsigned int domain_vpci_get_num_mmio_handlers(struct domain *d)
+@@ -125,7 +170,16 @@ unsigned int domain_vpci_get_num_mmio_handlers(struct domain *d)
       * For guests each host bridge requires one region to cover the
       * configuration space. At the moment, we only expose a single host bridge.
       */
@@ -1253,7 +1231,7 @@ index a9fc5817f9..f985315311 100644
  
  /*
 diff --git a/xen/arch/x86/hvm/vmsi.c b/xen/arch/x86/hvm/vmsi.c
-index 3cd4923060..2abe0c598e 100644
+index 128f23636279..5ec14358114e 100644
 --- a/xen/arch/x86/hvm/vmsi.c
 +++ b/xen/arch/x86/hvm/vmsi.c
 @@ -895,6 +895,8 @@ int vpci_msix_arch_print(const struct vpci_msix *msix)
@@ -1439,7 +1417,7 @@ index 3cd4923060..2abe0c598e 100644
 +
  #endif /* CONFIG_HAS_VPCI */
 diff --git a/xen/arch/x86/include/asm/msi.h b/xen/arch/x86/include/asm/msi.h
-index fe670895ee..9f81b16e1a 100644
+index a53ade95c9ad..ef574021ebb4 100644
 --- a/xen/arch/x86/include/asm/msi.h
 +++ b/xen/arch/x86/include/asm/msi.h
 @@ -146,34 +146,6 @@ int msi_free_irq(struct msi_desc *entry);
@@ -1478,7 +1456,7 @@ index fe670895ee..9f81b16e1a 100644
   * MSI Defined Data Structures
   */
 diff --git a/xen/arch/x86/include/asm/pci.h b/xen/arch/x86/include/asm/pci.h
-index f4a58c8acf..3eb6fb8edf 100644
+index f4a58c8acf13..3eb6fb8edf30 100644
 --- a/xen/arch/x86/include/asm/pci.h
 +++ b/xen/arch/x86/include/asm/pci.h
 @@ -49,12 +49,6 @@ bool_t pci_ro_mmcfg_decode(unsigned long mfn, unsigned int *seg,
@@ -1495,7 +1473,7 @@ index f4a58c8acf..3eb6fb8edf 100644
  
  static inline bool pci_check_bar(const struct pci_dev *pdev,
 diff --git a/xen/arch/x86/msi.c b/xen/arch/x86/msi.c
-index d0bf63df1d..91bc805253 100644
+index a78367d7cf5d..b39ae872df45 100644
 --- a/xen/arch/x86/msi.c
 +++ b/xen/arch/x86/msi.c
 @@ -20,10 +20,10 @@
@@ -1511,10 +1489,10 @@ index d0bf63df1d..91bc805253 100644
  #include <asm/p2m.h>
  #include <mach_apic.h>
 diff --git a/xen/common/device_tree.c b/xen/common/device_tree.c
-index 6c9712ab7b..4016dd7423 100644
+index b1c29529514f..3f56298794c2 100644
 --- a/xen/common/device_tree.c
 +++ b/xen/common/device_tree.c
-@@ -1874,7 +1874,7 @@ static unsigned long __init unflatten_dt_node(const void *fdt,
+@@ -1912,7 +1912,7 @@ static unsigned long unflatten_dt_node(const void *fdt,
          /* By default dom0 owns the device */
          np->used_by = 0;
          /* By default the device is not protected */
@@ -1523,7 +1501,7 @@ index 6c9712ab7b..4016dd7423 100644
          INIT_LIST_HEAD(&np->domain_list);
  
          if ( new_format )
-@@ -2195,6 +2195,75 @@ int dt_get_pci_domain_nr(struct dt_device_node *node)
+@@ -2243,6 +2243,75 @@ int dt_get_pci_domain_nr(struct dt_device_node *node)
      return (u16)domain;
  }
  
@@ -1600,10 +1578,10 @@ index 6c9712ab7b..4016dd7423 100644
   * Local variables:
   * mode: C
 diff --git a/xen/common/domain.c b/xen/common/domain.c
-index 53f7e734fe..5778874af6 100644
+index 8f9ab01c0cb7..785c69e48bf8 100644
 --- a/xen/common/domain.c
 +++ b/xen/common/domain.c
-@@ -622,6 +622,7 @@ struct domain *domain_create(domid_t domid,
+@@ -651,6 +651,7 @@ struct domain *domain_create(domid_t domid,
  
  #ifdef CONFIG_HAS_PCI
      INIT_LIST_HEAD(&d->pdev_list);
@@ -1612,7 +1590,7 @@ index 53f7e734fe..5778874af6 100644
  
      /* All error paths can depend on the above setup. */
 diff --git a/xen/common/rangeset.c b/xen/common/rangeset.c
-index a6ef264046..f8b909d016 100644
+index f3baf52ab6f9..35c342088508 100644
 --- a/xen/common/rangeset.c
 +++ b/xen/common/rangeset.c
 @@ -433,7 +433,7 @@ struct rangeset *rangeset_new(
@@ -1635,7 +1613,7 @@ index a6ef264046..f8b909d016 100644
          rangeset_printk(r);
          printk("\n");
 diff --git a/xen/drivers/Kconfig b/xen/drivers/Kconfig
-index db94393f47..780490cf8e 100644
+index db94393f47a6..780490cf8e39 100644
 --- a/xen/drivers/Kconfig
 +++ b/xen/drivers/Kconfig
 @@ -15,4 +15,8 @@ source "drivers/video/Kconfig"
@@ -1648,7 +1626,7 @@ index db94393f47..780490cf8e 100644
 +
  endmenu
 diff --git a/xen/drivers/passthrough/amd/iommu.h b/xen/drivers/passthrough/amd/iommu.h
-index 8bc3c35b1b..8d8dfb7f12 100644
+index d4416ebc4389..67e0c7f5c9ce 100644
 --- a/xen/drivers/passthrough/amd/iommu.h
 +++ b/xen/drivers/passthrough/amd/iommu.h
 @@ -26,6 +26,7 @@
@@ -1660,10 +1638,10 @@ index 8bc3c35b1b..8d8dfb7f12 100644
  #include <asm/msi.h>
  #include <asm/apicdef.h>
 diff --git a/xen/drivers/passthrough/amd/pci_amd_iommu.c b/xen/drivers/passthrough/amd/pci_amd_iommu.c
-index 4ba8e764b2..5fc5798de7 100644
+index 6bc73dc21052..f1ac7d9453d9 100644
 --- a/xen/drivers/passthrough/amd/pci_amd_iommu.c
 +++ b/xen/drivers/passthrough/amd/pci_amd_iommu.c
-@@ -476,8 +476,13 @@ static int cf_check reassign_device(
+@@ -481,8 +481,13 @@ static int cf_check reassign_device(
  
      if ( devfn == pdev->devfn && pdev->domain != target )
      {
@@ -1680,7 +1658,7 @@ index 4ba8e764b2..5fc5798de7 100644
  
      /*
 diff --git a/xen/drivers/passthrough/arm/ipmmu-vmsa.c b/xen/drivers/passthrough/arm/ipmmu-vmsa.c
-index 091f09b217..e7c4230065 100644
+index b5c84c51a20a..92d4d981d0b2 100644
 --- a/xen/drivers/passthrough/arm/ipmmu-vmsa.c
 +++ b/xen/drivers/passthrough/arm/ipmmu-vmsa.c
 @@ -1288,14 +1288,14 @@ static int ipmmu_add_device(u8 devfn, struct device *dev)
@@ -1701,15 +1679,13 @@ index 091f09b217..e7c4230065 100644
      dev_info(dev, "Added master device (IPMMU %s micro-TLBs %u)\n",
               dev_name(fwspec->iommu_dev), fwspec->num_ids);
 diff --git a/xen/drivers/passthrough/arm/smmu-v3.c b/xen/drivers/passthrough/arm/smmu-v3.c
-index 9c9f463009..cbf5e6d7ee 100644
+index cdbb505134b7..7f425e50d67d 100644
 --- a/xen/drivers/passthrough/arm/smmu-v3.c
 +++ b/xen/drivers/passthrough/arm/smmu-v3.c
-@@ -1490,15 +1490,33 @@ static bool arm_smmu_sid_in_range(struct arm_smmu_device *smmu, u32 sid)
- 	return sid < limit;
+@@ -1469,14 +1469,32 @@ static bool arm_smmu_sid_in_range(struct arm_smmu_device *smmu, u32 sid)
  }
  /* Forward declaration */
--static struct arm_smmu_device *arm_smmu_get_by_dev(struct device *dev);
-+static struct arm_smmu_device *arm_smmu_get_by_dev(const struct device *dev);
+ static struct arm_smmu_device *arm_smmu_get_by_dev(const struct device *dev);
 +static int arm_smmu_assign_dev(struct domain *d, u8 devfn,
 +			struct device *dev, u32 flag);
  
@@ -1740,7 +1716,7 @@ index 9c9f463009..cbf5e6d7ee 100644
  	if (!fwspec)
  		return -ENODEV;
  
-@@ -1543,17 +1561,29 @@ static int arm_smmu_add_device(u8 devfn, struct device *dev)
+@@ -1521,17 +1539,29 @@ static int arm_smmu_add_device(u8 devfn, struct device *dev)
  	 */
  	arm_smmu_enable_pasid(master);
  
@@ -1772,16 +1748,7 @@ index 9c9f463009..cbf5e6d7ee 100644
  	return 0;
  
  err_free_master:
-@@ -2577,7 +2607,7 @@ static int __must_check arm_smmu_iotlb_flush(struct domain *d, dfn_t dfn,
- 	return arm_smmu_iotlb_flush_all(d);
- }
- 
--static struct arm_smmu_device *arm_smmu_get_by_dev(struct device *dev)
-+static struct arm_smmu_device *arm_smmu_get_by_dev(const struct device *dev)
- {
- 	struct arm_smmu_device *smmu = NULL;
- 
-@@ -2633,6 +2663,27 @@ static int arm_smmu_assign_dev(struct domain *d, u8 devfn,
+@@ -2621,6 +2651,27 @@ static int arm_smmu_assign_dev(struct domain *d, u8 devfn,
  	struct arm_smmu_domain *smmu_domain;
  	struct arm_smmu_xen_domain *xen_domain = dom_iommu(d)->arch.priv;
  
@@ -1809,7 +1776,7 @@ index 9c9f463009..cbf5e6d7ee 100644
  	spin_lock(&xen_domain->lock);
  
  	/*
-@@ -2666,7 +2717,7 @@ out:
+@@ -2654,7 +2705,7 @@ out:
  	return ret;
  }
  
@@ -1818,7 +1785,7 @@ index 9c9f463009..cbf5e6d7ee 100644
  {
  	struct iommu_domain *io_domain = arm_smmu_get_domain(d, dev);
  	struct arm_smmu_xen_domain *xen_domain = dom_iommu(d)->arch.priv;
-@@ -2678,6 +2729,24 @@ static int arm_smmu_deassign_dev(struct domain *d, struct device *dev)
+@@ -2666,6 +2717,24 @@ static int arm_smmu_deassign_dev(struct domain *d, struct device *dev)
  		return -ESRCH;
  	}
  
@@ -1843,7 +1810,7 @@ index 9c9f463009..cbf5e6d7ee 100644
  	spin_lock(&xen_domain->lock);
  
  	arm_smmu_detach_dev(master);
-@@ -2697,15 +2766,17 @@ static int arm_smmu_reassign_dev(struct domain *s, struct domain *t,
+@@ -2685,15 +2754,17 @@ static int arm_smmu_reassign_dev(struct domain *s, struct domain *t,
  	int ret = 0;
  
  	/* Don't allow remapping on other domain than hwdom */
@@ -1866,7 +1833,7 @@ index 9c9f463009..cbf5e6d7ee 100644
  	if (t) {
  		/* No flags are defined for ARM. */
 diff --git a/xen/drivers/passthrough/arm/smmu.c b/xen/drivers/passthrough/arm/smmu.c
-index 0a514821b3..027dd91cf0 100644
+index 71799064f80b..a9ffd2d7eb73 100644
 --- a/xen/drivers/passthrough/arm/smmu.c
 +++ b/xen/drivers/passthrough/arm/smmu.c
 @@ -134,8 +134,20 @@ typedef enum irqreturn irqreturn_t;
@@ -1908,7 +1875,7 @@ index 0a514821b3..027dd91cf0 100644
  
  /* Xen: misc */
  #define PHYS_MASK_SHIFT		PADDR_BITS
-@@ -632,7 +646,7 @@ struct arm_smmu_master_cfg {
+@@ -631,7 +645,7 @@ struct arm_smmu_master_cfg {
  	for (i = 0; idx = cfg->smendx[i], i < num; ++i)
  
  struct arm_smmu_master {
@@ -1917,7 +1884,7 @@ index 0a514821b3..027dd91cf0 100644
  	struct rb_node			node;
  	struct arm_smmu_master_cfg	cfg;
  };
-@@ -724,7 +738,7 @@ arm_smmu_get_fwspec(struct arm_smmu_master_cfg *cfg)
+@@ -723,7 +737,7 @@ arm_smmu_get_fwspec(struct arm_smmu_master_cfg *cfg)
  {
  	struct arm_smmu_master *master = container_of(cfg,
  			                                      struct arm_smmu_master, cfg);
@@ -1926,7 +1893,7 @@ index 0a514821b3..027dd91cf0 100644
  }
  
  static void parse_driver_options(struct arm_smmu_device *smmu)
-@@ -757,7 +771,7 @@ static struct device_node *dev_get_dev_node(struct device *dev)
+@@ -756,7 +770,7 @@ static struct device_node *dev_get_dev_node(struct device *dev)
  }
  
  static struct arm_smmu_master *find_smmu_master(struct arm_smmu_device *smmu,
@@ -1935,7 +1902,7 @@ index 0a514821b3..027dd91cf0 100644
  {
  	struct rb_node *node = smmu->masters.rb_node;
  
-@@ -766,9 +780,9 @@ static struct arm_smmu_master *find_smmu_master(struct arm_smmu_device *smmu,
+@@ -765,9 +779,9 @@ static struct arm_smmu_master *find_smmu_master(struct arm_smmu_device *smmu,
  
  		master = container_of(node, struct arm_smmu_master, node);
  
@@ -1947,7 +1914,7 @@ index 0a514821b3..027dd91cf0 100644
  			node = node->rb_right;
  		else
  			return master;
-@@ -803,9 +817,9 @@ static int insert_smmu_master(struct arm_smmu_device *smmu,
+@@ -802,9 +816,9 @@ static int insert_smmu_master(struct arm_smmu_device *smmu,
  			= container_of(*new, struct arm_smmu_master, node);
  
  		parent = *new;
@@ -1959,7 +1926,7 @@ index 0a514821b3..027dd91cf0 100644
  			new = &((*new)->rb_right);
  		else
  			return -EEXIST;
-@@ -824,28 +838,34 @@ static int arm_smmu_dt_add_device_legacy(struct arm_smmu_device *smmu,
+@@ -836,28 +850,34 @@ static int arm_smmu_dt_add_device_legacy(struct arm_smmu_device *smmu,
  	struct arm_smmu_master *master;
  	struct device_node *dev_node = dev_get_dev_node(dev);
  
@@ -1999,7 +1966,25 @@ index 0a514821b3..027dd91cf0 100644
  			return -ERANGE;
  		}
  		master->cfg.smendx[i] = INVALID_SMENDX;
-@@ -881,6 +901,21 @@ static int arm_smmu_dt_add_device_generic(u8 devfn, struct device *dev)
+@@ -872,7 +892,7 @@ static int arm_smmu_dt_remove_device_legacy(struct arm_smmu_device *smmu,
+ 	struct device_node *dev_node = dev_get_dev_node(dev);
+ 	int ret;
+ 
+-	master = find_smmu_master(smmu, dev_node);
++	master = find_smmu_master(smmu, dev);
+ 	if (master == NULL) {
+ 		dev_err(dev,
+ 			"No registrations found for master device %s\n",
+@@ -885,7 +905,7 @@ static int arm_smmu_dt_remove_device_legacy(struct arm_smmu_device *smmu,
+ 		return ret;
+ 
+ 	/* Protected by dt_host_lock and dtdevs_lock as caller holds these locks. */
+-	dev_node->is_protected = false;
++	dev->is_protected = false;
+ 
+ 	kfree(master);
+ 	return 0;
+@@ -939,6 +959,21 @@ static int arm_smmu_dt_add_device_generic(u8 devfn, struct device *dev)
  	struct arm_smmu_device *smmu;
  	struct iommu_fwspec *fwspec;
  
@@ -2021,7 +2006,7 @@ index 0a514821b3..027dd91cf0 100644
  	fwspec = dev_iommu_fwspec_get(dev);
  	if (fwspec == NULL)
  		return -ENXIO;
-@@ -912,11 +947,10 @@ static struct arm_smmu_device *find_smmu_for_device(struct device *dev)
+@@ -970,11 +1005,10 @@ static struct arm_smmu_device *find_smmu_for_device(struct device *dev)
  {
  	struct arm_smmu_device *smmu;
  	struct arm_smmu_master *master = NULL;
@@ -2034,7 +2019,7 @@ index 0a514821b3..027dd91cf0 100644
  		if (master)
  			break;
  	}
-@@ -2006,6 +2040,7 @@ static bool arm_smmu_capable(enum iommu_cap cap)
+@@ -2066,6 +2100,7 @@ static bool arm_smmu_capable(enum iommu_cap cap)
  }
  #endif
  
@@ -2042,7 +2027,7 @@ index 0a514821b3..027dd91cf0 100644
  static int __arm_smmu_get_pci_sid(struct pci_dev *pdev, u16 alias, void *data)
  {
  	*((u16 *)data) = alias;
-@@ -2016,6 +2051,7 @@ static void __arm_smmu_release_pci_iommudata(void *data)
+@@ -2076,6 +2111,7 @@ static void __arm_smmu_release_pci_iommudata(void *data)
  {
  	kfree(data);
  }
@@ -2050,7 +2035,7 @@ index 0a514821b3..027dd91cf0 100644
  
  static int arm_smmu_add_device(struct device *dev)
  {
-@@ -2023,12 +2059,13 @@ static int arm_smmu_add_device(struct device *dev)
+@@ -2083,12 +2119,13 @@ static int arm_smmu_add_device(struct device *dev)
  	struct arm_smmu_master_cfg *cfg;
  	struct iommu_group *group;
  	void (*releasefn)(void *) = NULL;
@@ -2065,7 +2050,7 @@ index 0a514821b3..027dd91cf0 100644
  	if (dev_is_pci(dev)) {
  		struct pci_dev *pdev = to_pci_dev(dev);
  		struct iommu_fwspec *fwspec;
-@@ -2053,10 +2090,12 @@ static int arm_smmu_add_device(struct device *dev)
+@@ -2113,10 +2150,12 @@ static int arm_smmu_add_device(struct device *dev)
  				       &fwspec->ids[0]);
  		releasefn = __arm_smmu_release_pci_iommudata;
  		cfg->smmu = smmu;
@@ -2080,7 +2065,7 @@ index 0a514821b3..027dd91cf0 100644
  		if (!master) {
  			return -ENODEV;
  		}
-@@ -2724,6 +2763,27 @@ static int arm_smmu_assign_dev(struct domain *d, u8 devfn,
+@@ -2784,6 +2823,27 @@ static int arm_smmu_assign_dev(struct domain *d, u8 devfn,
  			return -ENOMEM;
  	}
  
@@ -2108,7 +2093,7 @@ index 0a514821b3..027dd91cf0 100644
  	if (!dev_iommu_group(dev)) {
  		ret = arm_smmu_add_device(dev);
  		if (ret)
-@@ -2773,11 +2833,29 @@ out:
+@@ -2833,11 +2893,29 @@ out:
  	return ret;
  }
  
@@ -2139,7 +2124,7 @@ index 0a514821b3..027dd91cf0 100644
  	xen_domain = dom_iommu(d)->arch.priv;
  
  	if (!domain || domain->priv->cfg.domain != d) {
-@@ -2805,15 +2883,17 @@ static int arm_smmu_reassign_dev(struct domain *s, struct domain *t,
+@@ -2865,15 +2943,17 @@ static int arm_smmu_reassign_dev(struct domain *s, struct domain *t,
  	int ret = 0;
  
  	/* Don't allow remapping on other domain than hwdom */
@@ -2162,10 +2147,10 @@ index 0a514821b3..027dd91cf0 100644
  	if (t) {
  		/* No flags are defined for ARM. */
 diff --git a/xen/drivers/passthrough/device_tree.c b/xen/drivers/passthrough/device_tree.c
-index 1c32d7b50c..d95eeb5f97 100644
+index 075fb25a3706..355abccf0d26 100644
 --- a/xen/drivers/passthrough/device_tree.c
 +++ b/xen/drivers/passthrough/device_tree.c
-@@ -34,7 +34,7 @@ int iommu_assign_dt_device(struct domain *d, struct dt_device_node *dev)
+@@ -36,7 +36,7 @@ int iommu_assign_dt_device(struct domain *d, struct dt_device_node *dev)
      if ( !is_iommu_enabled(d) )
          return -EINVAL;
  
@@ -2174,7 +2159,7 @@ index 1c32d7b50c..d95eeb5f97 100644
          return -EINVAL;
  
      spin_lock(&dtdevs_lock);
-@@ -65,7 +65,7 @@ int iommu_deassign_dt_device(struct domain *d, struct dt_device_node *dev)
+@@ -69,7 +69,7 @@ int iommu_deassign_dt_device(struct domain *d, struct dt_device_node *dev)
      if ( !is_iommu_enabled(d) )
          return -EINVAL;
  
@@ -2183,17 +2168,26 @@ index 1c32d7b50c..d95eeb5f97 100644
          return -EINVAL;
  
      spin_lock(&dtdevs_lock);
-@@ -87,7 +87,7 @@ static bool_t iommu_dt_device_is_assigned(const struct dt_device_node *dev)
- {
-     bool_t assigned = 0;
+@@ -93,7 +93,7 @@ static bool iommu_dt_device_is_assigned_locked(const struct dt_device_node *dev)
+ 
+     ASSERT(spin_is_locked(&dtdevs_lock));
  
 -    if ( !dt_device_is_protected(dev) )
 +    if ( !device_is_protected(dt_to_dev(dev)) )
          return 0;
  
-     spin_lock(&dtdevs_lock);
-@@ -127,15 +127,183 @@ int iommu_release_dt_devices(struct domain *d)
-     return 0;
+     assigned = !list_empty(&dev->domain_list);
+@@ -173,7 +173,7 @@ int iommu_remove_dt_device(struct dt_device_node *np)
+ 
+     if ( !rc )
+     {
+-        ASSERT(!dt_device_is_protected(np));
++        ASSERT(!device_is_protected(dt_to_dev(np)));
+         iommu_fwspec_free(dev);
+     }
+ 
+@@ -182,17 +182,185 @@ int iommu_remove_dt_device(struct dt_device_node *np)
+     return rc;
  }
  
 +/* This correlation must not be altered */
@@ -2372,13 +2366,15 @@ index 1c32d7b50c..d95eeb5f97 100644
 -    int rc = 1, index = 0;
 +    int rc = NO_IOMMU, index = 0;
  
+     ASSERT(system_state < SYS_STATE_active || rw_is_locked(&dt_host_lock));
+ 
      if ( !iommu_enabled )
 -        return 1;
 +        return NO_IOMMU;
  
      if ( !ops )
          return -EINVAL;
-@@ -144,6 +312,9 @@ int iommu_add_dt_device(struct dt_device_node *np)
+@@ -201,6 +369,9 @@ int iommu_add_dt_device(struct dt_device_node *np)
       * The device may already have been registered. As there is no harm in
       * it just return success early.
       */
@@ -2388,13 +2384,16 @@ index 1c32d7b50c..d95eeb5f97 100644
      if ( dev_iommu_fwspec_get(dev) )
          return 0;
  
-@@ -158,22 +329,10 @@ int iommu_add_dt_device(struct dt_device_node *np)
+@@ -217,25 +388,13 @@ int iommu_add_dt_device(struct dt_device_node *np)
           * The driver which supports generic IOMMU DT bindings must have
           * these callback implemented.
           */
 -        if ( !ops->add_device || !ops->dt_xlate )
 +        if ( !ops->add_device )
-             return -EINVAL;
+         {
+             rc = -EINVAL;
+             goto fail;
+         }
  
 -        if ( !dt_device_is_available(iommu_spec.np) )
 -            break;
@@ -2414,7 +2413,7 @@ index 1c32d7b50c..d95eeb5f97 100644
              break;
  
 diff --git a/xen/drivers/passthrough/pci.c b/xen/drivers/passthrough/pci.c
-index b42acb8d7c..48f3d5ac42 100644
+index 04d00c7c37df..6b9492d1703d 100644
 --- a/xen/drivers/passthrough/pci.c
 +++ b/xen/drivers/passthrough/pci.c
 @@ -57,6 +57,11 @@ void pcidevs_lock(void)
@@ -2429,7 +2428,7 @@ index b42acb8d7c..48f3d5ac42 100644
  void pcidevs_unlock(void)
  {
      spin_unlock_recursive(&_pcidevs_lock);
-@@ -454,7 +459,9 @@ static void __init _pci_hide_device(struct pci_dev *pdev)
+@@ -453,7 +458,9 @@ static void __init _pci_hide_device(struct pci_dev *pdev)
      if ( pdev->domain )
          return;
      pdev->domain = dom_xen;
@@ -2439,7 +2438,7 @@ index b42acb8d7c..48f3d5ac42 100644
  }
  
  int __init pci_hide_device(unsigned int seg, unsigned int bus,
-@@ -747,6 +754,7 @@ int pci_add_device(u16 seg, u8 bus, u8 devfn,
+@@ -745,6 +752,7 @@ int pci_add_device(u16 seg, u8 bus, u8 devfn,
      ret = 0;
      if ( !pdev->domain )
      {
@@ -2447,7 +2446,7 @@ index b42acb8d7c..48f3d5ac42 100644
          pdev->domain = hardware_domain;
          list_add(&pdev->domain_list, &hardware_domain->pdev_list);
  
-@@ -760,6 +768,7 @@ int pci_add_device(u16 seg, u8 bus, u8 devfn,
+@@ -758,6 +766,7 @@ int pci_add_device(u16 seg, u8 bus, u8 devfn,
              printk(XENLOG_ERR "Setup of vPCI failed: %d\n", ret);
              list_del(&pdev->domain_list);
              pdev->domain = NULL;
@@ -2455,7 +2454,7 @@ index b42acb8d7c..48f3d5ac42 100644
              goto out;
          }
          ret = iommu_add_device(pdev);
-@@ -768,8 +777,10 @@ int pci_add_device(u16 seg, u8 bus, u8 devfn,
+@@ -766,8 +775,10 @@ int pci_add_device(u16 seg, u8 bus, u8 devfn,
              vpci_remove_device(pdev);
              list_del(&pdev->domain_list);
              pdev->domain = NULL;
@@ -2466,7 +2465,7 @@ index b42acb8d7c..48f3d5ac42 100644
      }
      else
          iommu_enable_device(pdev);
-@@ -812,11 +823,13 @@ int pci_remove_device(u16 seg, u8 bus, u8 devfn)
+@@ -810,11 +821,13 @@ int pci_remove_device(u16 seg, u8 bus, u8 devfn)
      list_for_each_entry ( pdev, &pseg->alldevs_list, alldevs_list )
          if ( pdev->bus == bus && pdev->devfn == devfn )
          {
@@ -2480,7 +2479,7 @@ index b42acb8d7c..48f3d5ac42 100644
              printk(XENLOG_DEBUG "PCI remove device %pp\n", &pdev->sbdf);
              free_pdev(pseg, pdev);
              break;
-@@ -872,6 +885,10 @@ static int deassign_device(struct domain *d, uint16_t seg, uint8_t bus,
+@@ -870,6 +883,10 @@ static int deassign_device(struct domain *d, uint16_t seg, uint8_t bus,
      if ( ret )
          goto out;
  
@@ -2491,7 +2490,7 @@ index b42acb8d7c..48f3d5ac42 100644
      if ( pdev->domain == hardware_domain  )
          pdev->quarantine = false;
  
-@@ -887,26 +904,62 @@ static int deassign_device(struct domain *d, uint16_t seg, uint8_t bus,
+@@ -885,26 +902,62 @@ static int deassign_device(struct domain *d, uint16_t seg, uint8_t bus,
  
  int pci_release_devices(struct domain *d)
  {
@@ -2565,7 +2564,7 @@ index b42acb8d7c..48f3d5ac42 100644
  }
  
  #define PCI_CLASS_BRIDGE_HOST    0x0600
-@@ -1100,7 +1153,9 @@ static void __hwdom_init setup_one_hwdom_device(const struct setup_hwdom *ctxt,
+@@ -1099,7 +1152,9 @@ static void __hwdom_init setup_one_hwdom_device(const struct setup_hwdom *ctxt,
      } while ( devfn != pdev->devfn &&
                PCI_SLOT(devfn) == PCI_SLOT(pdev->devfn) );
  
@@ -2575,7 +2574,7 @@ index b42acb8d7c..48f3d5ac42 100644
      if ( err )
          printk(XENLOG_ERR "setup of vPCI for d%d failed: %d\n",
                 ctxt->d->domain_id, err);
-@@ -1125,7 +1180,9 @@ static int __hwdom_init cf_check _setup_hwdom_pci_devices(
+@@ -1124,7 +1179,9 @@ static int __hwdom_init cf_check _setup_hwdom_pci_devices(
              if ( !pdev->domain )
              {
                  pdev->domain = ctxt->d;
@@ -2585,7 +2584,7 @@ index b42acb8d7c..48f3d5ac42 100644
                  setup_one_hwdom_device(ctxt, pdev);
              }
              else if ( pdev->domain == dom_xen )
-@@ -1431,6 +1488,10 @@ static int assign_device(struct domain *d, u16 seg, u8 bus, u8 devfn, u32 flag)
+@@ -1426,6 +1483,10 @@ static int assign_device(struct domain *d, u16 seg, u8 bus, u8 devfn, u32 flag)
      if ( pdev->broken && d != hardware_domain && d != dom_io )
          goto done;
  
@@ -2596,7 +2595,7 @@ index b42acb8d7c..48f3d5ac42 100644
      rc = pdev_msix_assign(d, pdev);
      if ( rc )
          goto done;
-@@ -1456,6 +1517,19 @@ static int assign_device(struct domain *d, u16 seg, u8 bus, u8 devfn, u32 flag)
+@@ -1451,6 +1512,19 @@ static int assign_device(struct domain *d, u16 seg, u8 bus, u8 devfn, u32 flag)
          rc = iommu_call(hd->platform_ops, assign_device, d, devfn,
                          pci_to_dev(pdev), flag);
      }
@@ -2617,10 +2616,10 @@ index b42acb8d7c..48f3d5ac42 100644
   done:
      if ( rc )
 diff --git a/xen/drivers/passthrough/vtd/iommu.c b/xen/drivers/passthrough/vtd/iommu.c
-index 62e143125d..f0d760199e 100644
+index e13b7d99db40..3085c9a6837c 100644
 --- a/xen/drivers/passthrough/vtd/iommu.c
 +++ b/xen/drivers/passthrough/vtd/iommu.c
-@@ -2806,7 +2806,14 @@ static int cf_check reassign_device_ownership(
+@@ -2816,7 +2816,14 @@ static int cf_check reassign_device_ownership(
  
      if ( devfn == pdev->devfn && pdev->domain != target )
      {
@@ -2637,7 +2636,7 @@ index 62e143125d..f0d760199e 100644
      }
  
 diff --git a/xen/drivers/pci/physdev.c b/xen/drivers/pci/physdev.c
-index 42db3e6d13..4f3e1a96c0 100644
+index 42db3e6d133c..4f3e1a96c0fd 100644
 --- a/xen/drivers/pci/physdev.c
 +++ b/xen/drivers/pci/physdev.c
 @@ -18,9 +18,6 @@ ret_t pci_physdev_op(int cmd, XEN_GUEST_HANDLE_PARAM(void) arg)
@@ -2661,7 +2660,7 @@ index 42db3e6d13..4f3e1a96c0 100644
          if ( copy_from_guest(&dev, arg, 1) != 0 )
              break;
 diff --git a/xen/drivers/vpci/Makefile b/xen/drivers/vpci/Makefile
-index 1a1413b93e..850593cf51 100644
+index 1a1413b93e76..850593cf5158 100644
 --- a/xen/drivers/vpci/Makefile
 +++ b/xen/drivers/vpci/Makefile
 @@ -1,2 +1,2 @@
@@ -2671,7 +2670,7 @@ index 1a1413b93e..850593cf51 100644
 +obj-$(CONFIG_ARM) += arm_msix.o arm_vmsi.o
 diff --git a/xen/drivers/vpci/arm_msix.c b/xen/drivers/vpci/arm_msix.c
 new file mode 100644
-index 0000000000..858bb7eb84
+index 000000000000..858bb7eb8442
 --- /dev/null
 +++ b/xen/drivers/vpci/arm_msix.c
 @@ -0,0 +1,108 @@
@@ -2785,10 +2784,10 @@ index 0000000000..858bb7eb84
 +
 diff --git a/xen/drivers/vpci/arm_vmsi.c b/xen/drivers/vpci/arm_vmsi.c
 new file mode 100644
-index 0000000000..261504baf7
+index 000000000000..b99cc8cfbdfe
 --- /dev/null
 +++ b/xen/drivers/vpci/arm_vmsi.c
-@@ -0,0 +1,175 @@
+@@ -0,0 +1,171 @@
 +/*
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms and conditions of the GNU General Public
@@ -2857,9 +2856,7 @@ index 0000000000..261504baf7
 +{
 +    int ret;
 +    paddr_t msi_base;
-+    uint8_t slot = PCI_SLOT(pdev->devfn), func = PCI_FUNC(pdev->devfn);
-+    unsigned int pos = pci_find_cap_offset(pdev->seg, pdev->bus, slot, func,
-+                                           PCI_CAP_ID_MSI);
++    unsigned int pos = pci_find_cap_offset(pdev->sbdf, PCI_CAP_ID_MSI);
 +
 +    if ( msi->address )
 +    {
@@ -2889,9 +2886,7 @@ index 0000000000..261504baf7
 +void vpci_msi_arch_mask(struct vpci_msi *msi, const struct pci_dev *pdev,
 +                        unsigned int entry, bool mask)
 +{
-+    uint8_t slot = PCI_SLOT(pdev->devfn), func = PCI_FUNC(pdev->devfn);
-+    unsigned int pos = pci_find_cap_offset(pdev->seg, pdev->bus, slot, func,
-+                                           PCI_CAP_ID_MSI);
++    unsigned int pos = pci_find_cap_offset(pdev->sbdf, PCI_CAP_ID_MSI);
 +
 +    pci_conf_write32(pdev->sbdf, msi->mask,
 +                     msi_mask_bits_reg(pos,pdev->vpci->msi->address64));
@@ -2965,10 +2960,24 @@ index 0000000000..261504baf7
 + * End:
 + */
 diff --git a/xen/drivers/vpci/header.c b/xen/drivers/vpci/header.c
-index ec2e978a4e..5a5a36b1a7 100644
+index 767c1ba718d7..f7d4787b8e3a 100644
 --- a/xen/drivers/vpci/header.c
 +++ b/xen/drivers/vpci/header.c
-@@ -30,6 +30,7 @@
+@@ -17,13 +17,10 @@
+  * License along with this program; If not, see <http://www.gnu.org/licenses/>.
+  */
+ 
+-#include <xen/iocap.h>
+ #include <xen/sched.h>
+ #include <xen/softirq.h>
+ #include <xen/vpci.h>
+ 
+-#include <xsm/xsm.h>
+-
+ #include <asm/event.h>
+ #include <asm/p2m.h>
+ 
+@@ -33,6 +30,7 @@
  
  struct map_data {
      struct domain *d;
@@ -2976,7 +2985,7 @@ index ec2e978a4e..5a5a36b1a7 100644
      bool map;
  };
  
-@@ -41,8 +42,21 @@ static int cf_check map_range(
+@@ -44,24 +42,20 @@ static int cf_check map_range(
  
      for ( ; ; )
      {
@@ -2988,17 +2997,32 @@ index ec2e978a4e..5a5a36b1a7 100644
 +        mfn_t start_mfn = _mfn(PFN_DOWN(map->bar->addr));
          unsigned long size = e - s + 1;
  
+-        if ( !iomem_access_permitted(map->d, s, e) )
+-        {
+-            printk(XENLOG_G_WARNING
+-                   "%pd denied access to MMIO range [%#lx, %#lx]\n",
+-                   map->d, s, e);
+-            return -EPERM;
+-        }
+-
+-        rc = xsm_iomem_mapping(XSM_HOOK, map->d, s, e, map->map);
+-        if ( rc )
+-        {
+-            printk(XENLOG_G_WARNING
+-                   "%pd XSM denied access to MMIO range [%#lx, %#lx]: %d\n",
+-                   map->d, s, e, rc);
+-            return rc;
+-        }
 +        /*
 +         * Ranges to be mapped don't always start at the BAR start address, as
 +         * there can be holes or partially consumed ranges. Account for the
 +         * offset of the current address from the BAR start.
 +         */
 +        start_gfn = gfn_add(start_gfn, s - mfn_x(start_mfn));
-+
+ 
          /*
           * ARM TODOs:
-          * - On ARM whether the memory is prefetchable or not should be passed
-@@ -52,8 +66,8 @@ static int cf_check map_range(
+@@ -72,8 +66,8 @@ static int cf_check map_range(
           * - {un}map_mmio_regions doesn't support preemption.
           */
  
@@ -3009,7 +3033,7 @@ index ec2e978a4e..5a5a36b1a7 100644
          if ( rc == 0 )
          {
              *c += size;
-@@ -62,8 +76,8 @@ static int cf_check map_range(
+@@ -82,8 +76,8 @@ static int cf_check map_range(
          if ( rc < 0 )
          {
              printk(XENLOG_G_WARNING
@@ -3020,7 +3044,7 @@ index ec2e978a4e..5a5a36b1a7 100644
              break;
          }
          ASSERT(rc < size);
-@@ -96,10 +110,8 @@ static void modify_decoding(const struct pci_dev *pdev, uint16_t cmd,
+@@ -116,10 +110,8 @@ static void modify_decoding(const struct pci_dev *pdev, uint16_t cmd,
       * FIXME: punching holes after the p2m has been set up might be racy for
       * DomU usage, needs to be revisited.
       */
@@ -3031,7 +3055,7 @@ index ec2e978a4e..5a5a36b1a7 100644
  
      for ( i = 0; i < ARRAY_SIZE(header->bars); i++ )
      {
-@@ -134,6 +146,10 @@ static void modify_decoding(const struct pci_dev *pdev, uint16_t cmd,
+@@ -154,6 +146,10 @@ static void modify_decoding(const struct pci_dev *pdev, uint16_t cmd,
      {
          pci_conf_write16(pdev->sbdf, PCI_COMMAND, cmd);
          header->bars_mapped = map;
@@ -3042,7 +3066,7 @@ index ec2e978a4e..5a5a36b1a7 100644
      }
      else
          ASSERT_UNREACHABLE();
-@@ -141,49 +157,108 @@ static void modify_decoding(const struct pci_dev *pdev, uint16_t cmd,
+@@ -161,49 +157,108 @@ static void modify_decoding(const struct pci_dev *pdev, uint16_t cmd,
  
  bool vpci_process_pending(struct vcpu *v)
  {
@@ -3177,7 +3201,7 @@ index ec2e978a4e..5a5a36b1a7 100644
      if ( !rc )
          modify_decoding(pdev, cmd, false);
  
-@@ -191,7 +266,7 @@ static int __init apply_map(struct domain *d, const struct pci_dev *pdev,
+@@ -211,7 +266,7 @@ static int __init apply_map(struct domain *d, const struct pci_dev *pdev,
  }
  
  static void defer_map(struct domain *d, struct pci_dev *pdev,
@@ -3186,7 +3210,7 @@ index ec2e978a4e..5a5a36b1a7 100644
  {
      struct vcpu *curr = current;
  
-@@ -202,7 +277,7 @@ static void defer_map(struct domain *d, struct pci_dev *pdev,
+@@ -222,7 +277,7 @@ static void defer_map(struct domain *d, struct pci_dev *pdev,
       * started for the same device if the domain is not well-behaved.
       */
      curr->vpci.pdev = pdev;
@@ -3195,12 +3219,13 @@ index ec2e978a4e..5a5a36b1a7 100644
      curr->vpci.cmd = cmd;
      curr->vpci.rom_only = rom_only;
      /*
-@@ -216,30 +291,33 @@ static void defer_map(struct domain *d, struct pci_dev *pdev,
+@@ -236,31 +291,33 @@ static void defer_map(struct domain *d, struct pci_dev *pdev,
  static int modify_bars(const struct pci_dev *pdev, uint16_t cmd, bool rom_only)
  {
      struct vpci_header *header = &pdev->vpci->header;
 -    struct rangeset *mem = rangeset_new(NULL, NULL, 0);
      struct pci_dev *tmp, *dev = NULL;
+-    const struct domain *d;
      const struct vpci_msix *msix = pdev->vpci->msix;
 -    unsigned int i;
 +    unsigned int i, j;
@@ -3238,7 +3263,7 @@ index ec2e978a4e..5a5a36b1a7 100644
          if ( !MAPPABLE_BAR(bar) ||
               (rom_only ? bar->type != VPCI_BAR_ROM
                         : (bar->type == VPCI_BAR_ROM && !header->rom_enabled)) ||
-@@ -255,31 +333,55 @@ static int modify_bars(const struct pci_dev *pdev, uint16_t cmd, bool rom_only)
+@@ -276,99 +333,104 @@ static int modify_bars(const struct pci_dev *pdev, uint16_t cmd, bool rom_only)
              continue;
          }
  
@@ -3305,56 +3330,108 @@ index ec2e978a4e..5a5a36b1a7 100644
          }
      }
  
-@@ -307,27 +409,27 @@ static int modify_bars(const struct pci_dev *pdev, uint16_t cmd, bool rom_only)
- 
-         for ( i = 0; i < ARRAY_SIZE(tmp->vpci->header.bars); i++ )
+     /*
+      * Check for overlaps with other BARs. Note that only BARs that are
+-     * currently mapped (enabled) are checked for overlaps. Note also that
+-     * for hwdom we also need to include hidden, i.e. DomXEN's, devices.
++     * currently mapped (enabled) are checked for overlaps.
+      */
+-    for ( d = pdev->domain != dom_xen ? pdev->domain : hardware_domain; ; )
++    for_each_pdev ( pdev->domain, tmp )
+     {
+-        for_each_pdev ( d, tmp )
++        if ( tmp == pdev )
          {
--            const struct vpci_bar *bar = &tmp->vpci->header.bars[i];
--            unsigned long start = PFN_DOWN(bar->addr);
--            unsigned long end = PFN_DOWN(bar->addr + bar->size - 1);
--
--            if ( !bar->enabled || !rangeset_overlaps_range(mem, start, end) ||
--                 /*
--                  * If only the ROM enable bit is toggled check against other
--                  * BARs in the same device for overlaps, but not against the
--                  * same ROM BAR.
--                  */
--                 (rom_only && tmp == pdev && bar->type == VPCI_BAR_ROM) )
--                continue;
--
--            rc = rangeset_remove_range(mem, start, end);
--            if ( rc )
+-            if ( !tmp->vpci )
++            /*
++                * Need to store the device so it's not constified and defer_map
++                * can modify it in case of error.
++                */
++            dev = tmp;
++            if ( !rom_only )
+                 /*
+-                 * For the hardware domain it's possible to have devices
+-                 * assigned to it that are not handled by vPCI, either because
+-                 * those are read-only devices, or because vPCI setup has
+-                 * failed.
+-                 */
++                    * If memory decoding is toggled avoid checking against the
++                    * same device, or else all regions will be removed from the
++                    * memory map in the unmap case.
++                    */
+                 continue;
++        }
+ 
+-            if ( tmp == pdev )
 -            {
--                printk(XENLOG_G_WARNING "Failed to remove [%lx, %lx]: %d\n",
--                       start, end, rc);
--                rangeset_destroy(mem);
--                return rc;
+-                /*
+-                 * Need to store the device so it's not constified and defer_map
+-                 * can modify it in case of error.
+-                 */
+-                dev = tmp;
+-                if ( !rom_only )
++        for ( i = 0; i < ARRAY_SIZE(tmp->vpci->header.bars); i++ )
++        {
++            const struct vpci_bar *bar = &tmp->vpci->header.bars[i];
++            unsigned long start = PFN_DOWN(bar->addr);
++            unsigned long end = PFN_DOWN(bar->addr + bar->size - 1);
++
++            if ( !bar->enabled ||
++                    !rangeset_overlaps_range(bar->mem, start, end) ||
+                     /*
+-                     * If memory decoding is toggled avoid checking against the
+-                     * same device, or else all regions will be removed from the
+-                     * memory map in the unmap case.
+-                     */
+-                    continue;
 -            }
-+                const struct vpci_bar *bar = &tmp->vpci->header.bars[i];
-+                unsigned long start = PFN_DOWN(bar->addr);
-+                unsigned long end = PFN_DOWN(bar->addr + bar->size - 1);
-+
-+                if ( !bar->enabled ||
-+                     !rangeset_overlaps_range(bar->mem, start, end) ||
-+                     /*
-+                      * If only the ROM enable bit is toggled check against
-+                      * other BARs in the same device for overlaps, but not
-+                      * against the same ROM BAR.
-+                      */
-+                     (rom_only && tmp == pdev && bar->type == VPCI_BAR_ROM) )
-+                    continue;
-+
-+                rc = rangeset_remove_range(bar->mem, start, end);
-+                if ( rc )
-+                {
-+                    printk(XENLOG_G_WARNING "Failed to remove [%lx, %lx]: %d\n",
-+                           start, end, rc);
-+                    return rc;
-+                }
++                    * If only the ROM enable bit is toggled check against
++                    * other BARs in the same device for overlaps, but not
++                    * against the same ROM BAR.
++                    */
++                    (rom_only && tmp == pdev && bar->type == VPCI_BAR_ROM) )
++                continue;
+ 
+-            for ( i = 0; i < ARRAY_SIZE(tmp->vpci->header.bars); i++ )
++            rc = rangeset_remove_range(bar->mem, start, end);
++            if ( rc )
+             {
+-                const struct vpci_bar *bar = &tmp->vpci->header.bars[i];
+-                unsigned long start = PFN_DOWN(bar->addr);
+-                unsigned long end = PFN_DOWN(bar->addr + bar->size - 1);
+-
+-                if ( !bar->enabled ||
+-                     !rangeset_overlaps_range(mem, start, end) ||
+-                     /*
+-                      * If only the ROM enable bit is toggled check against
+-                      * other BARs in the same device for overlaps, but not
+-                      * against the same ROM BAR.
+-                      */
+-                     (rom_only && tmp == pdev && bar->type == VPCI_BAR_ROM) )
+-                    continue;
+-
+-                rc = rangeset_remove_range(mem, start, end);
+-                if ( rc )
+-                {
+-                    printk(XENLOG_G_WARNING "Failed to remove [%lx, %lx]: %d\n",
+-                           start, end, rc);
+-                    rangeset_destroy(mem);
+-                    return rc;
+-                }
++                printk(XENLOG_G_WARNING "Failed to remove [%lx, %lx]: %d\n",
++                        start, end, rc);
++                return rc;
+             }
          }
+-
+-        if ( !is_hardware_domain(d) )
+-            break;
+-
+-        d = dom_xen;
      }
  
-@@ -344,19 +446,48 @@ static int modify_bars(const struct pci_dev *pdev, uint16_t cmd, bool rom_only)
+     ASSERT(dev);
+@@ -384,19 +446,48 @@ static int modify_bars(const struct pci_dev *pdev, uint16_t cmd, bool rom_only)
           * will always be to establish mappings and process all the BARs.
           */
          ASSERT((cmd & PCI_COMMAND_MEMORY) && !rom_only);
@@ -3405,7 +3482,7 @@ index ec2e978a4e..5a5a36b1a7 100644
      /*
       * Let Dom0 play with all the bits directly except for the memory
       * decoding one.
-@@ -373,6 +504,19 @@ static void cf_check cmd_write(
+@@ -413,6 +504,19 @@ static void cf_check cmd_write(
          pci_conf_write16(pdev->sbdf, reg, cmd);
  }
  
@@ -3425,7 +3502,7 @@ index ec2e978a4e..5a5a36b1a7 100644
  static void cf_check bar_write(
      const struct pci_dev *pdev, unsigned int reg, uint32_t val, void *data)
  {
-@@ -397,11 +541,10 @@ static void cf_check bar_write(
+@@ -437,11 +541,10 @@ static void cf_check bar_write(
          /* If the value written is the current one avoid printing a warning. */
          if ( val != (uint32_t)(bar->addr >> (hi ? 32 : 0)) )
              gprintk(XENLOG_WARNING,
@@ -3439,7 +3516,7 @@ index ec2e978a4e..5a5a36b1a7 100644
  
      /*
       * Update the cached address, so that when memory decoding is enabled
-@@ -419,6 +562,76 @@ static void cf_check bar_write(
+@@ -459,6 +562,76 @@ static void cf_check bar_write(
      }
  
      pci_conf_write32(pdev->sbdf, reg, val);
@@ -3516,7 +3593,7 @@ index ec2e978a4e..5a5a36b1a7 100644
  }
  
  static void cf_check rom_write(
-@@ -473,6 +686,19 @@ static void cf_check rom_write(
+@@ -513,6 +686,19 @@ static void cf_check rom_write(
          rom->addr = val & PCI_ROM_ADDRESS_MASK;
  }
  
@@ -3536,7 +3613,7 @@ index ec2e978a4e..5a5a36b1a7 100644
  static int cf_check init_bars(struct pci_dev *pdev)
  {
      uint16_t cmd;
-@@ -481,6 +707,9 @@ static int cf_check init_bars(struct pci_dev *pdev)
+@@ -521,6 +707,9 @@ static int cf_check init_bars(struct pci_dev *pdev)
      struct vpci_header *header = &pdev->vpci->header;
      struct vpci_bar *bars = header->bars;
      int rc;
@@ -3546,7 +3623,7 @@ index ec2e978a4e..5a5a36b1a7 100644
  
      switch ( pci_conf_read8(pdev->sbdf, PCI_HEADER_TYPE) & 0x7f )
      {
-@@ -498,8 +727,19 @@ static int cf_check init_bars(struct pci_dev *pdev)
+@@ -538,8 +727,19 @@ static int cf_check init_bars(struct pci_dev *pdev)
          return -EOPNOTSUPP;
      }
  
@@ -3567,7 +3644,7 @@ index ec2e978a4e..5a5a36b1a7 100644
                             2, header);
      if ( rc )
          return rc;
-@@ -520,13 +760,12 @@ static int cf_check init_bars(struct pci_dev *pdev)
+@@ -560,13 +760,12 @@ static int cf_check init_bars(struct pci_dev *pdev)
          if ( i && bars[i - 1].type == VPCI_BAR_MEM64_LO )
          {
              bars[i].type = VPCI_BAR_MEM64_HI;
@@ -3586,7 +3663,7 @@ index ec2e978a4e..5a5a36b1a7 100644
  
              continue;
          }
-@@ -535,6 +774,17 @@ static int cf_check init_bars(struct pci_dev *pdev)
+@@ -575,6 +774,17 @@ static int cf_check init_bars(struct pci_dev *pdev)
          if ( (val & PCI_BASE_ADDRESS_SPACE) == PCI_BASE_ADDRESS_SPACE_IO )
          {
              bars[i].type = VPCI_BAR_IO;
@@ -3604,7 +3681,7 @@ index ec2e978a4e..5a5a36b1a7 100644
              continue;
          }
          if ( (val & PCI_BASE_ADDRESS_MEM_TYPE_MASK) ==
-@@ -543,17 +793,30 @@ static int cf_check init_bars(struct pci_dev *pdev)
+@@ -583,17 +793,30 @@ static int cf_check init_bars(struct pci_dev *pdev)
          else
              bars[i].type = VPCI_BAR_MEM32;
  
@@ -3639,7 +3716,7 @@ index ec2e978a4e..5a5a36b1a7 100644
              continue;
          }
  
-@@ -561,34 +824,59 @@ static int cf_check init_bars(struct pci_dev *pdev)
+@@ -601,34 +824,59 @@ static int cf_check init_bars(struct pci_dev *pdev)
          bars[i].size = size;
          bars[i].prefetchable = val & PCI_BASE_ADDRESS_MEM_PREFETCH;
  
@@ -3719,7 +3796,7 @@ index ec2e978a4e..5a5a36b1a7 100644
  REGISTER_VPCI_INIT(init_bars, VPCI_PRIORITY_MIDDLE);
  
 diff --git a/xen/drivers/vpci/msi.c b/xen/drivers/vpci/msi.c
-index 8f2b59e61a..ba71b9b348 100644
+index a253ccbd7db7..098df1dc898c 100644
 --- a/xen/drivers/vpci/msi.c
 +++ b/xen/drivers/vpci/msi.c
 @@ -16,12 +16,11 @@
@@ -3747,7 +3824,7 @@ index 8f2b59e61a..ba71b9b348 100644
      }
      else
          vpci_msi_arch_disable(msi, pdev);
-@@ -190,6 +193,8 @@ static int cf_check init_msi(struct pci_dev *pdev)
+@@ -188,6 +191,8 @@ static int cf_check init_msi(struct pci_dev *pdev)
      uint16_t control;
      int ret;
  
@@ -3756,7 +3833,7 @@ index 8f2b59e61a..ba71b9b348 100644
      if ( !pos )
          return 0;
  
-@@ -210,6 +215,7 @@ static int cf_check init_msi(struct pci_dev *pdev)
+@@ -208,6 +213,7 @@ static int cf_check init_msi(struct pci_dev *pdev)
      /* Get the maximum number of vectors the device supports. */
      control = pci_conf_read16(pdev->sbdf, msi_control_reg(pos));
  
@@ -3764,7 +3841,7 @@ index 8f2b59e61a..ba71b9b348 100644
      /*
       * FIXME: I've only been able to test this code with devices using a single
       * MSI interrupt and no mask register.
-@@ -265,7 +271,7 @@ REGISTER_VPCI_INIT(init_msi, VPCI_PRIORITY_LOW);
+@@ -263,7 +269,7 @@ REGISTER_VPCI_INIT(init_msi, VPCI_PRIORITY_LOW);
  
  void vpci_dump_msi(void)
  {
@@ -3773,7 +3850,7 @@ index 8f2b59e61a..ba71b9b348 100644
  
      rcu_read_lock(&domlist_read_lock);
      for_each_domain ( d )
-@@ -277,6 +283,9 @@ void vpci_dump_msi(void)
+@@ -275,6 +281,9 @@ void vpci_dump_msi(void)
  
          printk("vPCI MSI/MSI-X d%d\n", d->domain_id);
  
@@ -3783,7 +3860,7 @@ index 8f2b59e61a..ba71b9b348 100644
          for_each_pdev ( d, pdev )
          {
              const struct vpci_msi *msi;
-@@ -318,14 +327,17 @@ void vpci_dump_msi(void)
+@@ -316,14 +325,17 @@ void vpci_dump_msi(void)
                       * holding the lock.
                       */
                      printk("unable to print all MSI-X entries: %d\n", rc);
@@ -3804,7 +3881,7 @@ index 8f2b59e61a..ba71b9b348 100644
      rcu_read_unlock(&domlist_read_lock);
  }
 diff --git a/xen/drivers/vpci/msix.c b/xen/drivers/vpci/msix.c
-index cafddcf305..169d34abda 100644
+index d1126a417da9..cf292edeb258 100644
 --- a/xen/drivers/vpci/msix.c
 +++ b/xen/drivers/vpci/msix.c
 @@ -17,21 +17,14 @@
@@ -3901,7 +3978,7 @@ index cafddcf305..169d34abda 100644
      const void __iomem *mem;
      struct vpci *vpci = msix->pdev->vpci;
 @@ -276,16 +255,16 @@ static int adjacent_read(const struct domain *d, const struct vpci_msix *msix,
-     *data = ~0ul;
+     *data = ~0UL;
  
      if ( !adjacent_handle(msix, addr + len - 1) )
 -        return X86EMUL_OKAY;
@@ -3923,7 +4000,7 @@ index cafddcf305..169d34abda 100644
 @@ -306,16 +285,16 @@ static int adjacent_read(const struct domain *d, const struct vpci_msix *msix,
          for ( i = 0; i < len; i++ )
          {
-             unsigned long partial = ~0ul;
+             unsigned long partial = ~0UL;
 -            int rc = adjacent_read(d, msix, addr + i, 1, &partial);
 +            bool rc = adjacent_read(d, msix, addr + i, 1, &partial);
  
@@ -3931,7 +4008,7 @@ index cafddcf305..169d34abda 100644
 +            if ( !rc )
                  return rc;
  
-             *data &= ~(0xfful << (i * 8));
+             *data &= ~(0xffUL << (i * 8));
              *data |= (partial & 0xff) << (i * 8);
          }
  
@@ -3968,7 +4045,7 @@ index cafddcf305..169d34abda 100644
      const struct vpci_msix_entry *entry;
      unsigned int offset;
  
-     *data = ~0ul;
+     *data = ~0UL;
  
 -    if ( !msix )
 -        return X86EMUL_RETRY;
@@ -4179,16 +4256,18 @@ index cafddcf305..169d34abda 100644
  }
  
  static int cf_check init_msix(struct pci_dev *pdev)
-@@ -665,6 +583,8 @@ static int cf_check init_msix(struct pci_dev *pdev)
+@@ -664,7 +582,10 @@ static int cf_check init_msix(struct pci_dev *pdev)
      struct vpci_msix *msix;
      int rc;
  
 +    ASSERT(rw_is_write_locked(&pdev->domain->pci_lock));
 +
-     msix_offset = pci_find_cap_offset(pdev->seg, pdev->bus, slot, func,
-                                       PCI_CAP_ID_MSIX);
+     msix_offset = pci_find_cap_offset(pdev->sbdf, PCI_CAP_ID_MSIX);
++
      if ( !msix_offset )
-@@ -700,11 +620,9 @@ static int cf_check init_msix(struct pci_dev *pdev)
+         return 0;
+ 
+@@ -698,11 +619,9 @@ static int cf_check init_msix(struct pci_dev *pdev)
          vpci_msix_arch_init_entry(&msix->entries[i]);
      }
  
@@ -4203,7 +4282,7 @@ index cafddcf305..169d34abda 100644
      return 0;
  }
 diff --git a/xen/drivers/vpci/vpci.c b/xen/drivers/vpci/vpci.c
-index 652807a4a4..d84e44058a 100644
+index 3bec9a4153da..d0454f2c5258 100644
 --- a/xen/drivers/vpci/vpci.c
 +++ b/xen/drivers/vpci/vpci.c
 @@ -38,10 +38,24 @@ extern vpci_register_init_t *const __end_vpci_array[];
@@ -4249,8 +4328,8 @@ index 652807a4a4..d84e44058a 100644
      xfree(pdev->vpci->msix);
      xfree(pdev->vpci->msi);
      xfree(pdev->vpci);
-@@ -72,6 +91,8 @@ int vpci_add_handlers(struct pci_dev *pdev)
-     unsigned int i;
+@@ -73,6 +92,8 @@ int vpci_add_handlers(struct pci_dev *pdev)
+     const unsigned long *ro_map;
      int rc = 0;
  
 +    ASSERT(rw_is_write_locked(&pdev->domain->pci_lock));
@@ -4258,7 +4337,7 @@ index 652807a4a4..d84e44058a 100644
      if ( !has_vpci(pdev->domain) )
          return 0;
  
-@@ -85,6 +106,10 @@ int vpci_add_handlers(struct pci_dev *pdev)
+@@ -91,6 +112,10 @@ int vpci_add_handlers(struct pci_dev *pdev)
      INIT_LIST_HEAD(&pdev->vpci->handlers);
      spin_lock_init(&pdev->vpci->lock);
  
@@ -4269,7 +4348,7 @@ index 652807a4a4..d84e44058a 100644
      for ( i = 0; i < NUM_VPCI_INIT; i++ )
      {
          rc = __start_vpci_array[i](pdev);
-@@ -97,6 +122,105 @@ int vpci_add_handlers(struct pci_dev *pdev)
+@@ -103,6 +128,105 @@ int vpci_add_handlers(struct pci_dev *pdev)
  
      return rc;
  }
@@ -4375,7 +4454,7 @@ index 652807a4a4..d84e44058a 100644
  #endif /* __XEN__ */
  
  static int vpci_register_cmp(const struct vpci_register *r1,
-@@ -320,11 +444,12 @@ static uint32_t merge_result(uint32_t data, uint32_t new, unsigned int size,
+@@ -326,11 +450,12 @@ static uint32_t merge_result(uint32_t data, uint32_t new, unsigned int size,
  
  uint32_t vpci_read(pci_sbdf_t sbdf, unsigned int reg, unsigned int size)
  {
@@ -4389,24 +4468,19 @@ index 652807a4a4..d84e44058a 100644
  
      if ( !size )
      {
-@@ -332,10 +457,25 @@ uint32_t vpci_read(pci_sbdf_t sbdf, unsigned int reg, unsigned int size)
-         return data;
-     }
- 
--    /* Find the PCI dev matching the address. */
-+    /*
-+     * Find the PCI dev matching the address, which for hwdom also requires
-+     * consulting DomXEN.  Passthrough everything that's not trapped.
-+     */
+@@ -342,11 +467,21 @@ uint32_t vpci_read(pci_sbdf_t sbdf, unsigned int reg, unsigned int size)
+      * Find the PCI dev matching the address, which for hwdom also requires
+      * consulting DomXEN.  Passthrough everything that's not trapped.
+      */
 +    lock = &d->pci_lock;
 +    read_lock(lock);
      pdev = pci_get_pdev(d, sbdf);
-+    if ( !pdev && is_hardware_domain(d) )
+     if ( !pdev && is_hardware_domain(d) )
 +    {
 +        read_unlock(lock);
 +        lock = &dom_xen->pci_lock;
 +        read_lock(lock);
-+        pdev = pci_get_pdev(dom_xen, sbdf);
+         pdev = pci_get_pdev(dom_xen, sbdf);
 +    }
      if ( !pdev || !pdev->vpci )
 +    {
@@ -4416,7 +4490,7 @@ index 652807a4a4..d84e44058a 100644
  
      spin_lock(&pdev->vpci->lock);
  
-@@ -381,6 +521,7 @@ uint32_t vpci_read(pci_sbdf_t sbdf, unsigned int reg, unsigned int size)
+@@ -392,6 +527,7 @@ uint32_t vpci_read(pci_sbdf_t sbdf, unsigned int reg, unsigned int size)
          ASSERT(data_offset < size);
      }
      spin_unlock(&pdev->vpci->lock);
@@ -4424,7 +4498,7 @@ index 652807a4a4..d84e44058a 100644
  
      if ( data_offset < size )
      {
-@@ -420,10 +561,23 @@ static void vpci_write_helper(const struct pci_dev *pdev,
+@@ -431,10 +567,23 @@ static void vpci_write_helper(const struct pci_dev *pdev,
               r->private);
  }
  
@@ -4449,13 +4523,11 @@ index 652807a4a4..d84e44058a 100644
      const struct pci_dev *pdev;
      const struct vpci_register *r;
      unsigned int data_offset = 0;
-@@ -440,13 +594,27 @@ void vpci_write(pci_sbdf_t sbdf, unsigned int reg, unsigned int size,
-         return;
+@@ -447,8 +596,16 @@ void vpci_write(pci_sbdf_t sbdf, unsigned int reg, unsigned int size,
  
      /*
--     * Find the PCI dev matching the address.
--     * Passthrough everything that's not trapped.
-+     * Find the PCI dev matching the address, which for hwdom also requires
+      * Find the PCI dev matching the address, which for hwdom also requires
+-     * consulting DomXEN.  Passthrough everything that's not trapped.
 +     * consulting DomXEN. Passthrough everything that's not trapped.
 +     * If this is hwdom, we need to hold locks for both domain in case if
 +     * modify_bars is called()
@@ -4467,20 +4539,18 @@ index 652807a4a4..d84e44058a 100644
 +        read_lock(&dom_xen->pci_lock);
 +
      pdev = pci_get_pdev(d, sbdf);
-     if ( !pdev || !pdev->vpci )
-     {
--        vpci_write_hw(sbdf, reg, size, data);
-+        /* Ignore writes to read-only devices, which have no ->vpci. */
-+        const unsigned long *ro_map = pci_get_ro_map(sbdf.seg);
-+
-+        if ( !ro_map || !test_bit(sbdf.bdf, ro_map) )
-+            vpci_write_hw(sbdf, reg, size, data);
+     if ( !pdev && is_hardware_domain(d) )
+         pdev = pci_get_pdev(dom_xen, sbdf);
+@@ -459,6 +616,8 @@ void vpci_write(pci_sbdf_t sbdf, unsigned int reg, unsigned int size,
+ 
+         if ( !ro_map || !test_bit(sbdf.bdf, ro_map) )
+             vpci_write_hw(sbdf, reg, size, data);
 +
 +        unlock_locks(d);
          return;
      }
  
-@@ -486,6 +654,7 @@ void vpci_write(pci_sbdf_t sbdf, unsigned int reg, unsigned int size,
+@@ -498,6 +657,7 @@ void vpci_write(pci_sbdf_t sbdf, unsigned int reg, unsigned int size,
          ASSERT(data_offset < size);
      }
      spin_unlock(&pdev->vpci->lock);
@@ -4489,10 +4559,10 @@ index 652807a4a4..d84e44058a 100644
      if ( data_offset < size )
          /* Tailing gap, write the remaining. */
 diff --git a/xen/include/public/arch-arm.h b/xen/include/public/arch-arm.h
-index cfb1e26468..719aa96e93 100644
+index 5d9f2b7a0b25..15a1e997c7d5 100644
 --- a/xen/include/public/arch-arm.h
 +++ b/xen/include/public/arch-arm.h
-@@ -428,6 +428,10 @@ typedef uint64_t xen_callback_t;
+@@ -460,6 +460,10 @@ typedef uint64_t xen_callback_t;
  #define GUEST_VPCI_ECAM_BASE    xen_mk_ullong(0x10000000)
  #define GUEST_VPCI_ECAM_SIZE    xen_mk_ullong(0x10000000)
  
@@ -4504,7 +4574,7 @@ index cfb1e26468..719aa96e93 100644
  #define GUEST_ACPI_BASE xen_mk_ullong(0x20000000)
  #define GUEST_ACPI_SIZE xen_mk_ullong(0x02000000)
 diff --git a/xen/include/public/device_tree_defs.h b/xen/include/public/device_tree_defs.h
-index 9e80d0499d..c861a0539b 100644
+index 9e80d0499dc3..c861a0539bdb 100644
 --- a/xen/include/public/device_tree_defs.h
 +++ b/xen/include/public/device_tree_defs.h
 @@ -14,6 +14,7 @@
@@ -4516,10 +4586,10 @@ index 9e80d0499d..c861a0539b 100644
  #define GUEST_ROOT_ADDRESS_CELLS 2
  #define GUEST_ROOT_SIZE_CELLS 2
 diff --git a/xen/include/xen/device_tree.h b/xen/include/xen/device_tree.h
-index a28937d12a..3c61a36d7f 100644
+index a262bba2edaf..ebd8a0b79663 100644
 --- a/xen/include/xen/device_tree.h
 +++ b/xen/include/xen/device_tree.h
-@@ -90,9 +90,6 @@ struct dt_device_node {
+@@ -91,9 +91,6 @@ struct dt_device_node {
      struct dt_device_node *next; /* TODO: Remove it. Only use to know the last children */
      struct dt_device_node *allnext;
  
@@ -4529,7 +4599,7 @@ index a28937d12a..3c61a36d7f 100644
      /* HACK: Remove this if there is a need of space */
      bool_t static_evtchn_created;
  
-@@ -305,16 +302,6 @@ static inline domid_t dt_device_used_by(const struct dt_device_node *device)
+@@ -350,16 +347,6 @@ static inline domid_t dt_device_used_by(const struct dt_device_node *device)
      return device->used_by;
  }
  
@@ -4546,7 +4616,7 @@ index a28937d12a..3c61a36d7f 100644
  static inline bool_t dt_property_name_is_equal(const struct dt_property *pp,
                                                 const char *name)
  {
-@@ -868,6 +855,41 @@ int dt_count_phandle_with_args(const struct dt_device_node *np,
+@@ -939,6 +926,41 @@ int dt_count_phandle_with_args(const struct dt_device_node *np,
   */
  int dt_get_pci_domain_nr(struct dt_device_node *node);
  
@@ -4589,11 +4659,11 @@ index a28937d12a..3c61a36d7f 100644
  
  #ifdef CONFIG_DEVICE_TREE_DEBUG
 diff --git a/xen/include/xen/iommu.h b/xen/include/xen/iommu.h
-index 4f22fc1bed..2fbeaed540 100644
+index 0e747b0bbc1c..38b8dd9b6809 100644
 --- a/xen/include/xen/iommu.h
 +++ b/xen/include/xen/iommu.h
-@@ -26,6 +26,9 @@
- #include <xen/spinlock.h>
+@@ -27,6 +27,9 @@
+ #include <xen/errno.h>
  #include <public/domctl.h>
  #include <public/hvm/ioreq.h>
 +#ifdef CONFIG_ACPI
@@ -4602,7 +4672,7 @@ index 4f22fc1bed..2fbeaed540 100644
  #include <asm/device.h>
  
  TYPE_SAFE(uint64_t, dfn);
-@@ -215,7 +218,8 @@ int iommu_dt_domain_init(struct domain *d);
+@@ -222,7 +225,8 @@ int iommu_dt_domain_init(struct domain *d);
  int iommu_release_dt_devices(struct domain *d);
  
  /*
@@ -4612,14 +4682,17 @@ index 4f22fc1bed..2fbeaed540 100644
   *
   * Return values:
   *  0 : device is protected by an IOMMU
-@@ -224,12 +228,28 @@ int iommu_release_dt_devices(struct domain *d);
+@@ -231,6 +235,7 @@ int iommu_release_dt_devices(struct domain *d);
   *      (IOMMU is not enabled/present or device is not connected to it).
   */
  int iommu_add_dt_device(struct dt_device_node *np);
 +int iommu_add_dt_pci_sideband_ids(struct pci_dev *pdev);
  
- int iommu_do_dt_domctl(struct xen_domctl *, struct domain *,
-                        XEN_GUEST_HANDLE_PARAM(xen_domctl_t));
+ int iommu_do_dt_domctl(struct xen_domctl *domctl, struct domain *d,
+                        XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl);
+@@ -245,8 +250,23 @@ int iommu_do_dt_domctl(struct xen_domctl *domctl, struct domain *d,
+  */
+ int iommu_remove_dt_device(struct dt_device_node *np);
  
 +#else /* !HAS_DEVICE_TREE */
 +static inline int iommu_add_dt_pci_sideband_ids(struct pci_dev *pdev)
@@ -4642,7 +4715,7 @@ index 4f22fc1bed..2fbeaed540 100644
  
  /*
 diff --git a/xen/include/xen/msi.h b/xen/include/xen/msi.h
-index c903d0050c..c5c8e65feb 100644
+index c903d0050cdc..c5c8e65feb1a 100644
 --- a/xen/include/xen/msi.h
 +++ b/xen/include/xen/msi.h
 @@ -3,6 +3,34 @@
@@ -4681,7 +4754,7 @@ index c903d0050c..c5c8e65feb 100644
  
  #include <asm/msi.h>
 diff --git a/xen/include/xen/pci.h b/xen/include/xen/pci.h
-index 5975ca2f30..4512910dca 100644
+index 251b8761a8e9..70db200ed50c 100644
 --- a/xen/include/xen/pci.h
 +++ b/xen/include/xen/pci.h
 @@ -157,6 +157,7 @@ struct pci_dev {
@@ -4690,10 +4763,10 @@ index 5975ca2f30..4512910dca 100644
  void pcidevs_lock(void);
 +int pcidevs_trylock(void);
  void pcidevs_unlock(void);
- bool_t __must_check pcidevs_locked(void);
+ bool __must_check pcidevs_locked(void);
  
 diff --git a/xen/include/xen/rangeset.h b/xen/include/xen/rangeset.h
-index 135f33f606..f7c69394d6 100644
+index 135f33f6066f..f7c69394d66a 100644
 --- a/xen/include/xen/rangeset.h
 +++ b/xen/include/xen/rangeset.h
 @@ -49,8 +49,9 @@ void rangeset_limit(
@@ -4709,10 +4782,10 @@ index 135f33f606..f7c69394d6 100644
  bool_t __must_check rangeset_is_empty(
      const struct rangeset *r);
 diff --git a/xen/include/xen/sched.h b/xen/include/xen/sched.h
-index 072e4846aa..56848aaa6f 100644
+index 3609ef88c4ff..84e608f6705b 100644
 --- a/xen/include/xen/sched.h
 +++ b/xen/include/xen/sched.h
-@@ -460,6 +460,15 @@ struct domain
+@@ -461,6 +461,15 @@ struct domain
  
  #ifdef CONFIG_HAS_PCI
      struct list_head pdev_list;
@@ -4729,7 +4802,7 @@ index 072e4846aa..56848aaa6f 100644
  
  #ifdef CONFIG_HAS_PASSTHROUGH
 diff --git a/xen/include/xen/vpci.h b/xen/include/xen/vpci.h
-index 0b8a2a3c74..d79d77cc6f 100644
+index d743d96a10b8..09e0b0c4175e 100644
 --- a/xen/include/xen/vpci.h
 +++ b/xen/include/xen/vpci.h
 @@ -21,6 +21,13 @@ typedef int vpci_register_init_t(struct pci_dev *dev);
@@ -4870,5 +4943,5 @@ index 0b8a2a3c74..d79d77cc6f 100644
  
  /*
 -- 
-2.25.1
+2.34.1
 

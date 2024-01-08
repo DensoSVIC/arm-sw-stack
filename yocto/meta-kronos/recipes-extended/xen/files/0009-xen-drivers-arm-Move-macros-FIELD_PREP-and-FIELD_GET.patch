@@ -1,8 +1,7 @@
-From 22110b1c6002768dddb14ecfbfda1995958f0300 Mon Sep 17 00:00:00 2001
+From 570c3f02044cd6a2f2ef1fcaecc5ce634ad3b22c Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Mon, 25 Jul 2022 01:35:58 +0000
-Subject: [PATCH] xen/drivers,arm: Move macros FIELD_PREP and FIELD_GET
- to io.h
+Subject: [PATCH] xen/drivers,arm: Move macros FIELD_PREP and FIELD_GET to io.h
 
 Before this change, macros `FIELD_PREP` and `FIELD_GET` is private
 in the smmuv3 driver, i.e. `xen/drivers/passthrough/arm/smmu-v3.h`,
@@ -22,7 +21,7 @@ Issue-Id: SCM-5049
  2 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/xen/arch/arm/include/asm/io.h b/xen/arch/arm/include/asm/io.h
-index e426804424..f0018cfe2a 100644
+index e42680442458..f0018cfe2a2f 100644
 --- a/xen/arch/arm/include/asm/io.h
 +++ b/xen/arch/arm/include/asm/io.h
 @@ -9,6 +9,12 @@
@@ -39,7 +38,7 @@ index e426804424..f0018cfe2a 100644
  /*
   * Local variables:
 diff --git a/xen/drivers/passthrough/arm/smmu-v3.h b/xen/drivers/passthrough/arm/smmu-v3.h
-index b381ad3738..5a55cf7d57 100644
+index 05f6b1fb7e33..625706734647 100644
 --- a/xen/drivers/passthrough/arm/smmu-v3.h
 +++ b/xen/drivers/passthrough/arm/smmu-v3.h
 @@ -369,12 +369,6 @@
@@ -56,5 +55,5 @@ index b381ad3738..5a55cf7d57 100644
  typedef paddr_t		dma_addr_t;
  typedef paddr_t		phys_addr_t;
 -- 
-2.25.1
+2.34.1
 

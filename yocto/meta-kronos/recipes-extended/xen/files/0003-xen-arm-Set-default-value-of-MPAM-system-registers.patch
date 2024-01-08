@@ -1,4 +1,4 @@
-From 758d77c4d2ca9db1e6ea8aa3abcbd0881a43cdec Mon Sep 17 00:00:00 2001
+From 1f50476f35652271a2781e3cec8eae17bada43ba Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Wed, 10 Aug 2022 06:38:36 +0000
 Subject: [PATCH] xen/arm: Set default value of MPAM system registers
@@ -37,10 +37,10 @@ Issue-Id: SCM-5079
  3 files changed, 53 insertions(+)
 
 diff --git a/xen/arch/arm/arm64/head.S b/xen/arch/arm/arm64/head.S
-index ad014716db..9046974594 100644
+index 4ad85dcf58d2..3ce0e7bc742c 100644
 --- a/xen/arch/arm/arm64/head.S
 +++ b/xen/arch/arm/arm64/head.S
-@@ -490,6 +490,38 @@ cpu_init:
+@@ -425,6 +425,38 @@ cpu_init:
           * than SP_EL0.
           */
          msr spsel, #1
@@ -80,10 +80,10 @@ index ad014716db..9046974594 100644
  ENDPROC(cpu_init)
  
 diff --git a/xen/arch/arm/include/asm/arm64/sysregs.h b/xen/arch/arm/include/asm/arm64/sysregs.h
-index 54670084c3..df340be7db 100644
+index 3fdeb9d8cdef..4085095272a1 100644
 --- a/xen/arch/arm/include/asm/arm64/sysregs.h
 +++ b/xen/arch/arm/include/asm/arm64/sysregs.h
-@@ -63,6 +63,9 @@
+@@ -64,6 +64,9 @@
   *
   * Values picked from linux kernel
   */
@@ -93,8 +93,8 @@ index 54670084c3..df340be7db 100644
  #ifndef ID_AA64MMFR2_EL1
  #define ID_AA64MMFR2_EL1            S3_0_C0_C7_2
  #endif
-@@ -88,6 +91,19 @@
- #define ID_AA64ISAR2_EL1            S3_0_C0_C6_2
+@@ -92,6 +95,19 @@
+ #define ZCR_EL1                     S3_0_C1_C2_0
  #endif
  
 +/*
@@ -114,10 +114,10 @@ index 54670084c3..df340be7db 100644
  
  /* id_aa64isar0 */
 diff --git a/xen/arch/arm/include/asm/processor.h b/xen/arch/arm/include/asm/processor.h
-index 1dd81d7d52..a1983abe7a 100644
+index 8e0241046504..92c99784494f 100644
 --- a/xen/arch/arm/include/asm/processor.h
 +++ b/xen/arch/arm/include/asm/processor.h
-@@ -545,6 +545,11 @@ extern register_t __cpu_logical_map[];
+@@ -546,6 +546,11 @@ extern register_t __cpu_logical_map[];
  #define VECTOR64_FIQ_OFFSET        0x100
  #define VECTOR64_ERROR_OFFSET      0x180
  
@@ -130,5 +130,5 @@ index 1dd81d7d52..a1983abe7a 100644
  #if defined(CONFIG_ARM_32)
  # include <asm/arm32/processor.h>
 -- 
-2.25.1
+2.34.1
 

@@ -1,8 +1,7 @@
-From 1a36dab8bf8d554817025b1f9d9d02fd7f47111d Mon Sep 17 00:00:00 2001
+From 4cb5a9c92e79088785a8ede499e7dc07c81772a9 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 21 Jul 2022 09:35:35 +0000
-Subject: [PATCH] xen/arm: mpam: Add MPAM memory-mapped register
- definitions
+Subject: [PATCH] xen/arm: mpam: Add MPAM memory-mapped register definitions
 
 The MPAM behavior of an MSC is discovered and configured via the
 memory-mapped registers in the MSC. All these memory-mapped registers
@@ -23,7 +22,7 @@ Issue-Id: SCM-3394
  1 file changed, 246 insertions(+)
 
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index ff94fb53ed..9351855b6a 100644
+index ff94fb53ed2e..9351855b6ac4 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
 @@ -10,6 +10,252 @@
@@ -280,5 +279,5 @@ index ff94fb53ed..9351855b6a 100644
  #define MPAMIDR_PMG_MAX        GENMASK(40, 32)
  #define MPAMIDR_PARTID_MAX     GENMASK(15, 0)
 -- 
-2.25.1
+2.34.1
 

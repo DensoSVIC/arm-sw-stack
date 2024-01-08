@@ -1,4 +1,4 @@
-From 61e5a9562e84211ce7f2482b1b98b85378602f27 Mon Sep 17 00:00:00 2001
+From 3fef96f3ec288e66d6c3682c99511c923621f6c3 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Sat, 8 Oct 2022 07:11:19 +0000
 Subject: [PATCH] tools/xl-psr: Support SLC in `xl psr-hwinfo` cmd
@@ -29,10 +29,10 @@ Issue-Id: SCM-5244
  6 files changed, 90 insertions(+), 8 deletions(-)
 
 diff --git a/tools/include/libxl.h b/tools/include/libxl.h
-index 5d5b57f842..f9b4f480b5 100644
+index 05ff010f5670..9157b7a2c728 100644
 --- a/tools/include/libxl.h
 +++ b/tools/include/libxl.h
-@@ -2737,6 +2737,8 @@ int libxl_psr_cmt_get_total_rmid(libxl_ctx *ctx, uint32_t *total_rmid);
+@@ -2820,6 +2820,8 @@ int libxl_psr_cmt_get_total_rmid(libxl_ctx *ctx, uint32_t *total_rmid);
  int libxl_psr_cmt_get_l3_cache_size(libxl_ctx *ctx,
                                      uint32_t socketid,
                                      uint32_t *l3_cache_size);
@@ -42,10 +42,10 @@ index 5d5b57f842..f9b4f480b5 100644
                                        uint32_t domid,
                                        uint32_t socketid,
 diff --git a/tools/include/xenctrl.h b/tools/include/xenctrl.h
-index c009946f18..660c2321e0 100644
+index 96d21c314693..01848f91204e 100644
 --- a/tools/include/xenctrl.h
 +++ b/tools/include/xenctrl.h
-@@ -2493,6 +2493,7 @@ typedef enum xc_psr_type xc_psr_type;
+@@ -2510,6 +2510,7 @@ typedef enum xc_psr_type xc_psr_type;
  enum xc_psr_feat_type {
      XC_PSR_CAT_L3,
      XC_PSR_CAT_L2,
@@ -53,7 +53,7 @@ index c009946f18..660c2321e0 100644
      XC_PSR_MBA,
  };
  typedef enum xc_psr_feat_type xc_psr_feat_type;
-@@ -2522,6 +2523,8 @@ int xc_psr_cmt_get_l3_upscaling_factor(xc_interface *xch,
+@@ -2539,6 +2540,8 @@ int xc_psr_cmt_get_l3_upscaling_factor(xc_interface *xch,
  int xc_psr_cmt_get_l3_event_mask(xc_interface *xch, uint32_t *event_mask);
  int xc_psr_cmt_get_l3_cache_size(xc_interface *xch, uint32_t cpu,
                                   uint32_t *l3_cache_size);
@@ -63,7 +63,7 @@ index c009946f18..660c2321e0 100644
                          xc_psr_cmt_type type, uint64_t *monitor_data,
                          uint64_t *tsc);
 diff --git a/tools/libs/ctrl/xc_psr.c b/tools/libs/ctrl/xc_psr.c
-index 1a0ab636f0..0e834fbb5d 100644
+index 1a0ab636f075..0e834fbb5d50 100644
 --- a/tools/libs/ctrl/xc_psr.c
 +++ b/tools/libs/ctrl/xc_psr.c
 @@ -158,6 +158,30 @@ int xc_psr_cmt_get_l3_cache_size(xc_interface *xch, uint32_t cpu,
@@ -131,7 +131,7 @@ index 1a0ab636f0..0e834fbb5d 100644
          break;
      case XC_PSR_MBA:
 diff --git a/tools/libs/light/libxl_psr.c b/tools/libs/light/libxl_psr.c
-index 9ced7d1715..4a4a67c715 100644
+index 712a55a73d79..2852ebc7786d 100644
 --- a/tools/libs/light/libxl_psr.c
 +++ b/tools/libs/light/libxl_psr.c
 @@ -231,6 +231,31 @@ out:
@@ -183,7 +183,7 @@ index 9ced7d1715..4a4a67c715 100644
      case LIBXL_PSR_FEAT_TYPE_MBA:
          xc_type = XC_PSR_MBA;
 diff --git a/tools/xl/xl_psr.c b/tools/xl/xl_psr.c
-index 38750a149a..4b7cd69f91 100644
+index 38750a149aef..4b7cd69f91f6 100644
 --- a/tools/xl/xl_psr.c
 +++ b/tools/xl/xl_psr.c
 @@ -34,6 +34,7 @@
@@ -247,10 +247,10 @@ index 38750a149a..4b7cd69f91 100644
      if (all || mba)
          ret = psr_mba_hwinfo();
 diff --git a/xen/include/public/sysctl.h b/xen/include/public/sysctl.h
-index c863adc42c..270a5754f7 100644
+index 0e3a14a507e5..1f6864bc1c13 100644
 --- a/xen/include/public/sysctl.h
 +++ b/xen/include/public/sysctl.h
-@@ -714,6 +714,10 @@ struct xen_sysctl_psr_cmt_op {
+@@ -844,6 +844,10 @@ struct xen_sysctl_psr_cmt_op {
              uint32_t cpu;   /* IN */
              uint32_t rsvd;
          } l3_cache;
@@ -262,5 +262,5 @@ index c863adc42c..270a5754f7 100644
  };
  
 -- 
-2.25.1
+2.34.1
 

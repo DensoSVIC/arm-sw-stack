@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -7,6 +7,10 @@
 # These patches are applied to both xen and xen-tools on the
 # fvp-rd-kronos MACHINE
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
+
+# Xen RELEASE-4.18.0 SHA
+XEN_BRANCH = "stable-4.18"
+SRCREV = "d75f1e9b74314cea91ce435730d4e3539ecca77d"
 
 # /* cSpell:disable */
 SRC_URI += "\

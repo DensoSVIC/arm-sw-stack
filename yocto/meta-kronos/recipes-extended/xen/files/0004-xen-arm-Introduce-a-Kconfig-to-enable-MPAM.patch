@@ -1,4 +1,4 @@
-From 2b57b88fce70f10875b0113dd6cbdd8c15d99772 Mon Sep 17 00:00:00 2001
+From 598f3b4fdbbc2f1d5b544719038e447191d792ad Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 21 Jul 2022 04:56:22 +0000
 Subject: [PATCH] xen/arm: Introduce a Kconfig to enable MPAM
@@ -18,10 +18,10 @@ Issue-Id: SCM-5049
  2 files changed, 11 insertions(+)
 
 diff --git a/xen/arch/arm/Kconfig b/xen/arch/arm/Kconfig
-index 52a05f704d..c1b452d8cd 100644
+index 2939db429b78..0c1f1f3c1884 100644
 --- a/xen/arch/arm/Kconfig
 +++ b/xen/arch/arm/Kconfig
-@@ -131,6 +131,16 @@ config ARM64_BTI
+@@ -182,6 +182,16 @@ config ARM64_BTI
  	  Branch Target Identification support.
  	  This feature is not supported in Xen.
  
@@ -35,11 +35,11 @@ index 52a05f704d..c1b452d8cd 100644
 +	  feature on post Armv8.4 system that describes an interface to control
 +	  cache and memory bandwidth.
 +
- config TEE
- 	bool "Enable TEE mediators support (UNSUPPORTED)" if UNSUPPORTED
- 	default n
+ source "arch/arm/tee/Kconfig"
+ 
+ config STATIC_SHM
 diff --git a/xen/arch/arm/Makefile b/xen/arch/arm/Makefile
-index 4d076b278b..1076e6b670 100644
+index 7bf07e992046..c5c8639e66cb 100644
 --- a/xen/arch/arm/Makefile
 +++ b/xen/arch/arm/Makefile
 @@ -38,6 +38,7 @@ obj-$(CONFIG_LIVEPATCH) += livepatch.o
@@ -51,5 +51,5 @@ index 4d076b278b..1076e6b670 100644
  obj-y += percpu.o
  obj-y += platform.o
 -- 
-2.25.1
+2.34.1
 

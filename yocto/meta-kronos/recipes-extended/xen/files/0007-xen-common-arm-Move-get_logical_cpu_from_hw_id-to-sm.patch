@@ -1,8 +1,7 @@
-From 3a74c717ed5a1b062121f8beee15435608667f35 Mon Sep 17 00:00:00 2001
+From cb90cb578827b22bbcb1f58f155490684b8db1da Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Fri, 22 Jul 2022 13:06:30 +0000
-Subject: [PATCH] xen/common,arm: Move get_logical_cpu_from_hw_id() to
- smp.h
+Subject: [PATCH] xen/common,arm: Move get_logical_cpu_from_hw_id() to smp.h
 
 Previously, function `get_logical_cpu_from_hw_id()` is private in
 `xen/common/boot_cpupools.c`. File `xen/common/boot_cpupools.c` is
@@ -21,18 +20,18 @@ Issue-Id: SCM-5049
  2 files changed, 14 insertions(+), 13 deletions(-)
 
 diff --git a/xen/arch/arm/include/asm/smp.h b/xen/arch/arm/include/asm/smp.h
-index 8133d5c295..92bd2b747d 100644
+index 4fabdf5310d8..284e660ef8a8 100644
 --- a/xen/arch/arm/include/asm/smp.h
 +++ b/xen/arch/arm/include/asm/smp.h
-@@ -4,6 +4,7 @@
+@@ -3,6 +3,7 @@
+ 
  #ifndef __ASSEMBLY__
  #include <xen/cpumask.h>
- #include <xen/device_tree.h>
 +#include <xen/init.h>
  #include <asm/current.h>
  #endif
  
-@@ -37,6 +38,19 @@ extern unsigned int smp_get_max_cpus(void);
+@@ -40,6 +41,19 @@ extern unsigned int smp_get_max_cpus(void);
  
  #define cpu_physical_id(cpu) cpu_logical_map(cpu)
  
@@ -53,7 +52,7 @@ index 8133d5c295..92bd2b747d 100644
  
  /*
 diff --git a/xen/common/sched/boot-cpupool.c b/xen/common/sched/boot-cpupool.c
-index 5955e6f9a9..a98680fbb4 100644
+index 5955e6f9a98b..a98680fbb482 100644
 --- a/xen/common/sched/boot-cpupool.c
 +++ b/xen/common/sched/boot-cpupool.c
 @@ -25,19 +25,6 @@ static unsigned int __initdata next_pool_id;
@@ -77,5 +76,5 @@ index 5955e6f9a9..a98680fbb4 100644
  get_logical_cpu_from_cpu_node(const struct dt_device_node *cpu_node)
  {
 -- 
-2.25.1
+2.34.1
 

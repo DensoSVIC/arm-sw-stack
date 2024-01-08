@@ -1,4 +1,4 @@
-From f2881d9e475541b17d5a7a8bb11f485d9e655da0 Mon Sep 17 00:00:00 2001
+From 54e44986dabe3f8a17bc59560db3a15d6e4b298c Mon Sep 17 00:00:00 2001
 From: Peter Hoyes <Peter.Hoyes@arm.com>
 Date: Thu, 8 Jun 2023 14:17:57 +0100
 Subject: [PATCH] libs/light: Increase hotplug timeout
@@ -9,14 +9,14 @@ more than 40s to execute.
 
 Increase the timeout to 120s.
 
-Upstream-Status: Inappropriate [Kronos-specific]
 Signed-off-by: Peter Hoyes <Peter.Hoyes@arm.com>
+Upstream-Status: Inappropriate [Kronos-specific]
 ---
  tools/libs/light/libxl_internal.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tools/libs/light/libxl_internal.h b/tools/libs/light/libxl_internal.h
-index cae160351f..75745fa720 100644
+index d5732d1c3792..b0c94f06f4cb 100644
 --- a/tools/libs/light/libxl_internal.h
 +++ b/tools/libs/light/libxl_internal.h
 @@ -93,7 +93,7 @@
@@ -29,5 +29,5 @@ index cae160351f..75745fa720 100644
   * subsystem sometime produce high latency under load. */
  #define LIBXL_DEVICE_MODEL_START_TIMEOUT 60
 -- 
-2.25.1
+2.34.1
 

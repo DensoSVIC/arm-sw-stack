@@ -1,8 +1,7 @@
-From 89fe8b61a40f1649617f0f277e9f9e0e3dc492b6 Mon Sep 17 00:00:00 2001
+From 9cf87ebcb6f31e29effccd5573bb5c33cbd16b9d Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Wed, 27 Jul 2022 04:09:43 +0000
-Subject: [PATCH] xen/arm: mpam: Reset MSC and RIS controls during CPU
- online
+Subject: [PATCH] xen/arm: mpam: Reset MSC and RIS controls during CPU online
 
 When a CPU comes online, any partid available in the system should
 have its configuration reset. This can avoid mistakenly writing
@@ -33,7 +32,7 @@ Issue-Id: SCM-5049
  2 files changed, 134 insertions(+), 2 deletions(-)
 
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index 1ae5cbecc8..d4454005b3 100644
+index 1ae5cbecc8be..d4454005b319 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
 @@ -336,6 +336,7 @@ struct mpam_msc
@@ -53,7 +52,7 @@ index 1ae5cbecc8..d4454005b3 100644
      /* member of mpam_component:ris */
      struct list_head comp_list;
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index 0025a2bdfc..72d76ec900 100644
+index 0025a2bdfc2d..72d76ec90035 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -868,10 +868,140 @@ static int __init mpam_msc_hw_probe(struct mpam_msc *msc)
@@ -200,5 +199,5 @@ index 0025a2bdfc..72d76ec900 100644
  
  static int __init mpam_msc_probe(void)
 -- 
-2.25.1
+2.34.1
 

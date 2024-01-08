@@ -1,4 +1,4 @@
-From e5c2d65974f82cbb3eacca5b7ece5c1b56b9f32f Mon Sep 17 00:00:00 2001
+From c64ab5c7d032b9db8adcbd0bf358a192f39abe79 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Mon, 25 Jul 2022 07:18:55 +0000
 Subject: [PATCH] xen/arm: mpam: Create RIS from firmware
@@ -34,7 +34,7 @@ Issue-Id: SCM-5049
  1 file changed, 100 insertions(+), 3 deletions(-)
 
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index 01cae779ab..9a60fec952 100644
+index 01cae779abb3..9a60fec9523f 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -300,9 +300,9 @@ mpam_ris_get_affinity(struct mpam_msc *msc, cpumask_t *affinity,
@@ -162,5 +162,5 @@ index 01cae779ab..9a60fec952 100644
           * In principle, the access to the mpam_all_msc list should always with
           * mpam_list_lock taken, although in this stage we are supposed to have
 -- 
-2.25.1
+2.34.1
 

@@ -1,4 +1,4 @@
-From 7dbcfb3e232f8db39cb54e45f594085b24aac094 Mon Sep 17 00:00:00 2001
+From 9a0097c149e875aab224a710e36cfe5948e9eb98 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 21 Jul 2022 08:49:59 +0000
 Subject: [PATCH] xen/arm: mpam: Initialise MSC from firmware
@@ -35,7 +35,7 @@ Issue-Id: SCM-5049
  2 files changed, 259 insertions(+), 1 deletion(-)
 
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index 1a5f8b20fa..c74e73ac8b 100644
+index 1a5f8b20fab8..c74e73ac8b25 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
 @@ -6,8 +6,35 @@
@@ -75,7 +75,7 @@ index 1a5f8b20fa..c74e73ac8b 100644
  
  #endif /* __ARM_MPAM_H__ */
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index 3df0f59997..361a7207f7 100644
+index 3df0f599972d..361a7207f7eb 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -19,10 +19,238 @@
@@ -337,5 +337,5 @@ index 3df0f59997..361a7207f7 100644
  
  void __init mpam_presmp_setup(void)
 -- 
-2.25.1
+2.34.1
 

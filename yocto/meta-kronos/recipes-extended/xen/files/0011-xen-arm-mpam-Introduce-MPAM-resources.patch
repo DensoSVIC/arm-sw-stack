@@ -1,4 +1,4 @@
-From 46b522f32f394f90b10c82642b52e54ac9d7d944 Mon Sep 17 00:00:00 2001
+From 24c1aea07c666b66dde6333e7dd9978081ca16a8 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Sat, 23 Jul 2022 09:58:32 +0000
 Subject: [PATCH] xen/arm: mpam: Introduce MPAM resources
@@ -35,7 +35,7 @@ Issue-Id: SCM-5049
  2 files changed, 254 insertions(+)
 
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index cb836c1faf..ff94fb53ed 100644
+index cb836c1faf87..ff94fb53ed2e 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
 @@ -14,6 +14,12 @@
@@ -105,7 +105,7 @@ index cb836c1faf..ff94fb53ed 100644
  
  #endif /* __ARM_MPAM_H__ */
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index 297177d38f..01cae779ab 100644
+index 297177d38fb5..01cae779abb3 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -32,6 +32,13 @@
@@ -339,5 +339,5 @@ index 297177d38f..01cae779ab 100644
          /*
           * In principle, the access to the mpam_all_msc list should always with
 -- 
-2.25.1
+2.34.1
 

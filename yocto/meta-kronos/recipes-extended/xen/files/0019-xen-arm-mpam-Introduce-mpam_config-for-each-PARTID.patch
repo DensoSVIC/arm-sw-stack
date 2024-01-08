@@ -1,4 +1,4 @@
-From d62eeac7286b34db9beee640992b692c2cfd1cb1 Mon Sep 17 00:00:00 2001
+From e1bc5a01e2a26dedbb19c6040843a9d4b5a13d8c Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 28 Jul 2022 09:36:45 +0000
 Subject: [PATCH] xen/arm: mpam: Introduce mpam_config for each PARTID
@@ -27,7 +27,7 @@ Issue-Id: SCM-5049
  2 files changed, 78 insertions(+), 12 deletions(-)
 
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index 681070eeed..d1ba5d7501 100644
+index 681070eeed68..d1ba5d7501fb 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
 @@ -295,6 +295,14 @@ enum mpam_device_features {
@@ -68,7 +68,7 @@ index 681070eeed..d1ba5d7501 100644
      struct list_head class_list;
      /* parent */
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index e7e8e1b040..8c33dec479 100644
+index e7e8e1b040bb..8c33dec479a4 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -888,7 +888,8 @@ static void mpam_reset_msc_bitmap(struct mpam_msc *msc,
@@ -213,5 +213,5 @@ index e7e8e1b040..8c33dec479 100644
      /* With all MSCs probed, now we can set the global variable to true. */
      mpam_enabled = true;
 -- 
-2.25.1
+2.34.1
 

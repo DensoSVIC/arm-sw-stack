@@ -1,4 +1,4 @@
-From c767ea4455e807e4e84aba37824e51da3d5d1227 Mon Sep 17 00:00:00 2001
+From f48a8705edc289c1e5dfe89f3c510430df49155f Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Sat, 8 Oct 2022 07:09:05 +0000
 Subject: [PATCH] tools/xl-psr: Consolidate CAT hwinfo to a single helper
@@ -25,7 +25,7 @@ Issue-Id: SCM-5244
  1 file changed, 40 insertions(+), 38 deletions(-)
 
 diff --git a/tools/xl/xl_psr.c b/tools/xl/xl_psr.c
-index afdfff2c39..38750a149a 100644
+index afdfff2c3960..38750a149aef 100644
 --- a/tools/xl/xl_psr.c
 +++ b/tools/xl/xl_psr.c
 @@ -33,6 +33,11 @@
@@ -151,5 +151,5 @@ index afdfff2c39..38750a149a 100644
      /* MBA is independent of CMT and CAT */
      if (all || mba)
 -- 
-2.25.1
+2.34.1
 

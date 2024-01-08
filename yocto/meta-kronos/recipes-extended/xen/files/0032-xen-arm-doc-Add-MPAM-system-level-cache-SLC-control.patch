@@ -1,4 +1,4 @@
-From 899f343438d56f0ae8a84df607d1ad1d550c48fa Mon Sep 17 00:00:00 2001
+From 6bd9dc614cd2678d118d7f9c23e8da1b7b81854b Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 22 Sep 2022 07:28:14 +0000
 Subject: [PATCH] xen/arm, doc: Add MPAM system level cache (SLC) control
@@ -33,10 +33,10 @@ Issue-Id: SCM-5135
  7 files changed, 70 insertions(+), 4 deletions(-)
 
 diff --git a/docs/misc/arm/device-tree/booting.txt b/docs/misc/arm/device-tree/booting.txt
-index 11e8678115..d8de339b96 100644
+index 733eed34114f..374e37ec26ae 100644
 --- a/docs/misc/arm/device-tree/booting.txt
 +++ b/docs/misc/arm/device-tree/booting.txt
-@@ -232,6 +232,15 @@ with the following properties:
+@@ -269,6 +269,15 @@ with the following properties:
      of the system, it will be clamped to the maximum value supported
      by the system.
  
@@ -53,10 +53,10 @@ index 11e8678115..d8de339b96 100644
  for the DomU kernel and ramdisk.
  
 diff --git a/docs/misc/xen-command-line.pandoc b/docs/misc/xen-command-line.pandoc
-index 50f336d09f..8ad492f294 100644
+index 5aeac07386b4..c918c6bdc0aa 100644
 --- a/docs/misc/xen-command-line.pandoc
 +++ b/docs/misc/xen-command-line.pandoc
-@@ -2797,7 +2797,7 @@ the hypervisor was compiled with `CONFIG_XSM` enabled.
+@@ -2866,7 +2866,7 @@ the hypervisor was compiled with `CONFIG_XSM` enabled.
    be enabled.
  
  ### dom0_mpam (Arm64)
@@ -65,7 +65,7 @@ index 50f336d09f..8ad492f294 100644
  
  Set the amount of MPAM resource limit for the initial domain (dom0). This is an
  optional command line option.
-@@ -2806,3 +2806,7 @@ optional command line option.
+@@ -2875,3 +2875,7 @@ optional command line option.
  bitmap. System l3 cache resource is divided into numbers of portions. Each
  portion corresponds to a bit in <bitmap> and the set bit represents the
  corresponding cache portion is available.
@@ -74,10 +74,10 @@ index 50f336d09f..8ad492f294 100644
 +portions. Each portion corresponds to a bit in <bitmap> and the set bit
 +represents the corresponding cache portion is available.
 diff --git a/xen/arch/arm/domain.c b/xen/arch/arm/domain.c
-index 20441137b9..1ab887581b 100644
+index cb619121fc90..62606ceabee6 100644
 --- a/xen/arch/arm/domain.c
 +++ b/xen/arch/arm/domain.c
-@@ -806,6 +806,7 @@ int arch_domain_create(struct domain *d,
+@@ -808,6 +808,7 @@ int arch_domain_create(struct domain *d,
  #ifdef CONFIG_MPAM
      d->arch.mpam.partid = d->arch.p2m.vmid;
      d->arch.mpam.cfg.l3_cpbm = config->arch.mpam.l3_cpbm;
@@ -86,10 +86,10 @@ index 20441137b9..1ab887581b 100644
          mpam_update_domain(d);
  #endif
 diff --git a/xen/arch/arm/domain_build.c b/xen/arch/arm/domain_build.c
-index af431a4de0..63e732ba64 100644
+index ba20793f103d..67a6ce1d7ead 100644
 --- a/xen/arch/arm/domain_build.c
 +++ b/xen/arch/arm/domain_build.c
-@@ -3945,6 +3945,8 @@ void __init create_domUs(void)
+@@ -3790,6 +3790,8 @@ void __init create_domUs(void)
          {
              dt_property_read_u32(node, "xen,domain-mpam-l3-cpbm",
                                   &d_cfg.arch.mpam.l3_cpbm);
@@ -98,7 +98,7 @@ index af431a4de0..63e732ba64 100644
          }
  #endif
  
-@@ -4068,6 +4070,8 @@ void __init create_dom0(void)
+@@ -3927,6 +3929,8 @@ void __init create_dom0(void)
  #ifdef CONFIG_MPAM
      dom0_cfg.arch.mpam.l3_cpbm = dom0_mpam_config.l3_cpbm ?
                                   dom0_mpam_config.l3_cpbm : 0;
@@ -108,7 +108,7 @@ index af431a4de0..63e732ba64 100644
  
      dom0 = domain_create(0, &dom0_cfg, CDF_privileged | CDF_directmap);
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index 6528d89b46..b72179296f 100644
+index 6528d89b462d..b72179296f70 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
 @@ -267,7 +267,8 @@
@@ -122,7 +122,7 @@ index 6528d89b46..b72179296f 100644
      MPAM_CLASS_UNKNOWN,     /* Everything else, e.g. SMMU */
  };
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index 8f2074fcec..fba4b93bd7 100644
+index 8f2074fcec88..fba4b93bd7c9 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -63,6 +63,13 @@ static void __init read_cache_size_from_registers(void *arg)
@@ -257,10 +257,10 @@ index 8f2074fcec..fba4b93bd7 100644
  
  void mpam_update_domain(struct domain *d)
 diff --git a/xen/include/public/arch-arm.h b/xen/include/public/arch-arm.h
-index 06826c4e44..cfb1e26468 100644
+index 6f1a4bb642ef..5d9f2b7a0b25 100644
 --- a/xen/include/public/arch-arm.h
 +++ b/xen/include/public/arch-arm.h
-@@ -299,6 +299,7 @@ DEFINE_XEN_GUEST_HANDLE(vcpu_guest_context_t);
+@@ -329,6 +329,7 @@ DEFINE_XEN_GUEST_HANDLE(vcpu_guest_context_t);
  
  struct xen_arch_domctl_mpam {
      uint32_t l3_cpbm;
@@ -269,5 +269,5 @@ index 06826c4e44..cfb1e26468 100644
  
  struct xen_arch_domainconfig {
 -- 
-2.25.1
+2.34.1
 

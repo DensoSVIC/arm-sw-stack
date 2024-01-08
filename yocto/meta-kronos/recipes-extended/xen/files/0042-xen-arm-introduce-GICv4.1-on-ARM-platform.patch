@@ -1,14 +1,15 @@
-From 1b27b030808820271dc9abe7ecdbae6438f9a5d2 Mon Sep 17 00:00:00 2001
-From: Penny Zheng <Penny.Zheng@arm.com>
-Date: Wed, 12 Jul 2023 15:21:20 +0800
+From 65bd19f2ed5ced491db5f392dd5c2bb0871c0407 Mon Sep 17 00:00:00 2001
+From: Luca Fancellu <luca.fancellu@arm.com>
+Date: Mon, 23 Oct 2023 11:18:47 +0100
 Subject: [PATCH] xen/arm: introduce GICv4.1 on ARM platform
 
 Aim of this big patch is to introduce GICv4.1 on ARM platform. GICv4.1
 is an extension to GICv3, with new features of direct vLPI/vSGI direct
 injection.
 
-upstream-Status: Inappropriate [Kronos-specific]
 Signed-off-by: Penny Zheng <penny.zheng@arm.com>
+Signed-off-by: Luca Fancellu <luca.fancellu@arm.com>
+Upstream-Status: Inappropriate [Kronos-specific]
 ---
  tools/libs/light/libxl_arm.c           |   18 +
  tools/libs/light/libxl_types.idl       |    4 +-
@@ -17,9 +18,9 @@ Signed-off-by: Penny Zheng <penny.zheng@arm.com>
  xen/arch/arm/domain.c                  |   22 +-
  xen/arch/arm/domain_build.c            |    2 +
  xen/arch/arm/gic-v2.c                  |    2 +-
- xen/arch/arm/gic-v3-its.c              |  536 +++++-
+ xen/arch/arm/gic-v3-its.c              |  542 ++++++-
  xen/arch/arm/gic-v3-lpi.c              |  180 ++-
- xen/arch/arm/gic-v3.c                  |  257 ++-
+ xen/arch/arm/gic-v3.c                  |  256 ++-
  xen/arch/arm/gic-v4-its.c              | 2061 ++++++++++++++++++++++++
  xen/arch/arm/gic-vgic.c                |    6 +
  xen/arch/arm/include/asm/domain.h      |   13 +-
@@ -36,15 +37,15 @@ Signed-off-by: Penny Zheng <penny.zheng@arm.com>
  xen/arch/x86/include/asm/hvm/hvm.h     |    2 +
  xen/common/sched/core.c                |    3 +
  xen/include/public/arch-arm.h          |    2 +
- 26 files changed, 3658 insertions(+), 233 deletions(-)
+ 26 files changed, 3661 insertions(+), 235 deletions(-)
  create mode 100644 xen/arch/arm/gic-v4-its.c
  create mode 100644 xen/arch/arm/include/asm/gic_v4_its.h
 
 diff --git a/tools/libs/light/libxl_arm.c b/tools/libs/light/libxl_arm.c
-index b43a84643e..4cecd16e65 100644
+index 8d2510cd5717..0e86b2d2e040 100644
 --- a/tools/libs/light/libxl_arm.c
 +++ b/tools/libs/light/libxl_arm.c
-@@ -55,6 +55,10 @@ static const char *gicv_to_string(libxl_gic_version gic_version)
+@@ -75,6 +75,10 @@ static const char *gicv_to_string(libxl_gic_version gic_version)
          return "V2";
      case LIBXL_GIC_VERSION_V3:
          return "V3";
@@ -55,7 +56,7 @@ index b43a84643e..4cecd16e65 100644
      default:
          return "unknown";
      }
-@@ -160,6 +164,12 @@ int libxl__arch_domain_prepare_config(libxl__gc *gc,
+@@ -194,6 +198,12 @@ int libxl__arch_domain_prepare_config(libxl__gc *gc,
      case LIBXL_GIC_VERSION_V3:
          config->arch.gic_version = XEN_DOMCTL_CONFIG_GIC_V3;
          break;
@@ -68,7 +69,7 @@ index b43a84643e..4cecd16e65 100644
      default:
          LOG(ERROR, "Unknown GIC version %d",
              d_config->b_info.arch_arm.gic_version);
-@@ -194,6 +204,12 @@ int libxl__arch_domain_save_config(libxl__gc *gc,
+@@ -245,6 +255,12 @@ int libxl__arch_domain_save_config(libxl__gc *gc,
      case XEN_DOMCTL_CONFIG_GIC_V3:
          d_config->b_info.arch_arm.gic_version = LIBXL_GIC_VERSION_V3;
          break;
@@ -81,7 +82,7 @@ index b43a84643e..4cecd16e65 100644
      default:
          LOG(ERROR, "Unexpected gic version %u", config->arch.gic_version);
          return ERROR_FAIL;
-@@ -1262,6 +1278,8 @@ next_resize:
+@@ -1400,6 +1416,8 @@ next_resize:
                                   GUEST_GICC_BASE, GUEST_GICC_SIZE) );
              break;
          case LIBXL_GIC_VERSION_V3:
@@ -91,10 +92,10 @@ index b43a84643e..4cecd16e65 100644
              break;
          default:
 diff --git a/tools/libs/light/libxl_types.idl b/tools/libs/light/libxl_types.idl
-index 1bb61be7c9..db1f22d8a6 100644
+index 910f8841a107..930db3471a46 100644
 --- a/tools/libs/light/libxl_types.idl
 +++ b/tools/libs/light/libxl_types.idl
-@@ -484,7 +484,9 @@ libxl_vnode_info = Struct("vnode_info", [
+@@ -515,7 +515,9 @@ libxl_vnode_info = Struct("vnode_info", [
  libxl_gic_version = Enumeration("gic_version", [
      (0, "DEFAULT"),
      (0x20, "v2"),
@@ -106,12 +107,12 @@ index 1bb61be7c9..db1f22d8a6 100644
  
  libxl_tee_type = Enumeration("tee_type", [
 diff --git a/xen/arch/arm/Kconfig b/xen/arch/arm/Kconfig
-index 93db339a76..6c0395b97a 100644
+index 10b801412b66..aef57c9d7a7f 100644
 --- a/xen/arch/arm/Kconfig
 +++ b/xen/arch/arm/Kconfig
-@@ -154,6 +154,12 @@ config TEE
- 	  This option enables generic TEE mediators support. It allows guests
- 	  to access real TEE via one of TEE mediators implemented in XEN.
+@@ -192,6 +192,12 @@ config MPAM
+ 	  feature on post Armv8.4 system that describes an interface to control
+ 	  cache and memory bandwidth.
  
 +config GICV4
 +	bool "GICv4 driver"
@@ -123,7 +124,7 @@ index 93db339a76..6c0395b97a 100644
  
  config STATIC_SHM
 diff --git a/xen/arch/arm/Makefile b/xen/arch/arm/Makefile
-index 1076e6b670..49029ea9d1 100644
+index c5c8639e66cb..e5acc629bfe2 100644
 --- a/xen/arch/arm/Makefile
 +++ b/xen/arch/arm/Makefile
 @@ -25,6 +25,7 @@ obj-y += gic.o
@@ -135,10 +136,10 @@ index 1076e6b670..49029ea9d1 100644
  obj-y += guestcopy.o
  obj-y += guest_atomics.o
 diff --git a/xen/arch/arm/domain.c b/xen/arch/arm/domain.c
-index d02ccbffdf..08acb654e0 100644
+index 62606ceabee6..7f1949b36233 100644
 --- a/xen/arch/arm/domain.c
 +++ b/xen/arch/arm/domain.c
-@@ -547,7 +547,7 @@ void dump_pageframe_info(struct domain *d)
+@@ -512,7 +512,7 @@ void dump_pageframe_info(struct domain *d)
   * The new VGIC has a bigger per-IRQ structure, so we need more than one
   * page on ARM64. Cowardly increase the limit in this case.
   */
@@ -162,7 +163,7 @@ index d02ccbffdf..08acb654e0 100644
          default:
              ASSERT_UNREACHABLE();
              return -EINVAL;
-@@ -756,6 +764,14 @@ int arch_domain_create(struct domain *d,
+@@ -753,6 +761,14 @@ int arch_domain_create(struct domain *d,
          d->arch.vgic.version = GIC_V3;
          break;
  
@@ -177,7 +178,7 @@ index d02ccbffdf..08acb654e0 100644
      default:
          BUG();
      }
-@@ -1161,9 +1177,11 @@ void vcpu_update_evtchn_irq(struct vcpu *v)
+@@ -1219,9 +1235,11 @@ void vcpu_update_evtchn_irq(struct vcpu *v)
   */
  void vcpu_block_unless_event_pending(struct vcpu *v)
  {
@@ -189,12 +190,12 @@ index d02ccbffdf..08acb654e0 100644
 +    current->arch.wfi_nomask = false;
  }
  
- void vcpu_kick(struct vcpu *vcpu)
+ void vcpu_kick(struct vcpu *v)
 diff --git a/xen/arch/arm/domain_build.c b/xen/arch/arm/domain_build.c
-index 365d991e7f..03018b2f4d 100644
+index c7452f0e4580..4b5d9ee89a7b 100644
 --- a/xen/arch/arm/domain_build.c
 +++ b/xen/arch/arm/domain_build.c
-@@ -3062,6 +3062,8 @@ static int __init make_gic_domU_node(struct kernel_info *kinfo)
+@@ -2643,6 +2643,8 @@ static int __init make_gic_domU_node(struct kernel_info *kinfo)
      {
  #ifdef CONFIG_GICV3
      case GIC_V3:
@@ -204,10 +205,10 @@ index 365d991e7f..03018b2f4d 100644
  #endif
      case GIC_V2:
 diff --git a/xen/arch/arm/gic-v2.c b/xen/arch/arm/gic-v2.c
-index ae5bd8e95f..914d592397 100644
+index cf392bfd1c62..f00715631f9b 100644
 --- a/xen/arch/arm/gic-v2.c
 +++ b/xen/arch/arm/gic-v2.c
-@@ -191,7 +191,7 @@ static void gicv2_save_state(struct vcpu *v)
+@@ -182,7 +182,7 @@ static void gicv2_save_state(struct vcpu *v)
      writel_gich(0, GICH_HCR);
  }
  
@@ -217,10 +218,10 @@ index ae5bd8e95f..914d592397 100644
      int i;
  
 diff --git a/xen/arch/arm/gic-v3-its.c b/xen/arch/arm/gic-v3-its.c
-index f710fb2727..bbeaa1659e 100644
+index 58bcf2e4d3dc..2e2ecf140f64 100644
 --- a/xen/arch/arm/gic-v3-its.c
 +++ b/xen/arch/arm/gic-v3-its.c
-@@ -30,6 +30,9 @@
+@@ -19,6 +19,9 @@
  #include <asm/gic.h>
  #include <asm/gic_v3_defs.h>
  #include <asm/gic_v3_its.h>
@@ -230,7 +231,7 @@ index f710fb2727..bbeaa1659e 100644
  #include <asm/io.h>
  #include <asm/page.h>
  
-@@ -41,25 +44,9 @@
+@@ -30,25 +33,9 @@
   */
  LIST_HEAD(host_its_list);
  
@@ -259,7 +260,7 @@ index f710fb2727..bbeaa1659e 100644
  
  bool gicv3_its_host_has_its(void)
  {
-@@ -67,7 +54,7 @@ bool gicv3_its_host_has_its(void)
+@@ -56,7 +43,7 @@ bool gicv3_its_host_has_its(void)
  }
  
  #define BUFPTR_MASK                     GENMASK(19, 5)
@@ -268,7 +269,7 @@ index f710fb2727..bbeaa1659e 100644
  {
      /*
       * The command queue should actually never become full, if it does anyway
-@@ -83,11 +70,9 @@ static int its_send_command(struct host_its *hw_its, const void *its_cmd)
+@@ -72,11 +59,9 @@ static int its_send_command(struct host_its *hw_its, const void *its_cmd)
      s_time_t deadline = NOW() + MILLISECS(1);
      uint64_t readp, writep;
      int ret = -EBUSY;
@@ -282,7 +283,7 @@ index f710fb2727..bbeaa1659e 100644
  
      do {
          readp = readq_relaxed(hw_its->its_base + GITS_CREADR) & BUFPTR_MASK;
-@@ -103,15 +88,15 @@ static int its_send_command(struct host_its *hw_its, const void *its_cmd)
+@@ -92,15 +77,15 @@ static int its_send_command(struct host_its *hw_its, const void *its_cmd)
           * If the command queue is full, wait for a bit in the hope it drains
           * before giving up.
           */
@@ -301,7 +302,7 @@ index f710fb2727..bbeaa1659e 100644
          if ( printk_ratelimit() )
              printk(XENLOG_WARNING "host ITS: command queue full.\n");
          return ret;
-@@ -127,13 +112,13 @@ static int its_send_command(struct host_its *hw_its, const void *its_cmd)
+@@ -116,13 +101,13 @@ static int its_send_command(struct host_its *hw_its, const void *its_cmd)
      writep = (writep + ITS_CMD_SIZE) % ITS_CMD_QUEUE_SZ;
      writeq_relaxed(writep & BUFPTR_MASK, hw_its->its_base + GITS_CWRITER);
  
@@ -317,7 +318,7 @@ index f710fb2727..bbeaa1659e 100644
  {
      /*
       * As there could be quite a number of commands in a queue, we will
-@@ -160,8 +145,7 @@ static int gicv3_its_wait_commands(struct host_its *hw_its)
+@@ -149,8 +134,7 @@ static int gicv3_its_wait_commands(struct host_its *hw_its)
      return -ETIMEDOUT;
  }
  
@@ -327,7 +328,7 @@ index f710fb2727..bbeaa1659e 100644
  {
      reg &= ~GENMASK(51, 16);
  
-@@ -170,7 +154,7 @@ static uint64_t encode_rdbase(struct host_its *hw_its, unsigned int cpu,
+@@ -159,7 +143,7 @@ static uint64_t encode_rdbase(struct host_its *hw_its, unsigned int cpu,
      return reg;
  }
  
@@ -336,7 +337,7 @@ index f710fb2727..bbeaa1659e 100644
  {
      uint64_t cmd[4];
  
-@@ -182,9 +166,8 @@ static int its_send_cmd_sync(struct host_its *its, unsigned int cpu)
+@@ -171,9 +155,8 @@ static int its_send_cmd_sync(struct host_its *its, unsigned int cpu)
      return its_send_command(its, cmd);
  }
  
@@ -348,7 +349,7 @@ index f710fb2727..bbeaa1659e 100644
  {
      uint64_t cmd[4];
  
-@@ -234,8 +217,7 @@ static int its_send_cmd_mapd(struct host_its *its, uint32_t deviceid,
+@@ -223,8 +206,7 @@ static int its_send_cmd_mapd(struct host_its *its, uint32_t deviceid,
      return its_send_command(its, cmd);
  }
  
@@ -358,7 +359,7 @@ index f710fb2727..bbeaa1659e 100644
  {
      uint64_t cmd[4];
  
-@@ -247,6 +229,57 @@ static int its_send_cmd_inv(struct host_its *its,
+@@ -236,6 +218,57 @@ static int its_send_cmd_inv(struct host_its *its,
      return its_send_command(its, cmd);
  }
  
@@ -416,7 +417,7 @@ index f710fb2727..bbeaa1659e 100644
  /* Set up the (1:1) collection mapping for the given host CPU. */
  int gicv3_its_setup_collection(unsigned int cpu)
  {
-@@ -344,14 +377,117 @@ static void *its_map_cbaser(struct host_its *its)
+@@ -333,14 +366,117 @@ static void *its_map_cbaser(struct host_its *its)
  /* The ITS BASE registers work with page sizes of 4K, 16K or 64K. */
  #define BASER_PAGE_BITS(sz) ((sz) * 2 + 12)
  
@@ -535,7 +536,7 @@ index f710fb2727..bbeaa1659e 100644
  
      attr  = GIC_BASER_InnerShareable << GITS_BASER_SHAREABILITY_SHIFT;
      attr |= GIC_BASER_CACHE_SameAsInner << GITS_BASER_OUTER_CACHEABILITY_SHIFT;
-@@ -363,6 +499,8 @@ static int its_map_baser(void __iomem *basereg, uint64_t regc,
+@@ -352,6 +488,8 @@ static int its_map_baser(void __iomem *basereg, uint64_t regc,
       * attributes), retrying if necessary.
       */
  retry:
@@ -544,7 +545,7 @@ index f710fb2727..bbeaa1659e 100644
      table_size = ROUNDUP(nr_items * entry_size,
                           BIT(BASER_PAGE_BITS(pagesz), UL));
      /* The BASE registers support at most 256 pages. */
-@@ -385,10 +523,16 @@ retry:
+@@ -374,10 +512,16 @@ retry:
      reg |= GITS_VALID_BIT;
      reg |= encode_baser_phys_addr(virt_to_maddr(buffer),
                                    BASER_PAGE_BITS(pagesz));
@@ -561,7 +562,7 @@ index f710fb2727..bbeaa1659e 100644
      /* The host didn't like our attributes, just use what it returned. */
      if ( (regc & BASER_ATTR_MASK) != attr )
      {
-@@ -451,12 +595,114 @@ static int gicv3_disable_its(struct host_its *hw_its)
+@@ -440,12 +584,114 @@ static int gicv3_disable_its(struct host_its *hw_its)
      return -ETIMEDOUT;
  }
  
@@ -677,7 +678,7 @@ index f710fb2727..bbeaa1659e 100644
      if ( !hw_its->its_base )
          return -ENOMEM;
  
-@@ -470,32 +716,81 @@ static int gicv3_its_init_single_its(struct host_its *hw_its)
+@@ -459,32 +705,81 @@ static int gicv3_its_init_single_its(struct host_its *hw_its)
      hw_its->itte_size = GITS_TYPER_ITT_SIZE(reg);
      if ( reg & GITS_TYPER_PTA )
          hw_its->flags |= HOST_ITS_USES_PTA;
@@ -764,7 +765,7 @@ index f710fb2727..bbeaa1659e 100644
              if ( ret )
                  return ret;
              break;
-@@ -580,13 +875,40 @@ static int compare_its_guest_devices(struct its_device *dev,
+@@ -569,13 +864,40 @@ static int compare_its_guest_devices(struct its_device *dev,
      return 0;
  }
  
@@ -806,7 +807,7 @@ index f710fb2727..bbeaa1659e 100644
                                       uint32_t lpi, uint32_t nr_events)
  {
      uint32_t i;
-@@ -595,22 +917,17 @@ static int gicv3_its_map_host_events(struct host_its *its,
+@@ -584,22 +906,17 @@ static int gicv3_its_map_host_events(struct host_its *its,
      for ( i = 0; i < nr_events; i++ )
      {
          /* For now we map every host LPI to host CPU 0 */
@@ -833,7 +834,7 @@ index f710fb2727..bbeaa1659e 100644
  }
  
  int gicv3_its_unmap_all_guest_device(struct domain *d)
-@@ -639,6 +956,69 @@ int gicv3_its_unmap_all_guest_device(struct domain *d)
+@@ -628,6 +945,72 @@ int gicv3_its_unmap_all_guest_device(struct domain *d)
      return 0;
  }
  
@@ -863,6 +864,9 @@ index f710fb2727..bbeaa1659e 100644
 +    itt_addr = _xzalloc(nr_events * hw_its->itte_size, 256);
 +    if ( !itt_addr )
 +        return NULL;
++
++    clean_and_invalidate_dcache_va_range(itt_addr,
++                                         nr_events * hw_its->itte_size);
 +
 +    dev = xzalloc(struct its_device);
 +    if ( !dev )
@@ -903,7 +907,7 @@ index f710fb2727..bbeaa1659e 100644
  /*
   * Map a hardware device, identified by a certain host ITS and its device ID
   * to domain d, a guest ITS (identified by its doorbell address) and device ID.
-@@ -651,7 +1031,6 @@ int gicv3_its_map_guest_device(struct domain *d,
+@@ -640,7 +1023,6 @@ int gicv3_its_map_guest_device(struct domain *d,
                                 paddr_t guest_doorbell, uint32_t guest_devid,
                                 uint64_t nr_events, bool valid)
  {
@@ -911,7 +915,7 @@ index f710fb2727..bbeaa1659e 100644
      struct host_its *hw_its;
      struct its_device *dev = NULL;
      struct rb_node **new = &d->arch.vgic.its_devices.rb_node, *parent = NULL;
-@@ -715,17 +1094,12 @@ int gicv3_its_map_guest_device(struct domain *d,
+@@ -704,20 +1086,12 @@ int gicv3_its_map_guest_device(struct domain *d,
      if ( !valid )
          goto out_unlock;
  
@@ -921,6 +925,9 @@ index f710fb2727..bbeaa1659e 100644
 -    itt_addr = _xzalloc(nr_events * hw_its->itte_size, 256);
 -    if ( !itt_addr )
 -        goto out_unlock;
+-
+-    clean_and_invalidate_dcache_va_range(itt_addr,
+-                                         nr_events * hw_its->itte_size);
 -
 -    dev = xzalloc(struct its_device);
 +    dev = its_create_device(hw_its, host_devid, nr_events);
@@ -932,7 +939,7 @@ index f710fb2727..bbeaa1659e 100644
      /*
       * Allocate the pending_irqs for each virtual LPI. They will be put
       * into the domain's radix tree upon the guest's MAPTI command.
-@@ -746,17 +1120,13 @@ int gicv3_its_map_guest_device(struct domain *d,
+@@ -738,17 +1112,13 @@ int gicv3_its_map_guest_device(struct domain *d,
      if ( !dev->host_lpi_blocks )
          goto out_unlock;
  
@@ -955,7 +962,7 @@ index f710fb2727..bbeaa1659e 100644
  
      rb_link_node(&dev->rbnode, parent, new);
      rb_insert_color(&dev->rbnode, &d->arch.vgic.its_devices);
-@@ -773,7 +1143,7 @@ int gicv3_its_map_guest_device(struct domain *d,
+@@ -765,7 +1135,7 @@ int gicv3_its_map_guest_device(struct domain *d,
          if ( ret < 0 )
              break;
  
@@ -964,7 +971,7 @@ index f710fb2727..bbeaa1659e 100644
                                          dev->host_lpi_blocks[i], LPI_BLOCK);
          if ( ret < 0 )
              break;
-@@ -805,19 +1175,14 @@ out_unlock:
+@@ -797,19 +1167,14 @@ out_unlock:
  
  out:
      if ( dev )
@@ -987,7 +994,7 @@ index f710fb2727..bbeaa1659e 100644
  {
      struct rb_node *node = d->arch.vgic.its_devices.rb_node;
      struct its_device *dev;
-@@ -886,7 +1251,8 @@ int gicv3_remove_guest_event(struct domain *d, paddr_t vdoorbell_address,
+@@ -878,7 +1243,8 @@ int gicv3_remove_guest_event(struct domain *d, paddr_t vdoorbell_address,
      if ( host_lpi == INVALID_LPI )
          return -EINVAL;
  
@@ -997,7 +1004,7 @@ index f710fb2727..bbeaa1659e 100644
  
      return 0;
  }
-@@ -913,7 +1279,8 @@ struct pending_irq *gicv3_assign_guest_event(struct domain *d,
+@@ -905,7 +1271,8 @@ struct pending_irq *gicv3_assign_guest_event(struct domain *d,
      if ( !pirq )
          return NULL;
  
@@ -1007,7 +1014,7 @@ index f710fb2727..bbeaa1659e 100644
  
      return pirq;
  }
-@@ -1166,6 +1533,9 @@ int gicv3_its_init(void)
+@@ -1104,6 +1471,9 @@ int gicv3_its_init(void)
      else
          gicv3_its_acpi_init();
  
@@ -1018,10 +1025,10 @@ index f710fb2727..bbeaa1659e 100644
      {
          ret = gicv3_its_init_single_its(hw_its);
 diff --git a/xen/arch/arm/gic-v3-lpi.c b/xen/arch/arm/gic-v3-lpi.c
-index 61d90eb386..cfdf3fbb7b 100644
+index eb0a5535e496..dbc7b95f2511 100644
 --- a/xen/arch/arm/gic-v3-lpi.c
 +++ b/xen/arch/arm/gic-v3-lpi.c
-@@ -27,6 +27,7 @@
+@@ -16,6 +16,7 @@
  #include <xen/warning.h>
  #include <asm/atomic.h>
  #include <asm/domain.h>
@@ -1029,7 +1036,7 @@ index 61d90eb386..cfdf3fbb7b 100644
  #include <asm/gic.h>
  #include <asm/gic_v3_defs.h>
  #include <asm/gic_v3_its.h>
-@@ -50,36 +51,14 @@ union host_lpi {
+@@ -39,36 +40,14 @@ union host_lpi {
      struct {
          uint32_t virt_lpi;
          uint16_t dom_id;
@@ -1068,7 +1075,7 @@ index 61d90eb386..cfdf3fbb7b 100644
  
  struct lpi_redist_data {
      paddr_t             redist_addr;
-@@ -91,6 +70,7 @@ static DEFINE_PER_CPU(struct lpi_redist_data, lpi_redist);
+@@ -80,6 +59,7 @@ static DEFINE_PER_CPU(struct lpi_redist_data, lpi_redist);
  
  #define MAX_NR_HOST_LPIS   (lpi_data.max_host_lpi_ids - LPI_OFFSET)
  #define HOST_LPIS_PER_PAGE      (PAGE_SIZE / sizeof(union host_lpi))
@@ -1076,7 +1083,7 @@ index 61d90eb386..cfdf3fbb7b 100644
  
  static union host_lpi *gic_get_host_lpi(uint32_t plpi)
  {
-@@ -193,24 +173,49 @@ void gicv3_do_LPI(unsigned int lpi)
+@@ -182,24 +162,49 @@ void gicv3_do_LPI(unsigned int lpi)
       * ignore them, as they have no further state and no-one can expect
       * to see them if they have not been mapped.
       */
@@ -1138,7 +1145,7 @@ index 61d90eb386..cfdf3fbb7b 100644
  
      rcu_unlock_domain(d);
  
-@@ -219,7 +224,8 @@ out:
+@@ -208,7 +213,8 @@ out:
  }
  
  void gicv3_lpi_update_host_entry(uint32_t host_lpi, int domain_id,
@@ -1148,7 +1155,7 @@ index 61d90eb386..cfdf3fbb7b 100644
  {
      union host_lpi *hlpip, hlpi;
  
-@@ -229,19 +235,23 @@ void gicv3_lpi_update_host_entry(uint32_t host_lpi, int domain_id,
+@@ -218,19 +224,23 @@ void gicv3_lpi_update_host_entry(uint32_t host_lpi, int domain_id,
  
      hlpip = &lpi_data.host_lpis[host_lpi / HOST_LPIS_PER_PAGE][host_lpi % HOST_LPIS_PER_PAGE];
  
@@ -1179,7 +1186,7 @@ index 61d90eb386..cfdf3fbb7b 100644
      /*
       * The pending table holds one bit per LPI and even covers bits for
       * interrupt IDs below 8192, so we allocate the full range.
-@@ -250,18 +260,32 @@ static int gicv3_lpi_allocate_pendtable(unsigned int cpu)
+@@ -239,18 +249,32 @@ static int gicv3_lpi_allocate_pendtable(unsigned int cpu)
       */
      pendtable = _xzalloc(lpi_data.max_host_lpi_ids / 8, SZ_64K);
      if ( !pendtable )
@@ -1215,7 +1222,7 @@ index 61d90eb386..cfdf3fbb7b 100644
  
      return 0;
  }
-@@ -304,6 +328,27 @@ static int gicv3_lpi_set_pendtable(void __iomem *rdist_base)
+@@ -293,6 +317,27 @@ static int gicv3_lpi_set_pendtable(void __iomem *rdist_base)
      return 0;
  }
  
@@ -1243,7 +1250,7 @@ index 61d90eb386..cfdf3fbb7b 100644
  /*
   * Tell a redistributor about the (shared) property table, allocating one
   * if not already done.
-@@ -322,25 +367,18 @@ static int gicv3_lpi_set_proptable(void __iomem * rdist_base)
+@@ -311,25 +356,18 @@ static int gicv3_lpi_set_proptable(void __iomem * rdist_base)
       */
      if ( !lpi_data.lpi_property )
      {
@@ -1275,7 +1282,7 @@ index 61d90eb386..cfdf3fbb7b 100644
  
      reg |= virt_to_maddr(lpi_data.lpi_property);
  
-@@ -496,6 +534,20 @@ static int find_unused_host_lpi(uint32_t start, uint32_t *index)
+@@ -485,6 +523,20 @@ static int find_unused_host_lpi(uint32_t start, uint32_t *index)
      return -1;
  }
  
@@ -1296,7 +1303,7 @@ index 61d90eb386..cfdf3fbb7b 100644
  /*
   * Allocate a block of 32 LPIs on the given host ITS for device "devid",
   * starting with "eventid". Put them into the respective ITT by issuing a
-@@ -561,6 +613,7 @@ int gicv3_allocate_host_lpi_block(struct domain *d, uint32_t *first_lpi)
+@@ -550,6 +602,7 @@ int gicv3_allocate_host_lpi_block(struct domain *d, uint32_t *first_lpi)
           */
          hlpi.virt_lpi = INVALID_LPI;
          hlpi.dom_id = d->domain_id;
@@ -1304,7 +1311,7 @@ index 61d90eb386..cfdf3fbb7b 100644
          write_u64_atomic(&lpi_data.host_lpis[chunk][lpi_idx + i].data,
                           hlpi.data);
  
-@@ -568,7 +621,8 @@ int gicv3_allocate_host_lpi_block(struct domain *d, uint32_t *first_lpi)
+@@ -557,7 +610,8 @@ int gicv3_allocate_host_lpi_block(struct domain *d, uint32_t *first_lpi)
           * Enable this host LPI, so we don't have to do this during the
           * guest's runtime.
           */
@@ -1314,7 +1321,7 @@ index 61d90eb386..cfdf3fbb7b 100644
      }
  
      lpi_data.next_free_lpi = lpi + LPI_BLOCK;
-@@ -580,10 +634,6 @@ int gicv3_allocate_host_lpi_block(struct domain *d, uint32_t *first_lpi)
+@@ -569,10 +623,6 @@ int gicv3_allocate_host_lpi_block(struct domain *d, uint32_t *first_lpi)
       */
      spin_unlock(&lpi_data.host_lpis_lock);
  
@@ -1326,10 +1333,10 @@ index 61d90eb386..cfdf3fbb7b 100644
  
      return 0;
 diff --git a/xen/arch/arm/gic-v3.c b/xen/arch/arm/gic-v3.c
-index cfea0504a1..afb742f351 100644
+index 95e4f020febe..4bb7fd8a3875 100644
 --- a/xen/arch/arm/gic-v3.c
 +++ b/xen/arch/arm/gic-v3.c
-@@ -41,6 +41,9 @@
+@@ -32,6 +32,9 @@
  #include <asm/gic.h>
  #include <asm/gic_v3_defs.h>
  #include <asm/gic_v3_its.h>
@@ -1339,7 +1346,7 @@ index cfea0504a1..afb742f351 100644
  #include <asm/io.h>
  #include <asm/sysregs.h>
  
-@@ -56,13 +59,66 @@ static struct {
+@@ -47,13 +50,66 @@ static struct {
  
  static struct gic_info gicv3_info;
  
@@ -1407,7 +1414,7 @@ index cfea0504a1..afb742f351 100644
  /*
   * Saves all 16(Max) LR registers. Though number of LRs implemented
   * is implementation specific.
-@@ -369,13 +425,15 @@ static void gicv3_save_state(struct vcpu *v)
+@@ -360,13 +416,15 @@ static void gicv3_save_state(struct vcpu *v)
       * are now visible to the system register interface
       */
      dsb(sy);
@@ -1424,7 +1431,7 @@ index cfea0504a1..afb742f351 100644
  {
      register_t val;
  
-@@ -404,6 +462,9 @@ static void gicv3_restore_state(const struct vcpu *v)
+@@ -395,6 +453,9 @@ static void gicv3_restore_state(const struct vcpu *v)
      restore_aprn_regs(&v->arch.gic);
      gicv3_restore_lrs(v);
  
@@ -1434,7 +1441,7 @@ index cfea0504a1..afb742f351 100644
      /*
       * Make sure all stores are visible the GIC
       */
-@@ -702,7 +763,8 @@ static bool gicv3_enable_lpis(void)
+@@ -696,7 +757,8 @@ static bool gicv3_enable_lpis(void)
      return true;
  }
  
@@ -1444,11 +1451,8 @@ index cfea0504a1..afb742f351 100644
  {
      int i;
      uint32_t aff;
-@@ -740,43 +802,18 @@ static int __init gicv3_populate_rdist(void)
+@@ -740,40 +802,16 @@ static int __init gicv3_populate_rdist(void)
  
-         do {
-             typer = readq_relaxed(ptr + GICR_TYPER);
--
              if ( (typer >> 32) == aff )
              {
 +                int ret;
@@ -1496,7 +1500,7 @@ index cfea0504a1..afb742f351 100644
                  return 0;
              }
  
-@@ -791,15 +828,106 @@ static int __init gicv3_populate_rdist(void)
+@@ -788,15 +826,106 @@ static int __init gicv3_populate_rdist(void)
                  if ( typer & GICR_TYPER_VLPIS )
                      ptr += SZ_64K * 2; /* Skip VLPI_base + reserved page */
              }
@@ -1555,7 +1559,7 @@ index cfea0504a1..afb742f351 100644
              smp_processor_id(), cpu_logical_map(smp_processor_id()));
 +    return -ENODEV;
 +}
- 
++
 +#ifdef CONFIG_GICV4
 +static int __init __gicv4_update_vlpi_properties(struct rdist_region *region,
 +                                                 void __iomem *ptr)
@@ -1592,19 +1596,19 @@ index cfea0504a1..afb742f351 100644
 +{
 +    if ( gic_iterate_rdists(__gicv4_update_vlpi_properties) == 0 )
 +        return 0;
-+
-+    return -ENODEV;
-+}
+ 
+     return -ENODEV;
+ }
 +#else
 +static int __init gicv4_update_vlpi_properties(void)
 +{
-     return -ENODEV;
- }
++    return -ENODEV;
++}
 +#endif
  
  static int gicv3_cpu_init(void)
  {
-@@ -809,6 +937,10 @@ static int gicv3_cpu_init(void)
+@@ -806,6 +935,10 @@ static int gicv3_cpu_init(void)
      if ( gicv3_populate_rdist() )
          return -ENODEV;
  
@@ -1615,7 +1619,7 @@ index cfea0504a1..afb742f351 100644
      if ( gicv3_enable_redist() )
          return -ENODEV;
  
-@@ -820,6 +952,23 @@ static int gicv3_cpu_init(void)
+@@ -817,6 +950,23 @@ static int gicv3_cpu_init(void)
          ret = gicv3_its_setup_collection(smp_processor_id());
          if ( ret )
              return ret;
@@ -1639,7 +1643,7 @@ index cfea0504a1..afb742f351 100644
      }
  
      /* Set priority on PPI and SGI interrupts */
-@@ -1034,10 +1183,10 @@ static void gicv3_update_lr(int lr, unsigned int virq, uint8_t priority,
+@@ -1034,10 +1184,10 @@ static void gicv3_update_lr(int lr, unsigned int virq, uint8_t priority,
      val =  (((uint64_t)state & 0x3) << ICH_LR_STATE_SHIFT);
  
      /*
@@ -1653,7 +1657,7 @@ index cfea0504a1..afb742f351 100644
          val |= ICH_LR_GRP1;
  
      val |= (uint64_t)priority << ICH_LR_PRIORITY_SHIFT;
-@@ -1123,10 +1272,10 @@ static void gicv3_write_lr(int lr_reg, const struct gic_lr *lr)
+@@ -1123,10 +1273,10 @@ static void gicv3_write_lr(int lr_reg, const struct gic_lr *lr)
      }
  
      /*
@@ -1667,7 +1671,7 @@ index cfea0504a1..afb742f351 100644
          lrv |= ICH_LR_GRP1;
  
      gicv3_ich_write_lr(lr_reg, lrv);
-@@ -1747,6 +1896,25 @@ static bool gic_dist_supports_lpis(void)
+@@ -1744,6 +1894,25 @@ static bool gic_dist_supports_lpis(void)
      return (readl_relaxed(GICD + GICD_TYPER) & GICD_TYPE_LPIS);
  }
  
@@ -1693,7 +1697,7 @@ index cfea0504a1..afb742f351 100644
  /* Set up the GIC */
  static int __init gicv3_init(void)
  {
-@@ -1821,6 +1989,9 @@ static int __init gicv3_init(void)
+@@ -1818,6 +1987,9 @@ static int __init gicv3_init(void)
  
      gicv3_hyp_init();
  
@@ -1705,7 +1709,7 @@ index cfea0504a1..afb742f351 100644
  
 diff --git a/xen/arch/arm/gic-v4-its.c b/xen/arch/arm/gic-v4-its.c
 new file mode 100644
-index 0000000000..ca853d1840
+index 000000000000..ca853d184083
 --- /dev/null
 +++ b/xen/arch/arm/gic-v4-its.c
 @@ -0,0 +1,2061 @@
@@ -3771,10 +3775,10 @@ index 0000000000..ca853d1840
 + * End:
 + */
 diff --git a/xen/arch/arm/gic-vgic.c b/xen/arch/arm/gic-vgic.c
-index 98c021f1a8..6fc2933cab 100644
+index 56490dbc436d..052a35110507 100644
 --- a/xen/arch/arm/gic-vgic.c
 +++ b/xen/arch/arm/gic-vgic.c
-@@ -387,6 +387,12 @@ int vgic_vcpu_pending_irq(struct vcpu *v)
+@@ -378,6 +378,12 @@ int vgic_vcpu_pending_irq(struct vcpu *v)
          }
      }
  
@@ -3788,7 +3792,7 @@ index 98c021f1a8..6fc2933cab 100644
      spin_unlock_irqrestore(&v->arch.vgic.lock, flags);
      return rc;
 diff --git a/xen/arch/arm/include/asm/domain.h b/xen/arch/arm/include/asm/domain.h
-index 487ac83a7f..af605a221c 100644
+index 278496811648..ab1bfc220683 100644
 --- a/xen/arch/arm/include/asm/domain.h
 +++ b/xen/arch/arm/include/asm/domain.h
 @@ -9,6 +9,9 @@
@@ -3801,7 +3805,7 @@ index 487ac83a7f..af605a221c 100644
  #include <asm/vgic.h>
  #include <asm/vpl011.h>
  #include <public/hvm/params.h>
-@@ -118,7 +121,6 @@ struct arch_domain
+@@ -123,7 +126,6 @@ struct arch_domain
  #ifdef CONFIG_MPAM
      struct mpam_domain mpam;
  #endif
@@ -3809,15 +3813,15 @@ index 487ac83a7f..af605a221c 100644
  }  __cacheline_aligned;
  
  struct arch_vcpu
-@@ -239,6 +241,7 @@ struct arch_vcpu
+@@ -250,6 +252,7 @@ struct arch_vcpu
      uint64_t mpam0_el1;
      uint64_t mpam1_el1;
  #endif
 +    bool wfi_nomask;
  }  __cacheline_aligned;
  
- void vcpu_show_execution_state(struct vcpu *);
-@@ -293,7 +296,13 @@ static inline void free_vcpu_guest_context(struct vcpu_guest_context *vgc)
+ void vcpu_show_registers(const struct vcpu *);
+@@ -303,7 +306,13 @@ static inline void free_vcpu_guest_context(struct vcpu_guest_context *vgc)
      xfree(vgc);
  }
  
@@ -3833,7 +3837,7 @@ index 487ac83a7f..af605a221c 100644
  #define arch_vm_assist_valid_mask(d) (1UL << VMASST_TYPE_runstate_update_flag)
  
 diff --git a/xen/arch/arm/include/asm/event.h b/xen/arch/arm/include/asm/event.h
-index b14c166ad6..1e4ec01765 100644
+index b14c166ad640..1e4ec0176519 100644
 --- a/xen/arch/arm/include/asm/event.h
 +++ b/xen/arch/arm/include/asm/event.h
 @@ -35,7 +35,7 @@ static inline int local_events_need_delivery_nomask(void)
@@ -3846,7 +3850,7 @@ index b14c166ad6..1e4ec01765 100644
      return local_events_need_delivery_nomask();
  }
 diff --git a/xen/arch/arm/include/asm/gic.h b/xen/arch/arm/include/asm/gic.h
-index 76e3fa5dc4..f3c83389c0 100644
+index f1ef347edc8c..7912538078af 100644
 --- a/xen/arch/arm/include/asm/gic.h
 +++ b/xen/arch/arm/include/asm/gic.h
 @@ -235,6 +235,8 @@ enum gic_version {
@@ -3868,10 +3872,10 @@ index 76e3fa5dc4..f3c83389c0 100644
      void (*dump_state)(const struct vcpu *);
  
 diff --git a/xen/arch/arm/include/asm/gic_v3_defs.h b/xen/arch/arm/include/asm/gic_v3_defs.h
-index 34ed5f857d..4ddb6c8577 100644
+index 227533868f8d..c3c070dff34d 100644
 --- a/xen/arch/arm/include/asm/gic_v3_defs.h
 +++ b/xen/arch/arm/include/asm/gic_v3_defs.h
-@@ -53,11 +53,18 @@
+@@ -55,11 +55,18 @@
  
  #define GICD_TYPE_LPIS               (1U << 17)
  
@@ -3890,7 +3894,7 @@ index 34ed5f857d..4ddb6c8577 100644
  
  #define GICC_CTLR_EL1_EOImode_drop   (1U << 1)
  
-@@ -105,11 +112,23 @@
+@@ -107,11 +114,23 @@
  #define GICR_IGRPMODR0               (0x0D00)
  #define GICR_NSACR                   (0x0E00)
  
@@ -3914,7 +3918,7 @@ index 34ed5f857d..4ddb6c8577 100644
  #define GICR_TYPER_PROC_NUM_SHIFT    8
  #define GICR_TYPER_PROC_NUM_MASK     (0xffff << GICR_TYPER_PROC_NUM_SHIFT)
  
-@@ -208,6 +227,12 @@ struct rdist_region {
+@@ -210,6 +229,12 @@ struct rdist_region {
      bool single_rdist;
  };
  
@@ -3928,7 +3932,7 @@ index 34ed5f857d..4ddb6c8577 100644
  
  /*
 diff --git a/xen/arch/arm/include/asm/gic_v3_its.h b/xen/arch/arm/include/asm/gic_v3_its.h
-index 54813de5cd..c69c8c8f2c 100644
+index 7b985275a21a..f65c95e9cbde 100644
 --- a/xen/arch/arm/include/asm/gic_v3_its.h
 +++ b/xen/arch/arm/include/asm/gic_v3_its.h
 @@ -20,9 +20,15 @@
@@ -4137,8 +4141,8 @@ index 54813de5cd..c69c8c8f2c 100644
  #ifdef CONFIG_ACPI
  unsigned long gicv3_its_make_hwdom_madt(const struct domain *d,
                                          void *base_ptr);
-@@ -200,8 +330,48 @@ struct pending_irq *gicv3_assign_guest_event(struct domain *d, paddr_t doorbell,
-                                              uint32_t devid, uint32_t eventid,
+@@ -199,8 +329,48 @@ struct pending_irq *gicv3_assign_guest_event(struct domain *d,
+                                              uint32_t vdevid, uint32_t eventid,
                                               uint32_t virt_lpi);
  void gicv3_lpi_update_host_entry(uint32_t host_lpi, int domain_id,
 -                                 uint32_t virt_lpi);
@@ -4190,7 +4194,7 @@ index 54813de5cd..c69c8c8f2c 100644
  #ifdef CONFIG_ACPI
 diff --git a/xen/arch/arm/include/asm/gic_v4_its.h b/xen/arch/arm/include/asm/gic_v4_its.h
 new file mode 100644
-index 0000000000..12b0a2c3d3
+index 000000000000..12b0a2c3d32d
 --- /dev/null
 +++ b/xen/arch/arm/include/asm/gic_v4_its.h
 @@ -0,0 +1,146 @@
@@ -4341,7 +4345,7 @@ index 0000000000..12b0a2c3d3
 + */
 +
 diff --git a/xen/arch/arm/include/asm/mmio.h b/xen/arch/arm/include/asm/mmio.h
-index 79e64d9af8..5ae1f85e9f 100644
+index b22cfdac5be9..c98f3e4ba4fe 100644
 --- a/xen/arch/arm/include/asm/mmio.h
 +++ b/xen/arch/arm/include/asm/mmio.h
 @@ -24,7 +24,7 @@
@@ -4354,7 +4358,7 @@ index 79e64d9af8..5ae1f85e9f 100644
  enum instr_decode_state
  {
 diff --git a/xen/arch/arm/include/asm/vgic.h b/xen/arch/arm/include/asm/vgic.h
-index 3d44868039..bcfbfb1063 100644
+index 922779ce146a..6717958a9ee3 100644
 --- a/xen/arch/arm/include/asm/vgic.h
 +++ b/xen/arch/arm/include/asm/vgic.h
 @@ -69,6 +69,7 @@ struct pending_irq
@@ -4463,7 +4467,7 @@ index 3d44868039..bcfbfb1063 100644
  struct vgic_dist {
      /* Version of the vGIC */
      enum gic_version version;
-@@ -176,6 +249,10 @@ struct vgic_dist {
+@@ -178,6 +251,10 @@ struct vgic_dist {
       */
      bool rdists_enabled;                /* Is any redistributor enabled? */
      bool has_its;
@@ -4474,7 +4478,7 @@ index 3d44868039..bcfbfb1063 100644
  #endif
  };
  
-@@ -210,6 +287,9 @@ struct vgic_cpu {
+@@ -212,6 +289,9 @@ struct vgic_cpu {
  #define VGIC_V3_RDIST_LAST      (1 << 0)        /* last vCPU of the rdist */
  #define VGIC_V3_LPIS_ENABLED    (1 << 1)
      uint8_t flags;
@@ -4484,7 +4488,7 @@ index 3d44868039..bcfbfb1063 100644
  };
  
  struct sgi_target {
-@@ -292,7 +372,8 @@ static inline paddr_t vgic_dist_base(const struct vgic_dist *vgic)
+@@ -294,7 +374,8 @@ static inline paddr_t vgic_dist_base(const struct vgic_dist *vgic)
  extern struct vcpu *vgic_get_target_vcpu(struct vcpu *v, unsigned int virq);
  extern void vgic_remove_irq_from_queues(struct vcpu *v, struct pending_irq *p);
  extern void gic_remove_from_lr_pending(struct vcpu *v, struct pending_irq *p);
@@ -4493,8 +4497,8 @@ index 3d44868039..bcfbfb1063 100644
 +                                  bool hw);
  extern struct pending_irq *irq_to_pending(struct vcpu *v, unsigned int irq);
  extern struct pending_irq *spi_to_pending(struct domain *d, unsigned int irq);
- extern struct vgic_irq_rank *vgic_rank_offset(struct vcpu *v, int b, int n, int s);
-@@ -312,6 +393,45 @@ extern bool vgic_migrate_irq(struct vcpu *old, struct vcpu *new, unsigned int ir
+ extern struct vgic_irq_rank *vgic_rank_offset(struct vcpu *v,
+@@ -317,6 +398,45 @@ extern bool vgic_migrate_irq(struct vcpu *old, struct vcpu *new, unsigned int ir
  extern void vgic_check_inflight_irqs_pending(struct domain *d, struct vcpu *v,
                                               unsigned int rank, uint32_t r);
  
@@ -4541,10 +4545,10 @@ index 3d44868039..bcfbfb1063 100644
  
  /*** Common VGIC functions used by Xen arch code ****/
 diff --git a/xen/arch/arm/vgic-v3-its.c b/xen/arch/arm/vgic-v3-its.c
-index 0467d03ab7..e63396591e 100644
+index cc83d8cf90de..558743c83885 100644
 --- a/xen/arch/arm/vgic-v3-its.c
 +++ b/xen/arch/arm/vgic-v3-its.c
-@@ -43,6 +43,9 @@
+@@ -32,6 +32,9 @@
  #include <asm/mmio.h>
  #include <asm/gic_v3_defs.h>
  #include <asm/gic_v3_its.h>
@@ -4554,7 +4558,7 @@ index 0467d03ab7..e63396591e 100644
  #include <asm/vgic.h>
  #include <asm/vgic-emul.h>
  #include <asm/vreg.h>
-@@ -389,6 +392,7 @@ static int its_handle_int(struct virt_its *its, uint64_t *cmdptr)
+@@ -375,6 +378,7 @@ static int its_handle_int(struct virt_its *its, uint64_t *cmdptr)
      struct vcpu *vcpu;
      uint32_t vlpi;
      bool ret;
@@ -4562,7 +4566,7 @@ index 0467d03ab7..e63396591e 100644
  
      spin_lock(&its->its_lock);
      ret = read_itte(its, devid, eventid, &vcpu, &vlpi);
-@@ -399,6 +403,14 @@ static int its_handle_int(struct virt_its *its, uint64_t *cmdptr)
+@@ -385,6 +389,14 @@ static int its_handle_int(struct virt_its *its, uint64_t *cmdptr)
      if ( vlpi == INVALID_LPI )
          return -1;
  
@@ -4577,7 +4581,7 @@ index 0467d03ab7..e63396591e 100644
      vgic_vcpu_inject_lpi(its->d, vlpi);
  
      return 0;
-@@ -455,6 +467,12 @@ static int its_handle_clear(struct virt_its *its, uint64_t *cmdptr)
+@@ -440,6 +452,12 @@ static int its_handle_clear(struct virt_its *its, uint64_t *cmdptr)
      if ( unlikely(!p) )
          goto out_unlock;
  
@@ -4590,7 +4594,7 @@ index 0467d03ab7..e63396591e 100644
      /*
       * TODO: This relies on the VCPU being correct in the ITS tables.
       * This can be fixed by either using a per-IRQ lock or by using
-@@ -487,7 +505,7 @@ out_unlock:
+@@ -472,7 +490,7 @@ out_unlock:
   * property table and update the virtual IRQ's state in the given pending_irq.
   * Must be called with the respective VGIC VCPU lock held.
   */
@@ -4599,7 +4603,7 @@ index 0467d03ab7..e63396591e 100644
  {
      paddr_t addr;
      uint8_t property;
-@@ -517,6 +535,9 @@ static int update_lpi_property(struct domain *d, struct pending_irq *p)
+@@ -502,6 +520,9 @@ static int update_lpi_property(struct domain *d, struct pending_irq *p)
      else
          clear_bit(GIC_IRQ_GUEST_ENABLED, &p->status);
  
@@ -4609,7 +4613,7 @@ index 0467d03ab7..e63396591e 100644
      return 0;
  }
  
-@@ -530,6 +551,9 @@ static int update_lpi_property(struct domain *d, struct pending_irq *p)
+@@ -515,6 +536,9 @@ static int update_lpi_property(struct domain *d, struct pending_irq *p)
   */
  static void update_lpi_vgic_status(struct vcpu *v, struct pending_irq *p)
  {
@@ -4619,7 +4623,7 @@ index 0467d03ab7..e63396591e 100644
      ASSERT(spin_is_locked(&v->arch.vgic.lock));
  
      if ( test_bit(GIC_IRQ_GUEST_ENABLED, &p->status) )
-@@ -579,7 +603,7 @@ static int its_handle_inv(struct virt_its *its, uint64_t *cmdptr)
+@@ -564,7 +588,7 @@ static int its_handle_inv(struct virt_its *its, uint64_t *cmdptr)
      spin_lock_irqsave(&vcpu->arch.vgic.lock, flags);
  
      /* Read the property table and update our cached status. */
@@ -4628,7 +4632,7 @@ index 0467d03ab7..e63396591e 100644
          goto out_unlock;
  
      /* Check whether the LPI needs to go on a VCPU. */
-@@ -651,7 +675,7 @@ static int its_handle_invall(struct virt_its *its, uint64_t *cmdptr)
+@@ -636,7 +660,7 @@ static int its_handle_invall(struct virt_its *its, uint64_t *cmdptr)
  
              vlpi = pirqs[i]->irq;
              /* If that fails for a single LPI, carry on to handle the rest. */
@@ -4637,7 +4641,7 @@ index 0467d03ab7..e63396591e 100644
              if ( !err )
                  update_lpi_vgic_status(vcpu, pirqs[i]);
              else
-@@ -668,6 +692,9 @@ static int its_handle_invall(struct virt_its *its, uint64_t *cmdptr)
+@@ -653,6 +677,9 @@ static int its_handle_invall(struct virt_its *its, uint64_t *cmdptr)
      read_unlock(&its->d->arch.vgic.pend_lpi_tree_lock);
      spin_unlock_irqrestore(&vcpu->arch.vgic.lock, flags);
  
@@ -4647,7 +4651,7 @@ index 0467d03ab7..e63396591e 100644
      return ret;
  }
  
-@@ -688,6 +715,14 @@ static int its_discard_event(struct virt_its *its,
+@@ -673,6 +700,14 @@ static int its_discard_event(struct virt_its *its,
      if ( vlpi == INVALID_LPI )
          return -ENOENT;
  
@@ -4662,7 +4666,7 @@ index 0467d03ab7..e63396591e 100644
      /*
       * TODO: This relies on the VCPU being correct in the ITS tables.
       * This can be fixed by either using a per-IRQ lock or by using
-@@ -709,7 +744,7 @@ static int its_discard_event(struct virt_its *its,
+@@ -694,7 +729,7 @@ static int its_discard_event(struct virt_its *its,
  
      /* Cleanup the pending_irq and disconnect it from the LPI. */
      vgic_remove_irq_from_queues(vcpu, p);
@@ -4671,7 +4675,7 @@ index 0467d03ab7..e63396591e 100644
  
      spin_unlock_irqrestore(&vcpu->arch.vgic.lock, flags);
  
-@@ -840,24 +875,38 @@ static int its_handle_mapti(struct virt_its *its, uint64_t *cmdptr)
+@@ -837,24 +872,38 @@ static int its_handle_mapti(struct virt_its *its, uint64_t *cmdptr)
      if ( !pirq )
          goto out_remove_mapping;
  
@@ -4719,7 +4723,7 @@ index 0467d03ab7..e63396591e 100644
      /*
       * Now insert the pending_irq into the domain's LPI tree, so that
       * it becomes live.
-@@ -915,6 +964,13 @@ static int its_handle_movi(struct virt_its *its, uint64_t *cmdptr)
+@@ -912,6 +961,13 @@ static int its_handle_movi(struct virt_its *its, uint64_t *cmdptr)
      if ( unlikely(!p) )
          goto out_unlock;
  
@@ -4734,10 +4738,10 @@ index 0467d03ab7..e63396591e 100644
       * TODO: This relies on the VCPU being correct in the ITS tables.
       * This can be fixed by either using a per-IRQ lock or by using
 diff --git a/xen/arch/arm/vgic-v3.c b/xen/arch/arm/vgic-v3.c
-index e91ee70771..e777451b18 100644
+index 544f54cb1f72..239c73dd04a8 100644
 --- a/xen/arch/arm/vgic-v3.c
 +++ b/xen/arch/arm/vgic-v3.c
-@@ -30,6 +30,7 @@
+@@ -21,6 +21,7 @@
  #include <asm/current.h>
  #include <asm/gic_v3_defs.h>
  #include <asm/gic_v3_its.h>
@@ -4745,7 +4749,7 @@ index e91ee70771..e777451b18 100644
  #include <asm/mmio.h>
  #include <asm/vgic.h>
  #include <asm/vgic-emul.h>
-@@ -839,16 +840,22 @@ static int __vgic_v3_distr_common_mmio_write(const char *name, struct vcpu *v,
+@@ -840,16 +841,22 @@ static int __vgic_v3_distr_common_mmio_write(const char *name, struct vcpu *v,
      case VRANGE32(GICD_IPRIORITYR, GICD_IPRIORITYRN):
      {
          uint32_t *ipriorityr, priority;
@@ -4768,7 +4772,7 @@ index e91ee70771..e777451b18 100644
          vgic_unlock_rank(v, rank, flags);
          return 1;
      }
-@@ -892,6 +899,9 @@ static int vgic_v3_rdistr_sgi_mmio_read(struct vcpu *v, mmio_info_t *info,
+@@ -893,6 +900,9 @@ static int vgic_v3_rdistr_sgi_mmio_read(struct vcpu *v, mmio_info_t *info,
                                          uint32_t gicr_reg, register_t *r)
  {
      struct hsr_dabt dabt = info->dabt;
@@ -4778,7 +4782,7 @@ index e91ee70771..e777451b18 100644
  
      switch ( gicr_reg )
      {
-@@ -909,8 +919,33 @@ static int vgic_v3_rdistr_sgi_mmio_read(struct vcpu *v, mmio_info_t *info,
+@@ -910,8 +920,33 @@ static int vgic_v3_rdistr_sgi_mmio_read(struct vcpu *v, mmio_info_t *info,
          return __vgic_v3_distr_common_mmio_read("vGICR: SGI", v, info,
                                                  gicr_reg, r);
  
@@ -4813,7 +4817,7 @@ index e91ee70771..e777451b18 100644
      case VREG32(GICR_ICPENDR0):
          goto read_as_zero;
  
-@@ -962,6 +997,10 @@ read_reserved:
+@@ -963,6 +998,10 @@ read_reserved:
      *r = 0;
      return 1;
  
@@ -4824,7 +4828,7 @@ index e91ee70771..e777451b18 100644
  }
  
  static int vgic_v3_rdistr_sgi_mmio_write(struct vcpu *v, mmio_info_t *info,
-@@ -1138,8 +1177,18 @@ static int vgic_v3_distr_mmio_read(struct vcpu *v, mmio_info_t *info,
+@@ -1139,8 +1178,18 @@ static int vgic_v3_distr_mmio_read(struct vcpu *v, mmio_info_t *info,
          *r = vreg_reg32_extract(GICV3_GICD_IIDR_VAL, info);
          return 1;
  
@@ -4845,7 +4849,7 @@ index e91ee70771..e777451b18 100644
  
      case VREG32(GICD_STATUSR):
          /*
-@@ -1303,6 +1352,7 @@ static int vgic_v3_distr_mmio_write(struct vcpu *v, mmio_info_t *info,
+@@ -1305,6 +1354,7 @@ static int vgic_v3_distr_mmio_write(struct vcpu *v, mmio_info_t *info,
      case VREG32(GICD_CTLR):
      {
          uint32_t ctlr = 0;
@@ -4853,7 +4857,7 @@ index e91ee70771..e777451b18 100644
  
          if ( dabt.size != DABT_WORD ) goto bad_width;
  
-@@ -1310,7 +1360,31 @@ static int vgic_v3_distr_mmio_write(struct vcpu *v, mmio_info_t *info,
+@@ -1312,7 +1362,31 @@ static int vgic_v3_distr_mmio_write(struct vcpu *v, mmio_info_t *info,
  
          vreg_reg32_update(&ctlr, r, info);
  
@@ -4886,7 +4890,7 @@ index e91ee70771..e777451b18 100644
          if ( ctlr & GICD_CTLR_ENABLE_G1A )
              v->domain->arch.vgic.ctlr |= GICD_CTLR_ENABLE_G1A;
          else
-@@ -1328,8 +1402,9 @@ static int vgic_v3_distr_mmio_write(struct vcpu *v, mmio_info_t *info,
+@@ -1330,8 +1404,9 @@ static int vgic_v3_distr_mmio_write(struct vcpu *v, mmio_info_t *info,
          /* RO -- write ignored */
          goto write_ignore_32;
  
@@ -4899,18 +4903,18 @@ index e91ee70771..e777451b18 100644
      case VREG32(GICD_STATUSR):
          /* RO -- write ignored */
 diff --git a/xen/arch/arm/vgic.c b/xen/arch/arm/vgic.c
-index 83386cf3d5..db06d0ea9b 100644
+index f6b49766f97a..46a5226cf8d8 100644
 --- a/xen/arch/arm/vgic.c
 +++ b/xen/arch/arm/vgic.c
-@@ -31,6 +31,7 @@
+@@ -22,6 +22,7 @@
  
  #include <asm/mmio.h>
  #include <asm/gic.h>
 +#include <asm/gic_v3_defs.h>
  #include <asm/vgic.h>
  
- static inline struct vgic_irq_rank *vgic_get_rank(struct vcpu *v, int rank)
-@@ -62,7 +63,7 @@ struct vgic_irq_rank *vgic_rank_irq(struct vcpu *v, unsigned int irq)
+ static inline struct vgic_irq_rank *vgic_get_rank(struct vcpu *v,
+@@ -54,7 +55,7 @@ struct vgic_irq_rank *vgic_rank_irq(struct vcpu *v, unsigned int irq)
      return vgic_get_rank(v, rank);
  }
  
@@ -4919,7 +4923,7 @@ index 83386cf3d5..db06d0ea9b 100644
  {
      /* The lpi_vcpu_id field must be big enough to hold a VCPU ID. */
      BUILD_BUG_ON(BIT(sizeof(p->lpi_vcpu_id) * 8, UL) < MAX_VIRT_CPUS);
-@@ -72,6 +73,8 @@ void vgic_init_pending_irq(struct pending_irq *p, unsigned int virq)
+@@ -64,6 +65,8 @@ void vgic_init_pending_irq(struct pending_irq *p, unsigned int virq)
      INIT_LIST_HEAD(&p->lr_queue);
      p->irq = virq;
      p->lpi_vcpu_id = INVALID_VCPU_ID;
@@ -4928,7 +4932,7 @@ index 83386cf3d5..db06d0ea9b 100644
  }
  
  static void vgic_rank_init(struct vgic_irq_rank *rank, uint8_t index,
-@@ -100,6 +103,8 @@ int domain_vgic_register(struct domain *d, int *mmio_count)
+@@ -92,6 +95,8 @@ int domain_vgic_register(struct domain *d, unsigned int *mmio_count)
      {
  #ifdef CONFIG_GICV3
      case GIC_V3:
@@ -4937,7 +4941,7 @@ index 83386cf3d5..db06d0ea9b 100644
          if ( vgic_v3_init(d, mmio_count) )
             return -ENODEV;
          break;
-@@ -150,7 +155,7 @@ int domain_vgic_init(struct domain *d, unsigned int nr_spis)
+@@ -142,7 +147,7 @@ int domain_vgic_init(struct domain *d, unsigned int nr_spis)
          return -ENOMEM;
  
      for (i=0; i<d->arch.vgic.nr_spis; i++)
@@ -4946,7 +4950,7 @@ index 83386cf3d5..db06d0ea9b 100644
  
      /* SPIs are routed to VCPU0 by default */
      for ( i = 0; i < DOMAIN_NR_RANKS(d); i++ )
-@@ -169,6 +174,19 @@ int domain_vgic_init(struct domain *d, unsigned int nr_spis)
+@@ -161,6 +166,19 @@ int domain_vgic_init(struct domain *d, unsigned int nr_spis)
      for ( i = 0; i < NR_GIC_SGI; i++ )
          set_bit(i, d->arch.vgic.allocated_irqs);
  
@@ -4966,7 +4970,7 @@ index 83386cf3d5..db06d0ea9b 100644
      return 0;
  }
  
-@@ -200,11 +218,14 @@ void domain_vgic_free(struct domain *d)
+@@ -192,11 +210,14 @@ void domain_vgic_free(struct domain *d)
      xfree(d->arch.vgic.shared_irqs);
      xfree(d->arch.vgic.pending_irqs);
      xfree(d->arch.vgic.allocated_irqs);
@@ -4982,7 +4986,7 @@ index 83386cf3d5..db06d0ea9b 100644
  
      v->arch.vgic.private_irqs = xzalloc(struct vgic_irq_rank);
      if ( v->arch.vgic.private_irqs == NULL )
-@@ -216,13 +237,47 @@ int vcpu_vgic_init(struct vcpu *v)
+@@ -208,13 +229,47 @@ int vcpu_vgic_init(struct vcpu *v)
      v->domain->arch.vgic.handler->vcpu_init(v);
  
      memset(&v->arch.vgic.pending_irqs, 0, sizeof(v->arch.vgic.pending_irqs));
@@ -5032,7 +5036,7 @@ index 83386cf3d5..db06d0ea9b 100644
      return 0;
  }
  
-@@ -353,7 +408,16 @@ void vgic_disable_irqs(struct vcpu *v, uint32_t r, int n)
+@@ -345,7 +400,16 @@ void vgic_disable_irqs(struct vcpu *v, uint32_t r, unsigned int n)
          spin_lock_irqsave(&v_target->arch.vgic.lock, flags);
          p = irq_to_pending(v_target, irq);
          clear_bit(GIC_IRQ_GUEST_ENABLED, &p->status);
@@ -5050,7 +5054,7 @@ index 83386cf3d5..db06d0ea9b 100644
          desc = p->desc;
          spin_unlock_irqrestore(&v_target->arch.vgic.lock, flags);
  
-@@ -402,7 +466,15 @@ void vgic_enable_irqs(struct vcpu *v, uint32_t r, int n)
+@@ -396,7 +460,15 @@ void vgic_enable_irqs(struct vcpu *v, uint32_t r, unsigned int n)
          spin_lock_irqsave(&v_target->arch.vgic.lock, flags);
          p = irq_to_pending(v_target, irq);
          set_bit(GIC_IRQ_GUEST_ENABLED, &p->status);
@@ -5067,7 +5071,7 @@ index 83386cf3d5..db06d0ea9b 100644
              gic_raise_guest_irq(v_target, irq, p->priority);
          spin_unlock_irqrestore(&v_target->arch.vgic.lock, flags);
          if ( p->desc != NULL )
-@@ -567,6 +639,9 @@ void vgic_remove_irq_from_queues(struct vcpu *v, struct pending_irq *p)
+@@ -561,6 +633,9 @@ void vgic_remove_irq_from_queues(struct vcpu *v, struct pending_irq *p)
  {
      ASSERT(spin_is_locked(&v->arch.vgic.lock));
  
@@ -5077,7 +5081,7 @@ index 83386cf3d5..db06d0ea9b 100644
      clear_bit(GIC_IRQ_GUEST_QUEUED, &p->status);
      list_del_init(&p->inflight);
      gic_remove_from_lr_pending(v, p);
-@@ -578,6 +653,7 @@ void vgic_inject_irq(struct domain *d, struct vcpu *v, unsigned int virq,
+@@ -572,6 +647,7 @@ void vgic_inject_irq(struct domain *d, struct vcpu *v, unsigned int virq,
      uint8_t priority;
      struct pending_irq *iter, *n;
      unsigned long flags;
@@ -5085,7 +5089,7 @@ index 83386cf3d5..db06d0ea9b 100644
  
      /*
       * For edge triggered interrupts we always ignore a "falling edge".
-@@ -611,6 +687,30 @@ void vgic_inject_irq(struct domain *d, struct vcpu *v, unsigned int virq,
+@@ -605,6 +681,30 @@ void vgic_inject_irq(struct domain *d, struct vcpu *v, unsigned int virq,
          return;
      }
  
@@ -5116,7 +5120,7 @@ index 83386cf3d5..db06d0ea9b 100644
      set_bit(GIC_IRQ_GUEST_QUEUED, &n->status);
  
      if ( !list_empty(&n->inflight) )
-@@ -718,6 +818,8 @@ unsigned int vgic_max_vcpus(unsigned int domctl_vgic_version)
+@@ -712,6 +812,8 @@ unsigned int vgic_max_vcpus(unsigned int domctl_vgic_version)
  
  #ifdef CONFIG_GICV3
      case XEN_DOMCTL_CONFIG_GIC_V3:
@@ -5125,7 +5129,7 @@ index 83386cf3d5..db06d0ea9b 100644
          return 4096;
  #endif
  
-@@ -745,7 +847,15 @@ void vgic_check_inflight_irqs_pending(struct domain *d, struct vcpu *v,
+@@ -739,7 +841,15 @@ void vgic_check_inflight_irqs_pending(struct domain *d, struct vcpu *v,
  
          p = irq_to_pending(v_target, irq);
  
@@ -5143,10 +5147,10 @@ index 83386cf3d5..db06d0ea9b 100644
                     "%pv trying to clear pending interrupt %u.\n",
                     v, irq);
 diff --git a/xen/arch/x86/include/asm/hvm/hvm.h b/xen/arch/x86/include/asm/hvm/hvm.h
-index 93254651f2..9198e46ea9 100644
+index 6d53713fc3a9..6ac54b46aa3b 100644
 --- a/xen/arch/x86/include/asm/hvm/hvm.h
 +++ b/xen/arch/x86/include/asm/hvm/hvm.h
-@@ -916,6 +916,8 @@ static inline void hvm_set_reg(struct vcpu *v, unsigned int reg, uint64_t val)
+@@ -925,6 +925,8 @@ static inline void hvm_set_reg(struct vcpu *v, unsigned int reg, uint64_t val)
  
  #endif  /* CONFIG_HVM */
  
@@ -5156,7 +5160,7 @@ index 93254651f2..9198e46ea9 100644
  
  /*
 diff --git a/xen/common/sched/core.c b/xen/common/sched/core.c
-index 43132ff6e0..78869b29a1 100644
+index 12deefa7453e..b6e43ad14769 100644
 --- a/xen/common/sched/core.c
 +++ b/xen/common/sched/core.c
 @@ -992,6 +992,8 @@ void vcpu_unblock(struct vcpu *v)
@@ -5177,10 +5181,10 @@ index 43132ff6e0..78869b29a1 100644
      else
      {
 diff --git a/xen/include/public/arch-arm.h b/xen/include/public/arch-arm.h
-index db3396c3dd..e20ce2d7a4 100644
+index 15a1e997c7d5..b07206cd9476 100644
 --- a/xen/include/public/arch-arm.h
 +++ b/xen/include/public/arch-arm.h
-@@ -293,6 +293,8 @@ DEFINE_XEN_GUEST_HANDLE(vcpu_guest_context_t);
+@@ -322,6 +322,8 @@ DEFINE_XEN_GUEST_HANDLE(vcpu_guest_context_t);
  #define XEN_DOMCTL_CONFIG_GIC_NATIVE    0
  #define XEN_DOMCTL_CONFIG_GIC_V2        1
  #define XEN_DOMCTL_CONFIG_GIC_V3        2
@@ -5190,5 +5194,5 @@ index db3396c3dd..e20ce2d7a4 100644
  #define XEN_DOMCTL_CONFIG_TEE_NONE      0
  #define XEN_DOMCTL_CONFIG_TEE_OPTEE     1
 -- 
-2.25.1
+2.34.1
 

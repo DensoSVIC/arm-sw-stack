@@ -1,4 +1,4 @@
-From c3046407e97ca4024262da69d7e33775c1d31987 Mon Sep 17 00:00:00 2001
+From e620cfa9ab79b22940e3ab7b4bbc44159c79279e Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Thu, 28 Jul 2022 05:11:12 +0000
 Subject: [PATCH] xen/arm: mpam: Enable MPAM at boot time
@@ -23,7 +23,7 @@ Issue-Id: SCM-5049
  3 files changed, 49 insertions(+)
 
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index d4454005b3..9c765f6068 100644
+index d4454005b319..9c765f60680d 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
 @@ -393,6 +393,7 @@ struct mpam_msc_ris
@@ -35,7 +35,7 @@ index d4454005b3..9c765f6068 100644
  extern int mpam_discovery_cpu_online(unsigned int cpu);
  
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index 72d76ec900..b2a031d0c3 100644
+index 72d76ec90035..b2a031d0c3e0 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -51,6 +51,8 @@ static unsigned int mpam_fw_num_msc;
@@ -104,10 +104,10 @@ index 72d76ec900..b2a031d0c3 100644
  {
      int err = 0;
 diff --git a/xen/arch/arm/setup.c b/xen/arch/arm/setup.c
-index b17b128191..bdcbd01853 100644
+index 017bcf3fbe43..bff499eb6349 100644
 --- a/xen/arch/arm/setup.c
 +++ b/xen/arch/arm/setup.c
-@@ -1141,6 +1141,10 @@ void __init start_xen(unsigned long boot_phys_offset,
+@@ -1225,6 +1225,10 @@ void __init start_xen(unsigned long boot_phys_offset,
      printk("Brought up %ld CPUs\n", (long)num_online_cpus());
      /* TODO: smp_cpus_done(); */
  
@@ -119,5 +119,5 @@ index b17b128191..bdcbd01853 100644
      vpmu_is_available = cpu_has_pmu;
  
 -- 
-2.25.1
+2.34.1
 

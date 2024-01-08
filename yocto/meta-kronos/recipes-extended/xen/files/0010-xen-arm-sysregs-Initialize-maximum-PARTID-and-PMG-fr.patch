@@ -1,4 +1,4 @@
-From 799dd3eb98cc8c7457745f5551dd0eca9c05a82e Mon Sep 17 00:00:00 2001
+From a180c20789e44bc51abeefd16145bb9c280f4fc7 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Mon, 25 Jul 2022 02:00:54 +0000
 Subject: [PATCH] xen/arm,sysregs: Initialize maximum PARTID and PMG from
@@ -23,7 +23,7 @@ Issue-Id: SCM-3395
  2 files changed, 23 insertions(+)
 
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index c74e73ac8b..cb836c1faf 100644
+index c74e73ac8b25..cb836c1faf87 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
 @@ -10,6 +10,10 @@
@@ -38,7 +38,7 @@ index c74e73ac8b..cb836c1faf 100644
  {
      /* Physical addr defined in firmware. */
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index 361a7207f7..297177d38f 100644
+index 361a7207f7eb..297177d38fb5 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -23,6 +23,7 @@
@@ -89,5 +89,5 @@ index 361a7207f7..297177d38f 100644
  
  /*
 -- 
-2.25.1
+2.34.1
 

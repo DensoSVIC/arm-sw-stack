@@ -1,8 +1,8 @@
-From 265d05df404c2e0d75eaef542f82e5e46dcf210f Mon Sep 17 00:00:00 2001
+From 195d79dce95c21be009bfcbc08075c2cba130fd4 Mon Sep 17 00:00:00 2001
 From: Peter Hoyes <Peter.Hoyes@arm.com>
 Date: Tue, 13 Sep 2022 17:02:45 +0100
-Subject: [PATCH] tools/xendomains: Only save/restore/migrate if supported
- by xenlight
+Subject: [PATCH] tools/xendomains: Only save/restore/migrate if supported by
+ xenlight
 
 Saving, restoring and migrating domains are not currently supported on
 arm and arm64 platforms, so xendomains prints the warning:
@@ -24,7 +24,7 @@ Upstream-Status: Submitted [https://lists.xenproject.org/archives/html/xen-devel
  1 file changed, 13 insertions(+), 3 deletions(-)
 
 diff --git a/tools/hotplug/Linux/xendomains.in b/tools/hotplug/Linux/xendomains.in
-index 70f4129ef4..bafcb874e1 100644
+index 70f4129ef4bf..bafcb874e17e 100644
 --- a/tools/hotplug/Linux/xendomains.in
 +++ b/tools/hotplug/Linux/xendomains.in
 @@ -229,6 +229,15 @@ parseln()
@@ -72,5 +72,5 @@ index 70f4129ef4..bafcb874e1 100644
  	    watchdog_xencmd save &
  	    WDOG_PID=$!
 -- 
-2.25.1
+2.34.1
 

@@ -1,4 +1,4 @@
-From 8872f7f093a3b7079aa6357c6661ddf99ae45970 Mon Sep 17 00:00:00 2001
+From 36245ad8a1ffd19899f0dc7854c5787389f0f3ec Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Wed, 8 Jun 2022 13:13:38 +0000
 Subject: [PATCH] xen/arm: Implement MPAM sysctls for L3 cache
@@ -23,7 +23,7 @@ Issue-Id: SCM-3763
  3 files changed, 101 insertions(+), 2 deletions(-)
 
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index 286fd5dd88..6528d89b46 100644
+index 286fd5dd8851..6528d89b462d 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
 @@ -418,6 +418,8 @@ struct mpam_domain {
@@ -47,7 +47,7 @@ index 286fd5dd88..6528d89b46 100644
  #endif /* __ARM_MPAM_H__ */
  
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index 7f18add935..8f2074fcec 100644
+index 7f18add93548..8f2074fcec88 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -1419,8 +1419,8 @@ static int __init mpam_probe_cache_info(void)
@@ -110,18 +110,18 @@ index 7f18add935..8f2074fcec 100644
   * Local variables:
   * mode: C
 diff --git a/xen/arch/arm/sysctl.c b/xen/arch/arm/sysctl.c
-index f903a55808..e80b551cba 100644
+index b441f6a80eb3..55d1ca080974 100644
 --- a/xen/arch/arm/sysctl.c
 +++ b/xen/arch/arm/sysctl.c
-@@ -9,6 +9,7 @@
- #include <xen/types.h>
+@@ -11,6 +11,7 @@
  #include <xen/lib.h>
+ #include <xen/dt-overlay.h>
  #include <xen/errno.h>
 +#include <xen/guest_access.h>
  #include <xen/hypercall.h>
+ #include <asm/arm64/sve.h>
  #include <public/sysctl.h>
- #include <asm/mpam.h>
-@@ -29,12 +30,63 @@ long arch_do_sysctl(struct xen_sysctl *sysctl,
+@@ -39,12 +40,63 @@ long arch_do_sysctl(struct xen_sysctl *sysctl,
      case XEN_SYSCTL_psr_cmt_op:
          if ( !cpu_has_mpam )
              return -EOPNOTSUPP;
@@ -186,5 +186,5 @@ index f903a55808..e80b551cba 100644
  
      default:
 -- 
-2.25.1
+2.34.1
 

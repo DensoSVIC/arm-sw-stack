@@ -1,8 +1,7 @@
-From e3036edd2398e6f094e7d9f77043dfba30f40465 Mon Sep 17 00:00:00 2001
+From ddf2b73b99b9c64ac6fdd7ed50cb320473384141 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Mon, 10 Apr 2023 10:27:52 +0800
-Subject: [PATCH] xen/arm: Allow MPAM v1.1 in MSC hardware probing
- process
+Subject: [PATCH] xen/arm: Allow MPAM v1.1 in MSC hardware probing process
 
 According to MPAM specification (ARM DDI 0598C.a), there are different
 versions of MPAM to be probed, and different versions of MPAM can
@@ -21,7 +20,7 @@ Issue-Id: SCM-6012
  2 files changed, 5 insertions(+), 3 deletions(-)
 
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index b72179296f..6dc7b7120f 100644
+index b72179296f70..6dc7b7120f4c 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
 @@ -16,7 +16,8 @@
@@ -35,7 +34,7 @@ index b72179296f..6dc7b7120f 100644
  /* Memory mapped control pages: */
  /* ID Register offsets in the memory mapped page */
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index fba4b93bd7..e8212f4380 100644
+index fba4b93bd7c9..e8212f438081 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -893,9 +893,10 @@ static int __init mpam_msc_hw_probe(struct mpam_msc *msc)
@@ -52,5 +51,5 @@ index fba4b93bd7..e8212f4380 100644
          spin_unlock_irqrestore(&msc->hw_lock, flags);
          return -EIO;
 -- 
-2.25.1
+2.34.1
 

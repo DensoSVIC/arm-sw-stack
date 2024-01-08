@@ -1,4 +1,4 @@
-From 7060a9b5f02c6ceaaaed4c7bc5d5d00ffd44ad68 Mon Sep 17 00:00:00 2001
+From edbc944563484488068fc3d71add682bee7391c8 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Sat, 8 Oct 2022 08:36:54 +0000
 Subject: [PATCH] tools/xl-psr: Split display name for arch-specific
@@ -24,7 +24,7 @@ Issue-Id: SCM-5244
  1 file changed, 19 insertions(+), 7 deletions(-)
 
 diff --git a/tools/xl/xl_psr.c b/tools/xl/xl_psr.c
-index 7aff474d47..afdfff2c39 100644
+index 7aff474d478f..afdfff2c3960 100644
 --- a/tools/xl/xl_psr.c
 +++ b/tools/xl/xl_psr.c
 @@ -25,6 +25,14 @@
@@ -85,5 +85,5 @@ index 7aff474d47..afdfff2c39 100644
          printf("Default Throttling Value: %u\n", 0);
      }
 -- 
-2.25.1
+2.34.1
 

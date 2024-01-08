@@ -1,4 +1,4 @@
-From 368d44ad2fc3e90cffbd688fbeebc5a2071041b4 Mon Sep 17 00:00:00 2001
+From 0df9cd8c5b6571fc7f1b5e470e1782e4037aae61 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Fri, 7 Jul 2023 15:43:41 +0800
 Subject: [PATCH] docs, tool: Add the mpam parameter in xl config file
@@ -12,27 +12,26 @@ to the "arch_arm" structure from "libxl_domain_build_info", also
 introduce the parsing logic of this config entry and related doc.
 
 Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Signed-off-by: Luca Fancellu <luca.fancellu@arm.com>
 Upstream-Status: Pending
 Issue-Id: SCM-6028
 ---
- docs/man/xl.cfg.5.pod.in             | 33 +++++++++++++++++++
+ docs/man/xl.cfg.5.pod.in             | 29 +++++++++++++++++
  tools/golang/xenlight/helpers.gen.go | 37 ++++++++++++++++++++++
  tools/golang/xenlight/types.gen.go   |  6 ++++
  tools/libs/light/libxl_arm.c         |  8 +++++
  tools/libs/light/libxl_types.idl     |  6 ++++
  tools/xl/xl_parse.c                  | 47 ++++++++++++++++++++++++++--
- 6 files changed, 135 insertions(+), 2 deletions(-)
+ 6 files changed, 131 insertions(+), 2 deletions(-)
 
 diff --git a/docs/man/xl.cfg.5.pod.in b/docs/man/xl.cfg.5.pod.in
-index ec444fb2ba..67b1b96104 100644
+index 2e234b450efb..a90beb655d61 100644
 --- a/docs/man/xl.cfg.5.pod.in
 +++ b/docs/man/xl.cfg.5.pod.in
-@@ -2870,6 +2870,39 @@ Currently, only the "sbsa_uart" model is supported for ARM.
+@@ -3029,6 +3029,35 @@ Please be aware that if a specific vector length is passed and its value is
+ above the maximum vector length supported by the platform, an error will be
+ raised.
  
- =back
- 
-+=over 4
-+
 +=item B<mpam=[ "MPAM_SPEC_STRING", "MPAM_SPEC_STRING", ...]>
 +
 +The `mpam` parameter enables Arm Memory System Resource Partitioning and
@@ -62,16 +61,14 @@ index ec444fb2ba..67b1b96104 100644
 +
 +=back
 +
-+=back
-+
- =head3 x86
+ =back
  
- =over 4
+ =head3 x86
 diff --git a/tools/golang/xenlight/helpers.gen.go b/tools/golang/xenlight/helpers.gen.go
-index cb1bdf9bdf..fb11afc25c 100644
+index 3ecffdf0ef3a..b86cac3553a7 100644
 --- a/tools/golang/xenlight/helpers.gen.go
 +++ b/tools/golang/xenlight/helpers.gen.go
-@@ -906,6 +906,37 @@ return fmt.Errorf("converting field Vcpus: %v", err)
+@@ -938,6 +938,37 @@ return fmt.Errorf("converting field Vcpus: %v", err)
   return nil
   }
  
@@ -109,20 +106,20 @@ index cb1bdf9bdf..fb11afc25c 100644
  // NewRdmReserve returns an instance of RdmReserve initialized with defaults.
  func NewRdmReserve() (*RdmReserve, error) {
  var (
-@@ -1117,6 +1148,9 @@ default:
- return fmt.Errorf("invalid union key '%v'", x.Type)}
+@@ -1150,6 +1181,9 @@ return fmt.Errorf("invalid union key '%v'", x.Type)}
  x.ArchArm.GicVersion = GicVersion(xc.arch_arm.gic_version)
  x.ArchArm.Vuart = VuartType(xc.arch_arm.vuart)
+ x.ArchArm.SveVl = SveType(xc.arch_arm.sve_vl)
 +if err := x.ArchArm.Mpam.fromC(&xc.arch_arm.mpam);err != nil {
 +return fmt.Errorf("converting field ArchArm.Mpam: %v", err)
 +}
  if err := x.ArchX86.MsrRelaxed.fromC(&xc.arch_x86.msr_relaxed);err != nil {
  return fmt.Errorf("converting field ArchX86.MsrRelaxed: %v", err)
  }
-@@ -1602,6 +1636,9 @@ default:
- return fmt.Errorf("invalid union key '%v'", x.Type)}
+@@ -1655,6 +1689,9 @@ return fmt.Errorf("invalid union key '%v'", x.Type)}
  xc.arch_arm.gic_version = C.libxl_gic_version(x.ArchArm.GicVersion)
  xc.arch_arm.vuart = C.libxl_vuart_type(x.ArchArm.Vuart)
+ xc.arch_arm.sve_vl = C.libxl_sve_type(x.ArchArm.SveVl)
 +if err := x.ArchArm.Mpam.toC(&xc.arch_arm.mpam); err != nil {
 +return fmt.Errorf("converting field ArchArm.Mpam: %v", err)
 +}
@@ -130,11 +127,11 @@ index cb1bdf9bdf..fb11afc25c 100644
  return fmt.Errorf("converting field ArchX86.MsrRelaxed: %v", err)
  }
 diff --git a/tools/golang/xenlight/types.gen.go b/tools/golang/xenlight/types.gen.go
-index 6fdcd94d24..999e9b908f 100644
+index eed433e7daa7..5115ca2b6418 100644
 --- a/tools/golang/xenlight/types.gen.go
 +++ b/tools/golang/xenlight/types.gen.go
-@@ -457,6 +457,11 @@ TeeTypeNone TeeType = 0
- TeeTypeOptee TeeType = 1
+@@ -512,6 +512,11 @@ SveType1920 SveType = 1920
+ SveType2048 SveType = 2048
  )
  
 +type MpamInfo struct {
@@ -145,20 +142,20 @@ index 6fdcd94d24..999e9b908f 100644
  type RdmReserve struct {
  Strategy RdmReserveStrategy
  Policy RdmReservePolicy
-@@ -531,6 +536,7 @@ TypeUnion DomainBuildInfoTypeUnion
- ArchArm struct {
+@@ -587,6 +592,7 @@ ArchArm struct {
  GicVersion GicVersion
  Vuart VuartType
+ SveVl SveType
 +Mpam MpamInfo
  }
  ArchX86 struct {
  MsrRelaxed Defbool
 diff --git a/tools/libs/light/libxl_arm.c b/tools/libs/light/libxl_arm.c
-index cd84a7c66e..141d24a231 100644
+index 15391917748c..026f9190fd2e 100644
 --- a/tools/libs/light/libxl_arm.c
 +++ b/tools/libs/light/libxl_arm.c
-@@ -179,6 +179,14 @@ int libxl__arch_domain_prepare_config(libxl__gc *gc,
-         return ERROR_FAIL;
+@@ -222,6 +222,14 @@ int libxl__arch_domain_prepare_config(libxl__gc *gc,
+         config->arch.sve_vl = d_config->b_info.arch_arm.sve_vl / 128U;
      }
  
 +    if (d_config->b_info.arch_arm.mpam.l3_cpbm) {
@@ -173,12 +170,12 @@ index cd84a7c66e..141d24a231 100644
  }
  
 diff --git a/tools/libs/light/libxl_types.idl b/tools/libs/light/libxl_types.idl
-index 1bb61be7c9..886661f5ce 100644
+index 182a2954538f..910f8841a107 100644
 --- a/tools/libs/light/libxl_types.idl
 +++ b/tools/libs/light/libxl_types.idl
-@@ -492,6 +492,11 @@ libxl_tee_type = Enumeration("tee_type", [
-     (1, "optee")
-     ], init_val = "LIBXL_TEE_TYPE_NONE")
+@@ -545,6 +545,11 @@ libxl_sve_type = Enumeration("sve_type", [
+     (2048, "2048")
+     ], init_val = "LIBXL_SVE_TYPE_DISABLED")
  
 +libxl_mpam_info = Struct("mpam_info", [
 +    ("l3_cpbm", uint32), # cache portion bitmask config for domain L3 cache
@@ -188,31 +185,31 @@ index 1bb61be7c9..886661f5ce 100644
  libxl_rdm_reserve = Struct("rdm_reserve", [
      ("strategy",    libxl_rdm_reserve_strategy),
      ("policy",      libxl_rdm_reserve_policy),
-@@ -658,6 +663,7 @@ libxl_domain_build_info = Struct("domain_build_info",[
- 
+@@ -715,6 +720,7 @@ libxl_domain_build_info = Struct("domain_build_info",[
      ("arch_arm", Struct(None, [("gic_version", libxl_gic_version),
                                 ("vuart", libxl_vuart_type),
+                                ("sve_vl", libxl_sve_type),
 +                               ("mpam", libxl_mpam_info),
                                ])),
      ("arch_x86", Struct(None, [("msr_relaxed", libxl_defbool),
                                ])),
 diff --git a/tools/xl/xl_parse.c b/tools/xl/xl_parse.c
-index 644ab8f8fd..644bbfbeab 100644
+index ed983200c3f8..121fe6dc402b 100644
 --- a/tools/xl/xl_parse.c
 +++ b/tools/xl/xl_parse.c
-@@ -1220,8 +1220,9 @@ void parse_config_data(const char *config_source,
+@@ -1294,8 +1294,9 @@ void parse_config_data(const char *config_source,
      XLU_ConfigList *cpus, *vbds, *nics, *pcis, *cvfbs, *cpuids, *vtpms,
                     *usbctrls, *usbdevs, *p9devs, *vdispls, *pvcallsifs_devs;
      XLU_ConfigList *channels, *ioports, *irqs, *iomem, *viridian, *dtdevs,
--                   *mca_caps;
+-                   *mca_caps, *smbios;
 -    int num_ioports, num_irqs, num_iomem, num_cpus, num_viridian, num_mca_caps;
-+                   *mca_caps, *mpam;
++                   *mca_caps, *smbios, *mpam;
 +    int num_ioports, num_irqs, num_iomem, num_cpus, num_viridian, num_mca_caps,
 +        num_mpam_configs;
+     int num_smbios;
      int pci_power_mgmt = 0;
      int pci_msitranslate = 0;
-     int pci_permissive = 0;
-@@ -2751,6 +2752,48 @@ skip_usbdev:
+@@ -2916,6 +2917,48 @@ skip_usbdev:
          }
      }
  
@@ -228,8 +225,8 @@ index 644ab8f8fd..644bbfbeab 100644
 +                exit(EXIT_FAILURE);
 +            }
 +
-+            if (split_string_into_pair(buf, "=",
-+                                       &key_untrimmed, &value_untrimmed)) {
++            if (split_string_into_pair(buf, '=', &key_untrimmed,
++                                       &value_untrimmed, isspace)) {
 +                fprintf(stderr, "xl: failed to split \"%s\" into pair\n", buf);
 +                exit(EXIT_FAILURE);
 +            }
@@ -260,7 +257,7 @@ index 644ab8f8fd..644bbfbeab 100644
 +
      parse_vkb_list(config, d_config);
  
-     xlu_cfg_get_defbool(config, "xend_suspend_evtchn_compat",
+     d_config->virtios = NULL;
 -- 
-2.25.1
+2.34.1
 

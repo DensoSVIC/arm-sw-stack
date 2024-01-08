@@ -1,8 +1,7 @@
-From bd4d7dc25b50387706006b65413a2450d4c2f3d9 Mon Sep 17 00:00:00 2001
+From 77c11a8663894fdcfda85afe6746bf356dffb46b Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Tue, 1 Mar 2022 07:37:32 +0000
-Subject: [PATCH] xen/arm: Context switch MPAM system registers between
- vCPUs
+Subject: [PATCH] xen/arm: Context switch MPAM system registers between vCPUs
 
 According to MPAM specification, software assigns VMs and applications
 to a partition. The hypervisor can assign VMs to partitions. A memory
@@ -26,10 +25,10 @@ Issue-Id: SCM-3395
  4 files changed, 36 insertions(+)
 
 diff --git a/xen/arch/arm/domain.c b/xen/arch/arm/domain.c
-index 8ef4aa1860..4bdeef586c 100644
+index 1d5a2e7abd08..6bcbdc2c5dc4 100644
 --- a/xen/arch/arm/domain.c
 +++ b/xen/arch/arm/domain.c
-@@ -30,6 +30,7 @@
+@@ -21,6 +21,7 @@
  #include <asm/gic.h>
  #include <asm/guest_atomics.h>
  #include <asm/irq.h>
@@ -37,7 +36,7 @@ index 8ef4aa1860..4bdeef586c 100644
  #include <asm/p2m.h>
  #include <asm/platform.h>
  #include <asm/procinfo.h>
-@@ -171,6 +172,10 @@ static void ctxt_switch_from(struct vcpu *p)
+@@ -162,6 +163,10 @@ static void ctxt_switch_from(struct vcpu *p)
      /* VGIC */
      gic_save_state(p);
  
@@ -48,7 +47,7 @@ index 8ef4aa1860..4bdeef586c 100644
      isb();
  }
  
-@@ -279,6 +284,12 @@ static void ctxt_switch_to(struct vcpu *n)
+@@ -276,6 +281,12 @@ static void ctxt_switch_to(struct vcpu *n)
      virt_timer_restore(n);
  
      WRITE_SYSREG(n->arch.mdcr_el2, MDCR_EL2);
@@ -60,12 +59,12 @@ index 8ef4aa1860..4bdeef586c 100644
 +    isb();
  }
  
- /* Update per-VCPU guest runstate shared memory area (if registered). */
+ static void schedule_tail(struct vcpu *prev)
 diff --git a/xen/arch/arm/include/asm/domain.h b/xen/arch/arm/include/asm/domain.h
-index c46df77652..4c3fe12d2f 100644
+index 1d0e46adc5ec..2a2532ec0238 100644
 --- a/xen/arch/arm/include/asm/domain.h
 +++ b/xen/arch/arm/include/asm/domain.h
-@@ -235,6 +235,10 @@ struct arch_vcpu
+@@ -246,6 +246,10 @@ struct arch_vcpu
       */
      bool need_flush_to_ram;
  
@@ -75,9 +74,9 @@ index c46df77652..4c3fe12d2f 100644
 +#endif
  }  __cacheline_aligned;
  
- void vcpu_show_execution_state(struct vcpu *);
+ void vcpu_show_registers(const struct vcpu *);
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index 24ff85b224..78d1f5d7c6 100644
+index 24ff85b22491..78d1f5d7c6c2 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
 @@ -413,6 +413,8 @@ extern bool mpam_enabled;
@@ -90,7 +89,7 @@ index 24ff85b224..78d1f5d7c6 100644
                                   bool domain_create);
  extern void mpam_update_domain(struct domain *d);
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index 606a8ae20b..7d466c2f1f 100644
+index 606a8ae20b25..7d466c2f1fe4 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -23,6 +23,7 @@
@@ -127,5 +126,5 @@ index 606a8ae20b..7d466c2f1f 100644
   * Local variables:
   * mode: C
 -- 
-2.25.1
+2.34.1
 

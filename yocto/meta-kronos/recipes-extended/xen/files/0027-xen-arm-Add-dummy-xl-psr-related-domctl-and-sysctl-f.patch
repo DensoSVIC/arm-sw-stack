@@ -1,8 +1,7 @@
-From b1a0ce36799026bfb6e6f65f7c2727c9af5948a0 Mon Sep 17 00:00:00 2001
+From 2030319cfa0cacb3397fccd8e1cb0a16789b1676 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Wed, 8 Jun 2022 09:30:34 +0000
-Subject: [PATCH] xen/arm: Add dummy xl-psr related domctl and sysctl for
- Arm
+Subject: [PATCH] xen/arm: Add dummy xl-psr related domctl and sysctl for Arm
 
 xl-psr provides a set of domctl and sysctl ops and commands that
 can be reused by MPAM to get the MPAM hardware information, configure
@@ -18,22 +17,22 @@ Upstream-Status: Pending
 Issue-Id: SCM-3763
 ---
  xen/arch/arm/arm64/domctl.c | 13 +++++++++++++
- xen/arch/arm/sysctl.c       | 24 +++++++++++++++++++++++-
- 2 files changed, 36 insertions(+), 1 deletion(-)
+ xen/arch/arm/sysctl.c       | 15 ++++++++++++++-
+ 2 files changed, 27 insertions(+), 1 deletion(-)
 
 diff --git a/xen/arch/arm/arm64/domctl.c b/xen/arch/arm/arm64/domctl.c
-index 0de89b42c4..04e12dcc7d 100644
+index 14fc622e9956..56d993198698 100644
 --- a/xen/arch/arm/arm64/domctl.c
 +++ b/xen/arch/arm/arm64/domctl.c
-@@ -11,6 +11,7 @@
- #include <xen/hypercall.h>
+@@ -12,6 +12,7 @@
  #include <public/domctl.h>
+ #include <asm/arm64/sve.h>
  #include <asm/cpufeature.h>
 +#include <asm/mpam.h>
  
  static long switch_mode(struct domain *d, enum domain_type type)
  {
-@@ -51,6 +52,18 @@ long subarch_do_domctl(struct xen_domctl *domctl, struct domain *d,
+@@ -55,6 +56,18 @@ long subarch_do_domctl(struct xen_domctl *domctl, struct domain *d,
          }
          break;
  
@@ -53,26 +52,30 @@ index 0de89b42c4..04e12dcc7d 100644
          return -ENOSYS;
      }
 diff --git a/xen/arch/arm/sysctl.c b/xen/arch/arm/sysctl.c
-index f87944e847..f903a55808 100644
+index 5cda0dc674f6..b441f6a80eb3 100644
 --- a/xen/arch/arm/sysctl.c
 +++ b/xen/arch/arm/sysctl.c
-@@ -11,6 +11,7 @@
- #include <xen/errno.h>
+@@ -14,6 +14,7 @@
  #include <xen/hypercall.h>
+ #include <asm/arm64/sve.h>
  #include <public/sysctl.h>
 +#include <asm/mpam.h>
  
  void arch_do_physinfo(struct xen_sysctl_physinfo *pi)
  {
-@@ -20,7 +21,28 @@ void arch_do_physinfo(struct xen_sysctl_physinfo *pi)
+@@ -26,7 +27,7 @@ void arch_do_physinfo(struct xen_sysctl_physinfo *pi)
  long arch_do_sysctl(struct xen_sysctl *sysctl,
                      XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
  {
--    return -ENOSYS;
+-    long ret;
 +    long ret = 0;
-+
-+    switch ( sysctl->cmd )
-+    {
+ 
+     switch ( sysctl->cmd )
+     {
+@@ -34,6 +35,18 @@ long arch_do_sysctl(struct xen_sysctl *sysctl,
+         ret = dt_overlay_sysctl(&sysctl->u.dt_overlay);
+         break;
+ 
 +#ifdef CONFIG_MPAM
 +    case XEN_SYSCTL_psr_cmt_op:
 +        if ( !cpu_has_mpam )
@@ -85,15 +88,9 @@ index f87944e847..f903a55808 100644
 +        break;
 +#endif
 +
-+    default:
-+        ret = -ENOSYS;
-+        break;
-+    }
-+
-+    return ret;
- }
- 
- /*
+     default:
+         ret = -ENOSYS;
+         break;
 -- 
-2.25.1
+2.34.1
 

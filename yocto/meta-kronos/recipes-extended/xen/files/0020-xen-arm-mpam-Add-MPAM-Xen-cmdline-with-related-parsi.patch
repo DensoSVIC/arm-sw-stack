@@ -1,8 +1,8 @@
-From f6f461ae7403f0d10969f5b6c01b2c60fa0ef52a Mon Sep 17 00:00:00 2001
+From 9a7e3bee486fd23ad32eecfb01fe8ed5fae41f96 Mon Sep 17 00:00:00 2001
 From: Henry Wang <Henry.Wang@arm.com>
 Date: Mon, 10 Jan 2022 08:05:54 +0000
-Subject: [PATCH] xen/arm: mpam: Add MPAM Xen cmdline with related
- parsing for Dom0
+Subject: [PATCH] xen/arm: mpam: Add MPAM Xen cmdline with related parsing for
+ Dom0
 
 As users may need to limit the cache/memory-bandwidth of Dom0, it
 is required to provide a user interface to configure such information.
@@ -32,10 +32,10 @@ Issue-Id: SCM-3762
  4 files changed, 55 insertions(+)
 
 diff --git a/docs/misc/xen-command-line.pandoc b/docs/misc/xen-command-line.pandoc
-index d601120faa..50f336d09f 100644
+index 6b07d0f3a17f..5aeac07386b4 100644
 --- a/docs/misc/xen-command-line.pandoc
 +++ b/docs/misc/xen-command-line.pandoc
-@@ -2795,3 +2795,14 @@ the hypervisor was compiled with `CONFIG_XSM` enabled.
+@@ -2864,3 +2864,14 @@ the hypervisor was compiled with `CONFIG_XSM` enabled.
  * `silo`: this will deny any unmediated communication channels between
    unprivileged VMs.  To choose this, the separated option in kconfig must also
    be enabled.
@@ -51,7 +51,7 @@ index d601120faa..50f336d09f 100644
 +portion corresponds to a bit in <bitmap> and the set bit represents the
 +corresponding cache portion is available.
 diff --git a/xen/arch/arm/include/asm/mpam.h b/xen/arch/arm/include/asm/mpam.h
-index d1ba5d7501..bf5f89953c 100644
+index d1ba5d7501fb..bf5f89953c88 100644
 --- a/xen/arch/arm/include/asm/mpam.h
 +++ b/xen/arch/arm/include/asm/mpam.h
 @@ -9,6 +9,7 @@
@@ -72,7 +72,7 @@ index d1ba5d7501..bf5f89953c 100644
  extern void mpam_presmp_setup(void);
  extern int mpam_discovery_cpu_online(unsigned int cpu);
 diff --git a/xen/arch/arm/mpam.c b/xen/arch/arm/mpam.c
-index 8c33dec479..2186e30b73 100644
+index 8c33dec479a4..2186e30b73e8 100644
 --- a/xen/arch/arm/mpam.c
 +++ b/xen/arch/arm/mpam.c
 @@ -22,11 +22,14 @@
@@ -132,12 +132,12 @@ index 8c33dec479..2186e30b73 100644
  __init dt_find_next_cache_node(const struct dt_device_node *np)
  {
 diff --git a/xen/include/public/arch-arm.h b/xen/include/public/arch-arm.h
-index 1528ced509..9316920837 100644
+index a25e87dbda3a..598107e2f756 100644
 --- a/xen/include/public/arch-arm.h
 +++ b/xen/include/public/arch-arm.h
-@@ -297,6 +297,10 @@ DEFINE_XEN_GUEST_HANDLE(vcpu_guest_context_t);
- #define XEN_DOMCTL_CONFIG_TEE_NONE      0
+@@ -327,6 +327,10 @@ DEFINE_XEN_GUEST_HANDLE(vcpu_guest_context_t);
  #define XEN_DOMCTL_CONFIG_TEE_OPTEE     1
+ #define XEN_DOMCTL_CONFIG_TEE_FFA       2
  
 +struct xen_arch_domctl_mpam {
 +    uint32_t l3_cpbm;
@@ -147,5 +147,5 @@ index 1528ced509..9316920837 100644
      /* IN/OUT */
      uint8_t gic_version;
 -- 
-2.25.1
+2.34.1
 
