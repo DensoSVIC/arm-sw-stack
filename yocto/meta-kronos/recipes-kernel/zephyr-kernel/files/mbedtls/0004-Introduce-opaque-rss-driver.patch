@@ -1,4 +1,4 @@
-From e8308097da410a714bf34a5d7bdaf7b209783b20 Mon Sep 17 00:00:00 2001
+From 71e77b64aaf1e92dd13815821a571b774d780ac3 Mon Sep 17 00:00:00 2001
 From: Jiamei Xie <jiamei.xie@arm.com>
 Date: Tue, 10 Oct 2023 14:56:41 +0800
 Subject: [PATCH] Introduce opaque rss driver
@@ -11,6 +11,7 @@ Upstream-Status: Pending
 Signed-off-by: Jiamei Xie <jiamei.xie@arm.com>
 Signed-off-by: Michael Zhao <michael.zhao@arm.com>
 Signed-off-by: Hongda Deng <hongda.deng@arm.com>
+Signed-off-by: Divin Raj <divin.raj@arm.com>
 ---
  3rdparty/CMakeLists.txt                       |   6 +
  3rdparty/Makefile.inc                         |   4 +-
@@ -1719,10 +1720,10 @@ index 000000000..89c292507
 +
 +#endif /* MBEDTLS_RSS_DRIVER_ENABLED */
 diff --git a/include/mbedtls/mbedtls_config.h b/include/mbedtls/mbedtls_config.h
-index f6dd1e14d..a719f3579 100644
+index 4292b493b..dd46a6f62 100644
 --- a/include/mbedtls/mbedtls_config.h
 +++ b/include/mbedtls/mbedtls_config.h
-@@ -3849,4 +3849,9 @@
+@@ -3917,4 +3917,9 @@
   */
  //#define MBEDTLS_ECDH_VARIANT_EVEREST_ENABLED
  
@@ -1733,10 +1734,10 @@ index f6dd1e14d..a719f3579 100644
 +
  /** \} name SECTION: Module configuration options */
 diff --git a/library/CMakeLists.txt b/library/CMakeLists.txt
-index c9714bbfb..bde2465ea 100644
+index 535988303..ec5b47416 100644
 --- a/library/CMakeLists.txt
 +++ b/library/CMakeLists.txt
-@@ -270,6 +270,10 @@ if(USE_STATIC_MBEDTLS_LIBRARY)
+@@ -272,6 +272,10 @@ if(USE_STATIC_MBEDTLS_LIBRARY)
          target_link_libraries(${mbedcrypto_static_target} PUBLIC everest)
      endif()
  
@@ -1747,7 +1748,7 @@ index c9714bbfb..bde2465ea 100644
      add_library(${mbedx509_static_target} STATIC ${src_x509})
      set_target_properties(${mbedx509_static_target} PROPERTIES OUTPUT_NAME mbedx509)
      target_link_libraries(${mbedx509_static_target} PUBLIC ${libs} ${mbedcrypto_static_target})
-@@ -289,6 +293,10 @@ if(USE_SHARED_MBEDTLS_LIBRARY)
+@@ -291,6 +295,10 @@ if(USE_SHARED_MBEDTLS_LIBRARY)
          target_link_libraries(${mbedcrypto_target} PUBLIC everest)
      endif()
  
@@ -1756,13 +1757,13 @@ index c9714bbfb..bde2465ea 100644
 +    endif()
 +
      add_library(${mbedx509_target} SHARED ${src_x509})
-     set_target_properties(${mbedx509_target} PROPERTIES VERSION 3.3.0 SOVERSION 4)
+     set_target_properties(${mbedx509_target} PROPERTIES VERSION 3.4.0 SOVERSION 5)
      target_link_libraries(${mbedx509_target} PUBLIC ${libs} ${mbedcrypto_target})
 diff --git a/library/psa_crypto_driver_wrappers.c b/library/psa_crypto_driver_wrappers.c
-index 5d99b3028..aba0fb4cf 100644
+index b20d87c82..08d928868 100644
 --- a/library/psa_crypto_driver_wrappers.c
 +++ b/library/psa_crypto_driver_wrappers.c
-@@ -236,6 +236,24 @@ psa_status_t psa_driver_wrapper_sign_message(
+@@ -243,6 +243,24 @@ psa_status_t psa_driver_wrapper_sign_message(
              break;
  #endif /* PSA_CRYPTO_DRIVER_TEST */
  #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
@@ -1787,7 +1788,7 @@ index 5d99b3028..aba0fb4cf 100644
          default:
              /* Key is declared with a lifetime not known to us */
              (void)status;
-@@ -324,6 +342,23 @@ psa_status_t psa_driver_wrapper_verify_message(
+@@ -331,6 +349,23 @@ psa_status_t psa_driver_wrapper_verify_message(
              break;
  #endif /* PSA_CRYPTO_DRIVER_TEST */
  #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
@@ -1811,7 +1812,7 @@ index 5d99b3028..aba0fb4cf 100644
          default:
              /* Key is declared with a lifetime not known to us */
              (void)status;
-@@ -425,6 +460,25 @@ psa_status_t psa_driver_wrapper_sign_hash(
+@@ -432,6 +467,25 @@ psa_status_t psa_driver_wrapper_sign_hash(
                                                               signature_length ) );
  #endif /* PSA_CRYPTO_DRIVER_TEST */
  #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
@@ -1837,7 +1838,7 @@ index 5d99b3028..aba0fb4cf 100644
          default:
              /* Key is declared with a lifetime not known to us */
              (void)status;
-@@ -521,6 +575,23 @@ psa_status_t psa_driver_wrapper_verify_hash(
+@@ -528,6 +582,23 @@ psa_status_t psa_driver_wrapper_verify_hash(
                                                                 signature_length ) );
  #endif /* PSA_CRYPTO_DRIVER_TEST */
  #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
@@ -1861,7 +1862,7 @@ index 5d99b3028..aba0fb4cf 100644
          default:
              /* Key is declared with a lifetime not known to us */
              (void)status;
-@@ -561,6 +632,12 @@ psa_status_t psa_driver_wrapper_get_key_buffer_size_from_key_data(
+@@ -813,6 +884,12 @@ psa_status_t psa_driver_wrapper_get_key_buffer_size_from_key_data(
                      PSA_SUCCESS : PSA_ERROR_NOT_SUPPORTED );
  #endif /* PSA_CRYPTO_DRIVER_TEST */
  
@@ -1874,7 +1875,7 @@ index 5d99b3028..aba0fb4cf 100644
          default:
              (void)key_type;
              (void)data;
-@@ -617,7 +694,13 @@ psa_status_t psa_driver_wrapper_get_key_buffer_size(
+@@ -869,7 +946,13 @@ psa_status_t psa_driver_wrapper_get_key_buffer_size(
              return tfm_builtin_key_loader_get_key_buffer_size(psa_get_key_id(attributes),
                                                                key_buffer_size);
  #endif /* PSA_CRYPTO_DRIVER_TFM_BUILTIN_KEY_LOADER */
@@ -1889,7 +1890,7 @@ index 5d99b3028..aba0fb4cf 100644
              (void)key_type;
              (void)key_bits;
              return( PSA_ERROR_INVALID_ARGUMENT );
-@@ -694,6 +777,22 @@ psa_status_t psa_driver_wrapper_generate_key(
+@@ -946,6 +1029,22 @@ psa_status_t psa_driver_wrapper_generate_key(
                  attributes, key_buffer, key_buffer_size, key_buffer_length );
              break;
  #endif /* PSA_CRYPTO_DRIVER_TEST */
@@ -1912,7 +1913,7 @@ index 5d99b3028..aba0fb4cf 100644
  #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
  
          default:
-@@ -797,6 +896,18 @@ psa_status_t psa_driver_wrapper_import_key(
+@@ -1049,6 +1148,18 @@ psa_status_t psa_driver_wrapper_import_key(
          ));
  #endif
  
@@ -1931,7 +1932,7 @@ index 5d99b3028..aba0fb4cf 100644
  
  #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
          default:
-@@ -865,6 +976,19 @@ psa_status_t psa_driver_wrapper_export_key(
+@@ -1117,6 +1228,19 @@ psa_status_t psa_driver_wrapper_export_key(
          ));
  #endif
  
@@ -1951,7 +1952,7 @@ index 5d99b3028..aba0fb4cf 100644
  
  #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
          default:
-@@ -964,6 +1088,19 @@ psa_status_t psa_driver_wrapper_export_public_key(
+@@ -1216,6 +1340,19 @@ psa_status_t psa_driver_wrapper_export_public_key(
          ));
  #endif
  
@@ -1971,7 +1972,7 @@ index 5d99b3028..aba0fb4cf 100644
  
  #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
          default:
-@@ -985,14 +1122,13 @@ psa_status_t psa_driver_wrapper_destroy_key(
+@@ -1237,14 +1374,13 @@ psa_status_t psa_driver_wrapper_destroy_key(
      switch( location )
      {
  #if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
@@ -1990,7 +1991,7 @@ index 5d99b3028..aba0fb4cf 100644
  #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
  
          case PSA_KEY_LOCATION_LOCAL_STORAGE:
-@@ -1082,6 +1218,20 @@ psa_status_t psa_driver_wrapper_copy_key(
+@@ -1334,6 +1470,20 @@ psa_status_t psa_driver_wrapper_copy_key(
          ));
  #endif
  
@@ -2011,7 +2012,7 @@ index 5d99b3028..aba0fb4cf 100644
  
  #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
          default:
-@@ -2909,6 +3059,24 @@ psa_status_t psa_driver_wrapper_asymmetric_encrypt(
+@@ -3165,6 +3315,24 @@ psa_status_t psa_driver_wrapper_asymmetric_encrypt(
                          salt, salt_length, output, output_size, output_length )
                    );
  #endif /* PSA_CRYPTO_DRIVER_TEST */
@@ -2036,7 +2037,7 @@ index 5d99b3028..aba0fb4cf 100644
  #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
  
          default:
-@@ -2986,6 +3154,24 @@ psa_status_t psa_driver_wrapper_asymmetric_decrypt(
+@@ -3242,6 +3410,24 @@ psa_status_t psa_driver_wrapper_asymmetric_decrypt(
                          salt, salt_length, output, output_size,
                          output_length ) );
  #endif /* PSA_CRYPTO_DRIVER_TEST */
@@ -2062,7 +2063,7 @@ index 5d99b3028..aba0fb4cf 100644
  
          default:
 diff --git a/library/psa_crypto_driver_wrappers.h b/library/psa_crypto_driver_wrappers.h
-index f2d2847eb..d6cdc05c8 100644
+index 21952c044..104c267f2 100644
 --- a/library/psa_crypto_driver_wrappers.h
 +++ b/library/psa_crypto_driver_wrappers.h
 @@ -24,6 +24,10 @@
@@ -2077,22 +2078,22 @@ index f2d2847eb..d6cdc05c8 100644
   * Initialization and termination functions
   */
 diff --git a/scripts/config.py b/scripts/config.py
-index 7e58acd0a..5082de901 100755
+index 404a5eff2..bf12604af 100755
 --- a/scripts/config.py
 +++ b/scripts/config.py
-@@ -216,6 +216,7 @@ EXCLUDE_FROM_FULL = frozenset([
+@@ -215,6 +215,7 @@ EXCLUDE_FROM_FULL = frozenset([
      'MBEDTLS_TEST_CONSTANT_FLOW_MEMSAN', # build dependency (clang+memsan)
      'MBEDTLS_TEST_CONSTANT_FLOW_VALGRIND', # build dependency (valgrind headers)
      'MBEDTLS_X509_REMOVE_INFO', # removes a feature
-+    'MBEDTLS_RSS_DRIVER_ENABLED' # influences rss async psa crypto accelerator
++    'MBEDTLS_RSS_DRIVER_ENABLED', # influences rss async psa crypto accelerator
+     'MBEDTLS_SSL_RECORD_SIZE_LIMIT', # in development, currently breaks other tests
  ])
  
- def is_seamless_alt(name):
 diff --git a/scripts/data_files/driver_templates/psa_crypto_driver_wrappers.c.jinja b/scripts/data_files/driver_templates/psa_crypto_driver_wrappers.c.jinja
-index fb370f220..a306d1337 100644
+index 8a9bbd68d..bd9dfd457 100644
 --- a/scripts/data_files/driver_templates/psa_crypto_driver_wrappers.c.jinja
 +++ b/scripts/data_files/driver_templates/psa_crypto_driver_wrappers.c.jinja
-@@ -1550,13 +1550,13 @@ psa_status_t psa_driver_wrapper_destroy_key(
+@@ -1797,13 +1797,13 @@ psa_status_t psa_driver_wrapper_destroy_key(
      switch( location )
      {
  #if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)

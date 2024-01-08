@@ -1,4 +1,4 @@
-From 58653765fa7ecccf08ac13e22806a6a2e84d1ee9 Mon Sep 17 00:00:00 2001
+From 1d729fc37c25a95cd52ebaa9ca04658903acd85b Mon Sep 17 00:00:00 2001
 From: Michael Zhao <michael.zhao@arm.com>
 Date: Tue, 7 Nov 2023 15:47:00 +0800
 Subject: [PATCH] crypto: Support psa_destroy_key in wrapper
@@ -9,18 +9,19 @@ entry support RSS communication driver only.
 Upstream-Status: Pending
 Signed-off-by: Michael Zhao <michael.zhao@arm.com>
 Signed-off-by: Jiamei Xie <jiamei.xie@arm.com>
+Signed-off-by: Divin Raj <divin.raj@arm.com>
 ---
- library/psa_crypto.c                          |  8 +++++
+ library/psa_crypto.c                          |  9 ++++++
  library/psa_crypto_driver_wrappers.c          | 30 ++++++++++++++++++
  library/psa_crypto_driver_wrappers.h          |  4 +++
  .../psa_crypto_driver_wrappers.c.jinja        | 31 +++++++++++++++++++
- 4 files changed, 73 insertions(+)
+ 4 files changed, 74 insertions(+)
 
 diff --git a/library/psa_crypto.c b/library/psa_crypto.c
-index 3884fa250..96588c1a2 100644
+index 13749f783..320e547cc 100644
 --- a/library/psa_crypto.c
 +++ b/library/psa_crypto.c
-@@ -1120,6 +1120,14 @@ psa_status_t psa_destroy_key( mbedtls_svc_key_id_t key )
+@@ -1183,6 +1183,15 @@ psa_status_t psa_destroy_key(mbedtls_svc_key_id_t key)
      }
  #endif /* MBEDTLS_PSA_CRYPTO_SE_C */
  
@@ -29,17 +30,18 @@ index 3884fa250..96588c1a2 100644
 +    };
 +    status = psa_driver_wrapper_destroy_key(&attributes,
 +                                            slot->key.data, slot->key.bytes);
-+    if( overall_status == PSA_SUCCESS )
++   if( overall_status == PSA_SUCCESS )
 +        overall_status = status;
 +
++
  exit:
-     status = psa_wipe_key_slot( slot );
+     status = psa_wipe_key_slot(slot);
      /* Prioritize CORRUPTION_DETECTED from wiping over a storage error */
 diff --git a/library/psa_crypto_driver_wrappers.c b/library/psa_crypto_driver_wrappers.c
-index 7c6b618d5..5d99b3028 100644
+index f48452b0a..b20d87c82 100644
 --- a/library/psa_crypto_driver_wrappers.c
 +++ b/library/psa_crypto_driver_wrappers.c
-@@ -973,6 +973,36 @@ psa_status_t psa_driver_wrapper_export_public_key(
+@@ -1225,6 +1225,36 @@ psa_status_t psa_driver_wrapper_export_public_key(
  
  }
  
@@ -77,12 +79,12 @@ index 7c6b618d5..5d99b3028 100644
      psa_drv_slot_number_t slot_number,
      psa_key_attributes_t *attributes,
 diff --git a/library/psa_crypto_driver_wrappers.h b/library/psa_crypto_driver_wrappers.h
-index a19d7ecae..f2d2847eb 100644
+index 7d672d641..21952c044 100644
 --- a/library/psa_crypto_driver_wrappers.h
 +++ b/library/psa_crypto_driver_wrappers.h
-@@ -86,6 +86,10 @@ psa_status_t psa_driver_wrapper_export_public_key(
+@@ -123,6 +123,10 @@ psa_status_t psa_driver_wrapper_export_public_key(
      const uint8_t *key_buffer, size_t key_buffer_size,
-     uint8_t *data, size_t data_size, size_t *data_length );
+     uint8_t *data, size_t data_size, size_t *data_length);
  
 +psa_status_t psa_driver_wrapper_destroy_key(
 +    const psa_key_attributes_t *attributes,
@@ -90,12 +92,12 @@ index a19d7ecae..f2d2847eb 100644
 +
  psa_status_t psa_driver_wrapper_get_key_buffer_size(
      const psa_key_attributes_t *attributes,
-     size_t *key_buffer_size );
+     size_t *key_buffer_size);
 diff --git a/scripts/data_files/driver_templates/psa_crypto_driver_wrappers.c.jinja b/scripts/data_files/driver_templates/psa_crypto_driver_wrappers.c.jinja
-index 3ad92aaef..fb370f220 100644
+index 08da774d3..8a9bbd68d 100644
 --- a/scripts/data_files/driver_templates/psa_crypto_driver_wrappers.c.jinja
 +++ b/scripts/data_files/driver_templates/psa_crypto_driver_wrappers.c.jinja
-@@ -1536,6 +1536,37 @@ psa_status_t psa_driver_wrapper_hash_abort(
+@@ -1783,6 +1783,37 @@ psa_status_t psa_driver_wrapper_hash_abort(
      }
  }
  
