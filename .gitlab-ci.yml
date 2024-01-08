@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -16,7 +16,7 @@ variables:
 # Include jobs
 include:
   - project: $PIPELINE_TEMPLATE_PROJECT
-    ref: v1.4.2
+    ref: v1.6.3
     file:
       - gitlab-ci/common_gitlab-ci.yml
       - gitlab-ci/danger-review_gitlab-ci.yml
