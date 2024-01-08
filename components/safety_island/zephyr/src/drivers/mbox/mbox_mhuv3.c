@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ * SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  * affiliates <open-source-office@arm.com></text>
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -249,7 +249,7 @@ DEVICE_DT_INST_DEFINE(n,						\
 		      &mbox_mhuv3_rx_init,				\
 		      NULL,						\
 		      &mbox_mhuv3_data_rx_##n, &mbox_mhuv3_cfg_rx_##n,	\
-		      POST_KERNEL,					\
+		      PRE_KERNEL_1,					\
 		      CONFIG_KERNEL_INIT_PRIORITY_DEVICE,		\
 		      &mbox_mhuv3_driver_api);				\
 static void mbox_mhuv3_irq_config_rx_##n(const struct device *d)	\
@@ -281,7 +281,7 @@ DEVICE_DT_INST_DEFINE(n,						\
 		      &mbox_mhuv3_tx_init,				\
 		      NULL,						\
 		      &mbox_mhuv3_data_tx_##n, &mbox_mhuv3_cfg_tx_##n,	\
-		      POST_KERNEL,					\
+		      PRE_KERNEL_1,					\
 		      CONFIG_KERNEL_INIT_PRIORITY_DEVICE,		\
 		      &mbox_mhuv3_driver_api);
 
