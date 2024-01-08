@@ -54,13 +54,13 @@ IMAGE_FEATURES[validitems] += " \
 DOMU_INSTANCES ?= "2"
 
 IMAGE_FEATURES_CONFLICTS_baremetal = "virtualization domu"
-IMAGE_FEATURES_CONFLICTS_virtualization = "baremetal domu cam"
-IMAGE_FEATURES_CONFLICTS_domu = "baremetal virtualization cam"
+IMAGE_FEATURES_CONFLICTS_virtualization = "baremetal domu"
+IMAGE_FEATURES_CONFLICTS_domu = "baremetal virtualization"
 IMAGE_FEATURES_CONFLICTS_hipc-validation = "si0-bridge-ethernet0 actuation cam si-psa-storage-tests si-psa-crypto-tests"
 IMAGE_FEATURES_CONFLICTS_actuation = "si0-bridge-ethernet0 hipc-validation cam si-psa-storage-tests si-psa-crypto-tests"
 IMAGE_FEATURES_CONFLICTS_si0-bridge-ethernet0 = "hipc-validation actuation cam si-psa-storage-tests si-psa-crypto-tests"
 IMAGE_FEATURES_CONFLICTS_cam = \
-    "si0-bridge-ethernet0 hipc-validation actuation virtualization domu si-psa-storage-tests si-psa-crypto-tests"
+    "si0-bridge-ethernet0 hipc-validation actuation si-psa-storage-tests si-psa-crypto-tests"
 IMAGE_FEATURES_CONFLICTS_si-psa-storage-tests = "hipc-validation actuation si0-bridge-ethernet0 cam si-psa-crypto-tests"
 IMAGE_FEATURES_CONFLICTS_si-psa-crypto-tests = "hipc-validation actuation si0-bridge-ethernet0 cam si-psa-storage-tests"
 
@@ -113,6 +113,7 @@ FEATURE_PACKAGES_actuation:virtualization = ""
 
 CAM_PACKAGES ?= "cam-app-example cam-service cam-tool linuxptp"
 FEATURE_PACKAGES_cam = "${CAM_PACKAGES}"
+FEATURE_PACKAGES_cam:virtualization = "linuxptp"
 
 KRONOS_EXTRA_IMAGEDEPENDS = ""
 KRONOS_EXTRA_IMAGEDEPENDS:actuation = "packet-analyzer-native:do_addto_recipe_sysroot"
@@ -140,6 +141,8 @@ ZEPHYR_APP_SAFETY_ISLAND_CL2:si-psa-storage-tests = "psa-storage-tests"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:si-psa-crypto-tests = "psa-crypto-tests"
 
 LINUXPTP_IFACES:cam = "ethsi1"
+LINUXPTP_IFACES:append:cam:virtualization = " domu1.ethsi1 domu2.ethsi1"
+LINUXPTP_IFACES:cam:domu = "ethsi1"
 LINUXPTP_IFACES:hipc-validation = "ethsi0 ethsi1 ethsi2"
 LINUXPTP_IFACES:append:hipc-validation:virtualization = \
     " domu1.ethsi0 domu2.ethsi0"
