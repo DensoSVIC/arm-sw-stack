@@ -91,6 +91,27 @@ class LinuxTermUtils(object):
         self.logger = testcase.logger
         self.timeout = 60
         self.endline = r'\r?\r\n'
+        # Xen console fix
+        self.pexpect_send = self.console.send
+        self.console.send = self.chunked_send
+
+    def chunked_send(self, s):
+        # The Xen console has a limitation where if more than 128 characters
+        # are written in the console buffer in a short amount of time, let's
+        # say for example a copy paste, the excess characters will be lost.
+        # Pexpect uses os.write() to send the character list to the stdin and
+        # it has no parameter to limit the flow.
+        # So this function writes maximum 128 characters and wait for
+        # some time that the buffer is cleared by the guest before sending
+        # the excess.
+        n = 128
+        count = 0
+        send_strings = [s[i:i+n] for i in range(0, len(s), n)]
+        for chunk in send_strings:
+            count += self.pexpect_send(chunk)
+            sleep(1.5)
+
+        return count
 
     def send_wait_prompt(self):
         self.console.sendline()
