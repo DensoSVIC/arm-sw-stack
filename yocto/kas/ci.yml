@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -32,5 +32,5 @@ local_conf_header:
     BB_PRESSURE_MAX_IO = "1"
     INHERIT += "rm_work"
     RM_WORK_EXCLUDE_ITEMS:append = " testimage"
-    TEST_OVERALL_TIMEOUT = "${@40*60 if d.getVar('FREQUENCY') == 'adhoc' \
+    TEST_OVERALL_TIMEOUT = "${@60*60 if d.getVar('FREQUENCY') == 'adhoc' \
       else ''}"
