@@ -6,10 +6,10 @@
 header:
   version: 14
 
-repos:
-  meta-arm:
-    refspec: d120d34e7e99eb84ba240b569eca83dbed8e5abe
-  meta-openembedded:
-    refspec: f29290563cb821fae95340ba959749641c69ed7f
-  poky:
-    refspec: 7235399a86b134e57d5eb783d7f1f57ca0439ae5
+#repos:
+#  meta-arm:
+#    refspec:
+#  meta-openembedded:
+#    refspec:
+#  poky:
+#    refspec:
