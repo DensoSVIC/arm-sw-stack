@@ -1,9 +1,9 @@
 #
-# Based on: https://github.com/ros/meta-ros/blob/746cd438c81a858d486a9008b1cecf80831cbddf/meta-ros2-galactic/generated-recipes/ament-cmake/ament-cmake-auto_1.1.4-1.bb
+# Based on: https://github.com/ros/meta-ros/blob/875464b52828c6a0d6669f7009607e3ea28bc1a6/meta-ros2-humble/generated-recipes/ament-cmake/ament-cmake-export-libraries_1.3.5-1.bb
 # In open-source project: meta-ros
 # Original file: SPDX-FileCopyrightText: <text>Copyright 2021 Open Source
 # Robotics Foundation</text>
-# Modifications: SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited
+# Modifications: SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited
 # and/or its affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -13,29 +13,30 @@
 # 2) Add BBCLASSEXTEND
 # 3) Fix oelint-adv issues
 #
-SUMMARY = "Ament CMake Auto-Magic Functions"
-DESCRIPTION = "The auto-magic functions for ease to use of the ament buildsystem in CMake."
-AUTHOR = "Dirk Thomas <dthomas@osrfoundation.org>"
+SUMMARY = "Ament CMake Export Libraries"
+DESCRIPTION = "The ability to export libraries to downstream packages in the ament buildsystem in CMake."
+AUTHOR = "Michael Jeronimo <michael.jeronimo@openrobotics.org>"
+ROS_AUTHOR = "Dirk Thomas"
 HOMEPAGE = "https://wiki.ros.org"
 SECTION = "devel"
 # Original license in package.xml, joined with "&" when multiple license tags were used:
 #         "Apache License 2.0"
 LICENSE = "Apache-2.0"
-LIC_FILES_CHKSUM = "file://package.xml;beginline=9;endline=9;md5=12c26a18c7f493fdc7e8a93b16b7c04f"
+LIC_FILES_CHKSUM = "file://package.xml;beginline=11;endline=11;md5=12c26a18c7f493fdc7e8a93b16b7c04f"
 
 ROS_CN = "ament_cmake"
-ROS_BPN = "ament_cmake_auto"
+ROS_BPN = "ament_cmake_export_libraries"
 
 ROS_BUILD_DEPENDS = ""
 
 ROS_BUILDTOOL_DEPENDS = "\
-    ament-cmake-native \
+    ament-cmake-core-native \
 "
 
 ROS_EXPORT_DEPENDS = ""
 
 ROS_BUILDTOOL_EXPORT_DEPENDS = "\
-    ament-cmake-native \
+    ament-cmake-core-native \
 "
 
 ROS_EXEC_DEPENDS = ""
@@ -48,10 +49,10 @@ DEPENDS = "${ROS_BUILD_DEPENDS} ${ROS_BUILDTOOL_DEPENDS}"
 # don't) so that they're guaranteed to have been staged should this package appear in another's DEPENDS.
 DEPENDS += "${ROS_BUILDTOOL_EXPORT_DEPENDS} ${ROS_EXPORT_DEPENDS}"
 
-# matches with: https://github.com/ros2-gbp/ament_cmake-release/archive/release/galactic/ament_cmake_auto/1.1.4-1.tar.gz
-ROS_BRANCH ?= "branch=release/galactic/ament_cmake_auto"
+# matches with: https://github.com/ros2-gbp/ament_cmake-release/archive/release/humble/ament_cmake_export_libraries/1.3.5-1.tar.gz
+ROS_BRANCH ?= "branch=release/humble/ament_cmake_export_libraries"
 SRC_URI = "git://github.com/ros2-gbp/ament_cmake-release;${ROS_BRANCH};protocol=https"
-SRCREV = "1bda996d236e28dd98f487ca55d90cfd3ed99090"
+SRCREV = "9302ab7e35bd1552529e345632062fe8eca27ef5"
 S = "${WORKDIR}/git"
 
 ROS_BUILD_TYPE = "ament_cmake"

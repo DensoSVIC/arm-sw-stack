@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -22,5 +22,5 @@ inherit python3native pkgconfig cmake
 
 EXTRA_OECMAKE:append = "\
     -DBUILD_TESTING=OFF \
-    -DROS_DISTRO=galactic \
+    -DROS_DISTRO=humble \
 "

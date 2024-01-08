@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -18,12 +18,12 @@ DEPENDS += "\
 
 PV .= "+git${SRCPV}"
 SRC_URI = "git://github.com/autowarefoundation/autoware_common.git;${BRANCH_AUTOWARE};protocol=https"
-SRCREV = "0f5c64c7497462ac4e669a8bfb7ef1bd058a588d"
+SRCREV = "44dc3880361f8e5b8eb4daf05119bc9446ff8303"
 S = "${WORKDIR}/git"
 
 inherit python3native pkgconfig cmake
 
-BRANCH_AUTOWARE ?= "branch=galactic"
+BRANCH_AUTOWARE ?= "branch=main"
 
 OECMAKE_SOURCEPATH = "${S}/autoware_cmake"
 

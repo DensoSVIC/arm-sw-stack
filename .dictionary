@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -29,6 +29,7 @@ armlmd
 armv
 Artifactory
 Asym
+Audrow
 autoboot
 Autonegotiation
 autosectionlabel
@@ -255,8 +256,10 @@ GICv4.1
 gntalloc
 gntdev
 gnueabi
+googletest
 GPTP
 grubaa
+gtest
 GUUID
 HARDLIM
 helloworld
@@ -319,6 +322,7 @@ irqreturn
 IRQS
 irqsave
 Izuma
+Jeronimo
 journalctl
 jsonschema
 kbuild
@@ -431,6 +435,7 @@ netfilter
 NETIF
 NETPORT
 networkd
+Nikulin
 noanonpython
 NOCACHE
 nocpuid
