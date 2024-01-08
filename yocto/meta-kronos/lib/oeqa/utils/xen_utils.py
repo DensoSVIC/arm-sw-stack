@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -30,7 +30,8 @@ class XenUtils:
         console.expect(domu_prompt, timeout=30)
 
     @staticmethod
-    def exit_guest_to_dom0(console, dom0_prompt, domu_prompt, domu_name):
+    def exit_guest_to_dom0(console, dom0_prompt, domu_prompt, domu_name,
+                           telnet=True):
         sleep(3)
         # Return to Dom0
         console.sendline()
@@ -39,8 +40,10 @@ class XenUtils:
         console.sendcontrol('D')
         console.sendline()
         console.expect(rf'{domu_name} login:', timeout=300)
-        # Send Ctrl-] to enter telnet console
+        # Send Ctrl-] to exit 'xl console' or to enter telnet console
         console.sendcontrol(']')
-        console.expect(r'telnet>', timeout=30)
-        console.sendline(r'send esc')
+        if telnet:
+            console.expect(r'telnet>', timeout=30)
+            console.sendline(r'send esc')
+        console.sendline()
         console.expect(dom0_prompt, timeout=30)

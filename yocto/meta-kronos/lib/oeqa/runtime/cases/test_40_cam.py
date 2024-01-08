@@ -9,11 +9,13 @@ from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.core.decorator.depends import OETestDepends
 from oeqa.utils.linux_terminal_utils import LinuxTermUtils
 from oeqa.utils.zephyr_shell import Shell
+from oeqa.utils.xen_utils import XenUtils
 
 
 class CAMTest(OERuntimeTestCase):
     zephyr_console = 'safety_island_c1'
     hostname = r'fvp-rd-kronos'
+    domu_hostname = r'domu1'
     cam_data_path = '/usr/share/cam-data'
     default_uuid_base = '84085ddc-bc10-11ed-9a44-7ef9696e'
     custom_uuid_base = '99085ddc-bc10-11ed-9a44-7ef9696e'
@@ -25,11 +27,24 @@ class CAMTest(OERuntimeTestCase):
         super(CAMTest, cls).setUpClass()
         cls.linux_prompt = rf'root@{cls.hostname}:~#'
         linux_console = cls.tc.target._get_terminal('default')
-        cls.lt_utils = LinuxTermUtils(cls.tc, linux_console, cls.linux_prompt)
         cls.si1_shell = Shell(cls.tc.target, cls.zephyr_console, cls.tc.logger)
+        if ('virtualization' in cls.td.get('IMAGE_FEATURES', '').split()):
+            cls.linux_prompt = rf'root@{cls.domu_hostname}:~#'
+            cls.dom0_prompt = rf'root@{cls.hostname}:~#'
+            linux_console = LinuxTermUtils.open_ssh_shell(cls.tc.target,
+                                                          cls.domu_hostname,
+                                                          cls.tc.logger)
+            XenUtils.enter_guest_from_dom0(linux_console, cls.dom0_prompt,
+                                           cls.linux_prompt, cls.domu_hostname)
+        cls.lt_utils = LinuxTermUtils(cls.tc, linux_console, cls.linux_prompt)
 
     @classmethod
     def tearDownClass(cls):
+        if ('virtualization' in cls.td.get('IMAGE_FEATURES', '').split()):
+            XenUtils.exit_guest_to_dom0(cls.lt_utils.console, cls.dom0_prompt,
+                                        cls.linux_prompt, cls.domu_hostname,
+                                        False)
+            LinuxTermUtils.close_ssh_shell(cls.lt_utils.console, cls.tc.logger)
         super(CAMTest, cls).tearDownClass()
 
     def cam_service_ctx(self):
@@ -125,9 +140,10 @@ class CAMTest(OERuntimeTestCase):
             self.assertEqual(status, 0,
                              msg=f'Failed to run cam-app-example.')
 
-        self.assertIn(f'{uuid} configuration is loaded',
+        self.assertIn(f'{self.custom_uuid} configuration is loaded',
                       cam_serv_ctx.cmd_output,
-                      f'Failed! {uuid} not found in cam-service configuration!')
+                      (f'Failed! {self.custom_uuid} not found in cam-service'
+                       ' configuration!'))
 
     @OETestDepends([
         'test_40_cam.CAMTest.test_cam_app_example_with_custom_uuid_to_service_on_pc'])
