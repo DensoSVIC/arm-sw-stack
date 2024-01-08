@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ * SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  * affiliates <open-source-office@arm.com></text>
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -239,5 +239,5 @@ static int fault_mgmt_init(const struct device *dev)
 	return 0;
 }
 
-DEVICE_DT_DEFINE(DT_FAULT_MGMT, fault_mgmt_init, NULL, NULL, NULL, APPLICATION,
+DEVICE_DT_DEFINE(DT_FAULT_MGMT, fault_mgmt_init, NULL, NULL, NULL, POST_KERNEL,
 		 CONFIG_APPLICATION_INIT_PRIORITY, NULL);
