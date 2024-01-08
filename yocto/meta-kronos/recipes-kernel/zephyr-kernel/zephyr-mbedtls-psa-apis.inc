@@ -5,16 +5,13 @@
 # SPDX-License-Identifier: MIT
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files/mbedtls:"
-ZEPHYR_PATCHDIR = "zephyr"
 ZEPHYR_MBEDTLS_PATCHDIR = "modules/crypto/mbedtls"
 
 # /* cSpell:disable */
 ZEPHYR_MBEDTLS_PATCHES ?= "\
-    file://0001-mbedtls-Enable-missing-algorithms-for-psa-arch-tests.patch;patchdir=${ZEPHYR_PATCHDIR} \
-    file://0002-crypto-Remove-transparent-key-check-in-psa_asymmetri.patch;patchdir=${ZEPHYR_MBEDTLS_PATCHDIR} \
-    file://0003-crypto-Support-psa_destroy_key-in-wrapper.patch;patchdir=${ZEPHYR_MBEDTLS_PATCHDIR} \
-    file://0004-Introduce-opaque-rss-driver.patch;patchdir=${ZEPHYR_MBEDTLS_PATCHDIR} \
-    file://0005-mbedtls-Add-rss-driver-to-build.patch;patchdir=${ZEPHYR_PATCHDIR} \
+    file://0001-crypto-Remove-transparent-key-check-in-psa_asymmetri.patch;patchdir=${ZEPHYR_MBEDTLS_PATCHDIR} \
+    file://0002-crypto-Support-psa_destroy_key-in-wrapper.patch;patchdir=${ZEPHYR_MBEDTLS_PATCHDIR} \
+    file://0003-Introduce-opaque-rss-driver.patch;patchdir=${ZEPHYR_MBEDTLS_PATCHDIR} \
 "
 # /* cSpell:enable */
 

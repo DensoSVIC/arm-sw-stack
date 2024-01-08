@@ -16,6 +16,8 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0006-net-gptp-Create-a-stack-size-Kconfig-option.patch;patchdir=zephyr \
     file://zephyr/0007-drivers-gic-Add-multiple-GIC-redistributors-regions-.patch;patchdir=zephyr \
     file://zephyr/0008-lib-posix-Support-realtime-timer.patch;patchdir=zephyr \
+    file://zephyr/0009-mbedtls-Enable-missing-algorithms-for-psa-arch-tests.patch;patchdir=zephyr \
+    file://zephyr/0010-mbedtls-Add-rss-driver-to-build.patch;patchdir=zephyr \
     "
 # /* cSpell:enable */
 
