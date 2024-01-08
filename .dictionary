@@ -82,6 +82,7 @@ cacheline
 carveout
 cassini
 CCAP
+CCARGS
 ccsidr
 cdev
 CFLAGS
