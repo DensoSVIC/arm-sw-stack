@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -584,6 +584,25 @@ direct injection for DomU1:
 For GICv4.1 vLPI/vSGI validation, please refer to
 :ref:`validation_gicv4_1_demo`.
 
+SVE2
+----
+
+The Scalable Vector Extension version two (SVE2) is enabled in Xen. This feature
+is used as an extension to AArch64, to allow for flexible vector length
+implementations. 
+
+SVE vector length can be specified as an optional parameter along with enabling
+SVE2. The allowed values are from 128 to maximum 2048 limited by the hardware
+supported maximum SVE vector length. Dom0 and guest SVE settings follow the
+|Arm| Kronos Reference Design's maximum vector length of 128. These settings
+are set in
+:kronos-repo:`yocto/meta-kronos/recipes-core/domu-package/domu-envs.inc` and
+:kronos-repo:`b/yocto/meta-kronos/recipes-extended/xen-cfg/xen-cfg.bb`.
+
+For more information on SVE2, please refer to `SVE2 guide`_.  Xen command line
+options for SVE for dom0 can be found under `xen-command-line options`_ and
+SVE configuration for guests can be found under `xl configuration`_.
+
 .. _design_components_xen_downstream_changes:
 
 Downstream Changes
@@ -630,6 +649,15 @@ In order to allow applications to access the remote processor using network
 sockets, a virtual network device over RPMsg is introduced. The ``rpmsg_net``
 kernel module is added for creating a virtual network device and converting
 RPMsg data to network data.
+
+SVE2
+----
+
+The Scalable Vector Extension version two (SVE2) is enabled in Linux. This
+feature is used as an extension to AArch64, to allow for flexible vector length
+implementations. 
+
+For more information on SVE2, please refer to `SVE2 guide`_.
 
 .. _design_components_linux_downstream_changes:
 

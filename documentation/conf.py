@@ -255,6 +255,7 @@ rst_prolog = f"""
 .. _Safety Island Actuation Demo: https://safety-island-actuation-demo.docs.arm.com
 .. _Secure Partition: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/environments/secure-partitions/index.html
 .. _Secure Storage Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/secure-storage-service-description.html
+.. _SVE2 guide: https://developer.arm.com/documentation/102340/0100/Introducing-SVE2
 .. _System Control Processor (SCP) Firmware: https://developer.arm.com/documentation/den0050/latest
 .. _TF-M Crypto Service: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/tfm_crypto_design.html
 .. _TF-M Internal Trusted Storage Service: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/tfm_its_service.html
@@ -293,6 +294,8 @@ rst_prolog = f"""
 .. _openSUSE Installation Guide: https://doc.opensuse.org/documentation/leap/startup/html/book-startup/part-basics.html
 .. _openSUSE Leap: https://download.opensuse.org/distribution/leap/
 .. _testimage.bbclass: https://docs.yoctoproject.org/{yocto_doc_version}ref-manual/classes.html#testimage-bbclass
+.. _xen-command-line options: https://xenbits.xen.org/docs/{xen_version}-testing/misc/xen-command-line.html#dom0
+.. _xl configuration: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.cfg.5.html#Architecture-Specific-options
 .. _xl documentation: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.1.html
 .. _zperf sample: https://docs.zephyrproject.org/{zephyr_version}/connectivity/networking/api/zperf.html
 """  # noqa: E501

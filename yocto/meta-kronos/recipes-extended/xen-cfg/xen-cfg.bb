@@ -1,7 +1,7 @@
 # nooelint: oelint.var.mandatoryvar - There is no source file
 # The "source" is in the do_deploy task.
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -23,8 +23,8 @@ do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 do_install[noexec] = "1"
 
-# Set Dom0 VCPU affinity and MPAM SLC config
-EXTRA_XEN_CMDLINE_CONFIG ?= "maxcpus=4 dom0_max_vcpus=1 dom0_vcpus_pin dom0_mpam=slc:0xf iommu=yes"
+# Set Dom0 VCPU affinity, MPAM SLC and SVE2 config
+EXTRA_XEN_CMDLINE_CONFIG ?= "maxcpus=4 dom0_max_vcpus=1 dom0_vcpus_pin dom0_mpam=slc:0xf iommu=yes dom0=sve=128"
 
 # Set Dom0 Static passthrough PCI AHCI SATA disk assignment
 EXTRA_PCI_PASSTHROUGH_CONFIG ?= "xen-pciback.hide=(${DOMU1_PCI_ID})"
