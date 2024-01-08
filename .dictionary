@@ -79,6 +79,7 @@ BUILDTOOL
 busaddr
 BWPBM
 cacheline
+calib
 carveout
 cassini
 CCAP
@@ -582,6 +583,7 @@ sendbits
 sendcontrol
 sendline
 serror
+serv
 setenv
 setuptools
 shimaa
