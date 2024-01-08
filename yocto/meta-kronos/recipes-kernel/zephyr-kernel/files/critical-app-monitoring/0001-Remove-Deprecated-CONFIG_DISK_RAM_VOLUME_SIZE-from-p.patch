@@ -1,0 +1,32 @@
+From 89c8328e86ccd751ff62c2b67a881f9aed849fa2 Mon Sep 17 00:00:00 2001
+From: Divin Raj <divin.raj@arm.com>
+Date: Tue, 12 Dec 2023 15:06:29 +0000
+Subject: [PATCH] Remove Deprecated CONFIG_DISK_RAM_VOLUME_SIZE from prj.conf
+
+This commit removes the `CONFIG_DISK_RAM_VOLUME_SIZE=100` setting
+from the `prj.conf` file. The change is necessitated by the
+deprecation of the `CONFIG_DISK_RAM_VOLUME_SIZE` option in the
+latest version of Zephyr. This configuration option is no longer
+available
+
+Upstream-Status: Pending
+Signed-off-by: Divin Raj <divin.raj@arm.com>
+---
+ prj.conf | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/prj.conf b/prj.conf
+index c55b05a..e48245e 100644
+--- a/prj.conf
++++ b/prj.conf
+@@ -23,7 +23,6 @@ CONFIG_NET_SOCKETS_POSIX_NAMES=y
+ CONFIG_DISK_ACCESS=y
+ CONFIG_DISK_DRIVERS=y
+ CONFIG_DISK_DRIVER_RAM=y
+-CONFIG_DISK_RAM_VOLUME_SIZE=100
+ CONFIG_FILE_SYSTEM=y
+ CONFIG_FAT_FILESYSTEM_ELM=y
+ CONFIG_FS_FATFS_LFN=y
+-- 
+2.25.1
+

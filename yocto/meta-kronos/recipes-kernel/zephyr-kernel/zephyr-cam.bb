@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -19,8 +19,13 @@ require recipes-demos/cam/critical-application-monitoring-common.inc
 EXTRA_OECMAKE:append = "\
     -DCAM_TARGET=Zephyr \
 "
+ZEPHYR_CAM_PATCHDIR = "modules/lib/critical-app-monitoring"
+ZEPHYR_CAM_PATCHES ?= "\
+    file://critical-app-monitoring/0001-Remove-Deprecated-CONFIG_DISK_RAM_VOLUME_SIZE-from-p.patch;patchdir=${ZEPHYR_CAM_PATCHDIR} \
+"
 
 SRC_URI:append = " ${SRC_URI_CAM};${BRANCH_CAM};name=critical-app-monitoring;destsuffix=git/modules/lib/critical-app-monitoring"
+SRC_URI += "${ZEPHYR_CAM_PATCHES}"
 SRCREV ?= "${SRCREV_CAM}"
 
 ZEPHYR_SRC_DIR = "${S}/modules/lib/critical-app-monitoring"
