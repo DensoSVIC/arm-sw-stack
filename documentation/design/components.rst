@@ -603,6 +603,9 @@ For more information on SVE2, please refer to `SVE2 guide`_.  Xen command line
 options for SVE for dom0 can be found under `xen-command-line options`_ and
 SVE configuration for guests can be found under `xl configuration`_.
 
+For SVE2 validation, please refer to
+:ref:`validation_sve2`.
+
 .. _design_components_xen_downstream_changes:
 
 Downstream Changes

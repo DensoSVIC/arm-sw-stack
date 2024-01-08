@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -405,3 +405,18 @@ transition from ``ERRC`` back to ``TEST``):
  * ``test_ssu_nce_ok``, in which the self-test fails with a non-critical fault
    which is then signaled as critical.
  * ``test_ssu_ce_not_ok``, in which the self-test fails with a critical fault.
+
+.. _validation_sve2:
+
+Integration Tests Validating SVE2
+=================================
+
+The script that implements the tests is
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_40_sve.py`
+
+ * test_sve_enabled
+      The test ensures the ``sve2`` feature is enabled.
+
+ * test_sve_config
+      This test verifies that the SVE2 configurations on the Primary Compute
+      are valid in both virtualization and baremetal cases.

@@ -178,6 +178,7 @@ TEST_SUITES_EXTRA:append:virtualization = " \
 TEST_SUITES:append = " \
     test_10_linuxlogin \
     test_40_parsec \
+    test_40_sve \
     ${TEST_SUITES_EXTRA} \
 "
 
@@ -188,11 +189,13 @@ TEST_SUITES:remove:si0-bridge-ethernet0 = "\
     test_20_bsp \
     test_10_linuxlogin \
     test_40_parsec \
+    test_40_sve \
     "
 
 TEST_SUITES:remove:hipc-validation = " \
     test_20_bsp \
     test_40_parsec \
+    test_40_sve \
     "
 
 TEST_SUITES:remove:hipc-validation:virtualization = " \
@@ -207,16 +210,19 @@ TEST_SUITES:remove:virtualization = " \
 TEST_SUITES:remove:cam = "\
     test_20_bsp \
     test_40_parsec \
+    test_40_sve \
     "
 
 TEST_SUITES:remove:si-psa-storage-tests = "\
     test_20_bsp \
     test_40_parsec \
+    test_40_sve \
     "
 
 TEST_SUITES:remove:si-psa-crypto-tests = "\
     test_20_bsp \
     test_40_parsec \
+    test_40_sve \
     "
 
 EXTRA_TESTIMAGE_RDEPENDS ?= ""
