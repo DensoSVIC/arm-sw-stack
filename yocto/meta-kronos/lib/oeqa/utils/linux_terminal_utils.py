@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 import os
+import pexpect
 import re
 from datetime import datetime
 from time import sleep
@@ -85,12 +86,13 @@ class LinuxBackgroundRun(object):
 
 
 class LinuxTermUtils(object):
+    endline = r'\r?\r\n'
+    timeout = 60
+
     def __init__(self, testcase, console, prompt_string):
         self.console = console
         self.prompt = prompt_string
         self.logger = testcase.logger
-        self.timeout = 60
-        self.endline = r'\r?\r\n'
         # Xen console fix
         self.pexpect_send = self.console.send
         self.console.send = self.chunked_send
@@ -112,6 +114,42 @@ class LinuxTermUtils(object):
             sleep(1.5)
 
         return count
+
+    @classmethod
+    def open_ssh_shell(cls, oefvpsshtarget_obj, shell_name, logger=None):
+        logfile = oefvpsshtarget_obj._create_logfile(shell_name)
+        cmd_ssh = " ".join(oefvpsshtarget_obj.ssh + [oefvpsshtarget_obj.ip])
+        if logger is not None:
+            logger.debug((f"LinuxTermUtils: open_ssh_shell ({shell_name}):"
+                          f" '{cmd_ssh}'"))
+        shell = pexpect.spawn(f"{cmd_ssh}", logfile=logfile)
+        shell.__ltu_shell_name = shell_name
+        shell.sendline()
+        shell.expect(rf'{cls.endline}(\w+@.*:.*[#\$])\s*{cls.endline}',
+                     timeout=cls.timeout)
+        shell.__ltu_shell_prompt = shell.match[1]
+        if logger is not None:
+            logger.debug((f"LinuxTermUtils: open_ssh_shell ({shell_name}) "
+                          f"Shell open, prompt: {shell.__ltu_shell_prompt}"))
+
+        return shell
+
+    @classmethod
+    def close_ssh_shell(cls, shell, logger=None):
+        # Stop any running command with ctrl-C
+        shell.sendcontrol('C')
+        shell.sendline()
+        shell.expect(shell.__ltu_shell_prompt, timeout=cls.timeout)
+        try:
+            shell.sendline("exit")
+            sleep(1)
+            shell.kill(9)
+            shell.wait()
+        except pexpect.EOF:
+            pass
+        if logger is not None:
+            logger.debug(("LinuxTermUtils: close_ssh_shell: "
+                          f"Shell '{shell.__ltu_shell_name}' closed"))
 
     def send_wait_prompt(self):
         self.console.sendline()

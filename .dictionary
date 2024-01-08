@@ -459,6 +459,7 @@ OBJS
 ODDFRM
 OECMAKE
 OECONF
+oefvpsshtarget
 oemake
 oeqa
 OFLOW
