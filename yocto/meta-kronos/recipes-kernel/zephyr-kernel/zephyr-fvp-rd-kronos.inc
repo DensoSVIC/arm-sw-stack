@@ -4,6 +4,10 @@
 #
 # SPDX-License-Identifier: MIT
 
+require zephyr-tfm-psa-apis.inc
+require zephyr-mbedtls-psa-apis.inc
+require zephyr-psa-arch-tests.inc
+
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 # /* cSpell:disable */
