@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -201,6 +201,7 @@ TEST_SUITES:remove:hipc-validation:virtualization = " \
 
 TEST_SUITES:remove:virtualization = " \
     test_00_secure_partition \
+    test_10_fault_mgmt \
     "
 
 TEST_SUITES:remove:cam = "\
