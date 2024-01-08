@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ * SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  * affiliates <open-source-office@arm.com></text>
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -14,30 +14,30 @@
 
 	soc {
 		shared_ram0: memory@200000000 {
-                        compatible = "zephyr,memory-region", "mmio-sram";
-                        reg = <0x2 0x00000000 DT_SIZE_M(16)>;
-                        zephyr,memory-region = "SHRAM0";
-                        zephyr,memory-region-mpu = "RAM_NOCACHE";
-                };
+			compatible = "zephyr,memory-region", "mmio-sram";
+			reg = <0x2 0x00000000 DT_SIZE_M(16)>;
+			zephyr,memory-region = "SHRAM0";
+			zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_RAM_NOCACHE) )>;
+		};
 
 		shared_ram1: mem@48000000 {
 			compatible = "zephyr,memory-region", "mmio-sram";
 			reg = <0x0 0x48000000 DT_SIZE_M(8)>;
 			zephyr,memory-region = "SHRAM1";
-			zephyr,memory-region-mpu = "RAM_NOCACHE";
-                };
+			zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_RAM_NOCACHE) )>;
+		};
 
-                shared_data: buffers_mem@200502000 {
-                        compatible = "mmio-ipc-sram";
-                        reg = <0x2 0x00502000 DT_SIZE_M(5)>;
-                        busaddr_delta_l = <0xC0000000>;
-                        busaddr_delta_h = <0x1>;
-                };
+		shared_data: buffers_mem@200502000 {
+			compatible = "mmio-ipc-sram";
+			reg = <0x2 0x00502000 DT_SIZE_M(5)>;
+			busaddr_delta_l = <0xC0000000>;
+			busaddr_delta_h = <0x1>;
+		};
 
-                rsc_table: rsc_table_mem@200501000 {
-                        compatible = "mmio-sram";
-                        reg = <0x2 0x00501000 DT_SIZE_K(4)>;
-                };
+		rsc_table: rsc_table_mem@200501000 {
+			compatible = "mmio-sram";
+			reg = <0x2 0x00501000 DT_SIZE_K(4)>;
+		};
 
 		pc_mbox_rpmsg_binding: binding {
 			compatible = "pc-mbox-rpmsg-binding";
