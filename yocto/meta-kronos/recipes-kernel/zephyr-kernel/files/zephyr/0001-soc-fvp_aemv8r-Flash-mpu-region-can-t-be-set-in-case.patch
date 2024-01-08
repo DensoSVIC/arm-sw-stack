@@ -1,4 +1,4 @@
-From 34280b3d2a8c1aab37cf870d90f2b4324c189b98 Mon Sep 17 00:00:00 2001
+From 4f4b2188f1d64a17f9eba748676b06fed7f10ff2 Mon Sep 17 00:00:00 2001
 From: Yanqin Wei <yanqin.wei@arm.com>
 Date: Thu, 6 Apr 2023 19:47:41 +0800
 Subject: [PATCH] soc: fvp_aemv8r: Flash mpu region can't be set in case of
@@ -14,10 +14,10 @@ Upstream-Status: Pending
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/soc/arm64/arm/fvp_aemv8r/arm_mpu_regions.c b/soc/arm64/arm/fvp_aemv8r/arm_mpu_regions.c
-index ab261e2e45..4165695710 100644
+index a36f53d419..8100794d7e 100644
 --- a/soc/arm64/arm/fvp_aemv8r/arm_mpu_regions.c
 +++ b/soc/arm64/arm/fvp_aemv8r/arm_mpu_regions.c
-@@ -11,13 +11,14 @@
+@@ -10,13 +10,14 @@
  #include <zephyr/sys/util.h>
  
  static const struct arm_mpu_region mpu_regions[] = {
@@ -34,5 +34,5 @@ index ab261e2e45..4165695710 100644
  	MPU_REGION_ENTRY("SRAM_0",
  			 (uintptr_t)__text_region_start,
 -- 
-2.34.1
+2.25.1
 

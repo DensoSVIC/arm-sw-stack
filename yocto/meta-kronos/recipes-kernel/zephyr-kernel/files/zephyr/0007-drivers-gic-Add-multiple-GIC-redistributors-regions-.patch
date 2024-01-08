@@ -1,7 +1,8 @@
-From 8609282903e88bc37321bb4e4720778f3b13c12c Mon Sep 17 00:00:00 2001
+From 8c622b2050cc5c7ee192f5ffd23f4d2dd2d1753f Mon Sep 17 00:00:00 2001
 From: Wei Chen <wei.chen@arm.com>
 Date: Tue, 15 Aug 2023 20:23:13 +0800
-Subject: [PATCH] drivers: gic: Add multiple GIC redistributors regions support
+Subject: [PATCH] drivers: gic: Add multiple GIC redistributors regions
+ support
 
 For GIC multiple views feature support, all GIC Re-distributor's
 GICR_TYPER.last will be set. Because configuration view-0 can
@@ -15,19 +16,20 @@ redistributor regions support in GIC redistributor iteration.
 Upstream-Status: Inappropriate
 Signed-off-by: Wei Chen <wei.chen@arm.com>
 Signed-off-by: Robbie Cao <robbie.cao@arm.com>
+Signed-off-by: Divin Raj <divin.raj@arm.com>
 ---
- drivers/interrupt_controller/intc_gicv3.c     | 61 ++++++++++++++++---
+ drivers/interrupt_controller/intc_gicv3.c     | 62 ++++++++++++++++---
  .../interrupt_controller/intc_gicv3_priv.h    |  6 +-
- 2 files changed, 53 insertions(+), 14 deletions(-)
+ 2 files changed, 54 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/interrupt_controller/intc_gicv3.c b/drivers/interrupt_controller/intc_gicv3.c
-index ec92103be6..b4e1343429 100644
+index e3c25c4d8b..341cfa8bd9 100644
 --- a/drivers/interrupt_controller/intc_gicv3.c
 +++ b/drivers/interrupt_controller/intc_gicv3.c
-@@ -16,6 +16,43 @@
- 
+@@ -18,6 +18,43 @@
  #include <string.h>
  
+ #define DT_DRV_COMPAT arm_gic_v3
 +/*
 + * Structure to save GIC Re-distributor info
 + */
@@ -65,10 +67,10 @@ index ec92103be6..b4e1343429 100644
 +#endif
 +};
 +
+ 
  /* Redistributor base addresses for each core */
  mem_addr_t gic_rdists[CONFIG_MP_MAX_NUM_CPUS];
- 
-@@ -545,19 +582,23 @@ static inline uint64_t arm_gic_get_typer(mem_addr_t addr)
+@@ -558,19 +595,24 @@ static inline uint64_t arm_gic_get_typer(mem_addr_t addr)
  static mem_addr_t arm_gic_iterate_rdists(void)
  {
  	uint64_t aff = arm_gic_mpidr_to_affinity(GET_MPIDR());
@@ -93,17 +95,18 @@ index ec92103be6..b4e1343429 100644
 +			if (arm_gic_aff_matching(gicr_aff, aff)) {
 +				return addr;
 +			}
- 
--		if (GICR_TYPER_LAST_GET(val) == 1) {
--			return (mem_addr_t)NULL;
++
 +			if (GICR_TYPER_LAST_GET(val) == 1) {
 +				break;
 +			}
+ 
+-		if (GICR_TYPER_LAST_GET(val) == 1) {
+-			return (mem_addr_t)NULL;
  		}
  	}
  
 diff --git a/drivers/interrupt_controller/intc_gicv3_priv.h b/drivers/interrupt_controller/intc_gicv3_priv.h
-index e0347ed357..c0651495ed 100644
+index 64fabe2153..fe6eb89d16 100644
 --- a/drivers/interrupt_controller/intc_gicv3_priv.h
 +++ b/drivers/interrupt_controller/intc_gicv3_priv.h
 @@ -26,11 +26,9 @@

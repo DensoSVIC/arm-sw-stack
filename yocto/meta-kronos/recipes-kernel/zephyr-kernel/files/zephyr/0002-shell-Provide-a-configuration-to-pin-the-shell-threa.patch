@@ -1,6 +1,6 @@
-From 47fa0a94cf0869a872008e3c7fb90dcbdb85839e Mon Sep 17 00:00:00 2001
+From 102ebb4561f48c48f0bfc3ab5d6922291285f03f Mon Sep 17 00:00:00 2001
 From: Ambroise Vincent <ambroise.vincent@arm.com>
-Date: Thu, 10 Jul 2023 10:38:05 +0100
+Date: Mon, 10 Jul 2023 10:38:05 +0100
 Subject: [PATCH] shell: Provide a configuration to pin the shell thread
 
 Introduce a CONFIG_SHELL_PIN_THREAD configuration options to pin the
@@ -14,10 +14,10 @@ Upstream-Status: Inappropriate
  2 files changed, 18 insertions(+), 1 deletion(-)
 
 diff --git a/subsys/shell/Kconfig b/subsys/shell/Kconfig
-index d155622e7b..52ef3ea96e 100644
+index 43035e520e..3daa7061f1 100644
 --- a/subsys/shell/Kconfig
 +++ b/subsys/shell/Kconfig
-@@ -259,6 +259,13 @@ config SHELL_CMDS_RETURN_VALUE
+@@ -268,6 +268,13 @@ config SHELL_CMDS_RETURN_VALUE
  	  This option enables the retval command. It is used to retrieve
  	  the return value from the most recently executed command.
  
@@ -32,10 +32,10 @@ index d155622e7b..52ef3ea96e 100644
  
  endif # SHELL
 diff --git a/subsys/shell/shell.c b/subsys/shell/shell.c
-index 2d9e0883e2..b052e8418d 100644
+index 34ed7daa75..8f33442707 100644
 --- a/subsys/shell/shell.c
 +++ b/subsys/shell/shell.c
-@@ -1383,7 +1383,17 @@ int shell_init(const struct shell *sh, const void *transport_config,
+@@ -1387,7 +1387,17 @@ int shell_init(const struct shell *sh, const void *transport_config,
  				  sh->stack, CONFIG_SHELL_STACK_SIZE,
  				  shell_thread, (void *)sh, (void *)log_backend,
  				  UINT_TO_POINTER(init_log_level),

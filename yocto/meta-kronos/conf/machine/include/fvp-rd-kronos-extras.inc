@@ -1,12 +1,12 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
 
 PREFERRED_PROVIDER_virtual/kernel = "linux-yocto-rt"
 
-PREFERRED_VERSION_zephyr-kernel = "3.4.0"
+PREFERRED_VERSION_zephyr-kernel = "3.5.0"
 ZEPHYR_INHERIT_CLASSES:append = " zephyr-machine-extras"
 ZEPHYR_TOOLCHAIN_VARIANT = "zephyr"
 
