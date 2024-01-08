@@ -4,7 +4,7 @@
  *
  * Original file: SPDX-FileCopyrightText: <text>Copyright 2022 Arm Limited
  * and/or its affiliates <open-source-office@arm.com></text>
- * Modifications: SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited
+ * Modifications: SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited
  * and/or its affiliates <open-source-office@arm.com></text>
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -25,7 +25,9 @@ psa_status_t rss_protocol_serialize_msg(psa_handle_t handle, int16_t type,
 
 	assert(msg != NULL);
 	assert(msg_len != NULL);
-	assert(in_vec != NULL);
+
+	if (in_len > 0)
+		assert(in_vec != NULL);
 
 	switch (msg->header.protocol_ver) {
 	case RSS_COMMS_PROTOCOL_EMBED:

@@ -4,7 +4,7 @@
  *
  * Original file: SPDX-FileCopyrightText: <text>Copyright 2022 Arm Limited
  * and/or its affiliates <open-source-office@arm.com></text>
- * Modifications: SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited
+ * Modifications: SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited
  * and/or its affiliates <open-source-office@arm.com></text>
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -14,6 +14,8 @@
 
 #ifndef __RSS_COMMS_PROTOCOL_EMBED_H__
 #define __RSS_COMMS_PROTOCOL_EMBED_H__
+
+#include <zephyr/toolchain.h>
 
 #include "zephyr/subsys/ipc/psa_service/psa/client.h"
 
