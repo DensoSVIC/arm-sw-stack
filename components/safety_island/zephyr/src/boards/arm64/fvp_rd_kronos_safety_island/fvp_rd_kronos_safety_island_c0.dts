@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ * SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  * affiliates <open-source-office@arm.com></text>
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -60,7 +60,7 @@
 		interrupt-parent = <&gic>;
 
 		gic: interrupt-controller@30400000 {
-			compatible = "arm,gic";
+			compatible = "arm,gic-v3", "arm,gic";
 			reg = <0x0 0x30400000 0x10000>,
 			      <0x0 0x30440000 0x20000>;
 			interrupt-controller;
@@ -146,23 +146,29 @@
 			status = "disabled";
 		};
 
-		eth: ethernet@8100000 {
-			interrupt-parent = <&gic>;
-			compatible = "smsc,lan91c111";
+		ethernet@8100000 {
 			reg = <0x0 0x8100000 0x100000>;
-			interrupts = <GIC_SPI 105 IRQ_TYPE_LEVEL IRQ_DEFAULT_PRIORITY>;
-			status = "disabled";
 
-			phy: phy {
-				compatible = "ethernet-phy";
+			eth: ethernet {
+				interrupt-parent = <&gic>;
+				compatible = "smsc,lan91c111";
+				interrupts = <GIC_SPI 105 IRQ_TYPE_LEVEL IRQ_DEFAULT_PRIORITY>;
+				phy-handle = <&phy>;
 				status = "disabled";
-				address = <0>;
-				mdio = <&mdio>;
 			};
 
 			mdio: mdio {
 				compatible = "smsc,lan91c111-mdio";
+				#address-cells = <1>;
+				#size-cells = <0>;
 				status = "disabled";
+
+				phy: ethernet-phy@0 {
+					compatible = "ethernet-phy";
+					fixed-link = "10BASE-T Half-Duplex";
+					reg = <0>;
+					status = "disabled";
+				};
 			};
 		};
 	};
