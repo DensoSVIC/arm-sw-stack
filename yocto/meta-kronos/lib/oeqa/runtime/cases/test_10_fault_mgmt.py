@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -40,6 +40,12 @@ GIC_FMU_FAULT_SAMPLE = [
 
 
 class FaultMgmtTest(OERuntimeTestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.tc.target.transition('on')
+
     def setUp(self):
         super().setUp()
         self.console = FAULT_MGMT_CONSOLE
@@ -185,14 +191,19 @@ class FaultMgmtTest(OERuntimeTestCase):
 
 
 class FaultMgmtSSUTest(OERuntimeTestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.tc.target.transition('on')
+
     def setUp(self):
         super().setUp()
         # Work around duplicate symlink creation so it can be recreated
         os.unlink(self.target.bootlog)
         self.logger.info('Resetting')
-        self.target.stop()
-        self.target.start()
-
+        self.target.transition('off')
+        self.target.transition('on')
         self.shell = Shell(self.target, FAULT_MGMT_CONSOLE, self.logger)
         self.shell.wait_for_prompt(timeout=60)
 

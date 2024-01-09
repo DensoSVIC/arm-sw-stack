@@ -144,7 +144,7 @@ tests when using the testimage.bbclass. These are placed under
 different machines/configurations by modifying the ``TEST_SUITES`` variable.
 For example, the file
 :meta-arm-repo:`meta-arm-bsp/conf/machine/fvp-rd-kronos.conf` adds the
-``test_10_linuxboot`` test to the ``TEST_SUITES`` variable.
+``fvp_devices`` test to the ``TEST_SUITES`` variable.
 
 Before running integration tests, some basic tests will be run firstly:
 

@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -68,6 +68,8 @@ class BridgeTest(Ethernet0TestBase):
                       'Test requires si0-bridge-ethernet0 to be in'
                       ' IMAGE_FEATURES')
     def test_si0_bridge_ethernet0(self):
+        timeout = int(self.td.get('TEST_FVP_LINUX_BOOT_TIMEOUT') or 10*60)
+        self.target.transition("linux", timeout)
         si_console = 'safety_island_c0'
         self.target.expect(si_console,
                            r'Bridge initialization complete',

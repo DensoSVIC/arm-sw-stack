@@ -179,6 +179,7 @@ TEST_SUITES_EXTRA:append:actuation:virtualization = " \
     "
 
 TEST_SUITES:append = " \
+    test_10_linuxboot \
     test_10_linuxlogin \
     test_40_parsec \
     test_40_sve \
