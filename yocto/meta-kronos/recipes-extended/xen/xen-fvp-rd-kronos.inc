@@ -8,10 +8,6 @@
 # fvp-rd-kronos MACHINE
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-# Xen RELEASE-4.18.0 SHA
-XEN_BRANCH = "stable-4.18"
-SRCREV = "d75f1e9b74314cea91ce435730d4e3539ecca77d"
-
 # /* cSpell:disable */
 SRC_URI += "\
     file://0001-tools-xendomains-Only-save-restore-migrate-if-suppor.patch \

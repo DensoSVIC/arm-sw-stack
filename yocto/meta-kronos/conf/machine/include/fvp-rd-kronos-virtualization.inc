@@ -34,7 +34,5 @@ DOMU1_PCI_ID ?= "0000:00:1f.0"
 FVP_CONFIG[pcie_group_0.pcie4.pcie_rc.ahci0.ahci.image_path] = "${DEPLOY_DIR_IMAGE}/${PCI_IMAGE_NAME}.wic"
 EXTRA_IMAGEDEPENDS += "${PCI_IMAGE_NAME}:do_deploy"
 
-# meta-virtualization doesn't have yet the Xen 4.18 recipe, so use the *_git.bb
-# version, SHA are updated in the bbappend(s).
-PREFERRED_VERSION_xen = "4.18+git%"
-PREFERRED_VERSION_xen-tools = "4.18+git%"
+PREFERRED_VERSION_xen = "4.18+stable%"
+PREFERRED_VERSION_xen-tools = "4.18+stable%"
