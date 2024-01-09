@@ -60,7 +60,7 @@ for debugging.
  * Primary Compute
     * BSP
        The entry point to these tests is
-       :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/test_20_bsp.py`. To find
+       :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/fvp_devices.py`. To find
        out more about the applicable tests, please refer to
        :ref:`design_bsp_tests`.
 
@@ -84,7 +84,7 @@ BSP Tests
 
 
 The BSP Tests consist of a series of device tests that can be found in
-:meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/test_20_bsp.py`.
+:meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/fvp_devices.py`.
 
 * networking
    Checks that the network device and its correct driver are available and

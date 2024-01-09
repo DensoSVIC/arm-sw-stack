@@ -189,14 +189,18 @@ TEST_SUITES:remove:si0-bridge-ethernet0 = "\
     test_00_lcp \
     test_00_trusted_firmware_a \
     test_10_linuxboot \
-    test_20_bsp \
+    fvp_devices \
+    ssh \
+    ping \
     test_10_linuxlogin \
     test_40_parsec \
     test_40_sve \
     "
 
 TEST_SUITES:remove:hipc-validation = " \
-    test_20_bsp \
+    fvp_devices \
+    ssh \
+    ping \
     test_40_parsec \
     test_40_sve \
     "
@@ -207,19 +211,25 @@ TEST_SUITES:remove:virtualization = " \
     "
 
 TEST_SUITES:remove:cam = "\
-    test_20_bsp \
+    fvp_devices \
+    ssh \
+    ping \
     test_40_parsec \
     test_40_sve \
     "
 
 TEST_SUITES:remove:si-psa-storage-tests = "\
-    test_20_bsp \
+    fvp_devices \
+    ssh \
+    ping \
     test_40_parsec \
     test_40_sve \
     "
 
 TEST_SUITES:remove:si-psa-crypto-tests = "\
-    test_20_bsp \
+    fvp_devices \
+    ssh \
+    ping \
     test_40_parsec \
     test_40_sve \
     "

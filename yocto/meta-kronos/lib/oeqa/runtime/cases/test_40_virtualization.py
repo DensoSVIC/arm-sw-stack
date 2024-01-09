@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -9,7 +9,7 @@ from oeqa.core.decorator.data import skipIfNotInDataVar, skipIfDataVar
 from oeqa.core.decorator.depends import OETestDepends
 from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.runtime.decorator.package import OEHasPackage
-from oeqa.runtime.cases.test_20_bsp import BspTest
+from oeqa.runtime.cases.fvp_devices import FvpDevicesTest
 from oeqa.runtime.cases.test_40_gicv4_1 import GICv4Test
 from oeqa.runtime.cases.test_40_parsec import ParsecTest
 from oeqa.utils.xen_utils import XenUtils
@@ -84,12 +84,12 @@ class DomU2Test(DomUTest):
     def setUpClass(cls):
         if int(cls.td.get('DOMU_INSTANCES', 0)) < 2:
             import unittest
-            raise unittest.SkipTest("BspTestDomU2 skipped because DomU2 is"
+            raise unittest.SkipTest("FVPDevicesTestDomU2 skipped because DomU2 is"
                                     " not generated in this build")
         super().setUpClass()
 
 
-class DomUBspTestOverrides:
+class DomUFVPDevicesTestOverrides:
     @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
     def test_rtc(self):
         self.skipTest("'rtc' not tested in DomU")
@@ -103,11 +103,11 @@ class DomUBspTestOverrides:
         self.skipTest("'virtiorng' not tested in DomU")
 
 
-class BspTestDomU1(DomU1Test, DomUBspTestOverrides, BspTest):
+class FvpDevicesTestDomU1(DomU1Test, DomUFVPDevicesTestOverrides, FvpDevicesTest):
     pass
 
 
-class BspTestDomU2(DomU2Test, DomUBspTestOverrides, BspTest):
+class FvpDevicesTestDomU2(DomU2Test, DomUFVPDevicesTestOverrides, FvpDevicesTest):
     pass
 
 
