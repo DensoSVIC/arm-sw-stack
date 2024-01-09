@@ -1,8 +1,11 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
+
+PREFERRED_VERSION_linux-yocto = "6.1%"
+PREFERRED_VERSION_linux-yocto-rt = "6.1%"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}:${THISDIR}/files:"
 
