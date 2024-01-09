@@ -1,0 +1,52 @@
+From 6c11674abf14e4260ec9bd852e20e3c33691046c Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Tom=C3=A1s=20Gonz=C3=A1lez?=
+ <tomasagustin.gonzalezorlando@arm.com>
+Date: Thu, 14 Dec 2023 11:36:36 +0000
+Subject: [PATCH] ci/config.toml: Add Parsec socket path
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Specify the socket path '/tmp/parsec.sock' in the test config.toml
+used in parsec.
+
+This replicates the same testing environment as the parsec-tool
+(https://github.com/parallaxsecond/parsec-tool/blob/0.7.0/tests/test_config.toml#L10)
+and avoids depending on the default for testing.
+
+Upstream-Status: Submitted [https://github.com/parallaxsecond/parsec-se-driver/pull/36]
+Signed-off-by: Tomás González <tomasagustin.gonzalezorlando@arm.com>
+---
+ ci/ci.sh       | 3 ---
+ ci/config.toml | 1 +
+ 2 files changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/ci/ci.sh b/ci/ci.sh
+index b7a5260..cace478 100755
+--- a/ci/ci.sh
++++ b/ci/ci.sh
+@@ -39,9 +39,6 @@ sleep 5
+ # Ownership has already been taken with "tpm_pass".
+ tpm2_startup -T mssim
+ 
+-# Create the Parsec socket directory. This must be the default one.
+-mkdir /run/parsec
+-
+ # Install and run Parsec
+ git clone --branch 1.3.0 https://github.com/parallaxsecond/parsec
+ pushd parsec
+diff --git a/ci/config.toml b/ci/config.toml
+index 90bc320..587885a 100644
+--- a/ci/config.toml
++++ b/ci/config.toml
+@@ -13,6 +13,7 @@ listener_type = "DomainSocket"
+ # The timeout needs to be smaller than the test client timeout (five seconds) as it is testing
+ # that the service does not hang for very big values of body or authentication length.
+ timeout = 3000 # in milliseconds
++socket_path = "/tmp/parsec.sock"
+ 
+ [authenticator]
+ auth_type = "UnixPeerCredentials"
+-- 
+2.25.1
+

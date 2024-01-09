@@ -1,0 +1,34 @@
+From 6a05c014b3b9556fb6d212517e81312a03f69ab1 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Tom=C3=A1s=20Gonz=C3=A1lez?=
+ <tomasagustin.gonzalezorlando@arm.com>
+Date: Thu, 14 Dec 2023 11:48:48 +0000
+Subject: [PATCH] ci.yml: Run update package list before installing
+ packages
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This avoids issues when getting packages used for testing in the
+docker image.
+
+Upstream-Status: Submitted [https://github.com/parallaxsecond/parsec-se-driver/pull/36]
+Signed-off-by: Tomás González <tomasagustin.gonzalezorlando@arm.com>
+---
+ .github/workflows/ci.yml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 20e271f..b80f11d 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -25,6 +25,7 @@ jobs:
+         run: git clone -b v3.0.0 https://github.com/ARMmbed/mbedtls.git
+       - name: armv7-unknown-linux-gnueabihf
+         run: |
++          sudo apt update
+           rustup target add armv7-unknown-linux-gnueabihf
+           sudo apt install -y gcc-multilib
+           sudo apt install -y gcc-arm-linux-gnueabihf
+-- 
+2.25.1
+
