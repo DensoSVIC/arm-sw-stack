@@ -12,6 +12,7 @@
 # Changes:
 # 1) Remove ROS dependencies
 # 2) Add BBCLASSEXTEND
+# 3) Rename BSD license to BSD-3-Clause
 #
 SUMMARY = "Google Test"
 DESCRIPTION = "The package provides GoogleTest."
@@ -19,7 +20,7 @@ AUTHOR = "Audrow Nash <audrow@openrobotics.org>"
 ROS_AUTHOR = "Dirk Thomas <dthomas@osrfoundation.org>"
 HOMEPAGE = "https://wiki.ros.org"
 SECTION = "devel"
-LICENSE = "BSD"
+LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://package.xml;beginline=40;endline=40;md5=d566ef916e9dedc494f5f793a6690ba5"
 
 ROS_CN = "googletest"
