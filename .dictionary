@@ -402,7 +402,6 @@ menuconfig
 menuentry
 mgmt
 mhuv
-mickledore
 microcontrollers
 migr
 miibus
@@ -429,6 +428,7 @@ MULCOL
 multilineident
 Multiview
 nameservice
+nanbield
 nativesdk
 Neoverse
 netback

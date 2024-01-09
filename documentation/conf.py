@@ -99,7 +99,7 @@ copybutton_remove_prompts = True
 
 # The variable yocto_version needs to come first because
 # there are variables that refer to it later.
-yocto_version = "mickledore"
+yocto_version = "nanbield"
 
 kronos_version = os.environ.get(
     'RTD_ENV_KRONOS_VERSION',
@@ -171,7 +171,7 @@ rst_prolog = f"""
 .. |meta-arm revision| replace:: HEAD
 .. |meta-cassini branch| replace:: {cassini_version}
 .. |meta-cassini repository| replace:: https://gitlab.com/Linaro/cassini/meta-cassini
-.. |meta-cassini revision| replace:: c9c1a57f1fce6e2f21edfef30962e74382c8639c
+.. |meta-cassini revision| replace:: HEAD
 .. |meta-clang branch| replace:: {yocto_version}
 .. |meta-clang repository| replace:: https://github.com/kraj/meta-clang
 .. |meta-clang revision| replace:: HEAD
