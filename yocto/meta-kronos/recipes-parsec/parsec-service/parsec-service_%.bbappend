@@ -7,7 +7,7 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 # Set the provider as Trusted service only for baremetal
-PACKAGECONFIG:fvp-rd-kronos = "${@bb.utils.contains('IMAGE_FEATURES', 'baremetal', \
+PACKAGECONFIG:cassini-parsec = "${@bb.utils.contains('IMAGE_FEATURES', 'baremetal', \
                                'TS', 'MBED-CRYPTO', d)}"
 
 PACKAGECONFIG:generic-arm64 = "MBED-CRYPTO"
