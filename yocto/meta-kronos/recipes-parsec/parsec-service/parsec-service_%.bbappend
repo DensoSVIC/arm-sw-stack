@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -15,10 +15,3 @@ PACKAGECONFIG:fvp-rd-kronos = "${@bb.utils.contains('IMAGE_FEATURES', 'baremetal
                                'TS', 'MBED-CRYPTO', d)}"
 
 PACKAGECONFIG:generic-arm64 = "MBED-CRYPTO"
-
-# Test fix will be included into the next parsec and parsec-tool release, so
-# it may need to be removed later.
-FEATURE_PARSEC_REQUIRE ?= ""
-FEATURE_PARSEC_REQUIRE:cassini = "parsec-test-fixes.inc"
-
-require ${FEATURE_PARSEC_REQUIRE}
