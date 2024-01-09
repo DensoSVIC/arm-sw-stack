@@ -550,7 +550,6 @@ RDEPENDS
 rdkronos
 readl
 readreg
-refspec
 remoteproc
 reportsettings
 requireinclude

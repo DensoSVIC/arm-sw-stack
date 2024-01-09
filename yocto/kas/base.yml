@@ -16,13 +16,13 @@ header:
 
 defaults:
   repos:
-    refspec: nanbield
+    branch: nanbield
 
 repos:
   meta-cassini:
     url: https://gitlab.com/Linaro/cassini/meta-cassini
     path: layers/meta-cassini
-    refspec: nanbield-dev
+    branch: nanbield-dev
     layers:
       meta-cassini-distro:
       meta-cassini-bsp: excluded

@@ -29,16 +29,16 @@
     IMAGE_DIR: $CACHE_DIR/$PROJECT_VERSION/images
   before_script:
     - KASFILE_CI=yocto/kas/ci.yml
-    # Set the url and refspec for the specific repos
+    # Set the url and branch for the specific repos
     - |
       if ! [ -z "${REPOS_META_ARM_URL}" ] &&
-         ! [ -z "${REPOS_META_ARM_REFSPEC}" ]; then
+         ! [ -z "${REPOS_META_ARM_BRANCH}" ]; then
       # Must be aligned with above '|'
       cat << EOF >> $KASFILE_CI
       repos:
         meta-arm:
           url: $REPOS_META_ARM_URL
-          refspec: $REPOS_META_ARM_REFSPEC
+          branch: $REPOS_META_ARM_BRANCH
       EOF
       fi
     # Set the SRCREV for the specific recipes

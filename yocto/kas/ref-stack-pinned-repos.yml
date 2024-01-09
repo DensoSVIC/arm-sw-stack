@@ -11,12 +11,12 @@ header:
 
 # repos:
 #   meta-cassini:
-#     refspec:
+#     commit:
 #   meta-clang:
-#     refspec:
+#     commit:
 #   meta-security:
-#     refspec:
+#     commit:
 #   meta-virtualization:
-#     refspec:
+#     commit:
 #   meta-zephyr:
 #     refspec:

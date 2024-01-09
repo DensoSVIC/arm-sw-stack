@@ -6,10 +6,10 @@
 header:
   version: 14
 
-#repos:
-#  meta-arm:
-#    refspec:
-#  meta-openembedded:
-#    refspec:
-#  poky:
-#    refspec:
+# repos:
+#   meta-arm:
+#     commit:
+#   meta-openembedded:
+#     commit:
+#   poky:
+#     commit:
