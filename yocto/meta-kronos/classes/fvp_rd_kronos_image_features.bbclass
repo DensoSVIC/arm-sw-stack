@@ -174,7 +174,7 @@ TEST_SUITES_EXTRA:cam = " test_40_cam"
 TEST_SUITES_EXTRA:si-psa-storage-tests = " test_10_si_psa_arch_tests"
 TEST_SUITES_EXTRA:si-psa-crypto-tests = " test_10_si_psa_arch_tests"
 
-TEST_SUITES_EXTRA:append:virtualization = " \
+TEST_SUITES_EXTRA:append:actuation:virtualization = " \
     test_40_virtualization \
     "
 
@@ -199,10 +199,6 @@ TEST_SUITES:remove:hipc-validation = " \
     test_20_bsp \
     test_40_parsec \
     test_40_sve \
-    "
-
-TEST_SUITES:remove:hipc-validation:virtualization = " \
-    test_40_virtualization \
     "
 
 TEST_SUITES:remove:virtualization = " \
