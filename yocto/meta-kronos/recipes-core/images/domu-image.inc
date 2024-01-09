@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -10,6 +10,7 @@ IMAGE_LINGUAS = ""
 
 inherit core-image
 
+IMAGE_NAME_SUFFIX = ""
 IMAGE_FSTYPES = "cpio.gz"
 
 inherit features_check
