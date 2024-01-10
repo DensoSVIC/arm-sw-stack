@@ -268,7 +268,7 @@ class CAMTest(OERuntimeTestCase):
               ' --enable-fault-injection'
               ' --fault-injection-time=8000'
               ' --processing-count=4')
-        status, _ = self.lt_utils.run(st)
+        status, _ = self.lt_utils.run(st, timeout=120)
         self.assertEqual(status, 0,
                          msg='cam-app-example failed.')
         self.target.expect(self.zephyr_console, r'Stream temporal error',
