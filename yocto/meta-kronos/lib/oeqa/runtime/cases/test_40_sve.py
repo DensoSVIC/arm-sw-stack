@@ -5,103 +5,150 @@
 # SPDX-License-Identifier: MIT
 
 import re
-from oeqa.runtime.case import OERuntimeTestCase
+import unittest
 from oeqa.core.decorator.depends import OETestDepends
+from oeqa.runtime.case import OERuntimeTestCase
+from oeqa.utils.linux_terminal_utils import LinuxTermUtils
 from oeqa.utils.xen_utils import XenUtils
 
 
-class SVETest(OERuntimeTestCase):
+class SVETestBase(OERuntimeTestCase):
+    hostname = "fvp-rd-kronos"
 
-    def _get_sve_from_xen_config(self, file_content):
-        sve_match = re.search(r'sve\s*=\s*"(\d+)"', file_content)
-        if sve_match:
-            return int(sve_match.group(1))
+    @classmethod
+    def setUpClass(cls):
+        super(SVETestBase, cls).setUpClass()
+        cls.prompt = "root@{}:~#".format(cls.hostname)
+        cls.linux_console = cls.tc.target._get_terminal("default")
+        cls.lt_utils = LinuxTermUtils(cls.tc, cls.linux_console, cls.prompt)
 
-    def _get_sve_default_length(self):
-        status, sve_default_length_output = self.target.run(
-                f'cat /proc/sys/abi/sve_default_vector_length', timeout=300)
-        self.assertEqual(status, 0,
-                         msg=f'Failed on read '
-                         f'/proc/sys/abi/sve_default_vector_length')
+    def _get_sve_vector_length(self):
+        status, sve_default_length_output = self.lt_utils.run(
+            "cat /proc/sys/abi/sve_default_vector_length", timeout=300
+        )
+        self.assertEqual(
+            status, 0, msg="Failed on read "
+                           "/proc/sys/abi/sve_default_vector_length"
+        )
         return int(sve_default_length_output.strip()) * 8
 
-    def _test_sve_domu(self, hostname):
-        # Set up variables for the specific guest domain
-        console = self.tc.target._get_terminal(self.tc.target.DEFAULT_CONSOLE)
-        dom0_prompt = \
-            rf'root@(?!{hostname})fvp-rd-kronos:~#'
-        linux_prompt = rf'root@{hostname}:~#'
+    def _get_sve_vl_from_commandline(self):
+        status, xl_info_output = self.lt_utils.run("xl info", timeout=300)
+        self.assertEqual(status, 0, msg="Failed on run xl info")
 
-        # Re-enter the guest domain using XenUtils
-        XenUtils.enter_guest_from_dom0(console, dom0_prompt,
-                                       linux_prompt, hostname)
+        xen_commandline_line = next(
+            (
+                line
+                for line in xl_info_output.split("\n")
+                if line.startswith("xen_commandline")
+            ),
+            None,
+        )
 
-        # Run in domu
-        sve_default_length = self._get_sve_default_length()
+        if not xen_commandline_line:
+            return
 
-        # Exit the guest domain using XenUtils
-        XenUtils.exit_guest_to_dom0(console, dom0_prompt,
-                                    linux_prompt, hostname)
+        prefix = "dom0=sve="
+        for part in xen_commandline_line.split():
+            if part.startswith(prefix):
+                return int(part.removeprefix(prefix))
 
-        # Read domu.cfg content from dom0
-        status, xen_config_content = self.target.run(
-                    f'cat /etc/xen/auto/{hostname}.cfg', timeout=300)
-        self.assertEqual(status, 0,
-                         msg=f'Failed on read /etc/xen/auto/{hostname}.cfg')
+    def _get_configured_sve_vl(self):
+        if "virtualization" in self.td.get("IMAGE_FEATURES").split():
+            return self._get_sve_vl_from_commandline()
 
-        # Extract SVE from domu.cfg in dom0
-        sve_from_config = self._get_sve_from_xen_config(xen_config_content)
+        # Currently FVP offers 128 SVE vector length
+        return 128
 
-        self.assertEqual(sve_from_config, sve_default_length,
-                         msg="Vector lengths do not match.")
+    @OETestDepends(["test_10_linuxlogin.LinuxLoginTest.test_linux_login"])
+    def test_sve_enabled(self):
+        status, cpuinfo_output = self.lt_utils.run("cat /proc/cpuinfo",
+                                                   timeout=300)
+        self.assertEqual(status, 0, msg="Failed on read /proc/cpuinfo")
+        self.assertIn("sve2", cpuinfo_output.lower(), msg="SVE2 not enabled")
 
-    def _run_xl_info(self):
-        status, xl_info_output = self.target.run('xl info', timeout=300)
-        self.assertEqual(status, 0,
-                         msg=f'Failed on run xl info')
-        return xl_info_output
+    @OETestDepends(['test_40_sve.SVETestBase.test_sve_enabled'])
+    def test_sve_config(self):
+        configured_sve_vector_length = self._get_configured_sve_vl()
+        sve_vector_length = self._get_sve_vector_length()
 
-    def _get_arm_sve_vector_length(self, xl_info_output):
-        for line in xl_info_output.split('\n'):
+        self.assertEqual(
+            configured_sve_vector_length,
+            sve_vector_length,
+            msg="SVE vector length do not match",
+        )
+
+
+class SVETestDomU1(SVETestBase):
+    domu_hostname = "domu1"
+
+    @classmethod
+    def setUpClass(cls):
+        if "virtualization" not in cls.td.get("IMAGE_FEATURES", "").split():
+            raise unittest.SkipTest(
+                f"{cls.__name__} skipped because"
+                "virtualization is not in IMAGE_FEATURES"
+            )
+        super(SVETestDomU1, cls).setUpClass()
+
+        cls.lt_utils_dom0 = LinuxTermUtils(cls.tc, cls.linux_console,
+                                           cls.prompt)
+        cls.linux_prompt = "root@{}:~#".format(cls.domu_hostname)
+        cls.domu_console = LinuxTermUtils.open_ssh_shell(
+            cls.tc.target, cls.domu_hostname, cls.tc.logger
+        )
+        XenUtils.enter_guest_from_dom0(
+            cls.domu_console, cls.prompt, cls.linux_prompt, cls.domu_hostname
+        )
+        cls.lt_utils = LinuxTermUtils(cls.tc, cls.domu_console,
+                                      cls.linux_prompt)
+
+    @classmethod
+    def tearDownClass(cls):
+        XenUtils.exit_guest_to_dom0(
+            cls.lt_utils.console,
+            cls.prompt,
+            cls.linux_prompt,
+            cls.domu_hostname,
+            False,
+        )
+        LinuxTermUtils.close_ssh_shell(cls.lt_utils.console,
+                                       cls.tc.logger)
+        super(SVETestDomU1, cls).tearDownClass()
+
+    def _get_sve_vl_from_xl_config(self):
+        file_content = self._read_xen_config()
+        sve_match = re.search(r'sve\s*=\s*"(\d+|disabled|hw)"', file_content)
+
+        if sve_match:
+            sve_value = sve_match.group(1)
+            if sve_value == "hw":
+                return self._get_max_sve_vector_length()
+            elif sve_value == "disabled":
+                return 0
+            else:
+                return int(sve_value)
+
+    def _read_xen_config(self):
+        status, file_content = self.lt_utils_dom0.run(
+            f"cat /etc/xen/auto/{self.domu_hostname}.cfg", timeout=300
+        )
+        self.assertEqual(
+            status, 0, msg="Failed on read "
+            f"/etc/xen/auto/{self.domu_hostname}.cfg"
+        )
+        return file_content
+
+    def _get_max_sve_vector_length(self):
+        status, xl_info_output = self.lt_utils_dom0.run("xl info", timeout=300)
+        for line in xl_info_output.split("\n"):
             if "arm_sve_vector_length" in line:
                 return int(line.split(":")[1].strip())
 
-    @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
-    def test_sve_enabled(self):
-        # Run in host
-        status, cpuinfo_output = self.target.run('cat /proc/cpuinfo',
-                                                 timeout=300)
-        self.assertEqual(status, 0,
-                         msg='Failed on read /proc/cpuinfo')
-        self.assertTrue(" sve2 " in cpuinfo_output.lower(),
-                        msg="SVE2 not enabled")
+    def _get_configured_sve_vl(self):
+        # Retrieve SVE vector length from the xl configuration file
+        return self._get_sve_vl_from_xl_config()
 
-    @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
-    def test_sve_config(self):
-        """
-        Test the Scalable Vector Extension (SVE) configuration in
-        virtualization and baremetal.
 
-        In virtualization:
-        This test checks the SVE vector length configuration in domu1 and domu2
-        against their respective configuration files (/etc/xen/auto/domuX.cfg
-        for DomUs) and the command line for Dom0.
-
-        In baremetal, it assumes a default SVE vector length of 128.
-        """
-        image_features = self.td.get('IMAGE_FEATURES')
-        if 'virtualization' in image_features.split():
-            # Run tests in domu1 and domu2
-            self._test_sve_domu('domu1')
-            self._test_sve_domu('domu2')
-
-            # Check arm_sve_vector_length using xl info in dom0
-            xl_info = self._run_xl_info()
-            arm_sve_vector_length = self._get_arm_sve_vector_length(xl_info)
-        else:
-            arm_sve_vector_length = 128
-
-        sve_default_length = self._get_sve_default_length()
-
-        self.assertEqual(arm_sve_vector_length, sve_default_length,
-                         msg='Vector lengths do not match')
+class SVETestDomU2(SVETestDomU1):
+    domu_hostname = "domu2"

@@ -100,6 +100,7 @@ cmdline
 CMDQ
 CMDS
 cmdtable
+commandline
 comms
 COMPAT
 compl
