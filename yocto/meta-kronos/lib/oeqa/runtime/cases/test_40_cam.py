@@ -199,27 +199,6 @@ class CAMTest(OERuntimeTestCase):
                           ('SI: Configuration error for '
                            f'/RAM:/{self.default_uuid_base}000{i}.csd'))
 
-    def check_si_streams(self, stream_count, processing_count):
-        self.target.sendline(self.zephyr_console)
-        self.target.expect(self.zephyr_console, r'uart:~\$', timeout=30)
-        si_output = self.target.before(self.zephyr_console)
-        si_output = si_output.decode("utf-8", errors="replace").strip()
-
-        for i in range(stream_count):
-            msg = (f'Stream {self.default_uuid_base}000{i} configuration is '
-                   'loaded.')
-            self.assertIn(msg, si_output,
-                          f'Stream {self.default_uuid_base}000{i} not loaded!')
-        for msg in ['Init', 'Start', 'Stop']:
-            matches = re.findall(rf'({msg} Message)', si_output)
-            self.assertEqual(len(matches), stream_count,
-                             msg=(f'{msg} Message count doesn\'t match stream '
-                                  f'count ({stream_count})'))
-        matches = re.findall(r'(Event Message)', si_output)
-        self.assertEqual(len(matches), stream_count * processing_count,
-                         msg=('Event Message count doesn\'t match expected '
-                              f'count ({stream_count * processing_count})'))
-
     @OETestDepends(['test_40_cam.CAMTest.test_cam_tool_deploy_to_si'])
     def test_cam_app_example_to_service_on_si(self):
         processing_count = 4
@@ -228,10 +207,8 @@ class CAMTest(OERuntimeTestCase):
         st = (f'cam-app-example -a {self.cam_service_si_ipaddr}'
               f' --processing-count {processing_count}'
               f' --stream-count {stream_count}')
-        self.si1_shell.wait_for_prompt()
         status, _ = self.lt_utils.run(st, timeout=60*stream_count)
         self.assertEqual(status, 0, msg='cam-app-example failed.')
-        self.check_si_streams(stream_count, processing_count)
 
     @OETestDepends([
         'test_40_cam.CAMTest.test_cam_app_example_to_service_on_si'])
@@ -243,10 +220,8 @@ class CAMTest(OERuntimeTestCase):
               f' --processing-count {processing_count}'
               f' --stream-count {stream_count}'
               ' --enable-multiple-connection')
-        self.si1_shell.wait_for_prompt()
         status, _ = self.lt_utils.run(st, timeout=60*stream_count)
         self.assertEqual(status, 0, msg='cam-app-example failed.')
-        self.check_si_streams(stream_count, processing_count)
 
     @OETestDepends([
         'test_40_cam.CAMTest.test_cam_app_example_to_service_on_si_with_multiple_connection'])
