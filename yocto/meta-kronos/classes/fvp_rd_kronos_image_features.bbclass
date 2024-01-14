@@ -182,7 +182,7 @@ TEST_SUITES:append = " \
     test_10_linuxboot \
     test_10_linuxlogin \
     test_40_parsec \
-    test_40_sve \
+    ${@'test_40_sve' if d.getVar('SVE_DISABLE_FLAG', True) != '1' else ''} \
     ${TEST_SUITES_EXTRA} \
 "
 
