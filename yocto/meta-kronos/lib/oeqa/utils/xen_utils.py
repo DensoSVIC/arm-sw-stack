@@ -45,5 +45,6 @@ class XenUtils:
         if telnet:
             console.expect(r'telnet>', timeout=30)
             console.sendline(r'send esc')
-        console.sendline()
-        console.expect(dom0_prompt, timeout=30)
+        else:
+            console.sendline()
+        console.expect(dom0_prompt, timeout=60)
