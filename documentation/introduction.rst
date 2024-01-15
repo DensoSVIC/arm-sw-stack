@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -9,9 +9,9 @@ Introduction
 ############
 
 The |Arm| Kronos Reference Design is a Fixed Virtual Platform (FVP) based
-system that introduces the concept of a high-performance Application
-Processor (Primary Compute) system augmented with an |Cortex|-R based
-Safety Island, for scenarios where additional system safety monitoring is
+system that introduces the concept of a high-performance |Neoverse| V3
+Application Processor (Primary Compute) system augmented with an |Cortex|-R82AE
+based Safety Island, for scenarios where additional system safety monitoring is
 required. The Reference Design additionally includes a Runtime Security
 Subsystem (RSS) used for the secure boot of the system elements and the runtime
 Secure Services.

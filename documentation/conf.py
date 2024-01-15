@@ -149,6 +149,7 @@ rst_prolog = f"""
 .. |Linux version| replace:: {linux_version}.{linux_version_patch}
 .. |Mbed TLS base version| replace:: {mbedtls_base_version}
 .. |Mbed TLS version| replace:: {mbedtls_version}
+.. |Neoverse| replace:: Arm\\ :sup:`®` Neoverse\\ :sup:`TM`
 .. |OP-TEE version| replace:: {optee_version}
 .. |SCP-firmware base version| replace:: {scp_firmware_base_version}
 .. |SCP-firmware version| replace:: {scp_firmware_version}

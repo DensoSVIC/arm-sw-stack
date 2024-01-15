@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -17,7 +17,7 @@ Introduction
 The Safety Island Actuation Demo is an example application that shows how an
 Autonomous Drive software stack can be run in a compute environment composed of
 a high-performance Primary Compute platform coupled with a higher reliability
-Arm® Cortex®-R based Safety Island.
+Safety Island.
 
 The Safety Island Actuation Demo features an "Actuation Service" application
 running on the Safety Island that receives inputs from the Primary Compute and
