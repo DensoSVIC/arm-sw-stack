@@ -1,0 +1,17 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2024 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: MIT
+
+---
+header:
+  version: 14
+
+env:
+  SVE_DISABLE_FLAG: "1"
+
+local_conf_header:
+  nosve: |
+    EXTRA_IMAGE_FEATURES:remove = "actuation"
+    EXTRA_IMAGE_FEATURES:append = " nosve"

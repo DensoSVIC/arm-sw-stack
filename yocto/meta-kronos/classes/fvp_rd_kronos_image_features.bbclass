@@ -36,6 +36,9 @@ OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
 OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
                     'si-psa-crypto-tests', ':si-psa-crypto-tests', '', d)}"
 
+OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
+                    'nosve', ':nosve', '', d)}"
+
 # This bbclass handles, via the EXTRA_IMAGE_FEATURES variable, the following
 # features that will be used to select packages to be installed on rootfs,
 # Safety Island image and integration testing.
@@ -49,6 +52,7 @@ IMAGE_FEATURES[validitems] += " \
     cam \
     si-psa-storage-tests \
     si-psa-crypto-tests \
+    nosve \
     "
 
 DOMU_INSTANCES ?= "2"
@@ -171,6 +175,8 @@ TEST_SUITES_EXTRA:si0-bridge-ethernet0 = " test_30_si0_bridge_ethernet0"
 
 TEST_SUITES_EXTRA:cam = " test_40_cam"
 
+TEST_SUITES_EXTRA:nosve = ""
+
 TEST_SUITES_EXTRA:si-psa-storage-tests = " test_10_si_psa_arch_tests"
 TEST_SUITES_EXTRA:si-psa-crypto-tests = " test_10_si_psa_arch_tests"
 
@@ -233,6 +239,22 @@ TEST_SUITES:remove:si-psa-crypto-tests = "\
     ping \
     test_40_parsec \
     test_40_sve \
+    "
+TEST_SUITES:remove:nosve = "\
+    fvp_devices \
+    ping \
+    ssh \
+    test_30_actuation \
+    test_10_fault_mgmt \
+    test_40_gicv4_1 \
+    test_30_hipc_virtualization \
+    test_40_parsec \
+    test_30_ptp_base \
+    test_00_secure_partition \
+    test_30_si0_bridge_ethernet0 \
+    test_10_si_psa_arch_tests \
+    test_40_sve \
+    test_40_virtualization \
     "
 
 EXTRA_TESTIMAGE_RDEPENDS ?= ""
