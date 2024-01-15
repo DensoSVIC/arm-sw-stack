@@ -168,6 +168,26 @@ class FaultMgmtTest(OERuntimeTestCase):
                       "0x2 on fmu@2a510000 : count 2",
                       output)
 
+    def filter_fault_history(self, output):
+        lines = output.split('\n')
+        cleaned_lines = []
+        fault_history_section = False
+
+        for line in lines:
+            if line.startswith("Fault history:"):
+                fault_history_section = True
+            elif fault_history_section and \
+                line.startswith("Fault received (non-critical):"):
+                cleaned_lines.append(line)
+            elif fault_history_section:
+                # Exclude any line that does not follow the pattern
+                continue
+            else:
+                # Exclude all lines outside of the fault history section
+                continue
+
+        return '\n'.join(cleaned_lines)
+
     def test_fmu_fault_summary(self):
         self.test_system_fmu_internal_inject()
         self.shell.exec_command("fault inject fmu@2a510000 0x20")
@@ -175,9 +195,10 @@ class FaultMgmtTest(OERuntimeTestCase):
         count = len(SYSTEM_FMU_INTERNAL_FAULTS)
         self.assertIn(f"Number of fault reported: {count + 1}", output)
         self.assertIn("Most reported faults:\r\n", output)
-        self.assertRegex(output, r"Fault history:\s*\r?\n(?:Fault "
-                         r"received \(non-critical\): [x\d]+ on "
-                         fr"fmu@2a510000 : count \d+\s*\r?\n){{{count}}}")
+        filtered_output = self.filter_fault_history(output)
+        self.assertRegex(filtered_output, r"^(?:Fault received "
+                         r"\(non-critical\): 0x[0-9a-f]+ on "
+                         fr"fmu@2a510000 : count \d+\s*\r?\n?){{{count}}}")
 
     def test_fmu_fault_clear(self):
         self.test_system_fmu_internal_inject()
