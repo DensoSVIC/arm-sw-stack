@@ -1,12 +1,12 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
 
 ---
 header:
-  version: 14
+  version: 16
   includes:
     - yocto/kas/base.yml
 

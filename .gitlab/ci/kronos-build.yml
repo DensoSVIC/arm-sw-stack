@@ -14,7 +14,7 @@
     TOOLCHAIN_DIR: $CACHE_DIR/$PROJECT_VERSION/toolchains
 
 .kas_build:
-  image: ${MIRROR_GHCR}/siemens/kas/kas:3.3
+  image: ${MIRROR_GHCR}/siemens/kas/kas:4.2
   variables:
     KUBERNETES_MEMORY_REQUEST: 32Gi
     KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 50Gi

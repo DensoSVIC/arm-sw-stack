@@ -5,7 +5,7 @@
 
 ---
 header:
-  version: 14
+  version: 16
   includes:
     - repo: meta-arm
       file: kas/fvp-rd-kronos.yml

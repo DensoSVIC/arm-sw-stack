@@ -5,7 +5,7 @@
 
 ---
 header:
-  version: 14
+  version: 16
   includes:
     - yocto/kas/bsp-pinned-repos.yml
 
