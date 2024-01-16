@@ -713,6 +713,7 @@ vardeps
 VCPU
 vcpus
 vdev
+venv
 veth
 vexpress
 vfat

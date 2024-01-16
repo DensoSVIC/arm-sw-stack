@@ -28,6 +28,10 @@
   variables:
     IMAGE_DIR: $CACHE_DIR/$PROJECT_VERSION/images
   before_script:
+    # This can be removed when the kas container has python3-venv installed
+    - sudo apt-get update && sudo apt-get install --yes python3-venv
+    - python3 -m venv venv
+    - . ./venv/bin/activate
     - KASFILE_CI=yocto/kas/ci.yml
     # Set the url and branch for the specific repos
     - |
