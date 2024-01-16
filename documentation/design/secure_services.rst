@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -245,9 +245,9 @@ RSS Secure Firmware
 *******************
 
 The Secure Services are finally served by the ``RSS Secure Firmware``. For more
-information about how the Secure Services work in the RSS, please read the
+information about how the Secure Services work in the RSS, read the
 `TF-M Secure Services`_ page.
 
 Trusted Firmware-M has some limitations regarding the Secure Storage Service.
-Please refer to the changelog :ref:`changelog_limitations` section for more
+Refer to the changelog :ref:`changelog_limitations` section for more
 details.

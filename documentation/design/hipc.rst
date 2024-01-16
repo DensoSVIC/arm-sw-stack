@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -139,8 +139,8 @@ the Baremetal Architecture.
 
 |
 
-There are some limitations of the virtual network device over RPMsg. Please
-refer to the changelog :ref:`changelog_limitations` section.
+There are some limitations of the virtual network device over RPMsg.
+Refer to the changelog :ref:`changelog_limitations` section.
 
 ************************************************
 Communication between the Safety Island clusters

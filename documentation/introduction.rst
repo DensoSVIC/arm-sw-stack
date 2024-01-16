@@ -106,7 +106,7 @@ Use-Cases
 The Reference Software Stack demonstrates the following capabilities of how a
 high-performance compute platform can be enhanced to improve functional safety:
 
-  * Critical Applications Monitoring
+  * Critical Application Monitoring
   * High reliability compute subsystem
   * Safety Island Communication
   * Transport Layer Security (TLS) with hardware cryptography support
@@ -116,7 +116,7 @@ high-performance compute platform can be enhanced to improve functional safety:
     Specification
   * System Fault Handling for increased safety
 
-:ref:`Reproduce <user_guide/reproduce:Reproduce>` section of the User Guide
+The :ref:`Reproduce <user_guide/reproduce:Reproduce>` section of the User Guide
 contains all the instructions necessary to fetch and build the source as well
 as to download the required FVP and launch the Use-Cases.
 
@@ -127,29 +127,29 @@ Critical Application Monitoring Demo
 
 Critical Application Monitoring (CAM) is a project that implements a solution
 for monitoring critical applications using a service running on a higher safety
-level system. This Demo deploys CAM components on the Kronos FVP to demonstrate
+level system. This demo deploys CAM components on the Kronos FVP to demonstrate
 the feasibility of the Safety Island monitoring solution.
 
-Please refer to :ref:`design_applications_cam` for more information.
+Refer to :ref:`design_applications_cam` for more information.
 
 Safety Island Actuation Demo
 ============================
 
-The Safety Island Actuation Demo consists of the |Arm SystemReadyTM| IR-aligned
+The Safety Island Actuation demo consists of the |Arm SystemReadyTM| IR-aligned
 firmware along with Linux-based software on the Primary Compute and Zephyr
-application on the Safety Island to demonstrate automotive workloads.  Please
-refer to :ref:`design_applications_actuation` for more information.
+application on the Safety Island to demonstrate automotive workloads.
+Refer to :ref:`design_applications_actuation` for more information.
 
 Safety Island Communication Demo
 ================================
 
-The Safety Island Communication Demo demonstrates via HIPC (Heterogeneous
+The Safety Island Communication demo demonstrates via HIPC (Heterogeneous
 Inter-processor Communication), the networking between:
 
   * Primary Compute and the three Safety Island clusters.
   * Safety Island clusters.
 
-Please refer to :ref:`design_hipc` for more information on HIPC.
+Refer to :ref:`design_hipc` for more information on HIPC.
 
 Parsec-enabled TLS Demo
 =======================
@@ -160,7 +160,7 @@ transferred. The TLS session consists of both symmetric and asymmetric
 cryptographic operations. The symmetric operations are executed by Mbed TLS
 in Linux userspace on the Primary Compute. The asymmetric operations are
 carried out by `Parsec`_. While the backend of the Parsec service is based on
-RSS cryptographic runtime service. Please refer to
+RSS cryptographic runtime service. Refer to
 :ref:`design_applications_parsec_enabled_tls` for more information.
 
 Safety Island PSA Secure Storage APIs Architecture Test Suite
@@ -170,11 +170,11 @@ The PSA Secure Storage architecture test suite is a set of examples of
 the invariant behaviors that are specified in the PSA Secure Storage
 APIs specification.
 
-We use this suite to verify whether these behaviors are implemented
+This suite is used to verify whether these behaviors are implemented
 correctly in our system. This suite contains self-checking and portable
 C-based tests with directed stimulus.
 
-Please refer to :ref:`design_applications_psa_arch_tests_secure_storage` for
+Refer to :ref:`design_applications_psa_arch_tests_secure_storage` for
 more information.
 
 Safety Island PSA Crypto APIs Architecture Test Suite
@@ -183,10 +183,10 @@ Safety Island PSA Crypto APIs Architecture Test Suite
 The PSA Crypto architecture test suite is a set of examples of the invariant
 behaviors that are specified in the PSA Crypto APIs specification.
 
-We use this suite to verify whether the PSA Crypto APIs provided on Safety
+This suite is used to verify whether the PSA Crypto APIs provided on Safety
 Island are correctly implemented.
 
-Please refer to :ref:`design_applications_psa_arch_tests_crypto` for more
+Refer to :ref:`design_applications_psa_arch_tests_crypto` for more
 information.
 
 Fault Management Demo
@@ -196,13 +196,13 @@ The Fault Management subsystem for the Safety Island demonstrates the
 injection, reporting and collation of faults from supported hardware to support
 the design of safety-critical systems.
 
-Please refer to :ref:`design_applications_fault_mgmt` for more information.
+Refer to :ref:`design_applications_fault_mgmt` for more information.
 
 |Arm SystemReadyTM| IR Validation
 =================================
 |Arm SystemReadyTM| is a compliance certification program based on a set of
 hardware and firmware standards that enable interoperability with generic
-off-the-shelf operating systems and hypervisors. Please refer to
+off-the-shelf operating systems and hypervisors. Refer to
 :ref:`design_systemready_ir` for more information.
 
 Linux Distribution Installation
@@ -216,7 +216,7 @@ Secure Firmware Update
 
 Demonstrates an implementation of Secure Firmware Update initiated from
 the Primary Compute and follows the
-`Platform Security Firmware Update Specification`_. Please refer to
+`Platform Security Firmware Update Specification`_. Refer to
 :ref:`design_secure_firmware_update` for more information.
 
 **********************
@@ -319,12 +319,12 @@ Contributions and Issue Reporting
 This project has not put in place a process for contributions currently.
 
 To report issues with the repository such as potential bugs, security concerns,
-or feature requests, please submit an Issue via `GitLab Issues`_, following the
+or feature requests, submit an Issue via `GitLab Issues`_, following the
 project's template.
 
 ********************
 Feedback and Support
 ********************
 
-To request support please contact Arm at support@arm.com. Arm licensees may
+To request support contact Arm at support@arm.com. Arm licensees may
 also contact Arm via their partner managers.

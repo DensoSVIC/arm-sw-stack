@@ -69,9 +69,7 @@ In the current software stack, the RSS offers:
 * Internal Trusted Storage (ITS) Service, which is a PSA RoT Service for storing
   the most security-critical device data in internal storage that is trusted to
   provide data confidentiality and authenticity. Further details can be found in
-  the `TF-M Internal Trusted Storage Service`_ documentation. Now the Reference
-  Stack only uses ITS service to store cryptographic keys for RSS internally,
-  not provided for external usage.
+  the `TF-M Internal Trusted Storage Service`_ documentation.
 * Protected Storage (PS) Service, which is an Application RoT service that
   allows larger data sets to be stored securely in external flash, with the
   option for encryption, authentication and rollback protection to protect the
@@ -531,7 +529,7 @@ The stack offers several methods for users to configure MPAM for domains:
 
      xl psr-cat-show -l 0
 
-   More detailed information of the sub-commands, please refer to the ``--help``
+   More detailed information of the sub-commands, refer to the ``--help``
    of each sub-command respectively.
 
 Limitations of MPAM support in Xen include:
@@ -581,7 +579,7 @@ direct injection for DomU1:
     In addition, the configuration for DomU1 shall also include a new line
     of ``pci = ['0000:00:1f.0']`` for enabling the PCI AHCI SATA disk.
 
-For GICv4.1 vLPI/vSGI validation, please refer to
+For GICv4.1 vLPI/vSGI validation, refer to
 :ref:`validation_gicv4_1_demo`.
 
 SVE2
@@ -599,11 +597,11 @@ are set in
 :kronos-repo:`yocto/meta-kronos/recipes-core/domu-package/domu-envs.inc` and
 :kronos-repo:`b/yocto/meta-kronos/recipes-extended/xen-cfg/xen-cfg.bb`.
 
-For more information on SVE2, please refer to `SVE2 guide`_.  Xen command line
+For more information on SVE2, refer to `SVE2 guide`_.  Xen command line
 options for SVE for dom0 can be found under `xen-command-line options`_ and
 SVE configuration for guests can be found under `xl configuration`_.
 
-For SVE2 validation, please refer to
+For SVE2 validation, refer to
 :ref:`validation_sve2`.
 
 .. _design_components_xen_downstream_changes:
@@ -660,7 +658,7 @@ The Scalable Vector Extension version two (SVE2) is enabled in Linux. This
 feature is used as an extension to AArch64, to allow for flexible vector length
 implementations. 
 
-For more information on SVE2, please refer to `SVE2 guide`_.
+For more information on SVE2, refer to `SVE2 guide`_.
 
 .. _design_components_linux_downstream_changes:
 

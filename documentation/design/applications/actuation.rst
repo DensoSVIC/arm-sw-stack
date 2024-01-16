@@ -115,4 +115,4 @@ BSD socket (TCP Protocol) is used in order to send the Control Commands from the
 Validation
 ==========
 
-Please refer to the Actuation Demo validations :ref:`validation_actuation_demo`
+Refer to the Actuation Demo validations :ref:`validation_actuation_demo`

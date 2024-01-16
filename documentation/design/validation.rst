@@ -19,8 +19,8 @@ Run-Time Integration Tests
 The run-time integration tests are a mechanism for validating the Reference
 Stack's core functionalities.
 
-The tests are run on the image using the oeqa test framework. Please refer to
-`OEQA FVP`_ for more information on the this framework.
+The tests are run on the image using the oeqa test framework. Refer to
+`OEQA FVP`_ for more information on this framework.
 
 In this section, details on the structure, implementation and debugging of the
 tests is given.
@@ -61,8 +61,7 @@ for debugging.
     * BSP
        The entry point to these tests is
        :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/fvp_devices.py`. To find
-       out more about the applicable tests, please refer to
-       :ref:`design_bsp_tests`.
+       out more about the applicable tests, refer to :ref:`design_bsp_tests`.
 
     * TF-A
        The script that implements the test is

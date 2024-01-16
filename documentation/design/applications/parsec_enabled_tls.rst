@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -90,7 +90,7 @@ The following components are involved in the demo:
     service.
 
 For more information of how the operations are handled by Parsec service, the SE
-Proxy SP and the RSS, please refer to :ref:`design_secure_services`.
+Proxy SP and the RSS, refer to :ref:`design_secure_services`.
 
 TLS Handshake
 =============

@@ -75,7 +75,7 @@ Current Status
 **************
 
 This Reference Stack has the testing capability to check for |Arm SystemReadyTM|
-alignment. Please refer to :ref:`user_guide_reproduce_sr_ir_acs` to
+alignment. Refer to :ref:`user_guide_reproduce_sr_ir_acs` to
 see how to run the |Arm SystemReadyTM| IR `ACS`_ tests in this Reference Stack.
 
 The |Arm SystemReadyTM| IR ACS tests of the Reference Stack use the
@@ -165,8 +165,7 @@ in the meta-arm-systemready Yocto layer monitors the ACS tests output from the
 bitbake testimage task.
 
 See :meta-arm-repo:`meta-arm-systemready/README.md` for more details.
-To run the tests, please refer to
-:ref:`user_guide_reproduce_sr_ir_acs`.
+To run the tests, refer to :ref:`user_guide_reproduce_sr_ir_acs`.
 
 .. _systemready_ir_linux_install:
 
@@ -182,5 +181,4 @@ These recipes help to download the installation CD for the Linux distribution
 and generate an empty disk as the target disk for the installation.
 
 See :meta-arm-repo:`meta-arm-systemready/README.md` for more details.
-To run the tests, please refer to
-:ref:`user_guide_reproduce_arm_systemready_ir_linux`.
+To run the tests, refer to :ref:`user_guide_reproduce_arm_systemready_ir_linux`.

@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -14,7 +14,7 @@ Boot Process
 RSS-oriented Boot Flow
 **********************
 
-The :ref:`design_components_rss` is the root of the trust chain. It is the
+The :ref:`design_components_rss` is the root of trust chain. It is the
 first booting element when the system is powered up.
 
 The RSS, implemented in Trusted Firmware-M (TF-M), has 3 boot stages: BL1_1,
@@ -29,7 +29,7 @@ occur:
 4. BL2, which is implemented based on `MCUboot`_, loads and authenticates all
    images of the other components: SCP, Safety Island, LCP and AP.
 
-The sequence is shown in the RSS-oriented Boot Flow diagram of below
+The sequence is shown in the RSS-oriented Boot Flow diagram below
 :ref:`design_boot_process_boot_flow` section.
 
 The RSS uses a NVM flash to store the images of various components, including:
@@ -99,7 +99,7 @@ for production. To replace the default key, the user needs to:
   with the hash value.
 
 For detail of how to generate the private key and the hash of the public key,
-please refer to the documentation of `imgtool`_ which is provided by MCUboot.
+refer to the documentation of `imgtool`_ which is provided by MCUboot.
 
 .. _design_boot_process_boot_flow:
 

@@ -102,4 +102,4 @@ needs to be deployed from the Primary Compute to the Safety Island Cluster 1 via
 Validation
 ==========
 
-Please refer to the CAM Demo validations :ref:`validation_cam_tests`.
+Refer to the CAM Demo validations :ref:`validation_cam_tests`.

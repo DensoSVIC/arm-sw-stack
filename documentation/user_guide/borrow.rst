@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -8,7 +8,7 @@
 Borrow
 ######
 
-To reuse the components and patches of the Reference Stack, please refer to each
+To reuse the components and patches of the Reference Stack, refer to each
 of the individual components mentioned in :ref:`design_components`.
 
 ******************

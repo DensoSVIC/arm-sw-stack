@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -104,7 +104,7 @@ there should be no failed tests:
 
 There are some limitations behind running
 ``PSA Secure Storage APIs Architecture Test Suite`` on Safety Island Cluster 2
-only. Please refer to the changelog :ref:`changelog_limitations` section.
+only. Refer to the changelog :ref:`changelog_limitations` section.
 
 PSA Secure Storage APIs
 =======================
@@ -114,7 +114,7 @@ instead of duplicating code in Kronos Reference Stack. They are linked into
 Zephyr and use the provided ``psa_call()`` in order to communicate with the RSS
 to use the Secure Storage Service provided by Trusted Firmware-M.
 
-Please refer to `Trusted Firmware-M PSA Protected Storage Interfaces`_ and
+Refer to `Trusted Firmware-M PSA Protected Storage Interfaces`_ and
 `Trusted Firmware-M PSA Internal Trusted Storage Interfaces`_ for more
 information.
 
@@ -149,7 +149,7 @@ The PSA Crypto APIs are implemented by `Mbed TLS`_. In Mbed TLS, different
 crypto APIs are handled in different ways. For asymmetric crypto operations, the
 RSS secure service is invoked by calling the ``psa_call()`` interface. The other
 crypto operations are handled on Safety Island by Mbed TLS software
-implementation. For more information on the Mbed TLS implementation, please
+implementation. For more information on the Mbed TLS implementation,
 refer to :ref:`design_safety_island_secure_services_psa_crypto_apis`.
 
 **********

@@ -47,7 +47,7 @@ System Requirements
 Install Dependencies
 ====================
 
-  * Please follow the Yocto Project documentation on
+  * Follow the Yocto Project documentation on
     `how to install the essential packages`_ required for the build host. The
     packages needed to build the Yocto Project documentation manuals are not
     required.
@@ -77,7 +77,7 @@ Download
   Performing the builds and FVP execution in **a tmux session is mandatory** for
   Kronos because the ``runfvp`` tool that invokes the Kronos FVP expects the
   presence of a tmux session to attach its spawned tmux windows for console
-  access to the processing elements. Please refer to
+  access to the processing elements. Refer to
   `Tmux Documentation`_ for more information on the usage of tmux. It is
   recommended to change the default ``history-limit`` by adding
   ``set-option -g history-limit 3000`` to ``~/.tmux.conf`` before starting
@@ -212,7 +212,7 @@ Follow the steps below to achieve the same:
    key to join the ``cam-service`` terminal window to the Primary Compute
    terminal window.
 
-Please refer to the following image of the tmux panes rearrangement. Panes can
+Refer to the following image of the tmux panes rearrangement. Panes can
 be navigated using ``Ctrl-b`` followed by the arrow keys.
 
 .. image:: ../images/cam_reproduce_startup.png
@@ -1027,7 +1027,7 @@ Follow the steps below to achieve the same:
    followed by pressing ``Enter`` key to join the ``cam-service`` terminal window
    to the Primary Compute terminal window.
 
-Please refer to the following image of the tmux panes rearrangement. Panes can
+Refer to the following image of the tmux panes rearrangement. Panes can
 be navigated using ``Ctrl-b`` followed by the arrow keys.
 
   .. image:: ../images/kronos_reference_stack_fvp_rearrange_windows.png
@@ -1086,7 +1086,7 @@ Run the demo
       Actuation Service initialized.
       Accepted tcp connection from the Packet Analyzer: <11>
 
-   Please refer to the following image for an invocation example of the Packet
+   Refer to the following image for an invocation example of the Packet
    Analyzer.
 
      .. image:: ../images/kronos_reference_stack_packet_analyzer_baremetal.png
@@ -1231,7 +1231,7 @@ Follow the steps below to achieve the same:
    followed by pressing ``Enter`` key to join the ``cam-service`` terminal window
    to the Primary Compute terminal window.
 
-Please refer to the following image of the tmux panes rearrangement. Panes can
+Refer to the following image of the tmux panes rearrangement. Panes can
 be navigated using ``Ctrl-b`` followed by the arrow keys.
 
   .. image:: ../images/kronos_reference_stack_fvp_rearrange_windows.png
@@ -1302,7 +1302,7 @@ Run the Demo
       Actuation Service initialized.
       Accepted tcp connection from the Packet Analyzer: <11>
 
-   Please refer to the following image for an invocation example of the Packet
+   Refer to the following image for an invocation example of the Packet
    Analyzer.
 
      .. image:: ../images/kronos_reference_stack_packet_analyzer_virtualization.png
@@ -1579,7 +1579,7 @@ Wait for it to return. The expected terminal output is ``running``.
 Run the demo
 ^^^^^^^^^^^^
 
-The demo consists of a TLS server and a TLS client. Please refer to
+The demo consists of a TLS server and a TLS client. Refer to
 :ref:`design_applications_parsec_enabled_tls` for more information on
 this application.
 
@@ -2280,7 +2280,7 @@ messages are expected to validate this Use-Case:
   The ACS tests take hours to complete. The actual time taken will vary
   depending on the performance of the build host. The default timeout setting
   for the tests is 12 hours for an x86_64 host or 24 hours for an aarch64 host.
-  If a timeout failure occurs, please increase the timeout setting and re-run
+  If a timeout failure occurs, increase the timeout setting and re-run
   the tests with the following command on the build host terminal. The example
   command below changes the timeout setting to 16 hours.
 
@@ -2288,7 +2288,7 @@ messages are expected to validate this Use-Case:
 
      TEST_OVERALL_TIMEOUT="\${@16*60*60}" kas shell -c "bitbake arm-systemready-ir-acs -C unpack"
 
-Please refer to :ref:`systemready_ir_acs_tests` for an explanation on how the
+Refer to :ref:`systemready_ir_acs_tests` for an explanation on how the
 ACS tests are set up and how they work in the Reference Stack.
 
 .. _user_guide_reproduce_arm_systemready_ir_linux:
@@ -2317,7 +2317,7 @@ and `openSUSE Leap`_. To install Debian, you can refer to the
   the only running process as it will consume large amounts of RAM that can make
   the system unstable.
 
-Please refer to :ref:`systemready_ir_linux_install` for an explanation on how
+Refer to :ref:`systemready_ir_linux_install` for an explanation on how
 the Linux distros installation is set up and how they work in the Reference
 Stack.
 
