@@ -199,6 +199,10 @@ The tests verify:
 * Application monitoring with multiple connections.
 * Logical and temporal failure detection.
 
+The tests are performed from the baremetal Linux userspace when building the
+Baremetal Architecture and from the DomU1 Linux userspace when building the
+Virtualization Architecture.
+
 .. _validation_hipc_demo:
 
 Integration Tests Validating the Safety Island Communication Demo

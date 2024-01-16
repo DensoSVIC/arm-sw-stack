@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -56,6 +56,10 @@ CAM consists of the following major components:
     before a stream is initialized.
 
   * **Cam-tool**: The tool used to analyze, generate and deploy stream data.
+
+The Primary Compute components are deployed on the baremetal Linux root
+filesystem in the Baremetal Architecture build and on the DomU1 and DomU2 Linux
+root filesystem in the Virtualization Architecture.
 
 In the Kronos Reference Software Stack, ``cam-service`` is deployed both on the
 Safety Island Cluster 1 and on the Primary Compute. The Safety Island deployment

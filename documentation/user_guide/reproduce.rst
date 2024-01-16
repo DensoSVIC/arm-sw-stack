@@ -150,8 +150,8 @@ The Reference Stack running on the Primary Compute can be logged into as
 Critical Application Monitoring Demo
 ====================================
 
-The demo can be run on the Baremetal Architecture. See
-:ref:`design_applications_cam` for further details.
+The demo can be run on the Baremetal Architecture or Virtualization
+Architecture. See :ref:`design_applications_cam` for further details.
 
 Baremetal Architecture
 ----------------------
@@ -530,6 +530,426 @@ The following messages are expected in the output to validate this Use-Case:
    RESULTS - test_40_cam.CAMTest.test_data_calibration_on_pc: PASSED (15.97s)
    RESULTS - test_40_cam.CAMTest.test_logical_check_on_si: PASSED (2.25s)
    RESULTS - test_40_cam.CAMTest.test_temporal_check_on_si: PASSED (31.34s)
+
+Virtualization Architecture
+---------------------------
+
+Build
+^^^^^
+
+To run the configuration menu:
+
+.. code-block:: text
+
+  kas menu kronos/Kconfig
+
+To build a Baremetal Architecture image:
+
+1. Select ``Critical Application Monitoring Demo`` from the ``Use-Case`` menu.
+2. Select ``Virtualization`` from the ``Reference Stack Architecture`` menu.
+3. Select ``Save & Build``.
+
+Run the FVP
+^^^^^^^^^^^
+
+To start the FVP and connect to the Primary Compute terminal (running Linux):
+
+.. code-block:: text
+
+  kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
+
+The user should wait for the system to boot and for the Linux prompt to appear.
+
+The Safety Island (SI) Cluster 1 terminal running ``cam-service`` is available
+via the tmux window titled ``terminal_uart_si_cluster1``. For ease of
+navigation, we recommend joining the ``cam-service`` terminal window to the
+Primary Compute terminal window in order to issue commands on it.
+
+Follow the steps below to achieve the same:
+
+1. Press ``Ctrl-b w`` from the tmux session, navigate to the tmux window titled
+   ``terminal_ns_uart0`` using the arrow keys, then press the ``Enter`` key.
+2. Press ``Ctrl-b :`` and then type
+   ``join-pane -s :terminal_uart_si_cluster1 -h`` followed by pressing ``Enter``
+   key to join the ``cam-service`` terminal window to the Primary Compute
+   terminal window.
+
+Please refer to the following image of the tmux panes rearrangement. Panes can
+be navigated using ``Ctrl-b`` followed by the arrow keys.
+
+.. image:: ../images/cam_reproduce_startup.png
+  :align: center
+
+|
+
+The Reference Stack running on the Primary Compute can be logged into as
+``root`` user without a password in the Linux terminal. Run the below
+command to guarantee that all the expected services have been
+initialized.
+
+.. code-block:: text
+
+  systemctl is-system-running --wait
+
+Wait for it to return. The expected terminal output is ``running``.
+
+Run the Demo
+^^^^^^^^^^^^
+
+Monitoring
+""""""""""
+
+1. Enter the DomU1 console using the ``xl`` tool:
+
+   .. code-block:: text
+
+      xl console domu1
+
+   DomU1 can be logged into as ``root`` user without a password in the Linux
+   terminal. This command will provide a console on the DomU1. To exit,
+   enter ``Ctrl-]`` (to access the FVP telnet shell), followed by typing
+   ``send esc`` into the telnet shell and pressing ``Enter``. See the
+   `xl documentation`_ for further details.
+
+2. To improve the readability of commands and output on the DomU1 console, run
+   the command below:
+
+   .. code-block:: text
+
+      stty rows 76 cols 282
+
+3. Run ``cam-tool deploy`` command from the Primary Compute terminal to transfer
+   the stream deployment data (.csd) to ``cam-service``:
+
+   .. code-block:: text
+
+      cam-tool deploy -i /usr/share/cam-data/84085ddc-bc10-11ed-9a44-7ef9696e0000.csd -a 192.168.1.1
+
+   The output on the ``cam-service`` terminal should look like as below, the
+   connection number might change:
+
+   .. code-block:: text
+
+      Connection 4 is created.
+      Deploy Message
+
+      Connection 4 is closed.
+
+   After that, the stream data of ``84085ddc-bc10-11ed-9a44-7ef9696e0000`` is
+   deployed to the ``cam-service`` file system.
+
+   Running ``cam-tool deploy`` three more times can deploy the data of three
+   other streams to ``cam-service``.
+
+   .. code-block:: text
+
+      cam-tool deploy -i /usr/share/cam-data/84085ddc-bc10-11ed-9a44-7ef9696e0001.csd -a 192.168.1.1
+
+   .. code-block:: text
+
+      cam-tool deploy -i /usr/share/cam-data/84085ddc-bc10-11ed-9a44-7ef9696e0002.csd -a 192.168.1.1
+
+   .. code-block:: text
+
+      cam-tool deploy -i /usr/share/cam-data/84085ddc-bc10-11ed-9a44-7ef9696e0003.csd -a 192.168.1.1
+
+   The output on the ``cam-service`` terminal after each one of the
+   ``cam-tool deploy`` command should look like as below, the connection number
+   might change:
+
+   .. code-block:: text
+
+      Connection 4 is created.
+      Deploy Message
+
+      Connection 4 is closed.
+
+   List all the files from the ``cam-service`` terminal:
+
+   .. code-block:: text
+
+      fs ls RAM:/
+
+   The stream deployment data can be shown as below:
+
+   .. code-block:: text
+
+      84085ddc-bc10-11ed-9a44-7ef9696e0000.csd
+      84085ddc-bc10-11ed-9a44-7ef9696e0001.csd
+      84085ddc-bc10-11ed-9a44-7ef9696e0002.csd
+      84085ddc-bc10-11ed-9a44-7ef9696e0003.csd
+
+4. Start ``cam-app-example`` from the Primary Compute terminal to create an
+   application with four streams. Each stream sends an event message 10 times
+   with a period of 3000 milliseconds.
+
+   .. code-block:: text
+
+      cam-app-example -t 3000 -c 10 -s 4 -a 192.168.1.1
+
+   The following configure messages are expected from the Primary Compute
+   terminal:
+
+   .. code-block:: text
+
+      Cam application configuration:
+          Service IP address: 192.168.1.1
+          Service port: 21604
+          UUID base: 84085ddc-bc10-11ed-9a44-7ef9696e
+          Stream count: 4
+          Processing period (ms): 3000
+          Processing count: 10
+          Multiple connection support: false
+          Calibration mode support: false
+          Fault injection support: false
+          Event(s) interval time (ms): 0
+      Using libcam v0.1
+      Starting activity...
+      Starting activity...
+      Starting activity...
+      Starting activity...
+
+   And the log of sent event messages are shown repeatedly:
+
+   .. code-block:: text
+
+    Stream 0 sends event 0
+    Stream 1 sends event 0
+    Stream 2 sends event 0
+    Stream 3 sends event 0
+    Stream 0 sends event 0
+    Stream 1 sends event 0
+    Stream 2 sends event 0
+    Stream 3 sends event 0
+    ...
+
+   As observed from the ``cam-service`` terminal, ``cam-service`` is loading
+   four stream deployment files for monitoring. In the following log, the stream
+   messages are received and processed by it:
+
+   .. code-block:: text
+
+      Connection 4 is created.
+      Init Message
+      Stream 84085ddc-bc10-11ed-9a44-7ef9696e0001 configuration is loaded.
+      Init Message
+      Stream 84085ddc-bc10-11ed-9a44-7ef9696e0000 configuration is loaded.
+      Init Message
+      Stream 84085ddc-bc10-11ed-9a44-7ef9696e0002 configuration is loaded.
+      Init Message
+      Stream 84085ddc-bc10-11ed-9a44-7ef9696e0003 configuration is loaded.
+      Start Message
+      Start Message
+      Start Message
+      Start Message
+      Event Message
+      Event Message
+      Event Message
+      Event Message
+      Event Message
+      # Repeated event messages
+      ...
+
+5. Run ``cam-app-example`` again from the Primary Compute terminal with fault
+   injection to event stream 0:
+
+   .. code-block:: text
+
+      cam-app-example -t 3000 -c 10 -s 4 -f -S 0 -T 1000 -a 192.168.1.1
+
+   The fault happens 100ms after stream initialization. At that time
+   ``cam-service`` should detect a stream temporal error with the following
+   output from the ``cam-service`` terminal.
+
+   .. code-block:: text
+
+      #Repeated event messages
+      ...
+      Stream temporal error:
+      stream_name: CAM STREAM 0
+      stream_uuid: 84085ddc-bc10-11ed-9a44-7ef9696e0000
+      event_id: 0
+      time_received: 0
+      time_expected: 1701066141314201
+      ...
+
+6. To leave the DomU1 console, type ``Ctrl-]`` and enter ``send esc``.
+
+Data calibration
+""""""""""""""""
+
+The Critical Application Monitoring project provides a mechanism to improve the
+efficiency of creating large amounts of stream data. This section describes the
+steps to automatically generate stream configuration data (.csc.yml).
+
+1. Enter the DomU1 console using the ``xl`` tool:
+
+   .. code-block:: text
+
+      xl console domu1
+
+   DomU1 can be logged into as ``root`` user without a password in the Linux
+   terminal. This command will provide a console on the DomU1. To exit,
+   enter ``Ctrl-]`` (to access the FVP telnet shell), followed by typing
+   ``send esc`` into the telnet shell and pressing ``Enter``. See the
+   `xl documentation`_ for further details.
+
+2. To improve the readability of commands and output on the DomU1 console, run
+   the command below:
+
+   .. code-block:: text
+
+      stty rows 76 cols 282
+
+3. Start ``cam-app-example`` in calibration mode from the Primary Compute
+   terminal:
+
+   .. code-block:: text
+
+      cam-app-example -t 3000 -c 10 -s 4 -C
+
+   The stream event log files (.csel) for each stream are generated. The output
+   should look like as below:
+
+   .. code-block:: text
+
+      Cam application configuration:
+          Service IP address: 127.0.0.1
+          Service port: 21604
+          UUID base: 84085ddc-bc10-11ed-9a44-7ef9696e
+          Stream count: 4
+          Processing period (ms): 3000
+          Processing count: 10
+          Multiple connection support: false
+          Calibration mode support: true
+          Calibration directory: ./[uuid].csel
+          Fault injection support: false
+          Event(s) interval time (ms): 0
+      Using libcam v0.1
+      Starting activity...
+      Starting activity...
+      Starting activity...
+      Starting activity...
+          Stream 0 sends event 0
+          Stream 1 sends event 0
+          Stream 2 sends event 0
+          Stream 3 sends event 0
+          ...
+
+   List the files generated:
+
+   .. code-block:: text
+
+      ls -1 *.csel
+
+   The stream event log files can be shown as below:
+
+   .. code-block:: text
+
+      84085ddc-bc10-11ed-9a44-7ef9696e0000.csel
+      84085ddc-bc10-11ed-9a44-7ef9696e0001.csel
+      84085ddc-bc10-11ed-9a44-7ef9696e0002.csel
+      84085ddc-bc10-11ed-9a44-7ef9696e0003.csel
+
+4. Run ``cam-tool`` from the Primary Compute terminal to analyze stream event
+log files and convert them to stream configuration files (.csc.yml).
+
+   .. code-block:: text
+
+      cam-tool analyze -i 84085ddc-bc10-11ed-9a44-7ef9696e0000.csel -o 84085ddc-bc10-11ed-9a44-7ef9696e0000.csc.yml
+
+   The analysis result is reported from the Primary Compute terminal as below:
+
+   .. code-block:: text
+
+      CAM event log analyze report:
+      Input event log file:                   84085ddc-bc10-11ed-9a44-7ef9696e0000.csel
+      Output configuration file:              84085ddc-bc10-11ed-9a44-7ef9696e0000.csc.yml
+      Stream UUID:                            84085ddc-bc10-11ed-9a44-7ef9696e0000
+      Stream name:                            CAM STREAM  0
+      Timeout between init and start:         300000
+      Timeout between start and event:        450000
+      Application running times:              1
+      Processing count in each run:           [10]
+
+   The stream configuration files contain human-readable settings used for the
+   deployment phase of a critical application. Users can modify this
+   configuration, for example to fine tune timeout values depending on the
+   system capabilities. Then, use the ``cam-tool pack`` command to generate
+   deployment data.
+
+   .. code-block:: text
+
+      cam-tool pack -i 84085ddc-bc10-11ed-9a44-7ef9696e0000.csc.yml -o 84085ddc-bc10-11ed-9a44-7ef9696e0000.csd
+
+5. Run the ``cam-tool deploy`` command from the Primary Compute terminal to
+   transfer the new stream deployment data to ``cam-service``:
+
+   .. code-block:: text
+
+      cam-tool deploy -i 84085ddc-bc10-11ed-9a44-7ef9696e0000.csd -a 192.168.1.1 -o
+
+   The output on the ``cam-service`` terminal should look like as below, the
+   connection number might change:
+
+   .. code-block:: text
+
+      Connection 4 is created.
+      Deploy Message
+
+      Connection 4 is closed.
+
+6. To leave the DomU1 console, type ``Ctrl-]`` and enter ``send esc``.
+
+7. To shutdown the FVP and terminate the emulation, follow the below steps:
+
+    * Issue a ``shutdown --halt now`` on the Primary Compute terminal. The below
+      messages indicate the shutdown process is complete.
+
+      .. code-block:: text
+
+         [  OK  ] Finished System Power Off.
+         [  OK  ] Reached target System Power Off.
+
+    * Select the terminal titled as ``python3`` where the ``runfvp`` was
+      launched by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP
+      process.
+
+Automated Validation
+^^^^^^^^^^^^^^^^^^^^
+
+To run the configuration menu:
+
+.. code-block:: text
+
+  kas menu kronos/Kconfig
+
+To enable the validation tests:
+  1. Select ``Critical Application Monitoring Demo`` as ``Use-Case``.
+  2. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
+     menu.
+  3. Select ``Save & Build``.
+
+The complete test suite takes around 25 minutes to complete. See
+:ref:`validation_cam_tests` for more details.
+
+The following messages are expected in the output to validate this Use-Case:
+
+.. code-block:: text
+
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_help: PASSED (4.66s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_pc: PASSED (67.51s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si: PASSED (40.87s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si_with_multiple_connection: PASSED (40.60s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_with_custom_uuid_to_service_on_pc: PASSED (73.31s)
+   RESULTS - test_40_cam.CAMTest.test_cam_service_boot_on_si: PASSED (0.00s)
+   RESULTS - test_40_cam.CAMTest.test_cam_service_help: PASSED (4.66s)
+   RESULTS - test_40_cam.CAMTest.test_cam_tool_deploy_to_si: PASSED (41.28s)
+   RESULTS - test_40_cam.CAMTest.test_cam_tool_help: PASSED (9.45s)
+   RESULTS - test_40_cam.CAMTest.test_cam_tool_pack: PASSED (21.67s)
+   RESULTS - test_40_cam.CAMTest.test_data_calibration_on_pc: PASSED (37.99s)
+   RESULTS - test_40_cam.CAMTest.test_logical_check_on_si: PASSED (17.63s)
+   RESULTS - test_40_cam.CAMTest.test_temporal_check_on_si: PASSED (52.49s)
 
 .. _user_guide_reproduce_actuation_demo:
 
