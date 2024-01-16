@@ -228,12 +228,14 @@ Monitoring
 
       cam-tool deploy -i /usr/share/cam-data/84085ddc-bc10-11ed-9a44-7ef9696e0000.csd -a 192.168.1.1
 
-   The output on the ``cam-service`` terminal should look like as below:
+   The output on the ``cam-service`` terminal should look like as below, the
+   connection number might change:
 
    .. code-block:: text
 
       Connection 4 is created.
       Deploy Message
+
       Connection 4 is closed.
 
    After that, the stream data of ``84085ddc-bc10-11ed-9a44-7ef9696e0000`` is
@@ -245,8 +247,25 @@ Monitoring
    .. code-block:: text
 
       cam-tool deploy -i /usr/share/cam-data/84085ddc-bc10-11ed-9a44-7ef9696e0001.csd -a 192.168.1.1
+
+   .. code-block:: text
+
       cam-tool deploy -i /usr/share/cam-data/84085ddc-bc10-11ed-9a44-7ef9696e0002.csd -a 192.168.1.1
+
+   .. code-block:: text
+
       cam-tool deploy -i /usr/share/cam-data/84085ddc-bc10-11ed-9a44-7ef9696e0003.csd -a 192.168.1.1
+
+   The output on the ``cam-service`` terminal after each one of the
+   ``cam-tool deploy`` command should look like as below, the connection number
+   might change:
+
+   .. code-block:: text
+
+      Connection 4 is created.
+      Deploy Message
+
+      Connection 4 is closed.
 
    List all the files from the ``cam-service`` terminal:
 
@@ -403,14 +422,16 @@ steps to automatically generate stream configuration data (.csc.yml).
 
    .. code-block:: text
 
-      ls *.csel
+      ls -1 *.csel
 
    The stream event log files can be shown as below:
 
    .. code-block:: text
 
-      84085ddc-bc10-11ed-9a44-7ef9696e0000.csel  84085ddc-bc10-11ed-9a44-7ef9696e0002.csel
-      84085ddc-bc10-11ed-9a44-7ef9696e0001.csel  84085ddc-bc10-11ed-9a44-7ef9696e0003.csel
+      84085ddc-bc10-11ed-9a44-7ef9696e0000.csel
+      84085ddc-bc10-11ed-9a44-7ef9696e0001.csel
+      84085ddc-bc10-11ed-9a44-7ef9696e0002.csel
+      84085ddc-bc10-11ed-9a44-7ef9696e0003.csel
 
 2. Run ``cam-tool`` from the Primary Compute terminal to analyze stream event
 log files and convert them to stream configuration files (.csc.yml).
@@ -431,7 +452,7 @@ log files and convert them to stream configuration files (.csc.yml).
       Timeout between init and start:         300000
       Timeout between start and event:        450000
       Application running times:              1
-      Processing count in each run:           [2]
+      Processing count in each run:           [10]
 
    The stream configuration files contain human-readable settings used for the
    deployment phase of a critical application. Users can modify this
@@ -449,6 +470,16 @@ log files and convert them to stream configuration files (.csc.yml).
    .. code-block:: text
 
       cam-tool deploy -i 84085ddc-bc10-11ed-9a44-7ef9696e0000.csd -a 192.168.1.1 -o
+
+   The output on the ``cam-service`` terminal should look like as below, the
+   connection number might change:
+
+   .. code-block:: text
+
+      Connection 4 is created.
+      Deploy Message
+
+      Connection 4 is closed.
 
 4. To shutdown the FVP and terminate the emulation, follow the below steps:
 
@@ -489,6 +520,7 @@ The following messages are expected in the output to validate this Use-Case:
    RESULTS - test_40_cam.CAMTest.test_cam_app_example_help: PASSED (3.34s)
    RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_pc: PASSED (48.03s)
    RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si: PASSED (41.69s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si_with_multiple_connection: PASSED (18.82s)
    RESULTS - test_40_cam.CAMTest.test_cam_app_example_with_custom_uuid_to_service_on_pc: PASSED (55.20s)
    RESULTS - test_40_cam.CAMTest.test_cam_service_boot_on_si: PASSED (0.00s)
    RESULTS - test_40_cam.CAMTest.test_cam_service_help: PASSED (3.47s)
