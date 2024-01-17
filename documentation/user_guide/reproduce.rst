@@ -2627,10 +2627,7 @@ Build
 
 The to be updated firmware capsule for testing will be generated together with
 the image for the software stack when building. The firmware capsule is placed
-on a removable storage device (in the case of Kronos, an MMC card). To support
-MMC, the user needs to append the
-``-C ros.board.mmc.p_mmc_file=/path/to/mmc-image-fvp-rd-kronos.wic`` parameter
-when running the FVP.
+on a removable storage device (in the case of Kronos, an MMC card).
 
 To run the configuration menu:
 
@@ -2640,7 +2637,7 @@ To run the configuration menu:
 
 To build a Baremetal Architecture image:
 
-1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
+1. Select ``Critical Application Monitoring Demo`` from the ``Use-Case`` menu.
 2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
 3. Select ``Save & Build``.
 
@@ -2651,9 +2648,7 @@ To start the FVP and connect to the Primary Compute terminal (running Linux):
 
 .. code-block:: text
 
-  kas shell -c \
-    "../layers/meta-arm/scripts/runfvp -t tmux --verbose \
-       -- -C ros.board.mmc.p_mmc_file=${PWD}/build/tmp_baremetal/deploy/images/fvp-rd-kronos/mmc-image-fvp-rd-kronos.wic"
+  kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
 .. note::
 
@@ -2679,36 +2674,10 @@ Run the Demo
 
 To start Secure Firmware Update:
 
-1. The user should wait for the system to boot and for the Linux prompt to
-   appear.
-2. Log into Linux with the ``root`` account.
-
-   Note: The Reference Stack running on the Primary Compute can be logged
-   into as ``root`` user without a password in the Linux terminal. Run the
-   below command to guarantee that all the expected services have been
-   initialized.
-
-   .. code-block:: text
-
-      systemctl is-system-running --wait
-
-   Wait for it to return. The expected terminal output is ``running``.
-
-   Run the following commands to copy the capsules to the EFI UpdateCapsule
-   directory as the firmware update preparation:
-
-   .. code-block:: text
-
-      mount /dev/vda1 /boot
-      mount /dev/mmcblk0p1 /mnt
-      mkdir -p /boot/EFI/UpdateCapsule
-      cp -f /mnt/fw.cap /boot/EFI/UpdateCapsule/
-      reboot
-
-3. Wait for the system to reboot and for the U-Boot ``Hit any key to stop
+1. The user should wait for the U-Boot ``Hit any key to stop
    autoboot`` to appear.
-4. Press any key before the time limit to enter the U-Boot shell.
-5. In the U-Boot shell, run the following commands to start Secure Firmware
+2. Press any key before the time limit to enter the U-Boot shell.
+3. In the U-Boot shell, run the following commands to start Secure Firmware
    Update:
 
    .. note::
@@ -2717,13 +2686,10 @@ To start Secure Firmware Update:
 
    .. code-block:: text
 
-      efidebug boot add -b 1001 cap virtio 0:1 EFI/UpdateCapsule
-      efidebug boot next 1001
-      setenv -e -nv -bs -rt -v OsIndications =0x0000000000000004
-      reset
+      fatload mmc 0:1 0xa2000000 fw.cap
+      efidebug capsule update -v 0xa2000000
 
-6. Wait for the system to reboot to U-Boot again. The system will automatically
-   start upgrading the firmware capsule that was prepared in step 2.
+4. The system will automatically start upgrading the firmware capsule.
    **Note: This time there is no need to press any keys.**
 
    The following logs indicate that the upgrade process has started and is in
@@ -2743,62 +2709,41 @@ To start Secure Firmware Update:
 
    .. code-block:: text
 
-      uefi_capsule_retrieve_images: enter, capsule ptr = 0x0x65000000
-      uefi_capsule_retrieve_images: capsule size = 18284656, image count = 1
-      uefi_capsule_retrieve_images: image 0 version = 3
-      uefi_capsule_retrieve_images: image 0 at 0x65000070, size=18284560
-      uefi_capsule_retrieve_images: exit
-      flash_rss_capsule: enter: image = 0x65000070, size = 16187408, version = 3
-      erase_bank: enter
-      erase_bank: erasing sectors = 4080, from offset = 16748544
-      erase_bank: exit
-      flash_rss_capsule: writing capsule to the flash at offset = 16748544...
-      flash_rss_capsule: images are written to bank offset = 16748544
-      metadata_write: enter: flash addr = 20480, size = 822576996
-      metadata_write: enter: flash addr = 24576, size = 576
-      metadata_write: enter: flash addr = 24576, size = 576
-      metadata_write: success: active = 1, previous = 0
-      flash_rss_capsule: exit
-      flash_fip_capsule: enter: image = 0x65f70070, size = 2097152, version = 3
-      erase_bank: enter
-      erase_bank: erasing sectors = 4080, from offset = 2125824
-      erase_bank: exit
-      flash_fip_capsule: writing capsule to the flash at offset = 2125824...
+      [INF]:[FWU]: get_fwu_agent_state: enter, boot_index = 0
+      [INF]:[FWU]: get_fwu_agent_state: enter, boot_index = 0
+      [INF]:[FWU]: FMP image update: image id = 1
+      [INF]:[FWU]: FMP image update: status = 0, version=7, last_attempt_version=0.
+      [INF]: [FWU]: Host acknowledged.
+      [INF]:[FWU]: pack_image_info:207 ImageInfo size = 105, ImageName size = 14, ImageVersionName size = 14
+      [INF]: [FWU]: Getting image info succeeded.
+      [INF]:[FWU]: get_fwu_agent_state: enter, boot_index = 0
+      [INF]:[FWU]: uefi_capsule_retrieve_images: enter, capsule ptr = 0x0x65000000
+      [INF]:[FWU]: uefi_capsule_retrieve_images: capsule size = 18284656, image count = 1
+      [INF]:[FWU]: uefi_capsule_retrieve_images: image 0, version = 3
+      [INF]:[FWU]: uefi_capsule_retrieve_images: image 0 at 0x65000070, size=18284560
+      [INF]:[FWU]: flash_rss_capsule: enter: image = 0x65000070, size = 16187408, version = 3
+      [INF]:[FWU]: erase_bank: erasing sectors = 4080, from offset = 16748544
+      [INF]:[FWU]: flash_rss_capsule: writing capsule to the flash at offset = 16748544...
 
-   **Note: This step will take about 20 minutes.**
+   **Note: This step will take about 10 minutes.**
 
-7. The system will reset after a successful firmware update and boot with the
+5. The system will reset after a successful firmware update and boot with the
    updated firmware. This can be confirmed by checking the terminal logs; if
    there are lines in the log like below, then the upgrade was successful and
    the system has successfully rebooted with the updated firmware.
-
-   In ``terminal_ns_uart0``:
-
-   .. code-block:: text
-
-      Applying capsule fw.cap succeeded.
-      Reboot after firmware update.
 
    In ``terminal_rss_uart``:
 
    .. code-block:: text
 
-      metadata_validate: enter:
-      metadata_validate: success
-      metadata_read: success: active = 1, previous = 0
-      private_metadata_read: enter
-      private_metadata_read: success: boot_index = 1
-      get_fwu_agent_state: enter, boot_index=1
-      get_fwu_agent_state: exit: FWU_AGENT_STATE_REGULAR
+      [INF]: [FWU]: Flashing the image succeeded.
+      [INF]: [FWU]: Performing system reset...
+      ...
+      ...
+      [INF]:[FWU]: get_fwu_agent_state: enter, boot_index = 1
 
-8. The system will eventually boot into Linux using the upgraded firmware.
+6. The system will eventually boot into Linux using the upgraded firmware.
 
-9. To shutdown the FVP and terminate the emulation, select the terminal titled
+7. To shutdown the FVP and terminate the emulation, select the terminal titled
    as ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0``
    and press ``Ctrl-c`` to stop the FVP process.
-
-   .. note::
-
-      Due to the limitations of the FVP, the updated firmware is lost when the
-      FVP is terminated, so it is not expected to boot with the updated firmware
-      when re-running the FVP again after ``Ctrl-c``.
