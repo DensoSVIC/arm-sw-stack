@@ -423,3 +423,16 @@ The script that implements the tests is
  * test_sve_config
       This test verifies that the SVE2 configurations on the Primary Compute
       are valid in both virtualization and baremetal cases.
+
+.. _validation_secure_firmware_update:
+
+Integration Tests Validating Secure Firmware Update
+===================================================
+
+The script that implements the tests is
+:kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_00_fwu.py`
+
+ * test_securefirmwareupdate
+      The test waits for U-Boot to start, starts the ``Secure Firmware
+      Update`` process and ensures that the ``Secure Firmware Update``
+      was completed successfully by monitoring the RSS terminal output.

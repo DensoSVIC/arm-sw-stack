@@ -527,7 +527,7 @@ To enable the validation tests:
      menu.
   3. Select ``Save & Build``.
 
-The complete test suite takes around 11 minutes to complete on
+The complete test suite takes around 20 minutes to complete on
 an x86_64 host. See :ref:`validation_cam_tests` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
@@ -2747,3 +2747,28 @@ To start Secure Firmware Update:
 7. To shutdown the FVP and terminate the emulation, select the terminal titled
    as ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0``
    and press ``Ctrl-c`` to stop the FVP process.
+
+Automated Validation
+^^^^^^^^^^^^^^^^^^^^
+
+To run the configuration menu:
+
+.. code-block:: text
+
+  kas menu kronos/Kconfig
+
+To enable the validation tests:
+
+  1. Select ``Critical Application Monitoring Demo`` as ``Use-Case``.
+  2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+  3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
+     menu.
+  4. Select ``Save & Build``.
+
+The following messages are expected in the output to validate this Use-Case:
+
+.. code-block:: text
+
+  RESULTS - test_00_fwu.SecureFirmwareUpdateTest.test_securefirmwareupdate: PASSED (414.85s)
+
+See :ref:`validation_secure_firmware_update` for more details.
