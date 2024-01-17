@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -64,11 +64,25 @@ below.)
 Safety States
 =============
 
-The SSU state machine has 4 safety states (``TEST``, ``SAFE``, ``ERRN`` and
-``ERRC``) and 4 possible control signals from software (``compl_ok``,
-``nce_ok``, ``ce_not_ok`` and ``nce_not_ok``). There are also 3 signals
-(``nc_error``, ``c_error`` and ``reset``) connected in hardware to the root
-fault device.
+The SSU state machine has 4 safety states:
+
+ * ``TEST``: Self-test
+ * ``SAFE``: Safe operation
+ * ``ERRN``: Non-critical fault detected
+ * ``ERRC``: Critical fault detected
+
+Control signals from software:
+
+ * ``compl_ok``: Diagnostics complete or non-critical fault cleared
+ * ``nce_ok``: Non-critical fault diagnosed
+ * ``ce_not_ok``: Critical fault diagnosed
+ * ``nce_not_ok``: Non-correctable non-critical fault
+
+Control signals connected in hardware to the root fault device:
+
+ * ``nc_error``: Non critical error
+ * ``c_error``: Critical error
+ * ``reset``
 
 ``TEST`` is the initial state on boot. The software is responsible for
 transitioning to ``SAFE`` after the successful completion of a self-test
@@ -83,11 +97,34 @@ these signals.
 .. image:: ../images/ssu_states.png
    :align: center
 
+Finite State Machine (FSM) States and Transitions:
+
+ * From reset the FSM defaults to the ``TEST`` state.
+ * It shall stay in this state until SW has completed any power up tests. If the SW
+   controlled tests pass then a write can be issued indicating that to move the FSM
+   to the ``SAFE`` state.
+ * If the tests fail then a write can be issued to move the FSM to the ``ERRN`` state,
+   indicating that an error has occurred that may be resolvable.
+ * After further tests if the SW can issue a write depending on whether it was
+   determined the error has been resolved or not, moving the FSM to ``SAFE`` it was
+   resolved or ``ERRC`` if it was not.
+
+   When in ``SAFE`` mode the FSM can only be moved after either:
+
+    - a reset moving it back to ``TEST``
+    - a non-critical error interrupt moving it to ``ERRN``
+    - a critical error interrupt moving it to ``ERRC``
+    - if a critical and non-critical error occur in the same time the critical error
+      takes precedence and the FSM shall move to ``ERRC``
+
 .. _design_applications_fault_mgmt_design:
 
 ******
 Design
 ******
+
+The Fault Management subsystem for the Safety Island implementation and functionality
+are grounded in the Zephyr real-time operating system (RTOS) environment.
 
 Drivers
 =======
