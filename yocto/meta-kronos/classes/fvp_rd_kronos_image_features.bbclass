@@ -175,6 +175,10 @@ TEST_SUITES_EXTRA:si0-bridge-ethernet0 = " test_30_si0_bridge_ethernet0"
 
 TEST_SUITES_EXTRA:cam = " test_40_cam"
 
+TEST_SUITES_EXTRA:append:cam:baremetal = " \
+    test_00_fwu \
+"
+
 TEST_SUITES_EXTRA:nosve = ""
 
 TEST_SUITES_EXTRA:si-psa-storage-tests = " test_10_si_psa_arch_tests"
