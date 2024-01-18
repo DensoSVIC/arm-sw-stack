@@ -14,7 +14,7 @@ specific generations of Arm IP.
 
 
 The |Arm| Kronos Reference Design targets the Automotive segment and introduces
-the concept of a high-performance |Neoverse| V3 Application Processor (Primary
+the concept of a high-performance |Neoverse| V3AE Application Processor (Primary
 Compute) system augmented with a |Cortex|-R82AE based Safety Island, for
 scenarios where additional system safety monitoring is required. The system
 additionally includes a Runtime Security Subsystem (RSS) used for the secure

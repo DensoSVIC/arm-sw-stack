@@ -29,7 +29,7 @@ Supporting driver implementations are provided for the following |Arm| hardware
 designs:
 
  * A Device Fault Management Unit (Device FMU): a fault device attached to a
-   GIC-700AE interrupt controller.
+   GIC-720AE interrupt controller.
  * A System Fault Management Unit (System FMU): a fault device which collates
    faults from upstream FMUs.
  * A Safety Status Unit (SSU): a safety state device which manages a state
@@ -144,7 +144,7 @@ Fault Management Unit
 
 The FMU driver is an implementation of a fault device. Inside the driver, one
 of two driver implementations is selected at runtime to handle differences
-between the GIC-700AE and the System FMU programmers' views.
+between the GIC-720AE and the System FMU programmers' views.
 
 It is expected that interrupts are only defined for root FMUs. If the root FMU
 is a System FMU, it will collate faults from multiple upstream sources. The
@@ -231,7 +231,7 @@ The Kronos FVP models:
 
  * An SSU in the Safety Island.
  * A System FMU in the Safety Island, attached to the SSU.
- * An FMU attached to the GIC-700AE in the Primary Compute, attached to the
+ * An FMU attached to the GIC-720AE in the Primary Compute, attached to the
    System FMU.
 
 .. image:: ../images/kronos_fault_device_tree.png
@@ -278,7 +278,7 @@ evaluation and validation purposes. Its sub-commands are described below.
 
 The ``FAULT_ID`` above refers to a 32-bit integer whose valid values are
 device-specific (e.g. ``0x100`` represents an *APB access error* for a System
-FMU but a *GICD Clock Error* for a GIC-700AE FMU) and opaque to the driver
+FMU but a *GICD Clock Error* for a GIC-720AE FMU) and opaque to the driver
 itself.
 
 The following are only available if ``CONFIG_FAULT_MGMT_SAFETY`` is enabled:

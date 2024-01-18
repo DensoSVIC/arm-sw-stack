@@ -282,7 +282,8 @@ Patches for the SCP are included at
 * Power on Safety Island.
 * Reset LCP.
 * Power on PC.
-* Add Primary Compute and Safety Island shared SRAM to CMN memory region map.
+* Add Primary Compute and Safety Island shared SRAM to Interconnect memory
+  region map.
 
 ***************
 Primary Compute
@@ -351,7 +352,7 @@ OP-TEE
 ======
 
 `OP-TEE`_ is a Trusted Execution Environment (TEE) designed as companion to a
-Normal world Linux kernel running on Neoverse-V3 cores using the `TrustZone`_
+Normal world Linux kernel running on Neoverse-V3AE cores using the `TrustZone`_
 technology. OP-TEE implements TEE Internal Core API v1.1.x which is the API
 exposed to Trusted Applications and the TEE Client API v1.0, which is the API
 describing how to communicate with a TEE, further details of which can be

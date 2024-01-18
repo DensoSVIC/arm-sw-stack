@@ -1953,7 +1953,7 @@ Run the demo
 ^^^^^^^^^^^^
 
 The instructions below demonstrate injecting faults into both the System FMU
-and GIC-700AE FMU and how this affects the SSU safety state.
+and GIC-720AE FMU and how this affects the SSU safety state.
 
  1. Start by enumerating the configured fault device tree:
 
@@ -1963,7 +1963,7 @@ and GIC-700AE FMU and how this affects the SSU safety state.
 
     The output shows the root fault device ``fmu@2a510000`` (the System FMU),
     after which are the attached safety state device ``ssu@2a500000`` and
-    fault device ``fmu@2a570000`` (the GIC-700AE FMU):
+    fault device ``fmu@2a570000`` (the GIC-720AE FMU):
 
     .. code-block:: text
 
@@ -2038,14 +2038,14 @@ and GIC-700AE FMU and how this affects the SSU safety state.
       State: SAFE (0x3)
 
  6. Next, inject an *SPI collator external error* (``0x20000a00``) into the
-    GIC-700AE FMU:
+    GIC-720AE FMU:
 
     .. code-block:: text
 
       fault inject fmu@2a570000 0x20000a00
 
     This results in a similar output to above, except that the received fault
-    was critical and the safety status is now ``ERRC``. (GIC-700AE FMU faults
+    was critical and the safety status is now ``ERRC``. (GIC-720AE FMU faults
     are critical by default, but this can be changed from the shell using the
     ``fault set_critical`` sub-command).
 

@@ -391,7 +391,7 @@ of faults in the FMU device tree:
     of internal faults of the System FMU.
   * ``test_system_fmu_internal_set_enabled`` validates disabling System FMU
     faults.
-  * ``test_gic_fmu_inject`` validates the injection and reporting of GIC-700AE
+  * ``test_gic_fmu_inject`` validates the injection and reporting of GIC-720AE
     FMU faults (critical and non-critical).
   * ``test_fmu_fault_count`` validates the reporting of the overall fault
     count.
