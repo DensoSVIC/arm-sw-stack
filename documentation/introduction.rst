@@ -8,25 +8,32 @@
 Introduction
 ############
 
-The |Arm| Kronos Reference Design is a Fixed Virtual Platform (FVP) based
-system that introduces the concept of a high-performance |Neoverse| V3
-Application Processor (Primary Compute) system augmented with an |Cortex|-R82AE
-based Safety Island, for scenarios where additional system safety monitoring is
-required. The Reference Design additionally includes a Runtime Security
-Subsystem (RSS) used for the secure boot of the system elements and the runtime
-Secure Services.
+A Reference Design (RD) is a collection of resources to provide a representative
+view of typical compute subsystems that can be designed and implemented using
+specific generations of Arm IP.
 
-Together, this FVP model and software stack allow for the exploration of
-baremetal and XEN hypervisor hosted Linux instances, Primary Compute to/from
-Safety Island communication mechanisms (for both baremetal and virtualized
-scenarios), and boot flows coordinated via a system root of trust. The Primary
-Compute firmware stack of Trusted Firmware-A, U-Boot, OP-TEE and Trusted
-Services is also aligned with the technologies and goals of the
-|Arm SystemReadyTM| IR program.
 
-Further technical details of the Kronos Reference Design FVP can be found at
-`Arm Kronos Reference Design Technical Overview`_, with an
-introduction to FVPs available in the `Fast Models FVP Reference Guide`_.
+The |Arm| Kronos Reference Design targets the Automotive segment and introduces
+the concept of a high-performance |Neoverse| V3 Application Processor (Primary
+Compute) system augmented with a |Cortex|-R82AE based Safety Island, for
+scenarios where additional system safety monitoring is required. The system
+additionally includes a Runtime Security Subsystem (RSS) used for the secure
+boot of the system elements and the runtime Secure Services.
+
+A Fixed Virtual Platform (FVP) is available as part of the Kronos Reference
+Design.
+
+This documentation covers the Kronos reference software stack which together
+with the FVP allow for the exploration of baremetal and XEN hypervisor hosted
+Linux instances, Primary Compute to/from Safety Island communication mechanisms
+(for both baremetal and virtualized scenarios), and boot flows coordinated via a
+system root of trust. The Primary Compute firmware stack of Trusted Firmware-A,
+U-Boot, OP-TEE and Trusted Services is also aligned with the technologies and
+goals of the |Arm SystemReadyTM| IR program.
+
+For more details of the Kronos Reference Design including FVP and further
+technical documentation can be found at
+`Arm Kronos Reference Design Technical Overview`_.
 
 .. _introduction_safety_considerations:
 
