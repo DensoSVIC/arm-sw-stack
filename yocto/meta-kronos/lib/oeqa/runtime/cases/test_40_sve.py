@@ -87,7 +87,7 @@ class SVETestDomU1(SVETestBase):
         if "virtualization" not in cls.td.get("IMAGE_FEATURES", "").split():
             raise unittest.SkipTest(
                 f"{cls.__name__} skipped because"
-                "virtualization is not in IMAGE_FEATURES"
+                " 'virtualization' is not in IMAGE_FEATURES"
             )
         super(SVETestDomU1, cls).setUpClass()
 

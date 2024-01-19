@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -77,7 +77,8 @@ class PTPTestDomU1(PTPTestBase):
         if ('virtualization' not in cls.td.get('IMAGE_FEATURES', '').split()):
             import unittest
             raise unittest.SkipTest(f"{cls.__name__} skipped because"
-                                    "virtualization is not in IMAGE_FEATURES")
+                                    " 'virtualization' is not in"
+                                    " IMAGE_FEATURES")
         super().setUpClass()
         cls.linuxptp_ifaces = ['ethsi0']
         cls.dom0_prompt = rf'root@(?!{cls.domu_hostname}){cls.hostname}:~#'
