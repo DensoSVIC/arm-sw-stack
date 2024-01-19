@@ -12,7 +12,7 @@
 # 1) Include parsec-se-driver-crates.inc instead of parsec-se-driver.inc
 # 2) Remove mbedtls from SRC_URI and add it to DEPENDS
 # 3) Export MBEDTLS_INCLUDE_DIR directly in the recipe
-# 4) Update parsec-se-driver to be compatible with nanbield.
+# 4) Upgrade parsec-se-driver to version 0.6.1.
 #
 
 SUMMARY = "Parsec Secure Element Driver"
@@ -26,12 +26,12 @@ DEPENDS = "mbedtls"
 PV = "${PARSEC_version}+git${SRCPV}"
 
 SRC_URI = "git://github.com/parallaxsecond/parsec-se-driver.git;protocol=https;branch=main"
-SRCREV = "e59ad346eea4a896f8e4aa4d08d48a7ab4da72dd"
+SRCREV = "3cefcf9e527f998f4ad43b4ea807fc3ea44769eb"
 S = "${WORKDIR}/git"
 
 inherit cargo
 
-PARSEC_version = "0.6.0"
+PARSEC_version = "0.6.1"
 
 export MBEDTLS_INCLUDE_DIR = "${STAGING_INCDIR}"
 
@@ -45,5 +45,4 @@ do_install() {
     install -m 755 "${B}/target/${RUST_TARGET_SYS}/release/libparsec_se_driver.a" "${D}/${libdir}"
 }
 
-require parsec-se-driver-fvp-rd-kronos.inc
 include parsec-se-driver-crates.inc
