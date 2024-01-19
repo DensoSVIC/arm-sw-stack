@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -12,6 +12,7 @@ from oeqa.core.decorator.data import skipIfDataVar
 
 TCP_TEST_DURATION = 1
 UDP_TEST_DURATION = 3
+
 
 class HIPCTestBase(OERuntimeTestCase):
     linux_console = 'default'
@@ -68,9 +69,11 @@ class HIPCTestBase(OERuntimeTestCase):
 
     def ping(self, cl_addr, cl_console, peer_addr, vlan_id):
 
-        # For this test, 'vlan_id' must be one of the following valid values: 100, 200, or 300.
-        # If 'vlan_id' is set to -1, it will exclude all VLAN sub test cases. Additionally,
-        # if 'vlan_id' is set to -1, it will also disable the A <> R ping and enable R <> R
+        # For this test, 'vlan_id' must be one of the
+        # following valid values: 100, 200, or 300.
+        # If 'vlan_id' is set to -1, it will exclude all VLAN sub test cases.
+        # Additionally, if 'vlan_id' is set to -1,
+        # it will also disable the A <> R ping and enable R <> R
 
         self.target.sendline(cl_console)
         self.target.expect(cl_console, self.si_prompt, timeout=120)
@@ -94,10 +97,11 @@ class HIPCTestBase(OERuntimeTestCase):
             self.target.sendline(self.linux_console, f'ping {cl_addr} -c 10')
             for _ in range(0, 10):
                 self.target.expect(self.linux_console,
-                                rf'\d+ bytes from {re.escape(cl_addr)}: '
-                                r'seq=\d+ ttl=\d+ time=.* ms', timeout=120)
+                                   rf'\d+ bytes from {re.escape(cl_addr)}: '
+                                   r'seq=\d+ ttl=\d+ time=.* ms', timeout=120)
             self.target.sendline(self.linux_console)
-            self.target.expect(self.linux_console, self.linux_prompt, timeout=120)
+            self.target.expect(self.linux_console, self.linux_prompt,
+                               timeout=120)
 
     def check_error_messages(self, server, client):
         def error_check(allow_list, messages):
@@ -106,12 +110,14 @@ class HIPCTestBase(OERuntimeTestCase):
             # 'ERROR: [...]', 'WARN: [...]', 'WARNING: [...]'
             # and also zephyr shell possible errors:
             # '<err> [...]', '<wrn> [...]'
-            msg_regex = br'(ERROR:|WARN:|WARNING:|<err>|<wrn>)\s(?P<msg>.*)\r\n'
+            msg_regex = br'(ERROR:|WARN:|WARNING:|<err>|<wrn>)\s'
+            br'(?P<msg>.*)\r\n'
             matches = re.finditer(msg_regex, messages)
 
             for line in [match.group("msg") for match in matches]:
                 if not any(re.match(allow, line) for allow in allow_list):
-                    decode_line = line.decode("utf-8", errors="replace").strip()
+                    decode_line = line.decode("utf-8",
+                                              errors="replace").strip()
                     error_lines.append(decode_line)
 
             return error_lines
@@ -122,8 +128,8 @@ class HIPCTestBase(OERuntimeTestCase):
         # iperf or zperf, this list can contain regex, please write them to
         # match the whole error message and not only part of it.
         allowed_messages = [
-            b'net_tcp: context->tcp == NULL',
-            b'net_gptp: Not AS capable: \d+ ns > \d+ ns',
+            br'net_tcp: context->tcp == NULL',
+            br'net_gptp: Not AS capable: \d+ ns > \d+ ns',
         ]
         server_output = self.target.before(server)
         errors = error_check(allowed_messages, server_output)
@@ -338,7 +344,6 @@ class HIPCTestBase(OERuntimeTestCase):
         finally:
             self.target.sendline(server_cl, 'zperf udp download stop')
             self.target.expect(server_cl, 'UDP server stopped', timeout=120)
-
 
     @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
     def test_ping_cluster0(self):

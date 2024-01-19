@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -43,7 +43,8 @@ class ParsecTest(OERuntimeTestCase):
                              % output)
 
             status, pid = self.run_cmd('pidof ssl_server', timeout=20)
-            self.assertEqual(status, 0, msg='Failed to get ssl_server pid.\n %s'
+            self.assertEqual(status, 0,
+                             msg='Failed to get ssl_server pid.\n %s'
                              % pid)
 
             status, output = self.run_cmd(f'ps -P {pid}', timeout=30)
@@ -55,8 +56,7 @@ class ParsecTest(OERuntimeTestCase):
                     -v /usr/bin/ssl_client1:/usr/bin/ssl_client1 \
                     --network host \
                     {self.mirror_docker}/ubuntu:22.04 \
-                    ssl_client1', \
-                    timeout=800)
+                    ssl_client1', timeout=800)
             self.assertEqual(status, 0, msg='ssl_client1 failed.\n %s'
                              % output)
         finally:
@@ -71,6 +71,8 @@ class ParsecTest(OERuntimeTestCase):
             self.assertEqual(status, 0, msg='Synchronizing caches failed.\n %s'
                              % output)
 
-            status, output = self.run_cmd('cat /tmp/ssl_server.log', timeout=30)
-            self.assertEqual(status, 0, msg='Failed to get ssl_server logs.\n%s'
+            status, output = self.run_cmd('cat /tmp/ssl_server.log',
+                                          timeout=30)
+            self.assertEqual(status, 0,
+                             msg='Failed to get ssl_server logs.\n%s'
                              % output)

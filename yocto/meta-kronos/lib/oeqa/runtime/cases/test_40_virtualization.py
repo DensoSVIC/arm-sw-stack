@@ -84,8 +84,8 @@ class DomU2Test(DomUTest):
     def setUpClass(cls):
         if int(cls.td.get('DOMU_INSTANCES', 0)) < 2:
             import unittest
-            raise unittest.SkipTest("FVPDevicesTestDomU2 skipped because DomU2 is"
-                                    " not generated in this build")
+            raise unittest.SkipTest("FVPDevicesTestDomU2 skipped because "
+                                    "DomU2 is not generated in this build")
         super().setUpClass()
 
 
@@ -103,11 +103,15 @@ class DomUFVPDevicesTestOverrides:
         self.skipTest("'virtiorng' not tested in DomU")
 
 
-class FvpDevicesTestDomU1(DomU1Test, DomUFVPDevicesTestOverrides, FvpDevicesTest):
+class FvpDevicesTestDomU1(DomU1Test,
+                          DomUFVPDevicesTestOverrides,
+                          FvpDevicesTest):
     pass
 
 
-class FvpDevicesTestDomU2(DomU2Test, DomUFVPDevicesTestOverrides, FvpDevicesTest):
+class FvpDevicesTestDomU2(DomU2Test,
+                          DomUFVPDevicesTestOverrides,
+                          FvpDevicesTest):
     pass
 
 
@@ -118,9 +122,11 @@ class ParsecDomU1Test(DomU1Test, ParsecTest):
 class ParsecDomU2Test(DomU2Test, ParsecTest):
     pass
 
+
 # Passthrough PCI AHCI SATA disk to DomU1
 class GICv4DomU1Test(DomU1Test, GICv4Test):
     pass
+
 
 class PtestRunnerDom0Test(OERuntimeTestCase):
     @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])

@@ -177,7 +177,7 @@ class FaultMgmtTest(OERuntimeTestCase):
             if line.startswith("Fault history:"):
                 fault_history_section = True
             elif fault_history_section and \
-                line.startswith("Fault received (non-critical):"):
+                    line.startswith("Fault received (non-critical):"):
                 cleaned_lines.append(line)
             elif fault_history_section:
                 # Exclude any line that does not follow the pattern

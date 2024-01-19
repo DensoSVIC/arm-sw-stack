@@ -110,7 +110,8 @@ class CAMTest(OERuntimeTestCase):
             self.assertEqual(status, 0,
                              msg=f'Failed to run cam-app-example.')
 
-    @OETestDepends(['test_40_cam.CAMTest.test_cam_app_example_to_service_on_pc'])
+    @OETestDepends([
+        'test_40_cam.CAMTest.test_cam_app_example_to_service_on_pc'])
     def test_cam_tool_pack(self):
         self.custom_uuid_config()
 
@@ -146,7 +147,8 @@ class CAMTest(OERuntimeTestCase):
                        ' configuration!'))
 
     @OETestDepends([
-        'test_40_cam.CAMTest.test_cam_app_example_with_custom_uuid_to_service_on_pc'])
+        'test_40_cam.CAMTest.test_cam_app_example'
+        '_with_custom_uuid_to_service_on_pc'])
     def test_data_calibration_on_pc(self):
         uuid_base = self.default_uuid_base
         csc_file = f'{self.cam_data_path}/calibration_generate.csc.yml'
@@ -224,7 +226,8 @@ class CAMTest(OERuntimeTestCase):
         self.assertEqual(status, 0, msg='cam-app-example failed.')
 
     @OETestDepends([
-        'test_40_cam.CAMTest.test_cam_app_example_to_service_on_si_with_multiple_connection'])
+        'test_40_cam.CAMTest.test_cam_app_example_to_service'
+        '_on_si_with_multiple_connection'])
     def test_logical_check_on_si(self):
         event_interval = "0,100"
 
