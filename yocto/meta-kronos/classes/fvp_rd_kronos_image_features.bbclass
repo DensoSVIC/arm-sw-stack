@@ -249,7 +249,7 @@ TEST_SUITES:remove:nosve = "\
     test_40_gicv4_1 \
     test_30_hipc_virtualization \
     test_40_parsec \
-    test_30_ptp_base \
+    test_30_ptp \
     test_00_secure_partition \
     test_30_si0_bridge_ethernet0 \
     test_10_si_psa_arch_tests \
