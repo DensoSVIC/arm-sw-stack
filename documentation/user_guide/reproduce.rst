@@ -20,7 +20,8 @@ different :ref:`Use-Cases <introduction_use_cases>` via a set of configuration
 options provided in the configuration menu.
 
 .. note::
-  All command examples on this page can be copied by clicking the copy button.
+  All command examples on this page from the HTML document format can be copied
+  by clicking the copy button.
 
 .. _user_guide_reproduce_environment_setup:
 
@@ -58,7 +59,7 @@ Install Dependencies
 
     For more details on kas installation, see
     `kas Dependencies & installation`_.
-  * Install tmux (required for ``runfvp`` tool):
+  * Install tmux (required for the ``runfvp`` tool):
 
     .. code-block:: text
 
@@ -71,7 +72,7 @@ Download
 ********
 
 .. note::
-  Performing the builds and FVP execution in a tmux session is mandatory for
+  Performing the builds and FVP execution in **a tmux session is mandatory** for
   Kronos because the ``runfvp`` tool that invokes the Kronos FVP expects the
   presence of a tmux session to attach its spawned tmux windows for console
   access to the processing elements. Please refer to
@@ -80,18 +81,28 @@ Download
   ``set-option -g history-limit 3000`` to ``~/.tmux.conf`` before starting
   tmux.
 
+Start a new tmux session, via:
+
+.. code-block:: text
+  :substitutions:
+
+  tmux new-session -s kronos
+
+To reconnect to an existing tmux session:
+
+.. code-block:: text
+  :substitutions:
+
+  tmux attach -t kronos
+
 Download the ``kronos`` repository using Git and checkout on the kronos branch,
 via:
 
 .. code-block:: text
   :substitutions:
 
-  # Change the tag or branch to be fetched by replacing the value supplied to
-  # the --branch parameter option
-
   mkdir -p ~/kronos
   cd ~/kronos
-  tmux new-session -s kronos
   git clone |kronos remote| --branch |kronos version|
 
 *************************
@@ -107,6 +118,9 @@ Kas Build
 The Kronos stack has a kas configuration menu that can be used to build the
 :ref:`introduction_use_cases`. It can also apply customizable parameters to build
 different Reference Stack Architecture types.
+
+.. note::
+  Before running the configuration menu, ensure it is done inside a tmux session.
 
 To run the configuration menu:
 
