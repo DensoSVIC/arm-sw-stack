@@ -231,6 +231,10 @@ ethsi
 EVNT
 extlinks
 Fancellu
+fancyfoot
+fancyhead
+fancyhf
+fancypagestyle
 fasteoi
 fatfs
 fbaa
@@ -242,6 +246,7 @@ finit
 fiptool
 fmu
 fmus
+footrulewidth
 fprintf
 freeable
 fstype
@@ -265,6 +270,7 @@ grubaa
 gtest
 GUUID
 HARDLIM
+headrulewidth
 helloworld
 heredocs
 HIGHDMA
@@ -344,6 +350,7 @@ kzalloc
 LAYERDEPENDS
 LAYERDIR
 LAYERSERIES
+leftmark
 libahci
 libc
 libcam
@@ -370,6 +377,8 @@ LLRAM
 loadpolicy
 luca
 mainmenu
+makeatletter
+makeatother
 MALLOC
 mandatoryvar
 mandir
@@ -453,6 +462,7 @@ noreboot
 nosve
 NOTFOUND
 notifyid
+nouppercase
 NRDY
 nspe
 numpy
@@ -552,11 +562,14 @@ RDEPENDS
 rdkronos
 readl
 readreg
+releasename
 remoteproc
+renewcommand
 reportsettings
 requireinclude
 requirenotfound
 resm
+rightmark
 rmem
 ROOTFS
 rootwait
@@ -614,6 +627,7 @@ SOLIBS
 SOLIBSDEV
 sourceparams
 SOURCEPATH
+sphinxheadercomma
 spinlock
 SPMC
 sram
@@ -657,7 +671,9 @@ sysroots
 systemready
 sysvinit
 testimage
+textcopyright
 tfmxxx
+thepage
 THISDIR
 THRTL
 tickless

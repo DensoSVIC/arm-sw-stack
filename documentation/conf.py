@@ -97,6 +97,41 @@ copybutton_prompt_is_regexp = True
 copybutton_prompt_text = r'\$ '
 copybutton_remove_prompts = True
 
+# LaTeX settings for pdf generation
+latex_toplevel_sectioning = None
+latex_copyright = copyright
+latex_elements = {
+    'releasename': "Version",
+    'preamble': r'''
+\makeatletter
+   \fancypagestyle{normal}{
+% this is the footer section in sphinx.sty
+    \fancyhf{}
+    \fancyfoot[LE,RO]{{\py@HeaderFamily\thepage}}
+% comment this out and
+    %\fancyfoot[LO]{{\py@HeaderFamily\nouppercase{\rightmark}}}
+    %\fancyfoot[RE]{{\py@HeaderFamily\nouppercase{\leftmark}}}
+% add copyright content
+    \fancyfoot[LO,RE]{{\textcopyright\ Copyright latex_copyright}}
+% again original content
+    \fancyhead[LE,RO]{{\py@HeaderFamily \@title\sphinxheadercomma\py@release}}
+    \renewcommand{\headrulewidth}{0.4pt}
+    \renewcommand{\footrulewidth}{0.4pt}
+    }
+% this is applied to each opening page of a chapter
+   \fancypagestyle{plain}{
+    \fancyhf{}
+    \fancyfoot[LE,RO]{{\py@HeaderFamily\thepage}}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0.4pt}
+% add copyright content for example at left of footer on odd pages,
+% which is the case for chapter opening page by default
+    \fancyfoot[LO,RE]{{\textcopyright\ Copyright latex_copyright}}
+    }
+\makeatother
+'''.replace("latex_copyright", latex_copyright),
+}
+
 # The variable yocto_version needs to come first because
 # there are variables that refer to it later.
 yocto_version = "nanbield"
@@ -104,6 +139,10 @@ yocto_version = "nanbield"
 kronos_version = os.environ.get(
     'RTD_ENV_KRONOS_VERSION',
     'main')
+
+# The following variables are mostly used for pdf generation
+version = kronos_version
+release = kronos_version
 
 meta_arm_version = os.environ.get(
     'RTD_ENV_META_ARM_VERSION',

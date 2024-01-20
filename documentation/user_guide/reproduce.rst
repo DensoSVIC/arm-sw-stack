@@ -22,6 +22,8 @@ options provided in the configuration menu.
 .. note::
   All command examples on this page from the HTML document format can be copied
   by clicking the copy button.
+  In the PDF document format, be aware that special characters are added when
+  lines get wrapped.
 
 .. _user_guide_reproduce_environment_setup:
 
