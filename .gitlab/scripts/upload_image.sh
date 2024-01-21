@@ -5,8 +5,8 @@
 # SPDX-License-Identifier: MIT
 
 KASFILES=$(./.gitlab/scripts/jobs-to-kas "${KAS_CONFIGS}")
-export FVP_PV=\
-$(kas shell --update --force-checkout "${KASFILES}" -c \
+export FVP_PV
+FVP_PV=$(kas shell --update --force-checkout "${KASFILES}" -c \
 "bitbake-getvar --value -r fvp-rd-kronos-native PV")
 
 if [[ -d "${DEPLOY_DIR}" ]]; then
@@ -28,6 +28,7 @@ EOF
 fi
 
 # Collect environment variables and attach them to the build
+export RECIPEINFO
 RECIPEINFO="${DEPLOY_DIR}/licenses/fvp-rd-kronos-native/recipeinfo"
 jf rt build-collect-env \
   "${ARTIFACTORY_IMAGE_BUILD_PATH}" "${CI_PIPELINE_ID}"
