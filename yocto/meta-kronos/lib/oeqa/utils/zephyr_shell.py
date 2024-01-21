@@ -4,7 +4,7 @@
 #
 # Original file: SPDX-FileCopyrightText: <text>Copyright (c) 2023 Nordic
 # Semiconductor ASA</text>
-# Modifications: SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited
+# Modifications: SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited
 # and/or its affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -22,13 +22,12 @@ import time
 
 
 class Shell:
-    def __init__(self, target, console, logger, prompt: str = 'uart:~$',
-                 timeout=None):
+    def __init__(self, target, console, logger, prompt: str = 'uart:~$'):
         self.target = target
         self.console = console
         self.logger = logger
         self.prompt = prompt
-        self.base_timeout: float = timeout or 30.0
+        self.base_timeout: float = 30.0
 
     def clear_buffer(self):
         try:

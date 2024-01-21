@@ -10,16 +10,31 @@ from oeqa.utils.xen_utils import XenUtils
 
 
 class LinuxLoginTest(OERuntimeTestCase):
+    def setUp(self):
+        super().setUp()
+        self.timeout = int(self.td.get('TEST_FVP_LINUX_BOOT_TIMEOUT') or 10*60)
+        self.console_name = self.target.DEFAULT_CONSOLE
+        self.hostname = r'.*'
+
+    def login_domus(self, domu_hostnames):
+        console = self.target._get_terminal(self.console_name)
+        for domu_h in domu_hostnames:
+            dom0_prompt = rf'root@(?!{domu_h}){self.hostname}:~#'
+            linux_prompt = rf'root@{domu_h}:~#'
+            XenUtils.enter_guest_from_dom0(console, dom0_prompt,
+                                           linux_prompt, domu_h)
+            XenUtils.exit_guest_to_dom0(console, dom0_prompt,
+                                        linux_prompt, domu_h)
+
     @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
     def test_linux_login(self):
-        timeout = int(self.td.get('TEST_FVP_LINUX_BOOT_TIMEOUT') or 10*60)
-        self.target.transition("linux", timeout)
-        console_name = self.target.DEFAULT_CONSOLE
-        hostname = r'.*'
+        self.target.transition("linux", self.timeout)
 
         # Login
-        self.target.sendline(console_name, 'root')
-        self.target.expect(console_name, rf'root@{hostname}:~#', timeout=300)
+        self.target.sendline(self.console_name, 'root')
+        self.target.expect(self.console_name,
+                           rf'root@{self.hostname}:~#',
+                           timeout=300)
 
         # Ensure all services have started
         status, output = self.target.run('systemctl is-system-running --wait',
@@ -29,16 +44,9 @@ class LinuxLoginTest(OERuntimeTestCase):
 
         if 'virtualization' in self.td.get('IMAGE_FEATURES').split():
             # Wait for the domains to be fully booted
-            console = self.target._get_terminal(console_name)
             domu_hostnames = ['domu1']
 
             if int(self.td.get('DOMU_INSTANCES', 0)) > 1:
                 domu_hostnames.append('domu2')
 
-            for domu_h in domu_hostnames:
-                dom0_prompt = rf'root@(?!{domu_h}){hostname}:~#'
-                linux_prompt = rf'root@{domu_h}:~#'
-                XenUtils.enter_guest_from_dom0(console, dom0_prompt,
-                                               linux_prompt, domu_h)
-                XenUtils.exit_guest_to_dom0(console, dom0_prompt,
-                                            linux_prompt, domu_h)
+            self.login_domus(domu_hostnames)

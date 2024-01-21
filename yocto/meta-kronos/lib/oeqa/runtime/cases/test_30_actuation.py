@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -60,6 +60,20 @@ class ActuationTest(OERuntimeTestCase):
                                timeout=150)
         self.target.expect(self.linux_console, self.linux_prompt, timeout=120)
 
+    def connect_to_host(self):
+        # localhost:FVP_ACTUATION_HOST_ANALYZER_PORT maps to 192.168.10.2:49152
+        command_f = './data'
+        port = self.td.get('FVP_ACTUATION_HOST_ANALYZER_PORT')
+        host = "localhost"
+        cmd = f'start_analyzer -L debug -p {port} -a {host} -c {command_f}'
+        proc = pexpect.spawn(cmd, logfile=self.host_log)
+        proc.expect('Starting analyze, use Ctrl-C to stop the process',
+                    timeout=10)
+        self.target.expect(self.si_console,
+                           'Accepted tcp connection from the Packet Analyzer',
+                           timeout=15)
+        return proc
+
     def test_analyzer_help(self):
         host_output = pexpect.run(f'start_analyzer -h', timeout=10)
         host_output = host_output.decode("utf-8", errors="replace").strip()
@@ -70,20 +84,10 @@ class ActuationTest(OERuntimeTestCase):
     @OETestDepends(['test_30_actuation.ActuationTest.test_ping',
                     'test_30_actuation.ActuationTest.test_analyzer_help'])
     def test_player_to_analyzer(self):
-        command_f = './data'
         test_recordings = '/usr/share/actuation_player'
         proc_timeout = 500
 
-        # localhost:FVP_ACTUATION_HOST_ANALYZER_PORT maps to 192.168.10.2:49152
-        port = self.td.get('FVP_ACTUATION_HOST_ANALYZER_PORT')
-        host = "localhost"
-        cmd = f'start_analyzer -L debug -p {port} -a {host} -c {command_f}'
-        proc = pexpect.spawn(cmd, logfile=self.host_log)
-        proc.expect('Starting analyze, use Ctrl-C to stop the process',
-                    timeout=10)
-        self.target.expect(self.si_console,
-                           'Accepted tcp connection from the Packet Analyzer',
-                           timeout=15)
+        proc = self.connect_to_host()
 
         cmd = f'actuation_player -p {test_recordings}'
         self.target.sendline(self.linux_console, cmd)
