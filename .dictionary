@@ -712,6 +712,7 @@ upto
 userspace
 validitems
 vardeps
+vbuffer
 VCPU
 vcpus
 vdev

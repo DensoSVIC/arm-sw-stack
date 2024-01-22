@@ -7,7 +7,7 @@
 .. _design_hipc:
 
 ##################################################
-Heterogeneous Inter-processor Communication (HIPC)
+Heterogeneous Inter-Processor Communication (HIPC)
 ##################################################
 
 ************
@@ -16,7 +16,7 @@ Introduction
 
 The Kronos FVP contains Armv9-A (Primary Compute) and Armv8-R64 (Safety Island)
 heterogeneous processing elements which share data via the Message Handling
-Unit (MHUv3) and shared Static Random-Access Memory (SRAM). The MHUv3 is a
+Unit (MHUv3) and shared Static Random Access Memory (SRAM). The MHUv3 is a
 mailbox controller used for signal transmission and the shared memory is used
 for data exchange. Safety Island clusters also share data via the MHUv3 and
 shared SRAM.
@@ -41,64 +41,64 @@ RPMsg Protocol
 ==============
 
 RPMsg (Remote Processor Messaging) is a messaging protocol enabling
-heterogeneous communication, which can be used by Linux as well as real-time
-OSes.
+heterogeneous communication, which can be used by Linux as well as Real Time
+Operating Systems.
 
-In Linux, the RPMsg framework is implemented on top of the virtio-rpmsg
-bus and remoteproc framework. The virtio-rpmsg implementation is generic and
-based on virtio vrings to transmit/receive messages to/from the remote CPU over
+In Linux, the RPMsg framework is implemented on top of the Virtio-RPMsg
+bus and Remoteproc framework. The Virtio-RPMsg implementation is generic and
+based on Virtio Vring to transmit/receive messages to/from the remote CPU over
 shared memory.
 
 On the Safety Island side, Zephyr has imported OpenAMP as an external module.
-The OpenAMP library implements the RPMsg backend based on virtio, which is
-compatible with the upstream Linux remoteproc and RPMsg components. This library
+The OpenAMP library implements the RPMsg backend based on Virtio, which is
+compatible with the upstream Linux Remoteproc and RPMsg components. This library
 can be used with the Zephyr kernel or Zephyr applications to behave as an RPMsg
 backend service for communication with the Primary Compute.
 
 Virtual Network Device over RPMsg
 =================================
 
-RPMsg provides a set of user APIs for RPMsg endpoints to transmit/receive
-messages to/from the endpoints. These APIs can be used for some basic
-inter-processor communication. However, many existing user applications are not
-implemented based on RPMsg APIs. More often, they use BSD sockets for IPC. This
-is because BSD sockets can shield the difference between inter-processor
-communication and intra-processor communication, which makes applications
-generic and portable. In order to meet the needs of such applications, an RPMsg
-based virtual network device is added to the Reference Stack.
+RPMsg offers a range of user APIs for RPMsg endpoints to send and receive messages
+to and from these endpoints. These APIs are suitable for simple inter-processor
+communication. However, many current user applications are not built on RPMsg APIs.
+Instead, they use BSD sockets for IPC. The reason for this is that BSD sockets can
+abstract the difference between inter-processor communication and intra-processor
+communication. This makes it possible for applications to be more versatile and
+portable. In response to the needs of such applications, a virtual network device
+based on RPMsg has been added to the Reference Stack.
 
-On the Safety Island side, it creates a network device over an RPMsg endpoint
-with a specific service name. The RPMsg endpoint announces its existence by
-sending a name service message to the Primary Compute. This message is then
-handled by the RPMsg bus to create an RPMsg endpoint and a corresponding
-network device. After that, the network communication is established based on
-this pair of virtual network devices.
+On the Safety Island side, a network device is created over an RPMsg endpoint
+with a specific service name. The RPMsg endpoint sends a Name Service message
+to the Primary Compute to announce its existence. The message is then processed
+by the RPMsg bus, which creates an RPMsg endpoint and a corresponding network
+device. Once this is done, the virtual network devices establish network
+communication.
 
-On the Primary Compute side, the RPMsg frame needs to be copied to the skb
-buffer used by the network stack. When the traffic exceeds the performance
-limitation, the skb buffer may be dropped during processing for congestion
-control or by the protocol layers. At this time, network statistics will
-increase the dropped packet counter.
+On the Primary Compute side RPMsg frame must be copied to the Socket Buffer (skb)
+utilized by the Network Stack. However, if the traffic exceeds the performance
+limit, the Socket Buffer may get dropped during processing for congestion control
+or by the protocol layers. In such cases, the network statistics will increase
+the dropped packet counter.
 
-As shown in the above diagram each Safety Island cluster has its own shared
-memory and MHUv3 device to communicate with the Primary Compute. The size of
-the shared memory is 16MB and Safety Island clusters 0, 1 and 2 have access to
-it. Each shared memory instance has a resource table (4KB), two vrings
-(1MB each) and message buffer (3MB) that are used to transmit/receive
-information between the Primary Compute and the Safety Island Cluster. On the
-Primary Compute, the Safety Island remoteproc driver and RPMsg-based virtual
-interface driver are added to communicate with the Safety Island.
+In the above diagram, each Safety Island cluster has its own Shared Memory and
+MHUv3 device to communicate with the Primary Compute. The size of the Shared
+Memory is 16MB, and Safety Island Clusters 0, 1, and 2 have access to it. The
+Shared Memory instance has a Resource table (4KB), Vring 0, 1 (1MB each), and
+an RPMsg vbuffer (3MB) used to send and receive information between the Primary
+Compute and the Safety Island cluster.
 
-RPMsg-net driver on the Primary Compute and Veth-RPMsg on the Safety Island
-clusters implement the virtual ethernet device that is base for communication
-between Primary Compute and Safety Island clusters.
+On the Primary Compute, the Safety Island Remoteproc driver and RPMsg-based virtual
+interface driver are added to communicate with the Safety Island. The RPMsg-net
+driver on the Primary Compute and Veth-RPMsg on the Safety Island clusters implement
+the virtual ethernet device that is the basis for communication between the Primary
+Compute and Safety Island clusters.
 
 Safety Island Remoteproc Driver
 ===============================
-The remoteproc framework allows different platforms/architectures to control
+The Remoteproc framework allows different platforms/architectures to control
 (power on/off, load firmware) remote processors while abstracting the hardware
-differences, so the entire driver doesn't need to be duplicated. The remoteproc
-platform driver is added to the RD-Kronos stack to provide support for
+differences, so the entire driver doesn't need to be duplicated. The Remoteproc
+platform driver is added to the RD-Kronos Stack to provide support for
 communication between Primary Compute and Safety Island clusters.
 
 In the Kronos FVP, Linux running in the Primary Compute, regards the Safety
@@ -110,15 +110,15 @@ These clusters cannot be booted by the Primary Compute processor because they
 need to monitor the other hardware, including the Primary Compute. Therefore,
 the initial status of the clusters in the driver is ``RPROC_DETACHED``, which
 means the cluster has been booted independently from the Primary Compute
-processor. This driver implements the notification handler using an MHUv3-based
+processor. This driver implements the notification handler using an MHUv3 based
 mailbox, which notifies other cores when new messages are sent to the virtual
 queue.
 
-The memory regions of the resource table, vrings and message buffers are
-configured in the device tree bindings for each cluster. The driver parses the
-device tree node for each cluster and adds each cluster to the remoteproc
-framework. Each cluster has its own resource table, vrings and message buffers
-that will be used as a base for communication.
+The Resource table, Vring 0, 1, and RPMsg vbuffer memory regions are set up in the
+device tree bindings for each cluster. The driver reads the device tree node for
+each cluster and adds it to the Remoteproc framework. Each cluster has its own
+Resource table, Vring 0, 1, and RPMsg vbuffer, which serve as the foundation for
+communication.
 
 Virtualization Architecture
 ===========================
@@ -126,7 +126,7 @@ Virtualization Architecture
 In the Virtualization Architecture of the Reference Stack, virtual network
 interfaces based on Xen drivers created in the control domain (Dom0) are
 exposed to the domUs. These virtual network interfaces are added to an Open
-vSwitch virtual switch along with an RPMsg virtual interface to communicate
+vSwitch virtual switch along with an RPMsg Virtual Interface to communicate
 with the Safety Island.
 
 Dom0 has a communication channel with the Safety Island which is the same as
@@ -151,8 +151,8 @@ Virtual Network Device over IPC Static Vrings
 
 Zephyr `IPC Service`_  based virtual network devices are added to each cluster
 to provide communication between clusters via BSD sockets. The backend used for
-the IPC service is RPMSg static vrings. The IPC RPMsg Static Vrings backend is
-implemented on top of virtio based RPMsg communication.
+the IPC service is RPMSg Static Vrings. The IPC RPMsg Static Vrings backend is
+implemented on top of Virtio based RPMsg communication.
 
 |
 
@@ -251,7 +251,7 @@ Baremetal Architecture
 ======================
 
 This diagram shows the network topology for the Baremetal Architecture. ethsi{N}
-is the name of the RPMsg-based virtual interfaces that are connected to Safety
+is the name of the RPMsg-based Virtual Interfaces that are connected to Safety
 Island Cluster{N}, where N is the cluster number. For example, the ethsi0
 interfaces are connected to Safety Island Cluster 0. Similarly, ethpc is the
 name of the interfaces that are connected to the Primary Compute.
@@ -262,7 +262,7 @@ the brsi{N} VLAN tagged switches that are configured to carry VLAN tagged
 traffic from/to the ethsi{N} interface with the Safety Island.
 
 User space applications on the Primary Compute can communicate with Safety
-Island cluster N via brsi{N}.
+Island Cluster N via brsi{N}.
 
 |
 
@@ -277,7 +277,7 @@ Virtualization Architecture
 As shown in the diagram below the virtual network interfaces for the Xen guests
 are based on Xen drivers. domu1.ethsi{N} and domu2.ethsi{N} are backend virtual
 network interfaces that are exposed to DomU1 and DomU2 guests. ethsi{N} in the
-Primary Compute is the RPMsg-based virtual interface that is connected to
+Primary Compute is the RPMsg-based Virtual Interface that is connected to
 Safety Island Cluster{N} to provide communication between Primary Compute and
 Safety Island. ethsi{N}(Primary Compute) and domu1.ethsi{N} are added to
 Open vSwitch (brsi{N}) to have a connection between Dom0, DomU1 and Safety
@@ -294,10 +294,10 @@ Island Cluster N.
 Device Tree
 ***********
 
-In Linux, a remoteproc binding is needed for Safety Island remote clusters.
+In Linux, a Remoteproc binding is needed for Safety Island clusters.
 It includes MHUv3 transmit/receive channels for signaling and several memory
-regions for data exchange. Each Safety Island cluster has it own remoteproc
-binding that includes MHUv3 and shared memory.
+regions for data exchange. Each Safety Island cluster has it own Remoteproc
+binding that includes MHUv3 and Shared Memory.
 
 The Linux device tree with the appropriate nodes for HIPC is located at
 :meta-arm-repo:`meta-arm-bsp/recipes-bsp/trusted-firmware-a/files/fvp-rd-kronos/rdkronos.dts`.
