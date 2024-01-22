@@ -1,16 +1,8 @@
 #!/bin/bash
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
-
-# Download version 2.51.1 of the jfrog CLI
-curl -fL https://install-cli.jfrog.io | bash -s -- 2.51.1
-
-# Upload the deploy dir images
-jf config add --interactive=false \
-  --artifactory-url="${ARTIFACTORY_BASE_URL}" \
-  --user="${ARTIFACTORY_USER}" --password="${ARTIFACTORY_KEY}"
 
 KASFILES=$(./.gitlab/scripts/jobs-to-kas "${KAS_CONFIGS}")
 export FVP_PV=\

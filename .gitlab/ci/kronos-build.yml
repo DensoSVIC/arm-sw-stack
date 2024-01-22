@@ -111,9 +111,23 @@
       if [[ ${BUILD_HOST_ARCH} != "x86_64" ||
         ${GENERATE_BUILD_INFO} != "true" ||
         ${GENERATE_BUILD_INFO_JOB} != "true" ]]; then exit; fi
+    - .gitlab/scripts/jf_setup.sh
     - .gitlab/scripts/upload_image.sh
   rules:
     - !reference [".build-image:rules", rules]
+
+build-retention:
+  stage: .pre
+  script:
+    # Only enforce retention in pipelines which generate builds
+    - |
+      if [[ ${GENERATE_BUILD_INFO} != "true" ]]; then exit; fi
+    - .gitlab/scripts/jf_setup.sh
+    - |
+      jf rt bdi --url ${ARTIFACTORY_BASE_URL} \
+      --access-token ${ARTIFACTORY_KEY} --max-days ${PIPELINE_RETENTION_DAYS} \
+      --delete-artifacts=true \
+      --async=true ${ARTIFACTORY_IMAGE_BUILD_PATH}
 
 Image-Build-baremetal:
   extends: .kas_image_build_kronos
