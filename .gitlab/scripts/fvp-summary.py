@@ -46,7 +46,7 @@ class ArtifactoryHandler(object):
         df["fvp_build_url"] = df.apply(
             lambda x: self.artifactory_url.replace(
                 "/artifactory",
-                f'/ui/builds/{fvp_url}/{x["number"]}',
+                f'/ui/builds/{fvp_url}/{x["fvp_pv"]}',
             ),
             axis=1,
         )
@@ -160,6 +160,7 @@ class FVPData(object):
       "last_fail": <image build id>,
       "data": {
         "<image build id>": {
+          "build_id": <pipeline id>,
           "fvp_pv": <fvp pv>,
           "fvp_build_url": <fpv build url>,
           "override": [true|false],
@@ -186,7 +187,6 @@ class FVPData(object):
             images_df, how="right", left_on="fvp_pv", right_on="fvp_pv"
         )
         builds_df = builds_df.sort_values(by=["datetime"], ascending=False)
-        builds_df = builds_df.set_index("build_id")
 
         self._context = {}
         self._context["data"] = builds_df.to_dict("index")
