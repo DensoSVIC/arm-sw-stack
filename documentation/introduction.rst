@@ -35,26 +35,6 @@ For more details of the Kronos Reference Design including FVP and further
 technical documentation can be found at
 `Arm Kronos Reference Design Technical Overview`_.
 
-.. _introduction_safety_considerations:
-
-**********************************
-Safety and Security Considerations
-**********************************
-
-The Kronos Reference Design contains features that users may wish to reference
-as part of the design of secure safety-critical systems. This documentation
-additionally contains information about these features. Reasonable efforts have
-been made to review the information and implementations but:
-
- * A reference design is not a complete implementation and will inevitably have
-   limitations, simplifications, missing features and bugs that would need to
-   be addressed to achieve a deployable system design.
- * The information and any limitations documented should be treated as
-   non-exhaustive.
- * No formal verification methods have been attempted.
- * Users are fully responsible for validating the design of a system derived
-   from any of the work contained within.
-
 .. _introduction_reference_software_stack_overview:
 
 *********************************
@@ -106,6 +86,16 @@ Safety Island subsystem (Zephyr) via a bi-directional communication channel. The
 :ref:`design_applications_actuation` and :ref:`design_applications_cam` are
 integrated into the stack to show-case this Heterogeneous Inter-processor
 Communication (HIPC) between subsystems.
+
+**********************************
+Safety and Security Considerations
+**********************************
+
+Kronos Reference Design software solutions are public example software projects
+that track and pull upstream components, incorporating their respective security
+fixes published over time. Arm partners are responsible for ensuring that the
+components they use contain all the required security fixes, if and when they
+deploy a product derived from Arm reference solutions.
 
 .. _introduction_use_cases:
 

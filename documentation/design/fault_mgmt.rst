@@ -327,5 +327,3 @@ faults (non-exhaustive):
  * The number of stored fault records exceeds the amount of available storage.
  * An unexpected error code is returned when attempting to write a fault count
    to the storage.
-
-See also the :ref:`introduction_safety_considerations` in the introduction.
