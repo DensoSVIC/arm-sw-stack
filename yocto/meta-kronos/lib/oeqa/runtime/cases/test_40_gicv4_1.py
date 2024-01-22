@@ -36,8 +36,7 @@ class GICv4Test(OERuntimeTestCase):
                 # ahci[0000:00:00.0] captured at domain boot-time
                 self.assertGreater(int(line.split()[1]) + int(line.split()[2]),
                                    0)
-                self.logger.debug('vlpi_line:')
-                self.logger.debug(line)
+                self.logger.debug(f'vlpi_line: {line}')
             # Search the one for IPI0(Rescheduling interrupts)
             elif r'IPI0:' in line:
                 # Sum the 2rd element(CPU0) and 3rd element(CPU1) to
@@ -45,5 +44,4 @@ class GICv4Test(OERuntimeTestCase):
                 # domain boot-time
                 self.assertGreater(int(line.split()[1]) + int(line.split()[2]),
                                    0)
-                self.logger.debug('ipi0_line:')
-                self.logger.debug(line)
+                self.logger.debug(f'ipi0_line: {line}')
