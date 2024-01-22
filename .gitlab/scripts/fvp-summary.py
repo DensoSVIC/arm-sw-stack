@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -37,8 +37,7 @@ class ArtifactoryHandler(object):
         )
         df = pd.DataFrame.from_dict(
             b.info["buildInfo"] for b in builds
-        ).filter(items=["number"])
-        df["fvp_pv"] = df.apply(lambda x: f'0.0.{x["number"]}', axis=1)
+        ).filter(items=["number"]).rename(columns={"number": "fvp_pv"})
 
         fvp_url = (
             self._getenv("ARTIFACTORY_FVP_BUILD_PATH")
