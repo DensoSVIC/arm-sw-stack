@@ -49,6 +49,8 @@ env:
   SVE_DISABLE_FLAG:
 
 local_conf_header:
+  base: |
+    ERROR_QA:layer-meta-kronos:append = " patch-status"
   cassini: |
     CASSINI_GENERIC_ARM64_FILESYSTEM = "0"
     DISTRO_FEATURES:append = " ipv6"

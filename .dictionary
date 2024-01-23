@@ -349,6 +349,7 @@ kronos
 kzalloc
 LAYERDEPENDS
 LAYERDIR
+LAYERNAME
 LAYERSERIES
 leftmark
 libahci
