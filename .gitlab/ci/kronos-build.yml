@@ -16,8 +16,6 @@
 .kas_build:
   image: ${MIRROR_GHCR}/siemens/kas/kas:4.2
   variables:
-    KUBERNETES_MEMORY_REQUEST: 32Gi
-    KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 50Gi
     USER_ID:
     GROUP_ID:
 
@@ -27,6 +25,10 @@
     - .kas_build
   variables:
     IMAGE_DIR: $CACHE_DIR/$PROJECT_VERSION/images
+    KUBERNETES_CPU_REQUEST: '16'
+    KUBERNETES_MEMORY_LIMIT: 33Gi
+    KUBERNETES_MEMORY_REQUEST: 32Gi
+    KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 100Gi
   before_script:
     # This can be removed when the kas container has python3-venv installed
     - sudo apt-get update && sudo apt-get install --yes python3-venv
