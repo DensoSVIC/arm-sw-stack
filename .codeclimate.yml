@@ -24,6 +24,7 @@ plugins:
     exclude_patterns:
       - "/Dangerfile"
       - "/public"
+      - "**/*.patch"
   cspell:
     enabled: true
     exclude_patterns:
