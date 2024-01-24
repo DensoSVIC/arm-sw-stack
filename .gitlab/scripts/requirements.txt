@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: MIT
+
 dohq-artifactory==0.9.0
 pandas==1.5.3
 markupsafe==2.0.1

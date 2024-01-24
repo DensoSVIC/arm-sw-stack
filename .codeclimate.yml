@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -70,7 +70,6 @@ plugins:
       - ".csslintrc"
       - ".eslintignore"
       - ".eslintrc.yml"
-      - ".gitlab"
       - ".rubocop.yml"
       - "/license.rst"
       - "coffeelint.json"
