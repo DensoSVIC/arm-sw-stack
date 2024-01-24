@@ -110,5 +110,8 @@ plugins:
       # In some cases, we want to use SRC_URI from different domains,
       # which makes this check fail. Disable it.
       - oelint.vars.srcuridomains
+      # Having custom reasoning after Patches with
+      # Upstream-Status: Inappropriate is desired
+      - oelint.file.inappropriatemsg
     exclude_patterns:
       - "/public"

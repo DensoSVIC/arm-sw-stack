@@ -11,6 +11,8 @@ DESCRIPTION = "Deploy a .cfg file that can be used to boot Xen using EFI"
 HOMEPAGE = "https://wiki.xenproject.org/wiki/Xen_EFI"
 LICENSE = "MIT"
 
+# License file is in "layers/poky/meta/files/common-licenses".
+# nooelint: oelint.var.licenseremotefile
 LIC_FILES_CHKSUM = "\
     file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302 \
     "

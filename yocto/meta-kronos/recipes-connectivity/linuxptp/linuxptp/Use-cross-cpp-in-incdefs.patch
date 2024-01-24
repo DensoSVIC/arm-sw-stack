@@ -6,7 +6,7 @@ Subject: [PATCH] linuxptp: Use cross cpp in incdefs
 Use cross cpp incdefs.sh shell script since we are doing cross compiling
 we need to ensure we use correct setttings from toolchain
 
-Upstream-Status: Inappropriate [OE-Specific]
+Upstream-Status: Inappropriate [oe-specific]
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
 ---

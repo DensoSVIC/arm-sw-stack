@@ -7,7 +7,7 @@ Introduce a CONFIG_SHELL_PIN_THREAD configuration options to pin the
 shell thread to CPU 0.
 
 Signed-off-by: Ambroise Vincent <ambroise.vincent@arm.com>
-Upstream-Status: Inappropriate
+Upstream-Status: Inappropriate [Kronos-specific]
 ---
  subsys/shell/Kconfig |  7 +++++++
  subsys/shell/shell.c | 12 +++++++++++-

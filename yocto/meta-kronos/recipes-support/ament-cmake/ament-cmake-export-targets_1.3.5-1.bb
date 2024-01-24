@@ -13,7 +13,7 @@
 # 2) Add BBCLASSEXTEND
 #
 SUMMARY = "Ament CMake Export Targets"
-DESCRIPTION = "The ability to export targets to downstream packages in the ament buildsystem in CMake."
+DESCRIPTION = "The ability to Export targets to downstream packages in the ament buildsystem in CMake."
 AUTHOR = "Michael Jeronimo <michael.jeronimo@openrobotics.org>"
 ROS_AUTHOR = "Dirk Thomas"
 HOMEPAGE = "https://wiki.ros.org"

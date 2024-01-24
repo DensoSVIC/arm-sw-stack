@@ -9,7 +9,7 @@ easily customized.
 
 Issue-Id: SCM-5320
 Signed-off-by: Peter Hoyes <Peter.Hoyes@arm.com>
-Upstream-Status: Inappropriate
+Upstream-Status: Inappropriate [Kronos-specific]
   Required to support the rpmsg_net driver, which will not be upstreamed
 ---
  drivers/rpmsg/Kconfig            |  5 +++++

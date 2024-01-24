@@ -14,7 +14,7 @@
 # 3) Fix oelint-adv issues
 #
 SUMMARY = "Ament CMake Export Libraries"
-DESCRIPTION = "The ability to export libraries to downstream packages in the ament buildsystem in CMake."
+DESCRIPTION = "The ability to Export libraries to downstream packages in the ament buildsystem in CMake."
 AUTHOR = "Michael Jeronimo <michael.jeronimo@openrobotics.org>"
 ROS_AUTHOR = "Dirk Thomas"
 HOMEPAGE = "https://wiki.ros.org"

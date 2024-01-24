@@ -1,14 +1,14 @@
 # nooelint: oelint.var.mandatoryvar - This recipe has no source files
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
 
 SUMMARY = "Xen PCI Passthrough disk image"
 DESCRIPTION = "Deploy an empty disk image that can be used for Xen PCI Passthrough"
-LICENSE = "MIT"
 HOMEPAGE = "https://kronos.docs.arm.com/"
+LICENSE = "MIT"
 
 inherit deploy
 

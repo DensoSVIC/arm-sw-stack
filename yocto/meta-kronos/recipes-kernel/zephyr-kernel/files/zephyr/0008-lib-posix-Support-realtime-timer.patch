@@ -14,7 +14,7 @@ has a large modification for it. So, this commit may not be
 upstreamed.
 https://github.com/zephyrproject-rtos/zephyr/issues/19030
 
-Upstream-Status: Inappropriate
+Upstream-Status: Inappropriate [Kronos-specific]
 Signed-off-by: Yanqin Wei <yanqin.wei@arm.com>
 Signed-off-by: Divin Raj <divin.raj@arm.com>
 ---

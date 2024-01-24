@@ -14,7 +14,7 @@
 # 3) Fix oelint-adv issues
 #
 SUMMARY = "Ament CMake Export Link Flags"
-DESCRIPTION = "The ability to export link flags to downstream packages in the ament buildsystem."
+DESCRIPTION = "The ability to Export link flags to downstream packages in the ament buildsystem."
 AUTHOR = "Michael Jeronimo <michael.jeronimo@openrobotics.org>"
 ROS_AUTHOR = "Dirk Thomas"
 HOMEPAGE = "https://wiki.ros.org"

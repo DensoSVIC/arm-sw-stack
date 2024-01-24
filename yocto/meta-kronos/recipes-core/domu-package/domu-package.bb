@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -10,6 +10,8 @@ which can be installed in Dom0"
 HOMEPAGE = "https://kronos.docs.arm.com/"
 
 LICENSE = "MIT"
+# License file is in "layers/poky/meta/files/common-licenses".
+# nooelint: oelint.var.licenseremotefile
 LIC_FILES_CHKSUM = "\
     file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302 \
     "
