@@ -243,6 +243,7 @@ rst_prolog = f"""
 .. _Arm SystemReady: https://www.arm.com/architecture/system-architectures/systemready-certification-program
 .. _Autoware: https://autowarefoundation.github.io/autoware-documentation
 .. _Base Boot Requirements (BBR): https://developer.arm.com/documentation/den0044/latest
+.. _Base Boot Security Requirements (BBSR): https://developer.arm.com/documentation/den0107/latest
 .. _Base System Architecture (BSA): https://developer.arm.com/documentation/den0094/latest
 .. _Cassini: https://cassini.readthedocs.io/en/latest
 .. _Crypto Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/crypto-service-description.html
@@ -295,6 +296,7 @@ rst_prolog = f"""
 .. _Safety Island Actuation Demo: https://safety-island-actuation-demo.docs.arm.com
 .. _Secure Partition: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/environments/secure-partitions/index.html
 .. _Secure Storage Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/secure-storage-service-description.html
+.. _Security Interface Extension (SIE): https://developer.arm.com/documentation/102872/0100
 .. _SVE2 guide: https://developer.arm.com/documentation/102340/0100/Introducing-SVE2
 .. _System Control Processor (SCP) Firmware: https://developer.arm.com/documentation/den0050/latest
 .. _TF-M Crypto Service: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/tfm_crypto_design.html

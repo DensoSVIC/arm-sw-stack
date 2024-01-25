@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -33,13 +33,14 @@ OpenWRT, Buildroot) and pre-built (Debian, Fedora, SUSE) Linux distributions.
 
 At a high level, the IR band requires that:
 
+ * Hardware implements the Base System Architecture (BSA)
  * Firmware implements a subset of UEFI as defined in Embedded Base Boot
    Requirements (EBBR)
  * Firmware by default provides a device tree suitable for booting mainline
    Linux
  * Firmware can be updated using UEFI UpdateCapsule()
- * At least two Linux distros must be able to boot and install using the UEFI
-   boot flow
+ * At least three Linux distros must be able to boot, install, and run storage
+   medium tests using the UEFI boot flow
 
 Compliant systems must conform to the:
 
@@ -47,6 +48,16 @@ Compliant systems must conform to the:
  * `Embedded Base Boot Requirements (EBBR)`_
  * EBBR recipe of the Arm `Base Boot Requirements (BBR)`_ specification
  * `Device Tree specification`_
+ * Ethernet port requirements
+
+It is also recommended to conform to the `Security Interface Extension (SIE)`_
+certification. If that's not possible, the following `Base Boot Security
+Requirements (BBSR)`_ rules are still required:
+
+ * R140_BBSR: Capsule payloads for updating system firmware must be digitally
+   signed
+ * R150_BBSR: Before updates to system firmware are applied, images must be
+   verified using digital signatures
 
 ********************************
 |Arm SystemReadyTM| IR Objective
@@ -121,6 +132,11 @@ The Reference Stack is currently known to have the following non-alignments:
 * BSA tests
 
   1. Tests are not compatible with certain devices in the RD-Kronos model.
+
+* Distro installation
+
+  1. Only two Linux distro installations are performed (Debian and openSUSE),
+     rather than the requisite three.
 
 ****************************
 |Arm SystemReadyTM| IR Tests
