@@ -150,7 +150,7 @@ meta_arm_version = os.environ.get(
 
 # Common variables for rst_prolog
 actuation_version = "main"
-cassini_version = yocto_version + "-dev"
+cassini_version = "v1.1.0"
 fvp_version = "0.0"
 kas_version = "4.2"
 linux_version = "6.1"
@@ -245,7 +245,7 @@ rst_prolog = f"""
 .. _Base Boot Requirements (BBR): https://developer.arm.com/documentation/den0044/latest
 .. _Base Boot Security Requirements (BBSR): https://developer.arm.com/documentation/den0107/latest
 .. _Base System Architecture (BSA): https://developer.arm.com/documentation/den0094/latest
-.. _Cassini: https://cassini.readthedocs.io/en/latest
+.. _Cassini: https://cassini.readthedocs.io/en/{cassini_version}/
 .. _Crypto Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/crypto-service-description.html
 .. _CycloneDDS: https://cyclonedds.io/docs/cyclonedds/latest/about_dds/eclipse_cyclone_dds.html
 .. _Data Distribution Service: https://www.dds-foundation.org/what-is-dds-3
