@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -19,7 +19,7 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57"
 
 DEPENDS = "parsec-se-driver python3-jinja2-native python3-jsonschema-native"
 
-PV = "3.4.0+git${SRCPV}"
+PV = "3.5.0+git${SRCPV}"
 
 SRC_URI = "git://github.com/Mbed-TLS/mbedtls.git;protocol=https;branch=development \
            file://0001-Define-key-location-for-secure-element.patch \
@@ -30,7 +30,7 @@ SRC_URI = "git://github.com/Mbed-TLS/mbedtls.git;protocol=https;branch=developme
            file://0006-program-ssl-Lower-DEBUG_LEVEL-for-ssl_client1.patch \
            "
 
-SRCREV = "63a21f4cda8b3d21fe5f85e6efc62d924b492757"
+SRCREV = "1ec69067fa1351427f904362c1221b31538c8b57"
 S = "${WORKDIR}/git"
 
 inherit cmake python3native
