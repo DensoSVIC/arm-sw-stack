@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -29,10 +29,10 @@ The main components versions used in the Reference Stack:
     - |FVP_RD_Kronos version|
     - `FVP download`_
   * - Trusted Firmware-M (RSS)
-    - |Trusted Firmware-M version| (based on |Trusted Firmware-M base version|)
+    - |Trusted Firmware-M version|
     - `Trusted Firmware-M repository`_
   * - SCP-firmware
-    - |SCP-Firmware version| (based on |SCP-Firmware base version|)
+    - |SCP-Firmware version|
     - `SCP-Firmware repository`_
   * - Trusted Firmware-A
     - |Trusted Firmware-A version|
@@ -41,7 +41,7 @@ The main components versions used in the Reference Stack:
     - |OP-TEE version|
     - `OP-TEE repository`_
   * - Trusted Services
-    - |Trusted Services version| (based on |Trusted Services base version|)
+    - |Trusted Services version| (based on main branch, pre v1.0.0)
     - `Trusted Services repository`_
   * - U-Boot
     - |U-Boot version|
