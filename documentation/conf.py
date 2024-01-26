@@ -149,7 +149,7 @@ meta_arm_version = os.environ.get(
     f'kronos-{yocto_version}')
 
 # Common variables for rst_prolog
-actuation_version = "main"
+actuation_version = "v2.0"
 cassini_version = "v1.1.0"
 critical_application_monitoring_version = "main"
 fvp_version = "0.0"
