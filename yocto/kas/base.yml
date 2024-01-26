@@ -49,7 +49,7 @@ env:
   SVE_DISABLE_FLAG:
 
 local_conf_header:
-  base: |
+  meta-kronos-error-qa: |
     ERROR_QA:layer-meta-kronos:append = " patch-status"
   cassini: |
     CASSINI_GENERIC_ARM64_FILESYSTEM = "0"
