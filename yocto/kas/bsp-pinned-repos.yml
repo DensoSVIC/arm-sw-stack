@@ -6,10 +6,10 @@
 header:
   version: 16
 
-# repos:
-#   meta-arm:
+repos:
+  meta-arm:
 #     commit:
-#   meta-openembedded:
-#     commit:
-#   poky:
-#     commit:
+  meta-openembedded:
+    branch: nanbield
+  poky:
+    branch: nanbield

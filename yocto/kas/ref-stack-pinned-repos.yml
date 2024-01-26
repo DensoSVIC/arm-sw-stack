@@ -9,14 +9,14 @@ header:
   includes:
     - yocto/kas/bsp-pinned-repos.yml
 
-# repos:
-#   meta-cassini:
-#     commit:
-#   meta-clang:
-#     commit:
-#   meta-security:
-#     commit:
-#   meta-virtualization:
-#     commit:
-#   meta-zephyr:
-#     refspec:
+repos:
+  meta-cassini:
+    commit: 3c6f011c78b4bad210e14cffaae33d8da5fcb288
+  meta-clang:
+    branch: nanbield
+  meta-security:
+    branch: nanbield
+  meta-virtualization:
+    branch: nanbield
+  meta-zephyr:
+    branch: nanbield
