@@ -151,6 +151,7 @@ meta_arm_version = os.environ.get(
 # Common variables for rst_prolog
 actuation_version = "main"
 cassini_version = "v1.1.0"
+critical_application_monitoring_version = "main"
 fvp_version = "0.0"
 kas_version = "4.2"
 linux_version = "6.1"
@@ -184,6 +185,7 @@ rst_prolog = f"""
 .. |Arm| replace:: Arm\\ :sup:`®`
 .. |CoreLink| replace:: Arm\\ :sup:`®` CoreLink\\ :sup:`TM`
 .. |Cortex| replace:: Arm\\ :sup:`®` Cortex\\ :sup:`®`
+.. |Critical Application Monitoring version| replace:: {critical_application_monitoring_version}
 .. |FVP_RD_Kronos version| replace:: {fvp_version}
 .. |Linux version| replace:: {linux_version}.{linux_version_patch}
 .. |Mbed TLS base version| replace:: {mbedtls_base_version}
@@ -246,6 +248,7 @@ rst_prolog = f"""
 .. _Base Boot Security Requirements (BBSR): https://developer.arm.com/documentation/den0107/latest
 .. _Base System Architecture (BSA): https://developer.arm.com/documentation/den0094/latest
 .. _Cassini: https://cassini.readthedocs.io/en/{cassini_version}/
+.. _Critical Application Monitoring repository: https://gitlab.arm.com/automotive-and-industrial/safety-island/critical-app-monitoring/-/tree/{critical_application_monitoring_version}
 .. _Crypto Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/crypto-service-description.html
 .. _CycloneDDS: https://cyclonedds.io/docs/cyclonedds/latest/about_dds/eclipse_cyclone_dds.html
 .. _Data Distribution Service: https://www.dds-foundation.org/what-is-dds-3

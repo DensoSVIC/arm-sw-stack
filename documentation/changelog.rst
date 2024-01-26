@@ -61,6 +61,9 @@ The main components versions used in the Reference Stack:
   * - Mbed TLS
     - |Mbed TLS version| (based on |Mbed TLS base version|)
     - `Mbed TLS repository`_
+  * - Critical Application Monitoring
+    - |Critical Application Monitoring version|
+    - `Critical Application Monitoring repository`_
 
 Third-party Yocto layers used to build the Reference Stack:
 
