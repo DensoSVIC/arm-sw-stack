@@ -1,5 +1,5 @@
 #
-# Based on: https://github.com/PelionIoT/meta-edge/blob/5b8705c23cfc2ddfa0a7596efdae3546bd49d647/recipes-edge/parsec-se-driver/parsec-se-driver.bb
+# Based on: https://github.com/PelionIoT/meta-edge/blob/16ead059870aef403ae402e5efc4340efb5184a9/recipes-edge/parsec-se-driver/parsec-se-driver.bb
 # In open-source project: meta-edge
 # Original file: SPDX-FileCopyrightText: <text>Copyright (c) 2023
 # Izuma and affiliates</text>
@@ -40,9 +40,10 @@ TOOLCHAIN = "clang"
 # nooelint: oelint.vars.insaneskip
 INSANE_SKIP:${PN}-staticdev += "buildpaths"
 
+do_configure[postfuncs] = "0"
 do_install() {
     install -d "${D}/${libdir}"
-    install -m 755 "${B}/target/${RUST_TARGET_SYS}/release/libparsec_se_driver.a" "${D}/${libdir}"
+    install -m 755 "${B}/target/${CARGO_TARGET_SUBDIR}/libparsec_se_driver.a" "${D}/${libdir}"
 }
 
 include parsec-se-driver-crates.inc
