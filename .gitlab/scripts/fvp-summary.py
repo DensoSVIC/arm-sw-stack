@@ -31,23 +31,30 @@ class ArtifactoryHandler(object):
 
         return env_var
 
+    def _get_artifactory_build_url(self, build_name, build_id, timestamp):
+        return self.artifactory_url.replace(
+            "/artifactory", f"/ui/builds/{build_name}/{build_id}/{timestamp}"
+        )
+
     def get_kronos_fvp_builds(self):
         builds = self.build_mgr.get_build_runs(
             self._getenv("ARTIFACTORY_FVP_BUILD_PATH")
         )
         df = (
             pd.DataFrame.from_dict(b.info["buildInfo"] for b in builds)
-            .filter(items=["number"])
+            .filter(items=["number", "started"])
             .rename(columns={"number": "fvp_pv"})
         )
 
         fvp_url = self._getenv("ARTIFACTORY_FVP_BUILD_PATH").replace(
             "/", "%2F"
         )
+        df["timestamp"] = pd.to_datetime(df["started"]).apply(
+            lambda x: int(x.timestamp() * 1000)
+        )
         df["fvp_build_url"] = df.apply(
-            lambda x: self.artifactory_url.replace(
-                "/artifactory",
-                f'/ui/builds/{fvp_url}/{x["fvp_pv"]}',
+            lambda x: self._get_artifactory_build_url(
+                fvp_url, x["fvp_pv"], x["timestamp"]
             ),
             axis=1,
         )
@@ -103,9 +110,10 @@ class ArtifactoryHandler(object):
             lambda x: "buildInfo.env.FVP_BUILD_NUMBER" in x["properties"],
             axis=1,
         )
-        df["datetime"] = pd.to_datetime(df["started"].astype(str)).dt.strftime(
+        df["datetime"] = pd.to_datetime(df["started"]).dt.strftime(
             "%Y-%m-%d %H:%M"
         )
+
         # Only builds for "passed" pipelines will have artifacts
         df["pass"] = df.apply(
             lambda x: self._is_pass(
@@ -119,10 +127,13 @@ class ArtifactoryHandler(object):
         image_url = self._getenv("ARTIFACTORY_IMAGE_BUILD_PATH").replace(
             "/", "%2F"
         )
+
+        df["timestamp"] = pd.to_datetime(df["started"]).apply(
+            lambda x: int(x.timestamp() * 1000)
+        )
         df["image_build_url"] = df.apply(
-            lambda x: self.artifactory_url.replace(
-                "/artifactory",
-                f'/ui/builds/{image_url}/{x["build_id"]}',
+            lambda x: self._get_artifactory_build_url(
+                image_url, x["build_id"], x["timestamp"]
             ),
             axis=1,
         )
