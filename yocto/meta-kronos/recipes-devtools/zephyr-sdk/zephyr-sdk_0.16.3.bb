@@ -1,5 +1,5 @@
 #
-# Based on: https://git.yoctoproject.org/meta-zephyr/tree/meta-zephyr-core/recipes-devtools/zephyr-sdk/zephyr-sdk_0.16.3.bb
+# Based on: https://git.yoctoproject.org/meta-zephyr/tree/meta-zephyr-core/recipes-devtools/zephyr-sdk/zephyr-sdk_0.16.3.bb?id=dc45d347b2b5142ec6a6bc821c38bfddfc8954ad
 # In open-source project: meta-zephyr
 # Original file: SPDX-FileCopyrightText: <text>Copyright 2023 OpenEmbedded
 # Contributors</text>

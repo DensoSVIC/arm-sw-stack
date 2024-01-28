@@ -1,9 +1,9 @@
 #
-# Based on: https://github.com/ros/meta-ros/blob/bfb09373ad8648c3c8d9f34ad13326d354a7d1ab/meta-ros-common/recipes-infrastructure/python/python-catkin-pkg.inc
+# Based on: https://github.com/ros/meta-ros/blob/875464b52828c6a0d6669f7009607e3ea28bc1a6/meta-ros-common/recipes-infrastructure/python/python-catkin-pkg.inc
 # In open-source project: meta-ros
-# Original file: SPDX-FileCopyrightText: <text>Copyright 2020-2021 meta-ros
+# Original file: SPDX-FileCopyrightText: <text>Copyright 2020-2023 meta-ros
 # community</text>
-# Modifications: SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited
+# Modifications: SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited
 # and/or its affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
