@@ -2372,7 +2372,7 @@ install process begins when you see something like the below picture:
        :align: center
        :width: 60 %
 
-Select ``Installation`` to start the installation process.
+Select ``Install`` to start the installation process.
 
 The following are problems that have been encountered during the Debian
 installation process and how to solve them:
