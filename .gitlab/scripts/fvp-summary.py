@@ -35,13 +35,14 @@ class ArtifactoryHandler(object):
         builds = self.build_mgr.get_build_runs(
             self._getenv("ARTIFACTORY_FVP_BUILD_PATH")
         )
-        df = pd.DataFrame.from_dict(
-            b.info["buildInfo"] for b in builds
-        ).filter(items=["number"]).rename(columns={"number": "fvp_pv"})
+        df = (
+            pd.DataFrame.from_dict(b.info["buildInfo"] for b in builds)
+            .filter(items=["number"])
+            .rename(columns={"number": "fvp_pv"})
+        )
 
-        fvp_url = (
-            self._getenv("ARTIFACTORY_FVP_BUILD_PATH")
-            .replace("/", "%2F")
+        fvp_url = self._getenv("ARTIFACTORY_FVP_BUILD_PATH").replace(
+            "/", "%2F"
         )
         df["fvp_build_url"] = df.apply(
             lambda x: self.artifactory_url.replace(
@@ -86,7 +87,7 @@ class ArtifactoryHandler(object):
         )
         df["commit_slug"] = df.apply(
             lambda x: x["properties"]["buildInfo.env.CI_COMMIT_REF_SLUG"],
-            axis=1
+            axis=1,
         )
         # FVP might not be set if the build encounters an unexpected failure.
         df["fvp_pv"] = df.apply(
@@ -100,7 +101,7 @@ class ArtifactoryHandler(object):
         )
         df["override"] = df.apply(
             lambda x: "buildInfo.env.FVP_BUILD_NUMBER" in x["properties"],
-            axis=1
+            axis=1,
         )
         df["datetime"] = pd.to_datetime(df["started"].astype(str)).dt.strftime(
             "%Y-%m-%d %H:%M"
@@ -115,9 +116,8 @@ class ArtifactoryHandler(object):
             axis=1,
         )
 
-        image_url = (
-            self._getenv("ARTIFACTORY_IMAGE_BUILD_PATH")
-            .replace("/", "%2F")
+        image_url = self._getenv("ARTIFACTORY_IMAGE_BUILD_PATH").replace(
+            "/", "%2F"
         )
         df["image_build_url"] = df.apply(
             lambda x: self.artifactory_url.replace(
@@ -145,7 +145,7 @@ class ArtifactoryHandler(object):
                 "fvp_pv",
                 "pipeline_url",
                 "project_url",
-                "override"
+                "override",
             ]
         )
 
@@ -192,14 +192,15 @@ class FVPData(object):
         self._context["data"] = builds_df.to_dict("index")
         self._context["last_pass"] = next(
             (b for b, data in self._context["data"].items() if data["pass"]),
-            None
+            None,
         )
         self._context["last_fail"] = next(
             (
-                b for b, data in self._context["data"].items()
+                b
+                for b, data in self._context["data"].items()
                 if not data["pass"]
             ),
-            None
+            None,
         )
         self._context["timestamp"] = dt.datetime.now()
 
