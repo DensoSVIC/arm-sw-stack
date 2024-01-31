@@ -228,6 +228,46 @@ threads within the same cluster or from different clusters, Where the
 ``psa_call()`` blocks any new requests using a semaphore until the ongoing
 request completes.
 
+Memory Map
+----------
+
+RSS shares dedicated SRAM with Safety Island Clusters 0, 1, and 2 and Primary
+Compute.
+
+Safety Island side:
+
+ Cluster 0:
+
+   * ``local_sram_rss_cl0`` : Used for data transfer between Cluster 0 and RSS
+
+    Refer to the device tree overlay below for more information about the memory
+    addresses and region sizes.
+
+     * :kronos-repo:`components/safety_island/zephyr/src/overlays/psa/fvp_rd_kronos_safety_island_c0.overlay`.
+
+ Cluster 1:
+
+   * ``local_sram_rss_cl1`` : Used for data transfer between Cluster 1 and RSS
+
+    Refer to the device tree overlay below for more information about the memory
+    addresses and region sizes.
+
+     * :kronos-repo:`components/safety_island/zephyr/src/overlays/psa/fvp_rd_kronos_safety_island_c1.overlay`.
+
+ Cluster 2:
+
+   * ``local_sram_rss_cl2`` : Used for data transfer between Cluster 2 and RSS
+
+    Refer to the device tree overlay below for more information about the memory
+    addresses and region sizes.
+
+     * :kronos-repo:`components/safety_island/zephyr/src/overlays/psa/fvp_rd_kronos_safety_island_c2.overlay`.
+
+Primary Compute side:
+
+ * ``rss_comms-virtio`` : Used for data transfer between SE Proxy SP in the Primary
+   Compute Secure World and RSS
+
 RSS communication
 -----------------
 
