@@ -91,6 +91,35 @@ relevant external components.
 The :ref:`design_secure_services` section provides more details of the RSS
 Runtime and the relevant components.
 
+Memory Map
+==========
+
+ Runtime Security Subsystem (RSS) configuring the Primary Compute, System Control Processor (SCP),
+ and Safety Island Clusters 0, 1, and 2 to dedicated address spaces.
+
+.. list-table::
+   :widths: 50 50 25
+   :header-rows: 1
+
+   * - From
+     - To
+     - Region
+   * - 0x0 0040 0000 0000
+     - 0x0 FFFF FFFF FFFF
+     - Primary Compute Address Space
+   * - 0x1 0000 0000 0000
+     - 0x1 0000 FFFF FFFF
+     - System Control Processor Address Space
+   * - 0x2 0001 2000 0000
+     - 0x2 0001 3FFF FFFF
+     - Safety Island Cluster 0 Address Space
+   * - 0x2 0001 4000 0000
+     - 0x2 0001 5FFF FFFF
+     - Safety Island Cluster 1 Address Space
+   * - 0x2 0001 6000 0000
+     - 0x2 0001 7FFF FFFF
+     - Safety Island Cluster 2 Address Space
+
 Boot Loaders
 ============
 
