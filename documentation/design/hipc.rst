@@ -163,6 +163,110 @@ implemented on top of Virtio based RPMsg communication.
 
 .. _hipc_network_topology:
 
+**********
+Memory Map
+**********
+
+The dedicated SRAM used by the Primary Compute and Safety Island Clusters 0, 1,
+and 2 for inter-processor data transfer has the following memory regions:
+**Resource table**, **Vring0**, **Vring1**, and **Virtio Buffer**.
+
+Safety Island side:
+===================
+
+ Cluster 0:
+
+  Primary Compute <-> Cluster 0:
+
+  * ``rsc_table`` : Used to share resource information between Primary
+    Compute and Cluster 0
+  * ``shared_data`` : Used for data transfer between Primary Compute  and
+    Cluster 0
+
+  Cluster 0 <-> Cluster 1, 2:
+
+  * ``local_sram_cl0_cl1`` : Used for data transfer between Cluster 0
+    and Cluster 1
+  * ``local_sram_cl0_cl2`` : Used for data transfer between Cluster 0
+    and Cluster 2
+
+  Refer to the device tree overlay below for more information about the memory
+  addresses and region sizes.
+
+   * :kronos-repo:`components/safety_island/zephyr/src/overlays/hipc/fvp_rd_kronos_safety_island_c0.overlay`.
+
+ Cluster 1:
+
+  Primary Compute <-> Cluster 1:
+
+  * ``rsc_table`` : Used to share resource information between Primary
+    Compute and Cluster 1
+  * ``shared_data`` : Used for data transfer between Primary Compute  and
+    Cluster 1
+
+  Cluster 1 <-> Cluster 0, 1:
+
+  * ``local_sram_cl1_cl0`` : Used for data transfer between Cluster 1
+    and Cluster 0
+  * ``local_sram_cl1_cl2`` : Used for data transfer between Cluster 1
+    and Cluster 2
+
+  Refer to the device tree overlay below for more information about the memory
+  addresses and region sizes.
+
+   * :kronos-repo:`components/safety_island/zephyr/src/overlays/hipc/fvp_rd_kronos_safety_island_c1.overlay`.
+
+ Cluster 2:
+
+  Primary Compute <-> Cluster 2:
+
+   * ``rsc_table`` : Used to share resource information between Primary Compute
+     and Cluster 2
+   * ``shared_data`` : Used for data transfer between Primary Compute  and
+     Cluster 2
+
+  Cluster 2 <-> Cluster 0, 2:
+
+   * ``local_sram_cl2_cl0`` : Used for data transfer between Cluster 2
+     and Cluster 0
+   * ``local_sram_cl2_cl1`` : Used for data transfer between Cluster 2
+     and Cluster 1
+
+  Refer to the device tree overlay below for more information about the memory
+  addresses and region sizes.
+
+   * :kronos-repo:`components/safety_island/zephyr/src/overlays/hipc/fvp_rd_kronos_safety_island_c2.overlay`.
+
+Primary Compute side:
+=====================
+
+   * ``si_c0_rproc_rsctbl`` : Used to share resource information between Primary
+     Compute and Cluster 0
+   * ``si_c0_vdev0vring0`` : Primary Compute vring, used to pass messages from
+     Cluster 0 to Primary Compute
+   * ``si_c0_vdev0vring1`` : Safety Island Cluster 0 vring, used to pass messages
+     from Primary Compute to Cluster 0
+   * ``si_c0_vdev0buffer`` : Used for data transfer between Primary Compute and Cluster 0
+   * ``si_c1_rproc_rsctbl`` : Used to share resource information between Primary Compute
+     and Cluster 1
+   * ``si_c1_vdev0vring0`` : Primary Compute vring, used to pass messages from
+     Cluster 1 to Primary Compute
+   * ``si_c1_vdev0vring1`` : Safety Island Cluster 1 vring, used to pass messages from
+     Primary Compute to Cluster 1
+   * ``si_c1_vdev0buffer`` : Used for data transfer between Primary Compute and Cluster 1
+   * ``si_c2_rproc_rsctbl`` : Used to share resource information between Primary Compute
+     and Cluster 2
+   * ``si_c2_vdev0vring0`` : Primary Compute vring, used to pass messages from Cluster 2
+     to Primary Compute
+   * ``si_c2_vdev0vring1`` : Safety Island Cluster 2 vring, used to pass messages from
+     Primary Compute to Cluster 2
+   * ``si_c2_vdev0buffer`` : Used for data transfer between Primary Compute and Cluster 2
+
+  Refer to the device tree below for more information about the memory address and
+  region size.
+
+   * :meta-arm-repo:`meta-arm-bsp/recipes-bsp/trusted-firmware-a/files/fvp-rd-kronos/rdkronos.dts`.
+
 ****************
 Network Topology
 ****************
