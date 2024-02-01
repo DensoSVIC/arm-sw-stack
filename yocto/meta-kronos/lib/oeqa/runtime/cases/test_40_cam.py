@@ -16,10 +16,11 @@ class CAMTest(OERuntimeTestCase):
     zephyr_console = 'safety_island_c1'
     hostname = r'fvp-rd-kronos'
     domu_hostname = r'domu1'
-    cam_data_path = '/usr/share/cam-data'
-    default_uuid_base = '84085ddc-bc10-11ed-9a44-7ef9696e'
-    custom_uuid_base = '99085ddc-bc10-11ed-9a44-7ef9696e'
-    custom_uuid = f'{custom_uuid_base}0000'
+    uuid_base_a = '11085ddc-bc10-11ed-9a44-7ef9696e'
+    streams_a = 4
+    uuid_base_b = '22085ddc-bc10-11ed-9a44-7ef9696e'
+    streams_b = 2
+    processing_count = 4
     cam_service_si_ipaddr = '192.168.1.1'
 
     @classmethod
@@ -37,6 +38,11 @@ class CAMTest(OERuntimeTestCase):
             XenUtils.enter_guest_from_dom0(linux_console, cls.dom0_prompt,
                                            cls.linux_prompt, cls.domu_hostname)
         cls.lt_utils = LinuxTermUtils(cls.tc, linux_console, cls.linux_prompt)
+
+        cls.uuids = (
+            [f"{cls.uuid_base_a}{n:04}" for n in range(cls.streams_a)] +
+            [f"{cls.uuid_base_b}{n:04}" for n in range(cls.streams_b)]
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -57,19 +63,6 @@ class CAMTest(OERuntimeTestCase):
             cmd += f' -u {uuid_base}'
 
         return self.lt_utils.run(cmd, timeout=180)
-
-    def custom_uuid_config(self):
-        uuid = f'{self.custom_uuid}'
-        csc_origin = f'{self.cam_data_path}/stream0.csc.yml'
-        csc_f = f'{self.cam_data_path}/custom_uuid.csc.yml'
-        st = (f'sed -E \'s/uuid: "([0-9a-fA-F-]+)"/uuid: "{uuid}"/\''
-              f' {csc_origin} > {csc_f}')
-        status, output = self.lt_utils.run(st, timeout=20)
-        self.assertEqual(status, 0,
-                         msg=f'Failed to sed stream0.csc.yml\n{output}')
-
-        status, output = self.lt_utils.run(f'cat {csc_f}', timeout=60)
-        self.assertEqual(status, 0, msg=f'cat {csc_f} failed.\n{output}')
 
     @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
     def test_cam_service_help(self):
@@ -93,11 +86,9 @@ class CAMTest(OERuntimeTestCase):
         self.assertEqual(status, 0, msg=f'{st} failed.\n{output}')
         self.assertTrue(r'Usage: cam-app-example [OPTIONS]' in output)
 
-    @OETestDepends(['test_40_cam.CAMTest.test_cam_service_help',
-                    'test_40_cam.CAMTest.test_cam_tool_help',
-                    'test_40_cam.CAMTest.test_cam_app_example_help'])
+    @OETestDepends(['test_40_cam.CAMTest.test_cam_app_example_help'])
     def test_cam_app_example_to_service_on_pc(self):
-        # Check if running cam-app-example without running cam-service result
+        # Check if running cam-app-example without running cam-service results
         # in failure as expected
         status, output = self.start_cam_app()
         self.assertNotEqual(status, 0,
@@ -111,70 +102,53 @@ class CAMTest(OERuntimeTestCase):
                              msg=f'Failed to run cam-app-example.')
 
     @OETestDepends([
-        'test_40_cam.CAMTest.test_cam_app_example_to_service_on_pc'])
+        'test_40_cam.CAMTest.test_cam_app_example_to_service_on_pc'
+    ])
+    def test_data_calibration_on_pc(self):
+        for uuid_base, streams in (
+            (self.uuid_base_a, self.streams_a),
+            (self.uuid_base_b, self.streams_b)
+        ):
+            st = (f'cam-app-example -u {uuid_base} --enable-calibration-mode'
+                  f' -s {streams}')
+            status, output = self.lt_utils.run(st)
+            self.tc.logger.debug(output)
+            self.assertEqual(
+                status, 0,
+                msg='Failed to run cam-app-example calibration mode.'
+            )
+
+        for uuid in self.uuids:
+            csc_file = f'{uuid}.csc.yml'
+            calib_file = f"{uuid}.csel"
+            st = f"test -f {calib_file}"
+            status, _ = self.lt_utils.run(st)
+            self.assertEqual(status, 0,
+                             msg=f'Failed to fetch {calib_file}')
+
+            st = (f'cam-tool analyze -m 1000000 -i {calib_file}')
+
+            status, _ = self.lt_utils.run(st, timeout=180)
+            self.assertEqual(status, 0,
+                             msg=f'An error has occurred for cam-tool')
+
+            st = f'test -f {csc_file}'
+            status, _ = self.lt_utils.run(st)
+            self.assertEqual(status, 0,
+                             msg=f'Failed to fetch {csc_file}')
+
+    @OETestDepends(['test_40_cam.CAMTest.test_cam_tool_help',
+                    'test_40_cam.CAMTest.test_data_calibration_on_pc'])
     def test_cam_tool_pack(self):
-        self.custom_uuid_config()
+        for uuid in self.uuids:
+            csc_f = f'{uuid}.csc.yml'
 
-        uuid = f'{self.custom_uuid}'
-        csc_f = f'{self.cam_data_path}/custom_uuid.csc.yml'
-
-        # Use cam-tool to pack the modified stream configuration
-        csd_f = f'/tmp/{uuid}.csd'
-        st = f'cam-tool pack -i {csc_f} -o {csd_f}'
-        status, output = self.lt_utils.run(st, timeout=180)
-        self.assertEqual(status, 0, msg=f'{st} failed.\n{output}')
-
-    @OETestDepends(['test_40_cam.CAMTest.test_cam_tool_pack'])
-    def test_cam_app_example_with_custom_uuid_to_service_on_pc(self):
-        csd_f = f'/tmp/{self.custom_uuid}.csd'
-
-        # Start cam-service and then use cam-tool to deploy the new stream
-        # configuration with cam-service
-        cam_serv_ctx = self.cam_service_ctx()
-        with cam_serv_ctx:
-            st = f'cam-tool deploy -i {csd_f} -o'
+            # Use cam-tool to pack the modified stream configuration
+            st = f'cam-tool pack -i {csc_f}'
             status, output = self.lt_utils.run(st, timeout=180)
             self.assertEqual(status, 0, msg=f'{st} failed.\n{output}')
 
-            status, _ = self.start_cam_app(uuid_base=self.custom_uuid_base,
-                                           stream_count=1)
-            self.assertEqual(status, 0,
-                             msg=f'Failed to run cam-app-example.')
-
-        self.assertIn(f'{self.custom_uuid} configuration is loaded',
-                      cam_serv_ctx.cmd_output,
-                      (f'Failed! {self.custom_uuid} not found in cam-service'
-                       ' configuration!'))
-
-    @OETestDepends([
-        'test_40_cam.CAMTest.test_cam_app_example'
-        '_with_custom_uuid_to_service_on_pc'])
-    def test_data_calibration_on_pc(self):
-        uuid_base = self.default_uuid_base
-        csc_file = f'{self.cam_data_path}/calibration_generate.csc.yml'
-
-        st = ('cam-app-example --enable-calibration-mode'
-              f' --calibration-directory={self.cam_data_path}')
-        status, _ = self.lt_utils.run(st)
-        self.assertEqual(status, 0,
-                         msg='Failed to run cam-app-example calibration mode.')
-
-        calib_file = f"{self.cam_data_path}/{uuid_base}0000.csel"
-        st = f"test -f {calib_file}"
-        status, _ = self.lt_utils.run(st)
-        self.assertEqual(status, 0,
-                         msg=f'Failed to fetch {calib_file}')
-
-        st = (f'cam-tool analyze -i {calib_file} -o {csc_file}')
-        status, _ = self.lt_utils.run(st, timeout=180)
-        self.assertEqual(status, 0,
-                         msg=f'An error has occurred for cam-tool')
-
-        st = f'test -f {csc_file}'
-        status, _ = self.lt_utils.run(st)
-        self.assertEqual(status, 0,
-                         msg=f'Failed to fetch {csc_file}')
-
+    @OETestDepends(['test_40_cam.CAMTest.test_cam_service_help'])
     def test_cam_service_boot_on_si(self):
         self.target.expect(self.zephyr_console,
                            r'Cam service configuration:',
@@ -183,11 +157,11 @@ class CAMTest(OERuntimeTestCase):
 
     @OETestDepends([
         'test_40_cam.CAMTest.test_cam_service_boot_on_si',
-        'test_40_cam.CAMTest.test_data_calibration_on_pc'])
+        'test_40_cam.CAMTest.test_cam_tool_pack'])
     def test_cam_tool_deploy_to_si(self):
-        for i in range(4):
+        for uuid in self.uuids:
             # Deploy deployment files to Safety Island
-            csd = f"{self.cam_data_path}/{self.default_uuid_base}000{i}.csd"
+            csd = f"{uuid}.csd"
             st = (f'cam-tool deploy -i {csd}'
                   f' -a {self.cam_service_si_ipaddr} -o')
             status, _ = self.lt_utils.run(st)
@@ -195,43 +169,40 @@ class CAMTest(OERuntimeTestCase):
                              msg=f'cam-tool failed to deploy {csd}')
 
             # Verify whether the file exists
-            st = f'fs read /RAM:/{self.default_uuid_base}000{i}.csd'
+            st = f'fs read /RAM:/{uuid}.csd'
             output = self.si1_shell.exec_command(st, timeout=60)
             self.assertIn('File size: 104', output,
                           ('SI: Configuration error for '
-                           f'/RAM:/{self.default_uuid_base}000{i}.csd'))
+                           f'/RAM:/{uuid}.csd'))
 
     @OETestDepends(['test_40_cam.CAMTest.test_cam_tool_deploy_to_si'])
     def test_cam_app_example_to_service_on_si(self):
-        processing_count = 4
-        stream_count = 4
-
-        st = (f'cam-app-example -a {self.cam_service_si_ipaddr}'
-              f' --processing-count {processing_count}'
-              f' --stream-count {stream_count}')
-        status, _ = self.lt_utils.run(st, timeout=60*stream_count)
+        st = (f'cam-app-example -u {self.uuid_base_a}'
+              f' -a {self.cam_service_si_ipaddr}'
+              f' --processing-count {self.processing_count}'
+              f' --stream-count {self.streams_a}')
+        status, _ = self.lt_utils.run(st, timeout=60*self.streams_a)
         self.assertEqual(status, 0, msg='cam-app-example failed.')
 
     @OETestDepends([
         'test_40_cam.CAMTest.test_cam_app_example_to_service_on_si'])
-    def test_cam_app_example_to_service_on_si_with_multiple_connection(self):
-        processing_count = 4
-        stream_count = 4
-
-        st = (f'cam-app-example -a {self.cam_service_si_ipaddr}'
-              f' --processing-count {processing_count}'
-              f' --stream-count {stream_count}'
+    def test_cam_app_example_to_service_on_si_with_multiple_connections(self):
+        st = (f'cam-app-example -u {self.uuid_base_a}'
+              f' -a {self.cam_service_si_ipaddr}'
+              f' --processing-count {self.processing_count}'
+              f' --stream-count {self.streams_a}'
               ' --enable-multiple-connection')
-        status, _ = self.lt_utils.run(st, timeout=60*stream_count)
+        status, _ = self.lt_utils.run(st, timeout=60*self.streams_a)
         self.assertEqual(status, 0, msg='cam-app-example failed.')
 
     @OETestDepends([
         'test_40_cam.CAMTest.test_cam_app_example_to_service'
-        '_on_si_with_multiple_connection'])
+        '_on_si_with_multiple_connections'])
     def test_logical_check_on_si(self):
         event_interval = "0,100"
 
-        st = (f'cam-app-example -a {self.cam_service_si_ipaddr}'
+        st = (f'cam-app-example -u {self.uuid_base_a}'
+              f' -a {self.cam_service_si_ipaddr}'
               f' --event-interval={event_interval}')
         status, _ = self.lt_utils.run(st)
         self.assertEqual(status, 0,
@@ -242,10 +213,11 @@ class CAMTest(OERuntimeTestCase):
     @OETestDepends([
         'test_40_cam.CAMTest.test_logical_check_on_si'])
     def test_temporal_check_on_si(self):
-        st = (f'cam-app-example -a {self.cam_service_si_ipaddr}'
+        st = (f'cam-app-example -u {self.uuid_base_a}'
+              f' -a {self.cam_service_si_ipaddr}'
               ' --enable-fault-injection'
               ' --fault-injection-time=8000'
-              ' --processing-count=4')
+              f' --processing-count={self.processing_count}')
         status, _ = self.lt_utils.run(st, timeout=120)
         self.assertEqual(status, 0,
                          msg='cam-app-example failed.')
