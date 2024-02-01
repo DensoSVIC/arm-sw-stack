@@ -13,7 +13,7 @@ config MBOX_MHUV3
 
 config MBOX_MHUV3_MAX_LOGICAL_CH_NUM
 	int "The maximum number of MHUv3's logical channel"
-	default 32
+	default 4096
 	depends on MBOX_MHUV3
 	help
 	  This option specifies the maximum number of logical

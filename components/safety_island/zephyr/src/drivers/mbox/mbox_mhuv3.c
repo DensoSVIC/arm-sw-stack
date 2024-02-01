@@ -151,7 +151,7 @@ static void mbox_mhuv3_dbch_handler(const struct device *dev)
 			/* Call channel call back */
 			data->cb[ch_idx](dev, ch_idx,
 					 data->user_data[ch_idx], NULL);
-			addr = (mem_addr_t)&mr[dbch_int_st_idx].mdbcw_clr;
+			addr = (mem_addr_t)&mr[idx].mdbcw_clr;
 			sys_set_bit(addr, sub_idx);
 		}
 	}
