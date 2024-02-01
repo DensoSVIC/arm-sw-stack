@@ -8,7 +8,7 @@ by advertising it on the struct ethtool_ops and calling
 skb_tx_timestamp before passing the buffer to the queue.
 
 Signed-off-by: Luca Fancellu <luca.fancellu@arm.com>
-Upstream-Status: Submitted [https://lore.kernel.org/netdev/20231010142630.984585-1-luca.fancellu@arm.com/]
+Upstream-Status: Backport [https://github.com/torvalds/linux/commit/0b38d2ec2282f39ecb82b6cdc9af42f817e77551]
 ---
  drivers/net/xen-netback/interface.c | 5 ++++-
  1 file changed, 4 insertions(+), 1 deletion(-)
