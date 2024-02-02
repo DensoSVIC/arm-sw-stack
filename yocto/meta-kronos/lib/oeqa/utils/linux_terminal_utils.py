@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+import asyncio
 import os
 import pexpect
 import re
@@ -92,7 +93,7 @@ class LinuxBackgroundRun(object):
             err_msg += f'Unable to retrieve the logs ({self.cmd_log})'
         if err_msg != '':
             raise self.LinuxBgException(
-                    f'LinuxBackgroundRun Failed:\n{err_msg}')
+                f'LinuxBackgroundRun Failed:\n{err_msg}')
         self.logger.debug(
             f"LinuxBackgroundRun: {self.bin_name} logs:\n{self.cmd_output}")
 
@@ -110,6 +111,7 @@ class LinuxTermUtils(object):
         # Xen console fix
         self.pexpect_send = self.console.send
         self.console.send = self.chunked_send
+        self.run_in_progress = False
 
     def chunked_send(self, s):
         # The Xen console has a limitation where if more than 128 characters
@@ -184,20 +186,22 @@ class LinuxTermUtils(object):
                 self.logger.debug(("LinuxTermUtils: stop_cmd_wait_prompt: "
                                   f"Attempt number '{failsafe}' failed."))
 
-    def run(self, cmd, timeout=None):
+    def _run_magic(self, cmd, magic_pattern):
+        # This function should never be called while a run is already in
+        # progress
+        assert (not self.run_in_progress)
+        self.run_in_progress = True
+
         # This function saves the exit code from the "cmd" and outputs
         # a pattern at the end so that expect can look for that pattern.
         # Using this function there is no need to know the cmd output and
         # expect will wait for it anyway thanks to the pattern.
-        tout = self.timeout if timeout is None else timeout
-        magic_pattern = r'--<#>--'
         self.logger.debug(f"LinuxTermUtils: Executing command: {cmd}")
         self.console.sendline(cmd + f';errcode=$?;echo \"{magic_pattern}\"')
         # First expect to wait at least the command in echo
         self.console.expect(f'{cmd.split(" ")[0]}')
-        # Second expect to wait for the pattern
-        self.console.expect(rf'{self.endline}{magic_pattern}{self.endline}',
-                            timeout=tout)
+
+    def _process_magic(self, magic_pattern, timeout):
         # The output is between the 1st and 2nd expect, start removing the \r
         # followed by any other character, that happens when the shell column
         # are not enough and so a carriage return and the character immediately
@@ -214,12 +218,57 @@ class LinuxTermUtils(object):
         self.logger.debug(f"LinuxTermUtils: Output:\n{output}")
         self.console.sendline('echo $errcode')
         self.console.expect(rf'{self.endline}(\d+){self.endline}',
-                            timeout=tout)
+                            timeout=timeout)
         exit_code = int(self.console.match[1])
         self.logger.debug(f"LinuxTermUtils: Return code: {exit_code}")
         self.send_wait_prompt()
 
+        self.run_in_progress = False
+
         return (exit_code, output)
+
+    def run(self, cmd, timeout=None):
+        timeout = timeout or self.timeout
+        magic_pattern = r'--<#>--'
+        self._run_magic(cmd, magic_pattern)
+        # Wait for the magic pattern
+        self.console.expect(rf'{self.endline}{magic_pattern}{self.endline}',
+                            timeout=timeout)
+        return self._process_magic(magic_pattern, timeout)
+
+    async def run_async(self, cmd, timeout=None):
+        timeout = timeout or self.timeout
+        magic_pattern = r'--<#>--'
+        self._run_magic(cmd, magic_pattern)
+        # Async wait for the magic pattern
+        await self.console.expect(
+            rf'{self.endline}{magic_pattern}{self.endline}',
+            timeout=timeout, async_=True)
+
+        return self._process_magic(magic_pattern, timeout)
 
     def background_cmd_ctx(self, cmd, timeout=None):
         return LinuxBackgroundRun(self, cmd, timeout)
+
+
+class LinuxMultiTermUtils(object):
+    def __init__(self):
+        self.cmd_list = []
+
+    def add_cmd(self, cmd, terminal, timeout):
+        self.cmd_list.append((cmd, terminal, timeout))
+
+    async def _run_cmds(self):
+        for terminal in set(t for _, t, _ in self.cmd_list):
+            terminal.send_wait_prompt()
+
+        results = await asyncio.gather(
+            *(
+                terminal.run_async(cmd, timeout=timeout)
+                for cmd, terminal, timeout in self.cmd_list
+            )
+        )
+        return results
+
+    def run_concurrent(self):
+        return asyncio.run(self._run_cmds())

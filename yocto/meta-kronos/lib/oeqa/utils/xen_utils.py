@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 from time import sleep
+from oeqa.utils.linux_terminal_utils import LinuxTermUtils
 
 
 class XenUtils:
@@ -48,3 +49,20 @@ class XenUtils:
         else:
             console.sendline()
         console.expect(dom0_prompt, timeout=60)
+
+    @staticmethod
+    def spawn_console_domu(linux_prompt, dom0_prompt, domu_hostname, target,
+                           logger):
+        linux_console = LinuxTermUtils.open_ssh_shell(target, domu_hostname,
+                                                      logger)
+        XenUtils.enter_guest_from_dom0(linux_console, dom0_prompt,
+                                       linux_prompt, domu_hostname)
+
+        return linux_console
+
+    @staticmethod
+    def close_console_domu(linux_console, linux_prompt, dom0_prompt,
+                           domu_hostname, logger):
+        XenUtils.exit_guest_to_dom0(linux_console.console, dom0_prompt,
+                                    linux_prompt, domu_hostname, False)
+        LinuxTermUtils.close_ssh_shell(linux_console.console, logger)

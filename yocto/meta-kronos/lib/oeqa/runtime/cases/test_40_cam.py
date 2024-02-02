@@ -7,118 +7,114 @@
 import re
 from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.core.decorator.depends import OETestDepends
-from oeqa.utils.linux_terminal_utils import LinuxTermUtils
+from oeqa.core.decorator.data import skipIfFeature
+from oeqa.utils.linux_terminal_utils import LinuxTermUtils, LinuxMultiTermUtils
 from oeqa.utils.zephyr_shell import Shell
 from oeqa.utils.xen_utils import XenUtils
+import unittest
+
+
+###############################################################################
+# Global variables and console helpers                                        #
+###############################################################################
+
+zephyr_console = 'safety_island_c1'
+cam_service_si_ipaddr = '192.168.1.1'
+hostname = r'fvp-rd-kronos'
+
+
+class Baremetal:
+    uuid_base = '11085ddc-bc10-11ed-9a44-7ef9696e'
+    streams = 4
+    processing_count = 4
+
+    def __init__(self):
+        self.uuids = [f"{self.uuid_base}{n:04}" for n in range(self.streams)]
+
+
+class DomU1(Baremetal):
+    domu_hostname = r'domu1'
+    dom0_prompt = rf'root@{hostname}:~#'
+
+    def __init__(self, tc):
+        self.linux_prompt = rf'root@{self.domu_hostname}:~#'
+        self.tc = tc
+        linux_console = XenUtils.spawn_console_domu(self.linux_prompt,
+                                                    self.dom0_prompt,
+                                                    self.domu_hostname,
+                                                    self.tc.target,
+                                                    self.tc.logger)
+        self.lt_utils = LinuxTermUtils(self.tc, linux_console,
+                                       self.linux_prompt)
+
+        super().__init__()
+
+    def get_lt_utils(self):
+        return self.lt_utils
+
+    def shut_down(self):
+        XenUtils.close_console_domu(self.lt_utils, self.linux_prompt,
+                                    self.dom0_prompt, self.domu_hostname,
+                                    self.tc.logger)
+
+
+class DomU2(DomU1):
+    domu_hostname = r'domu2'
+    uuid_base = '22085ddc-bc10-11ed-9a44-7ef9696e'
+    streams = 2
+    processing_count = 4
+
+
+###############################################################################
+# Test suites                                                                 #
+###############################################################################
+
+
+class CAMServiceTest(OERuntimeTestCase):
+    def test_cam_service_boot_on_si(self):
+        self.target.expect(zephyr_console,
+                           r'Cam service configuration:',
+                           timeout=180)
+        self.target.expect(zephyr_console, r'uart:~\$', timeout=180)
 
 
 class CAMTest(OERuntimeTestCase):
-    zephyr_console = 'safety_island_c1'
-    hostname = r'fvp-rd-kronos'
-    domu_hostname = r'domu1'
-    uuid_base_a = '11085ddc-bc10-11ed-9a44-7ef9696e'
-    streams_a = 4
-    uuid_base_b = '22085ddc-bc10-11ed-9a44-7ef9696e'
-    streams_b = 2
-    processing_count = 4
-    cam_service_si_ipaddr = '192.168.1.1'
+    """
+    Run tests on either Dom0 or DomU1 for the baremetal or virtualization cases
+    respectively.
+    """
 
     @classmethod
     def setUpClass(cls):
         super(CAMTest, cls).setUpClass()
-        cls.linux_prompt = rf'root@{cls.hostname}:~#'
-        linux_console = cls.tc.target._get_terminal('default')
-        cls.si1_shell = Shell(cls.tc.target, cls.zephyr_console, cls.tc.logger)
-        if ('virtualization' in cls.td.get('IMAGE_FEATURES', '').split()):
-            cls.linux_prompt = rf'root@{cls.domu_hostname}:~#'
-            cls.dom0_prompt = rf'root@{cls.hostname}:~#'
-            linux_console = LinuxTermUtils.open_ssh_shell(cls.tc.target,
-                                                          cls.domu_hostname,
-                                                          cls.tc.logger)
-            XenUtils.enter_guest_from_dom0(linux_console, cls.dom0_prompt,
-                                           cls.linux_prompt, cls.domu_hostname)
-        cls.lt_utils = LinuxTermUtils(cls.tc, linux_console, cls.linux_prompt)
+        cls.si1_shell = Shell(cls.tc.target, zephyr_console, cls.tc.logger)
 
-        cls.uuids = (
-            [f"{cls.uuid_base_a}{n:04}" for n in range(cls.streams_a)] +
-            [f"{cls.uuid_base_b}{n:04}" for n in range(cls.streams_b)]
-        )
+        if not ('virtualization' in cls.td.get('IMAGE_FEATURES', '').split()):
+            cls.linux_prompt = rf'root@{hostname}:~#'
+            linux_console = cls.tc.target._get_terminal('default')
+            cls.lt_utils = LinuxTermUtils(cls.tc, linux_console,
+                                          cls.linux_prompt)
+            cls.dom = Baremetal()
+        else:
+            cls.dom = DomU1(cls.tc)
+            cls.lt_utils = cls.dom.get_lt_utils()
 
     @classmethod
     def tearDownClass(cls):
         if ('virtualization' in cls.td.get('IMAGE_FEATURES', '').split()):
-            XenUtils.exit_guest_to_dom0(cls.lt_utils.console, cls.dom0_prompt,
-                                        cls.linux_prompt, cls.domu_hostname,
-                                        False)
-            LinuxTermUtils.close_ssh_shell(cls.lt_utils.console, cls.tc.logger)
+            cls.dom.shut_down()
+
         super(CAMTest, cls).tearDownClass()
 
-    def start_cam_app(self, uuid_base=None, stream_count=2):
-        cmd = f'cam-app-example -t 3000 -c 4 -s {stream_count}'
-        if uuid_base is not None:
-            cmd += f' -u {uuid_base}'
-
-        return self.lt_utils.run(cmd, timeout=180)
-
-    @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
-    def test_data_calibration(self):
-        for uuid_base, streams in (
-            (self.uuid_base_a, self.streams_a),
-            (self.uuid_base_b, self.streams_b)
-        ):
-            st = (f'cam-app-example -u {uuid_base} --enable-calibration-mode'
-                  f' -s {streams}')
-            status, output = self.lt_utils.run(st)
-            self.tc.logger.debug(output)
-            self.assertEqual(
-                status, 0,
-                msg='Failed to run cam-app-example calibration mode.'
-            )
-
-        for uuid in self.uuids:
-            csc_file = f'{uuid}.csc.yml'
-            calib_file = f"{uuid}.csel"
-            st = f"test -f {calib_file}"
-            status, _ = self.lt_utils.run(st)
-            self.assertEqual(status, 0,
-                             msg=f'Failed to fetch {calib_file}')
-
-            st = (f'cam-tool analyze -m 1000000 -i {calib_file}')
-
-            status, _ = self.lt_utils.run(st, timeout=180)
-            self.assertEqual(status, 0,
-                             msg=f'An error has occurred for cam-tool')
-
-            st = f'test -f {csc_file}'
-            status, _ = self.lt_utils.run(st)
-            self.assertEqual(status, 0,
-                             msg=f'Failed to fetch {csc_file}')
-
-    @OETestDepends(['test_40_cam.CAMTest.test_data_calibration'])
-    def test_cam_tool_pack(self):
-        for uuid in self.uuids:
-            csc_f = f'{uuid}.csc.yml'
-
-            # Use cam-tool to pack the modified stream configuration
-            st = f'cam-tool pack -i {csc_f}'
-            status, output = self.lt_utils.run(st, timeout=180)
-            self.assertEqual(status, 0, msg=f'{st} failed.\n{output}')
-
-    def test_cam_service_boot_on_si(self):
-        self.target.expect(self.zephyr_console,
-                           r'Cam service configuration:',
-                           timeout=180)
-        self.target.expect(self.zephyr_console, r'uart:~\$', timeout=180)
-
     @OETestDepends([
-        'test_40_cam.CAMTest.test_cam_service_boot_on_si',
+        'test_40_cam.CAMServiceTest.test_cam_service_boot_on_si',
         'test_40_cam.CAMTest.test_cam_tool_pack'])
     def test_cam_tool_deploy_to_si(self):
-        for uuid in self.uuids:
+        for uuid in self.dom.uuids:
             # Deploy deployment files to Safety Island
             csd = f"{uuid}.csd"
             st = (f'cam-tool deploy -i {csd}'
-                  f' -a {self.cam_service_si_ipaddr} -o')
+                  f' -a {cam_service_si_ipaddr} -o')
             status, _ = self.lt_utils.run(st)
             self.assertEqual(status, 0,
                              msg=f'cam-tool failed to deploy {csd}')
@@ -146,49 +142,191 @@ class CAMTest(OERuntimeTestCase):
 
     @OETestDepends(['test_40_cam.CAMTest.test_cam_tool_deploy_to_si'])
     def test_cam_app_example_to_service_on_si(self):
-        st = (f'cam-app-example -u {self.uuid_base_a}'
-              f' -a {self.cam_service_si_ipaddr}'
-              f' --processing-count {self.processing_count}'
-              f' --stream-count {self.streams_a}')
-        status, _ = self.run_check_errors(st, timeout=60*self.streams_a)
+        st = (f'cam-app-example -u {self.dom.uuid_base}'
+              f' -a {cam_service_si_ipaddr}'
+              f' --processing-count {self.dom.processing_count}'
+              f' --stream-count {self.dom.streams}')
+        status, _ = self.run_check_errors(st, timeout=60*self.dom.streams)
         self.assertEqual(status, 0, msg='cam-app-example failed.')
 
     @OETestDepends([
         'test_40_cam.CAMTest.test_cam_app_example_to_service_on_si'])
     def test_cam_app_example_to_service_on_si_with_multiple_connections(self):
-        st = (f'cam-app-example -u {self.uuid_base_a}'
-              f' -a {self.cam_service_si_ipaddr}'
-              f' --processing-count {self.processing_count}'
-              f' --stream-count {self.streams_a}'
+        st = (f'cam-app-example -u {self.dom.uuid_base}'
+              f' -a {cam_service_si_ipaddr}'
+              f' --processing-count {self.dom.processing_count}'
+              f' --stream-count {self.dom.streams}'
               ' --enable-multiple-connection')
-        status, _ = self.run_check_errors(st, timeout=60*self.streams_a)
+        status, _ = self.run_check_errors(st, timeout=60*self.dom.streams)
         self.assertEqual(status, 0, msg='cam-app-example failed.')
 
     @OETestDepends([
-        'test_40_cam.CAMTest.test_cam_app_example_to_service'
-        '_on_si_with_multiple_connections'])
+        'test_40_cam.CAMTest.'
+        'test_cam_app_example_to_service_on_si_with_multiple_connections'])
     def test_logical_check_on_si(self):
         event_interval = "0,100"
 
-        st = (f'cam-app-example -u {self.uuid_base_a}'
-              f' -a {self.cam_service_si_ipaddr}'
+        st = (f'cam-app-example -u {self.dom.uuid_base}'
+              f' -a {cam_service_si_ipaddr}'
               f' --event-interval={event_interval}')
         status, _ = self.lt_utils.run(st)
         self.assertEqual(status, 0,
                          msg='cam-app-example failed.')
-        self.target.expect(self.zephyr_console, r'Stream logical error',
+        self.target.expect(zephyr_console, r'Stream logical error',
                            timeout=300)
 
-    @OETestDepends([
-        'test_40_cam.CAMTest.test_logical_check_on_si'])
+    @OETestDepends(['test_40_cam.CAMTest.test_logical_check_on_si'])
     def test_temporal_check_on_si(self):
-        st = (f'cam-app-example -u {self.uuid_base_a}'
-              f' -a {self.cam_service_si_ipaddr}'
+        st = (f'cam-app-example -u {self.dom.uuid_base}'
+              f' -a {cam_service_si_ipaddr}'
               ' --enable-fault-injection'
               ' --fault-injection-time=8000'
-              f' --processing-count={self.processing_count}')
+              f' --processing-count={self.dom.processing_count}')
         status, _ = self.lt_utils.run(st, timeout=120)
         self.assertEqual(status, 0,
                          msg='cam-app-example failed.')
-        self.target.expect(self.zephyr_console, r'Stream temporal error',
+        self.target.expect(zephyr_console, r'Stream temporal error',
                            timeout=300)
+
+    @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
+    def test_data_calibration(self):
+        st = (f'cam-app-example -u {self.dom.uuid_base} '
+              f' --enable-calibration-mode -s {self.dom.streams}')
+        status, output = self.lt_utils.run(st)
+        self.tc.logger.debug(output)
+        self.assertEqual(
+            status, 0,
+            msg='Failed to run cam-app-example calibration mode.'
+        )
+
+        for uuid in self.dom.uuids:
+            csc_file = f'{uuid}.csc.yml'
+            calib_file = f"{uuid}.csel"
+            st = f"test -f {calib_file}"
+            status, _ = self.lt_utils.run(st)
+            self.assertEqual(status, 0,
+                             msg=f'Failed to fetch {calib_file}')
+
+            st = (f'cam-tool analyze -m 1000000 -i {calib_file}')
+
+            status, _ = self.lt_utils.run(st, timeout=180)
+            self.assertEqual(status, 0,
+                             msg=f'An error has occurred for cam-tool')
+
+            st = f'test -f {csc_file}'
+            status, _ = self.lt_utils.run(st)
+            self.assertEqual(status, 0,
+                             msg=f'Failed to fetch {csc_file}')
+
+    @OETestDepends(['test_40_cam.CAMTest.test_data_calibration'])
+    def test_cam_tool_pack(self):
+        for uuid in self.dom.uuids:
+            csc_f = f'{uuid}.csc.yml'
+
+            # Use cam-tool to pack the modified stream configuration
+            st = f'cam-tool pack -i {csc_f}'
+            status, output = self.lt_utils.run(st, timeout=180)
+            self.assertEqual(status, 0, msg=f'{st} failed.\n{output}')
+
+
+class CAMTestDomU2(CAMTest):
+
+    @classmethod
+    def setUpClass(cls):
+        if not ('virtualization' in cls.td.get('IMAGE_FEATURES', '').split()):
+            raise unittest.SkipTest("CAMTestDomU2 skipped because this build"
+                                    " is not for virtualization architecture")
+
+        if int(cls.td.get('DOMU_INSTANCES', 0)) < 2:
+            raise unittest.SkipTest("CAMTestDomU2 skipped because "
+                                    "DomU2 is not generated in this build")
+
+        cls.si1_shell = Shell(cls.tc.target, zephyr_console, cls.tc.logger)
+
+        cls.dom = DomU2(cls.tc)
+        cls.lt_utils = cls.dom.get_lt_utils()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.dom.shut_down()
+
+    @OETestDepends([
+        'test_40_cam.CAMServiceTest.test_cam_service_boot_on_si',
+        'test_40_cam.CAMTestDomU2.test_cam_tool_pack'])
+    def test_cam_tool_deploy_to_si(self):
+        super().test_cam_tool_deploy_to_si()
+
+    @OETestDepends(['test_40_cam.CAMTestDomU2.test_cam_tool_deploy_to_si'])
+    def test_cam_app_example_to_service_on_si(self):
+        super().test_cam_app_example_to_service_on_si()
+
+    @OETestDepends([
+        'test_40_cam.CAMTestDomU2.test_cam_app_example_to_service_on_si'])
+    def test_cam_app_example_to_service_on_si_with_multiple_connections(self):
+        (
+            super().
+            test_cam_app_example_to_service_on_si_with_multiple_connections()
+        )
+
+    @OETestDepends([
+        'test_40_cam.CAMTestDomU2.'
+        'test_cam_app_example_to_service_on_si_with_multiple_connections'])
+    def test_logical_check_on_si(self):
+        super().test_logical_check_on_si()
+
+    @OETestDepends(['test_40_cam.CAMTestDomU2.test_logical_check_on_si'])
+    def test_temporal_check_on_si(self):
+        super().test_temporal_check_on_si()
+
+    @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
+    def test_data_calibration(self):
+        super().test_data_calibration()
+
+    @OETestDepends(['test_40_cam.CAMTestDomU2.test_data_calibration'])
+    def test_cam_tool_pack(self):
+        super().test_cam_tool_pack()
+
+
+class CAMTestMultiDom(OERuntimeTestCase):
+    @classmethod
+    def setUpClass(cls):
+        if not ('virtualization' in cls.td.get('IMAGE_FEATURES', '').split()):
+            raise unittest.SkipTest("CAMTestDomU2 skipped because this build "
+                                    "is not for virtualization architecture")
+
+        if int(cls.td.get('DOMU_INSTANCES', 0)) < 2:
+            raise unittest.SkipTest("CAMTestDomU2 skipped because "
+                                    "DomU2 is not generated in this build")
+
+        super(CAMTestMultiDom, cls).setUpClass()
+
+        cls.domu1 = DomU1(cls.tc)
+        cls.domu2 = DomU2(cls.tc)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.domu1.shut_down()
+        cls.domu2.shut_down()
+
+        super(CAMTestMultiDom, cls).tearDownClass()
+
+    @OETestDepends([
+        'test_40_cam.CAMTest.test_temporal_check_on_si',
+        'test_40_cam.CAMTestDomU2.test_temporal_check_on_si'])
+    def test_cam_app_example_to_service_on_si_with_multiple_vms(self):
+        multi_term = LinuxMultiTermUtils()
+        for domu in (self.domu1, self.domu2):
+            multi_term.add_cmd(
+                (f'cam-app-example -u {domu.uuid_base}'
+                 f' -a {cam_service_si_ipaddr}'
+                 f' --processing-count {domu.processing_count}'
+                 f' --stream-count {domu.streams}'),
+                domu.get_lt_utils(),
+                60*domu.streams
+            )
+
+        results = multi_term.run_concurrent()
+        self.assertEqual(len(results), 2, msg='cam-app-example failed to run.')
+
+        for status, _ in results:
+            self.assertEqual(status, 0, msg='cam-app-example failed.')
