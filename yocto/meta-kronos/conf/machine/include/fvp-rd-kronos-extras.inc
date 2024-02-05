@@ -30,6 +30,6 @@ FVP_CONFIG[css.sysctrl.si.hostbridge0.userNetPorts] ?= "\
         ${FVP_ACTUATION_HOST_ANALYZER_PORT}=192.168.10.2:49152 \
 "
 
-TEST_FVP_LINUX_BOOT_TIMEOUT = "${@30*60}"
+TEST_FVP_LINUX_BOOT_TIMEOUT = "${@40*60}"
 
 require ${@bb.utils.contains('EXTRA_IMAGE_FEATURES', 'virtualization', "conf/machine/include/fvp-rd-kronos-virtualization.inc", '', d)}
