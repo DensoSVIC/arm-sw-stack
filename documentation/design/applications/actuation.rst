@@ -69,7 +69,7 @@ The Actuation Demo on Kronos has 3 components:
     Actuation Demo
 
   * Recipe at
-    :kronos-repo:`yocto/meta-kronos/recipes-demos/actuation/actuation-player_1.0.0.bb`
+    :kronos-repo:`yocto/meta-kronos/recipes-demos/actuation/actuation-player_2.0.0.bb`
 
 * Actuation Service
 
@@ -93,7 +93,7 @@ The Actuation Demo on Kronos has 3 components:
   * Checks for correctness of the "Actuation Service" output
 
   * Recipe at
-    :kronos-repo:`yocto/meta-kronos/recipes-demos/actuation/packet-analyzer-native_1.0.0.bb`
+    :kronos-repo:`yocto/meta-kronos/recipes-demos/actuation/packet-analyzer-native_2.0.0.bb`
 
 Communication Interfaces
 ========================
