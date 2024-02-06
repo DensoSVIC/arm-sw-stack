@@ -8,9 +8,9 @@
 Changelog & Release Notes
 #########################
 
-**********
-Unreleased
-**********
+****
+v1.0
+****
 
 New Features
 ============
