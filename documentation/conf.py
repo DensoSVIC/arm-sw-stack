@@ -348,13 +348,13 @@ rst_prolog = f"""
 # URL to use for references to repository paths
 repo_url_pattern = os.environ.get(
     'REPO_URL_PATTERN',
-    'https://gitlab.arm.com/automotive-and-industrial/kronos/kronos/-/tree/{ref}/{path}')  # noqa
+    'https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/kronos/-/tree/{ref}/{path}')  # noqa
 # Read the Docs sometimes adds extra quotes to environment variables
 repo_url_pattern = repo_url_pattern.strip("'")
 
 meta_arm_url_repo_pattern = os.environ.get(
     'META_ARM_REPO_URL_PATTERN',
-    'https://git.yoctoproject.org/meta-arm/tree/{path}?h={ref}')
+    'https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/meta-arm/tree/{path}?h={ref}')  # noqa
 # Read the Docs sometimes adds extra quotes to environment variables
 meta_arm_url_repo_pattern = meta_arm_url_repo_pattern.strip("'")
 
