@@ -10,6 +10,6 @@ repos:
   meta-arm:
   # commit:
   meta-openembedded:
-    branch: nanbield
+    commit: da9063bdfbe130f424ba487f167da68e0ce90e7d
   poky:
-    branch: nanbield
+    commit: 6d6ccbca0ce6b145224fa94d3c62a45e453c969f

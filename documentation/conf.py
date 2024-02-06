@@ -213,25 +213,25 @@ rst_prolog = f"""
 .. |meta-arm revision| replace:: HEAD
 .. |meta-cassini branch| replace:: {cassini_version}
 .. |meta-cassini repository| replace:: https://gitlab.com/Linaro/cassini/meta-cassini
-.. |meta-cassini revision| replace:: HEAD
+.. |meta-cassini revision| replace:: 3c6f011c78b4bad210e14cffaae33d8da5fcb288
 .. |meta-clang branch| replace:: {yocto_version}
 .. |meta-clang repository| replace:: https://github.com/kraj/meta-clang
-.. |meta-clang revision| replace:: HEAD
+.. |meta-clang revision| replace:: 5170ec9cdfe215fcef146fa9142521bfad1d7d6c
 .. |meta-openembedded branch| replace:: {yocto_version}
 .. |meta-openembedded repository| replace:: https://git.openembedded.org/meta-openembedded
-.. |meta-openembedded revision| replace:: HEAD
+.. |meta-openembedded revision| replace:: da9063bdfbe130f424ba487f167da68e0ce90e7d
 .. |meta-security branch| replace:: {yocto_version}
 .. |meta-security repository| replace:: https://git.yoctoproject.org/git/meta-security
-.. |meta-security revision| replace:: HEAD
+.. |meta-security revision| replace:: 5938fa58396968cc6412b398d403e37da5b27fce
 .. |meta-virtualization branch| replace:: {yocto_version}
 .. |meta-virtualization repository| replace:: https://git.yoctoproject.org/git/meta-virtualization
-.. |meta-virtualization revision| replace:: HEAD
+.. |meta-virtualization revision| replace:: ac125d881f34ff356390e19e02964f8980d4ec38
 .. |meta-zephyr branch| replace:: {yocto_version}
 .. |meta-zephyr repository| replace:: https://git.yoctoproject.org/git/meta-zephyr
-.. |meta-zephyr revision| replace:: HEAD
+.. |meta-zephyr revision| replace:: fa76b75bd65da63abcc2d65dd5d4eb24296f2f65
 .. |poky branch| replace:: {yocto_version}
 .. |poky repository| replace:: https://git.yoctoproject.org/git/poky
-.. |poky revision| replace:: HEAD
+.. |poky revision| replace:: 6d6ccbca0ce6b145224fa94d3c62a45e453c969f
 .. |yocto version| replace:: {yocto_version}
 
 .. _ACS: https://developer.arm.com/Architectures/Architectural%20Compliance%20Suite
