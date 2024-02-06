@@ -5,4 +5,4 @@
 # SPDX-License-Identifier: MIT
 
 BRANCH_ACTUATION ?= "branch=main"
-SRCREV_ACTUATION ?= "72e357bf6d21c93d3414486870eddceed7ff14b3"
+SRCREV_ACTUATION ?= "ef5a0affc5ecaa5a397d557cd3bc2adfeb2cc590"
