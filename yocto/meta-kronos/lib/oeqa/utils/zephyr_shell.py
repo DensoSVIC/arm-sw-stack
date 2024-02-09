@@ -48,7 +48,7 @@ class Shell:
         regex_prompt = re.escape(self.prompt)
         self.clear_buffer()
         while time.time() < timeout_time:
-            self.target.sendline(self.console)
+            self.send_empty_line()
             self.logger.debug("Awaiting console...")
             try:
                 line = self.target.expect(self.console, regex_prompt,
@@ -62,24 +62,42 @@ class Shell:
             return True
         return False
 
-    def exec_command(self, command: str, timeout=None) -> str:
-        """
-        Send shell command to a device and return response. Passed command
-        is extended by two expects - first one to execute this command
-        on a device, second one to receive next prompt as a signal that
-        execution was finished.
-        """
-        timeout = timeout or self.base_timeout
-        regex_prompt = re.escape(self.prompt)
+    def run_command(self, command: str):
         regex_command = f'.*{command}'
-        self.clear_buffer()
         self.logger.debug(f"Executing command: {command}")
         self.target.sendline(self.console, command.encode())
         # wait for device command print - it should be done immediately after
         # sending command to device
         self.target.expect(self.console, regex_command, timeout=20.0)
+
+    def exec_command(self, command: str, timeout=None) -> str:
+        """
+        Send shell command to a device and return response. The call to
+        run_command expects the command string itself, meaning that the console
+        output returned is for the execution of the command.
+        """
+        lines, _ = self.exec_fn(
+            timeout_prompt=timeout, fn=self.run_command, command=command)
+
+        return lines
+
+    def exec_fn(self, fn, *args, timeout_prompt=None, **kwargs):
+        """
+        Call any function and return a tuple of:
+        1. The console output during the time of the function run.
+        2. The function return value.
+        """
+        timeout_prompt = timeout_prompt or self.base_timeout
+        self.clear_buffer()
+        self.logger.debug(f"Calling monitored function")
+        fn_return = fn(*args, **kwargs)
         # wait for device command execution
-        self.target.expect(self.console, regex_prompt, timeout=timeout)
+        regex_prompt = re.escape(self.prompt)
+        self.target.expect(self.console, regex_prompt,
+                           timeout=timeout_prompt)
         lines = self.target.before(self.console).strip().decode()
         self.logger.debug(f"Output:\n{lines}")
-        return lines
+        return lines, fn_return
+
+    def send_empty_line(self):
+        self.target.sendline(self.console)

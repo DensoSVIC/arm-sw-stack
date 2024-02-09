@@ -175,13 +175,27 @@ class CAMTest(OERuntimeTestCase):
                           ('SI: Configuration error for '
                            f'/RAM:/{uuid}.csd'))
 
+    def run_check_errors(self, cmd, timeout):
+        def run(cmd, timeout):
+            lt_run_return = self.lt_utils.run(cmd=cmd, timeout=timeout)
+            self.si1_shell.send_empty_line()
+
+            return lt_run_return
+
+        lines, fn_return = self.si1_shell.exec_fn(
+            run, cmd=cmd, timeout=timeout)
+
+        self.assertFalse("ERROR:" in lines, "Errors found on cam-service.")
+
+        return fn_return
+
     @OETestDepends(['test_40_cam.CAMTest.test_cam_tool_deploy_to_si'])
     def test_cam_app_example_to_service_on_si(self):
         st = (f'cam-app-example -u {self.uuid_base_a}'
               f' -a {self.cam_service_si_ipaddr}'
               f' --processing-count {self.processing_count}'
               f' --stream-count {self.streams_a}')
-        status, _ = self.lt_utils.run(st, timeout=60*self.streams_a)
+        status, _ = self.run_check_errors(st, timeout=60*self.streams_a)
         self.assertEqual(status, 0, msg='cam-app-example failed.')
 
     @OETestDepends([
@@ -192,7 +206,7 @@ class CAMTest(OERuntimeTestCase):
               f' --processing-count {self.processing_count}'
               f' --stream-count {self.streams_a}'
               ' --enable-multiple-connection')
-        status, _ = self.lt_utils.run(st, timeout=60*self.streams_a)
+        status, _ = self.run_check_errors(st, timeout=60*self.streams_a)
         self.assertEqual(status, 0, msg='cam-app-example failed.')
 
     @OETestDepends([
