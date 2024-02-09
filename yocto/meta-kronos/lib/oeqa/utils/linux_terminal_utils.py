@@ -7,6 +7,7 @@
 import os
 import pexpect
 import re
+import traceback
 from datetime import datetime
 from time import sleep
 
@@ -31,11 +32,24 @@ class LinuxBackgroundRun(object):
         return self.console
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.kill() and exc_type is None and exc_val is None \
-           and exc_tb is None:
-            return True
+        if any(x is not None for x in (exc_type, exc_val, exc_tb)):
+            self.logger.debug(
+                ("LinuxBackgroundRun: Exception raised into the context:"
+                 f" {exc_type}"))
+            # Stop any command running in foreground on the console
+            self.lt_utils.stop_cmd_wait_prompt()
 
-        # An error occurred in the context
+        # Kill the background command
+        try:
+            self.kill()
+        # Here we catch every exception because if one exception escape this
+        # block, it will hide whatever exception would have been raised inside
+        # the context.
+        except:  # noqa
+            self.logger.debug(
+                "LinuxBackgroundRun: Exception happened during kill!")
+            traceback.print_exc()
+
         return False
 
     def is_alive(self):
@@ -154,6 +168,21 @@ class LinuxTermUtils(object):
     def send_wait_prompt(self):
         self.console.sendline()
         self.console.expect(self.prompt, timeout=self.timeout)
+
+    def stop_cmd_wait_prompt(self):
+        for failsafe in range(1, 4):
+            self.logger.debug(("LinuxTermUtils: stop_cmd_wait_prompt: "
+                              f"Stopping console attempt number '{failsafe}'"))
+            try:
+                # Send a ctrl-C to stop any running command on the console
+                self.console.sendcontrol('C')
+                self.send_wait_prompt()
+                # This break will be executed only if send_wait_prompt returns
+                # (prompt found)
+                break
+            except pexpect.TIMEOUT:
+                self.logger.debug(("LinuxTermUtils: stop_cmd_wait_prompt: "
+                                  f"Attempt number '{failsafe}' failed."))
 
     def run(self, cmd, timeout=None):
         # This function saves the exit code from the "cmd" and outputs
