@@ -188,9 +188,6 @@ The script that implements the tests is
 
 The tests verify:
 
-* The help output of ``cam-service``, ``cam-tool`` and ``cam-app-example`` on
-  the Primary Compute.
-* Application monitoring from the Primary Compute.
 * The pack command of ``cam-tool`` on the Primary Compute.
 * The stream data calibration on the Primary Compute.
 * The startup of ``cam-service`` on the Safety Island Cluster 1.

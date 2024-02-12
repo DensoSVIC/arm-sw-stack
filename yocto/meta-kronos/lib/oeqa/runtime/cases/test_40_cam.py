@@ -53,10 +53,6 @@ class CAMTest(OERuntimeTestCase):
             LinuxTermUtils.close_ssh_shell(cls.lt_utils.console, cls.tc.logger)
         super(CAMTest, cls).tearDownClass()
 
-    def cam_service_ctx(self):
-        bg_cmd = f'cam-service -c {self.cam_data_path} -l info'
-        return self.lt_utils.background_cmd_ctx(bg_cmd)
-
     def start_cam_app(self, uuid_base=None, stream_count=2):
         cmd = f'cam-app-example -t 3000 -c 4 -s {stream_count}'
         if uuid_base is not None:
@@ -65,46 +61,7 @@ class CAMTest(OERuntimeTestCase):
         return self.lt_utils.run(cmd, timeout=180)
 
     @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
-    def test_cam_service_help(self):
-        st = 'cam-service -h'
-        status, output = self.lt_utils.run(st, timeout=20)
-        self.assertEqual(status, 0, msg=f'{st} failed.\n{output}')
-        self.assertTrue(r'Usage: cam-service [OPTIONS]' in output)
-
-    @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
-    def test_cam_tool_help(self):
-        st = 'cam-tool -h'
-        status, output = self.lt_utils.run(st, timeout=60)
-        self.assertEqual(status, 0, msg=f'{st} failed.\n{output}')
-        self.assertTrue(r'usage: cam-tool [-h] {analyze,pack,deploy}'
-                        in output)
-
-    @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
-    def test_cam_app_example_help(self):
-        st = 'cam-app-example -h'
-        status, output = self.lt_utils.run(st, timeout=20)
-        self.assertEqual(status, 0, msg=f'{st} failed.\n{output}')
-        self.assertTrue(r'Usage: cam-app-example [OPTIONS]' in output)
-
-    @OETestDepends(['test_40_cam.CAMTest.test_cam_app_example_help'])
-    def test_cam_app_example_to_service_on_pc(self):
-        # Check if running cam-app-example without running cam-service results
-        # in failure as expected
-        status, output = self.start_cam_app()
-        self.assertNotEqual(status, 0,
-                            msg=f'Expected cam-app-example to fail.\n{output}')
-
-        # Perform an integration test by starting cam-service and running
-        # cam-app-example to see if it successfully interacts with cam-service
-        with self.cam_service_ctx():
-            status, _ = self.start_cam_app()
-            self.assertEqual(status, 0,
-                             msg=f'Failed to run cam-app-example.')
-
-    @OETestDepends([
-        'test_40_cam.CAMTest.test_cam_app_example_to_service_on_pc'
-    ])
-    def test_data_calibration_on_pc(self):
+    def test_data_calibration(self):
         for uuid_base, streams in (
             (self.uuid_base_a, self.streams_a),
             (self.uuid_base_b, self.streams_b)
@@ -137,8 +94,7 @@ class CAMTest(OERuntimeTestCase):
             self.assertEqual(status, 0,
                              msg=f'Failed to fetch {csc_file}')
 
-    @OETestDepends(['test_40_cam.CAMTest.test_cam_tool_help',
-                    'test_40_cam.CAMTest.test_data_calibration_on_pc'])
+    @OETestDepends(['test_40_cam.CAMTest.test_data_calibration'])
     def test_cam_tool_pack(self):
         for uuid in self.uuids:
             csc_f = f'{uuid}.csc.yml'
@@ -148,7 +104,6 @@ class CAMTest(OERuntimeTestCase):
             status, output = self.lt_utils.run(st, timeout=180)
             self.assertEqual(status, 0, msg=f'{st} failed.\n{output}')
 
-    @OETestDepends(['test_40_cam.CAMTest.test_cam_service_help'])
     def test_cam_service_boot_on_si(self):
         self.target.expect(self.zephyr_console,
                            r'Cam service configuration:',

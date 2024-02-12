@@ -524,18 +524,14 @@ The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
-   RESULTS - test_40_cam.CAMTest.test_cam_app_example_help: PASSED (4.68s)
-   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_pc: PASSED (68.76s)
-   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si: PASSED (39.19s)
-   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si_with_multiple_connections: PASSED (39.21s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si: PASSED (20.74s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si_with_multiple_connections: PASSED (21.67s)
    RESULTS - test_40_cam.CAMTest.test_cam_service_boot_on_si: PASSED (0.00s)
-   RESULTS - test_40_cam.CAMTest.test_cam_service_help: PASSED (4.65s)
-   RESULTS - test_40_cam.CAMTest.test_cam_tool_deploy_to_si: PASSED (120.95s)
-   RESULTS - test_40_cam.CAMTest.test_cam_tool_help: PASSED (27.14s)
-   RESULTS - test_40_cam.CAMTest.test_cam_tool_pack: PASSED (128.19s)
-   RESULTS - test_40_cam.CAMTest.test_data_calibration_on_pc: PASSED (219.01s)
-   RESULTS - test_40_cam.CAMTest.test_logical_check_on_si: PASSED (16.72s)
-   RESULTS - test_40_cam.CAMTest.test_temporal_check_on_si: PASSED (48.15s)
+   RESULTS - test_40_cam.CAMTest.test_cam_tool_deploy_to_si: PASSED (64.97s)
+   RESULTS - test_40_cam.CAMTest.test_cam_tool_pack: PASSED (74.44s)
+   RESULTS - test_40_cam.CAMTest.test_data_calibration: PASSED (156.17s)
+   RESULTS - test_40_cam.CAMTest.test_logical_check_on_si: PASSED (9.45s)
+   RESULTS - test_40_cam.CAMTest.test_temporal_check_on_si: PASSED (25.30s)
 
 Virtualization Architecture
 ---------------------------
@@ -933,18 +929,14 @@ The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
-   RESULTS - test_40_cam.CAMTest.test_cam_app_example_help: PASSED (4.65s)
-   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_pc: PASSED (69.32s)
-   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si: PASSED (38.16s)
-   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si_with_multiple_connections: PASSED (38.92s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si: PASSED (34.61s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si_with_multiple_connections: PASSED (33.83s)
    RESULTS - test_40_cam.CAMTest.test_cam_service_boot_on_si: PASSED (0.00s)
-   RESULTS - test_40_cam.CAMTest.test_cam_service_help: PASSED (4.65s)
-   RESULTS - test_40_cam.CAMTest.test_cam_tool_deploy_to_si: PASSED (55.33s)
-   RESULTS - test_40_cam.CAMTest.test_cam_tool_help: PASSED (9.33s)
-   RESULTS - test_40_cam.CAMTest.test_cam_tool_pack: PASSED (63.33s)
-   RESULTS - test_40_cam.CAMTest.test_data_calibration_on_pc: PASSED (155.25s)
-   RESULTS - test_40_cam.CAMTest.test_logical_check_on_si: PASSED (17.31s)
-   RESULTS - test_40_cam.CAMTest.test_temporal_check_on_si: PASSED (48.54s)
+   RESULTS - test_40_cam.CAMTest.test_cam_tool_deploy_to_si: PASSED (51.86s)
+   RESULTS - test_40_cam.CAMTest.test_cam_tool_pack: PASSED (60.98s)
+   RESULTS - test_40_cam.CAMTest.test_data_calibration: PASSED (146.12s)
+   RESULTS - test_40_cam.CAMTest.test_logical_check_on_si: PASSED (15.05s)
+   RESULTS - test_40_cam.CAMTest.test_temporal_check_on_si: PASSED (42.81s)
 
 .. _user_guide_reproduce_actuation_demo:
 

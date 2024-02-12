@@ -61,10 +61,9 @@ The Primary Compute components are deployed on the baremetal Linux root
 filesystem in the Baremetal Architecture build and on the DomU1 and DomU2 Linux
 root filesystem in the Virtualization Architecture.
 
-In the Kronos Reference Software Stack, ``cam-service`` is deployed both on the
-Safety Island Cluster 1 and on the Primary Compute. The Safety Island deployment
-model is the primary one, as it can provide the application with a higher safety
-level of monitoring services.
+In the Kronos Reference Software Stack, ``cam-service`` is deployed on the
+Safety Island Cluster 1 in order to provide applications on the Primary Compute
+with a high safety level of monitoring services.
 
 To support ``cam-service`` deployment on the Safety Island, there are the
 following platform requirements:

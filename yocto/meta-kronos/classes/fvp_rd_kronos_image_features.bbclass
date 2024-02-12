@@ -115,7 +115,7 @@ ACTUATION_PACKAGES ?= "actuation-player"
 FEATURE_PACKAGES_actuation = "${ACTUATION_PACKAGES}"
 FEATURE_PACKAGES_actuation:virtualization = ""
 
-CAM_PACKAGES ?= "cam-app-example cam-service cam-tool linuxptp"
+CAM_PACKAGES ?= "cam-app-example cam-tool linuxptp"
 FEATURE_PACKAGES_cam = "${CAM_PACKAGES}"
 FEATURE_PACKAGES_cam:virtualization = "linuxptp"
 
