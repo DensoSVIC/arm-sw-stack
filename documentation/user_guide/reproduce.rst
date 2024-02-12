@@ -2253,9 +2253,7 @@ The |Arm SystemReadyTM| IR-aligned firmware must boot at least two unmodified
 generic UEFI distribution images from an ISO image.
 
 This Software Stack currently supports two Linux distributions: `Debian Stable`_
-and `openSUSE Leap`_. To install Debian, you can refer to the
-`Debian GNU/Linux Installation Guide`_. Similarly, you can refer to the
-`openSUSE Installation Guide`_ for the installation of openSUSE.
+and `openSUSE Leap`_.
 
 .. note::
 
@@ -2277,6 +2275,8 @@ Stack.
 Debian
 ------
 
+To install Debian, you can refer to the `Debian GNU/Linux Installation Guide`_.
+
 Distro Installation Media Preparation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -2296,6 +2296,7 @@ To build the |Arm SystemReadyTM| IR Linux distros installation tests:
 .. image:: ../images/kronos_reference_stack_build_config_sr_distro_debian.png
    :align: center
    :width: 60 %
+   :alt: Kronos Reference Software Stack Build Configuration Menu - Debian Linux Distro Installation
 
 |
 
@@ -2314,11 +2315,12 @@ Run the following command to start the installation:
   :ref:`changelog_knownissues` for possible workarounds.
 
 The whole process of installing Debian will probably take about 5 hours. The
-install process begins when you see something like the below picture:
+install process begins when you see the following:
 
-    .. image:: ../images/sr-ir-linux-distro-debian-install-grub-3.png
+    .. image:: ../images/sr-ir-linux-distro-debian-install-grub-4.png
        :align: center
        :width: 60 %
+       :alt: Grub Install Options Menu - Debian Linux Distro Installation
 
 Select ``Install`` to start the installation process.
 
@@ -2327,40 +2329,26 @@ installation process and how to solve them:
 
 * Detect and mount installation media
 
-  1. After the installer starts, it will prompt
-     ``No device for installation media was detected.`` in the
-     ``Detect and mount installation media`` tab.
-     Select ``No`` to continue.
+  1. After the installer starts, a tab titled
+     ``Detect and mount installation media`` will appear with
+     ``No device for installation media was detected.``
+     When prompted with ``Load drivers from removable media?``
+     select ``No`` to continue.
 
-  .. image:: ../images/sr-ir-linux-distro-debian-install-media-0.png
+  2. For ``Manually select a module and device for installation media?`` select
+     ``Yes``.
+
+  3. For ``Module needed for accessing the installation media:`` select
+     ``none``.
+
+  4. For ``Device file for accessing the installation media:`` input
+     ``/dev/mmcblk0`` as the device file for accessing the installation media,
+     then select ``Continue``.
+
+  .. image:: ../images/sr-ir-linux-distro-debian-install-media.png
      :align: center
      :width: 60 %
-
-|
-
-  2. Select ``Yes`` to Manually select a module and device for installation
-     media.
-
-  .. image:: ../images/sr-ir-linux-distro-debian-install-media-1.png
-     :align: center
-     :width: 60 %
-
-|
-
-  3. Select ``none`` to continue.
-
-  .. image:: ../images/sr-ir-linux-distro-debian-install-media-2.png
-     :align: center
-     :width: 60 %
-
-|
-
-  4. Input ``/dev/mmcblk0`` as the device file for accessing the installation
-     media.
-
-  .. image:: ../images/sr-ir-linux-distro-debian-install-media-3.png
-     :align: center
-     :width: 60 %
+     :alt: Detect and Mount Installation Media Device File - Debian Linux Distro Installation
 
 |
 
@@ -2374,6 +2362,7 @@ installation process and how to solve them:
   .. image:: ../images/sr-ir-linux-distro-debian-install-grub-0.png
      :align: center
      :width: 60 %
+     :alt: Grub Installation Failure Prompt - Debian Linux Distro Installation
 
 |
 
@@ -2390,35 +2379,30 @@ installation process and how to solve them:
 
   A snapshot is as below:
 
-  .. code-block:: text
-
-     [           1- installer   (2*shell)  3 shell  4 log           ][ Jun 06 23:13 ]
-     #
-     # chroot /target
-     # update-grub
-     Generating grub configuration file ...
-     Found linux image: /boot/vmlinuz-5.10.0-23-arm64
-     Found initrd image: /boot/initrd.img-5.10.0-23-arm64
-     Found linux image: /boot/vmlinuz-5.10.0-22-arm64
-     Found initrd image: /boot/initrd.img-5.10.0-22-arm64
-     Warning: os-prober will be executed to detect other bootable partitions.
-     Its output will be used to detect bootable binaries on them and create new boot
-     done
-     # ls /boot/efi/EFI/debian/
-     BOOTAA64.CSV  fbaa64.efi  grub.cfg  grubaa64.efi  mmaa64.efi  shimaa64.efi
-     # mkdir /boot/efi/EFI/BOOT
-     # cp -v /boot/efi/EFI/debian/grubaa64.efi /boot/efi/EFI/BOOT/bootaa64.efi
-     '/boot/efi/EFI/debian/grubaa64.efi' -> '/boot/efi/EFI/BOOT/bootaa64.efi'
-     #
-
-  After doing the above GRUB workaround, press ``Ctrl-a p`` to go back to the
-  installer again. Select ``Continue`` on the GRUB failure screen, then select
-  ``Continue without boot loader`` in the ``Debian installer main menu`` and
-  continue.
-
   .. image:: ../images/sr-ir-linux-distro-debian-install-grub-1.png
      :align: center
      :width: 60 %
+     :alt: Grub Workaround Console Output - Debian Linux Distro Installation
+
+|
+
+  After doing the above GRUB workaround, press ``Ctrl-a p`` to go back to the
+  installer again. Select ``Continue`` on the GRUB failure screen.
+
+  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-2.png
+     :align: center
+     :width: 60 %
+     :alt: Second Grub Installation Failure Prompt - Debian Linux Distro Installation
+
+|
+
+  Select ``Continue without boot loader`` in the ``Debian installer main menu``
+  and continue.
+
+  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-3.png
+     :align: center
+     :width: 60 %
+     :alt: Debian Installer Main Menu - Debian Linux Distro Installation
 
 |
 
@@ -2430,13 +2414,15 @@ installation process and how to solve them:
 
 * Terminate the FVP
 
-  To shutdown the FVP and terminate the emulation, select the terminal titled as
-  ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0`` and
+  To shutdown the FVP and terminate the emulation, select the terminal titled
+  as ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0`` and
   press ``Ctrl-c`` to stop the FVP process.
 
 
 openSUSE
 --------
+
+To install openSUSE, you can refer to the `openSUSE Installation Guide`_.
 
 Distro Installation Media Preparation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2457,6 +2443,7 @@ To build the |Arm SystemReadyTM| IR Linux distros installation tests:
 .. image:: ../images/kronos_reference_stack_build_config_sr_distro_opensuse.png
    :align: center
    :width: 60 %
+   :alt: Kronos Reference Software Stack Build Configuration Menu - openSUSE Linux Distro Installation
 
 |
 
@@ -2474,71 +2461,37 @@ Run the following command to start the installation:
   In case of a kernel error message during system boot, refer to the
   :ref:`changelog_knownissues` for possible workarounds.
 
-The whole process of installing openSUSE will take several hours. Below are the
-main steps and tips for installing openSUSE.
-
-1. After the installer starts, select ``Installation`` to start the installation
-   process.
+The whole process of installing openSUSE will take several hours. The install
+process begins when you see the following:
 
    .. image:: ../images/sr-ir-linux-distro-opensuse-install-installation.png
       :align: center
       :width: 60 %
+      :alt: Leap Install Options Menu - openSUSE Linux Distro Installation
 
-2. On the ``Language, Keyboard and Licence Agreement`` tab, select ``Next`` to
-   continue.
+Select ``Installation`` to start the installation process.
 
-   .. tip::
+* System Role
 
-      Use ``Tab`` to cycle through options, and ``Enter`` to confirm.
-
-3. After ``System Probing`` success, select ``No`` for ``Online Repositories``.
-
-   .. image:: ../images/sr-ir-linux-distro-opensuse-install-online-repositories.png
-      :align: center
-      :width: 60 %
-
-4. Select ``Server`` for ``System Role``, then select ``Next`` to continue.
+  When you get to the ``System Role`` screen, select ``Server``, then select
+  ``Next`` to continue with the installation.
 
    .. image:: ../images/sr-ir-linux-distro-opensuse-install-system-role.png
       :align: center
       :width: 60 %
+      :alt: System Role Selection Menu - openSUSE Linux Distro Installation
 
-5. Select ``Next`` to accept the ``Suggested Partitioning`` and continue.
+   |
 
-   .. image:: ../images/sr-ir-linux-distro-opensuse-install-suggested-partitioning.png
-      :align: center
-      :width: 60 %
+   .. tip::
 
-6. Select the correct Clock and Time Zone, then select ``Next`` to continue.
+      Use ``Tab`` to cycle through options on screens during installation.
 
-7. ``Create New User``, then select ``Next`` to continue.
+* Installation process
 
-   .. image:: ../images/sr-ir-linux-distro-opensuse-install-create-new-user.png
-      :align: center
-      :width: 60 %
-
-8. If you're warned with ``The password is too simple``, it's fine to ignore and
-   select ``Yes`` to continue.
-
-   .. image:: ../images/sr-ir-linux-distro-opensuse-install-password-too-simple.png
-      :align: center
-      :width: 60 %
-
-9. After ``Analyzing your system...``, a summary of installation settings will
-   be given. Select ``Install`` to accept and continue.
-
-   .. image:: ../images/sr-ir-linux-distro-opensuse-install-installation-settings.png
-      :align: center
-      :width: 60 %
-
-10. Confirm Installation, select ``Install`` to continue.
-
-    .. image:: ../images/sr-ir-linux-distro-opensuse-install-confirm-installation.png
-       :align: center
-       :width: 60 %
-
-11. The installation will start after you select ``Install`` to continue, and it
-    will take several hours. The steps of the installation process are:
+  Once you have selected ``Install`` on the ``Confirm Installation`` screen, the
+  installation will proceed and it will take several hours. The steps of the
+  installation process are:
 
     * ``Installing Packages...``
     * ``Save configuration``
@@ -2548,16 +2501,21 @@ main steps and tips for installing openSUSE.
     * Then the system will reboot automatically in 10s, you can select ``OK`` to
       reboot immediately.
 
-    .. image:: ../images/sr-ir-linux-distro-opensuse-install-reboot.png
-       :align: center
-       :width: 60 %
+* Log in
 
-12. After the reboot process you can log into the Linux shell with the user
-    created in Step 6.
+  After the reboot process you can log into the Linux shell with the user
+  created during installation.
 
-13. To shutdown the FVP and terminate the emulation, select the terminal titled
-    as ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0``
-    and press ``Ctrl-c`` to stop the FVP process.
+* Terminate the FVP
+
+  To shutdown the FVP and terminate the emulation, run ``sudo shutdown now``.
+  The below message indicates the shutdown process is complete.
+
+      .. code-block:: text
+
+         reboot: Power down
+
+  Subsequently running the FVP will boot into openSUSE.
 
 .. _user_guide_reproduce_secure_firmware_update:
 
