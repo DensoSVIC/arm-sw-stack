@@ -162,6 +162,12 @@ Before running integration tests, some basic tests will be run firstly:
 
    :kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_10_safety_island_c2.py`
 
+After running all the integration tests, the following test is run:
+
+* test_linux_shutdown
+   The test verifies that the FVP can be terminated using a ``shutdown now``
+   command in the linux console. The test is implemented in
+   :kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_99_linuxshutdown.py`.
 
 .. _validation_actuation_demo:
 
