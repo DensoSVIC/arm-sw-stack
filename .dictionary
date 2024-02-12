@@ -374,6 +374,7 @@ Linaro
 linuxboot
 linuxlogin
 linuxptp
+linuxshutdown
 LISTIFY
 LIVEPATCH
 LLRAM

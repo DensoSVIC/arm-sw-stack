@@ -194,6 +194,7 @@ TEST_SUITES:append = " \
     test_40_parsec \
     ${@'test_40_sve' if d.getVar('SVE_DISABLE_FLAG', True) != '1' else ''} \
     ${TEST_SUITES_EXTRA} \
+    test_99_linuxshutdown \
 "
 
 TEST_SUITES:remove:si0-bridge-ethernet0 = "\
@@ -206,6 +207,7 @@ TEST_SUITES:remove:si0-bridge-ethernet0 = "\
     test_10_linuxlogin \
     test_40_parsec \
     test_40_sve \
+    test_99_linuxshutdown \
     "
 
 TEST_SUITES:remove:hipc-validation = " \
