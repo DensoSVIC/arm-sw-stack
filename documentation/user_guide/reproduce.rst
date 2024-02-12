@@ -485,20 +485,15 @@ the ``.csd`` files.
       time_expected: 1701066141314201
       ...
 
-6. To shutdown the FVP and terminate the emulation, follow the below steps:
+6. To shutdown the FVP and terminate the emulation, issue a ``shutdown now``
+   on the Primary Compute terminal. The below messages indicate the shutdown
+   process is complete.
 
-    * Issue a ``shutdown --halt now`` on the Primary Compute terminal. The below
-      messages indicate the shutdown process is complete.
+   .. code-block:: text
 
-      .. code-block:: text
-
-         [  OK  ] Finished System Halt.
-         [  OK  ] Reached target System Halt.
-         reboot: System halted
-
-    * Select the terminal titled as ``python3`` where the ``runfvp`` was
-      launched by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP
-      process.
+      [  OK  ] Finished System Power Off.
+      [  OK  ] Reached target System Power Off.
+      reboot: Power down
 
 
 Automated Validation
@@ -891,20 +886,15 @@ the ``.csd`` files.
 
 8. To leave the DomU1 console, type ``Ctrl-]`` and enter ``send esc``.
 
-9. To shutdown the FVP and terminate the emulation, follow the below steps:
+9. To shutdown the FVP and terminate the emulation, issue a ``shutdown now``
+   on the Primary Compute terminal. The below messages indicate the shutdown
+   process is complete.
 
-    * Issue a ``shutdown --halt now`` on the Primary Compute terminal. The below
-      messages indicate the shutdown process is complete.
+   .. code-block:: text
 
-      .. code-block:: text
-
-         [  OK  ] Finished System Halt.
-         [  OK  ] Reached target System Halt.
-         reboot: System halted
-
-    * Select the terminal titled as ``python3`` where the ``runfvp`` was
-      launched by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP
-      process.
+      [  OK  ] Finished System Power Off.
+      [  OK  ] Reached target System Power Off.
+      reboot: Power down
 
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
@@ -1108,20 +1098,17 @@ Run the demo
 
 4. To shutdown the FVP and terminate the emulation, follow the below steps:
 
-    * Issue a ``shutdown --halt now`` on the Primary Compute terminal. The below
+    * Issue a ``shutdown now`` on the Primary Compute terminal. The below
       messages indicate the shutdown process is complete.
 
       .. code-block:: text
 
-         [  OK  ] Finished System Halt.
-         [  OK  ] Reached target System Halt.
-         reboot: System halted
+         [  OK  ] Finished System Power Off.
+         [  OK  ] Reached target System Power Off.
+         reboot: Power down
 
     * Close the tmux pane started for the build host machine by pressing
       ``Ctrl-d``.
-    * Select the terminal titled as ``python3`` where the ``runfvp`` was
-      launched by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP
-      process.
 
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
@@ -1326,20 +1313,17 @@ Run the Demo
 
 6. To shutdown the FVP and terminate the emulation, follow the below steps:
 
-    * Issue a ``shutdown --halt now`` on the Primary Compute terminal. The below
+    * Issue a ``shutdown now`` on the Primary Compute terminal. The below
       messages indicate the shutdown process is complete.
 
       .. code-block:: text
 
-         [  OK  ] Finished System Halt.
-         [  OK  ] Reached target System Halt.
-         reboot: System halted
+         [  OK  ] Finished System Power Off.
+         [  OK  ] Reached target System Power Off.
+         reboot: Power down
 
     * Close the tmux pane started for the build host machine by pressing
       ``Ctrl-d``.
-    * Select the terminal titled as ``python3`` where the ``runfvp`` was
-      launched by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP
-      process.
 
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
@@ -1612,20 +1596,15 @@ this application.
         pkill ssl_server
         sync
 
-4. To shutdown the FVP and terminate the emulation, follow the below steps:
+4. To shutdown the FVP and terminate the emulation, issue a ``shutdown now``
+   on the Primary Compute terminal. The below messages indicate the shutdown
+   process is complete.
 
-    * Issue a ``shutdown --halt now`` on the Primary Compute terminal. The below
-      messages indicate the shutdown process is complete.
+   .. code-block:: text
 
-      .. code-block:: text
-
-         [  OK  ] Finished System Halt.
-         [  OK  ] Reached target System Halt.
-         reboot: System halted
-
-    * Select the terminal titled as ``python3`` where the ``runfvp`` was
-      launched by pressing ``Ctrl-b 0`` and press ``Ctrl-c`` to stop the FVP
-      process.
+      [  OK  ] Finished System Power Off.
+      [  OK  ] Reached target System Power Off.
+      reboot: Power down
 
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
