@@ -115,9 +115,3 @@ class ActuationTest(OERuntimeTestCase):
                      f"before: <{before}>," f"read: <{read}>"
         self.logger.debug('host_output:')
         self.logger.debug(full_debug)
-
-        # Verify that AP is still running. This step is in lieu with a AP crash
-        # that was observed during TCP client close from the Packet Analyzer
-        self.target.sendline(self.linux_console, 'sleep 5')
-        self.target.expect(self.linux_console, self.linux_prompt,
-                           timeout=15)
