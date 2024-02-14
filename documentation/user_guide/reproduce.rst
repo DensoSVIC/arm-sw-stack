@@ -2406,18 +2406,24 @@ installation process and how to solve them:
 
 |
 
-* Finishing the installation
+* Log in
 
   When the installation reaches the final ``Finishing the installation``
   phase, you will need to wait some time to finish the remaining tasks,
-  and then it will automatically reboot into the installed OS.
+  and then it will automatically reboot into the installed OS. You can log into
+  the Linux shell with the user created during installation.
 
 * Terminate the FVP
 
-  To shutdown the FVP and terminate the emulation, select the terminal titled
-  as ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0`` and
-  press ``Ctrl-c`` to stop the FVP process.
+  To shutdown the FVP and terminate the emulation, log into the Linux shell as
+  the root user then run ``shutdown now``. The below message indicates the
+  shutdown process is complete.
 
+      .. code-block:: text
+
+         reboot: Power down
+
+  Subsequently running the FVP will boot into Debian.
 
 openSUSE
 --------
@@ -2503,7 +2509,7 @@ Select ``Installation`` to start the installation process.
 
 * Log in
 
-  After the reboot process you can log into the Linux shell with the user
+  After the reboot process, log into the Linux shell with the user
   created during installation.
 
 * Terminate the FVP
