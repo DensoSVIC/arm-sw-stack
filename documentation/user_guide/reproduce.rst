@@ -303,7 +303,7 @@ the ``.csd`` files.
 
       CAM event log analyze report:
       Input event log file:                   11085ddc-bc10-11ed-9a44-7ef9696e0000.csel
-      Output configuration file:              11085ddc-bc10-11ed-9a44-7ef9696e0000.csc.yml
+      Output configuration file:              analyzed.csc.yml
       Stream UUID:                            11085ddc-bc10-11ed-9a44-7ef9696e0000
       Stream name:                            CAM STREAM  0
       Timeout between init and start:         300000
@@ -571,10 +571,18 @@ Follow the steps below to achieve the same:
    key to join the ``cam-service`` terminal window to the Primary Compute
    terminal window.
 
+Since both DomU1 and DomU2 will be used to run ``cam-app-example``, it is also
+recommended to create a tmux pane to connect to DomU2.
+
+1. Press ``Ctrl-b`` and the arrow keys to navigate to the ``terminal_ns_uart0``
+   pane.
+2. Press ``Ctrl-b "`` to split the pane horizontally. The bottom pane will be
+   used to connect to DomU2.
+
 Please refer to the following image of the tmux panes rearrangement. Panes can
 be navigated using ``Ctrl-b`` followed by the arrow keys.
 
-.. image:: ../images/cam_reproduce_startup.png
+.. image:: ../images/cam_reproduce_startup_virtualization.png
   :align: center
 
 |
@@ -599,7 +607,8 @@ system where ``cam-service`` runs (in this case SI Cluster 1). Run
 ``cam-app-example`` in calibration mode and then use ``cam-tool`` to generate
 the ``.csd`` files.
 
-1. Enter the DomU1 console using the ``xl`` tool:
+1. From the Primary Compute terminal, enter the DomU1 console using the ``xl``
+   tool:
 
    .. code-block:: text
 
@@ -618,8 +627,28 @@ the ``.csd`` files.
 
       stty rows 76 cols 282
 
-3. Start ``cam-app-example`` in calibration mode from the Primary Compute
-   terminal:
+3. From the host terminal, SSH to the FVP then enter the DomU2 console using the
+   ``xl`` tool:
+
+   .. code-block:: text
+
+      ssh root@127.0.0.1 -p 2222
+      xl console domu2
+
+   DomU2 can be logged into as ``root`` user without a password in the Linux
+   terminal. This command will provide a console on the DomU2. To exit,
+   enter ``Ctrl-]`` (to access the FVP telnet shell), followed by typing
+   ``send esc`` into the telnet shell and pressing ``Enter``. See the
+   `xl documentation`_ for further details.
+
+4. To improve the readability of commands and output on the DomU2 console, run
+   the command below:
+
+   .. code-block:: text
+
+      stty rows 76 cols 282
+
+5. From the DomU1 terminal, start ``cam-app-example`` in calibration mode:
 
    .. code-block:: text
 
@@ -668,20 +697,20 @@ the ``.csd`` files.
       11085ddc-bc10-11ed-9a44-7ef9696e0002.csel
       11085ddc-bc10-11ed-9a44-7ef9696e0003.csel
 
-4. Run ``cam-tool`` from the Primary Compute terminal to analyze stream event
-   log files and convert them to stream configuration files (``.csc.yml``).
+6. Run ``cam-tool`` from the DomU1 terminal to analyze stream event log files
+   and convert them to stream configuration files (``.csc.yml``).
 
    .. code-block:: text
 
       cam-tool analyze -m 1000000 -i 11085ddc-bc10-11ed-9a44-7ef9696e0000.csel
 
-   The analysis result is reported from the Primary Compute terminal as below:
+   The analysis result is reported from the DomU1 terminal as below:
 
    .. code-block:: text
 
       CAM event log analyze report:
       Input event log file:                   11085ddc-bc10-11ed-9a44-7ef9696e0000.csel
-      Output configuration file:              11085ddc-bc10-11ed-9a44-7ef9696e0000.csc.yml
+      Output configuration file:              analyzed.csc.yml
       Stream UUID:                            11085ddc-bc10-11ed-9a44-7ef9696e0000
       Stream name:                            CAM STREAM  0
       Timeout between init and start:         300000
@@ -727,7 +756,7 @@ the ``.csd`` files.
 
       cam-tool pack -i 11085ddc-bc10-11ed-9a44-7ef9696e0003.csc.yml
 
-5. Run the ``cam-tool deploy`` command from the Primary Compute terminal to
+7. Run the ``cam-tool deploy`` command from the DomU1 terminal to
    transfer the generated stream deployment data to SI Cluster 1 (where
    ``cam-service`` is running):
 
@@ -774,127 +803,263 @@ the ``.csd`` files.
 
       Connection 4 is closed.
 
-   List all the files from the ``cam-service`` terminal:
+8. From the DomU2 terminal, start ``cam-app-example`` in calibration mode:
 
    .. code-block:: text
 
-      fs ls RAM:/
+      cam-app-example -u 22085ddc-bc10-11ed-9a44-7ef9696e -t 2000 -c 5 -s 2 -C
 
-   The stream deployment data can be shown as below:
-
-   .. code-block:: text
-
-      11085ddc-bc10-11ed-9a44-7ef9696e0000.csd
-      11085ddc-bc10-11ed-9a44-7ef9696e0001.csd
-      11085ddc-bc10-11ed-9a44-7ef9696e0002.csd
-      11085ddc-bc10-11ed-9a44-7ef9696e0003.csd
-
-6. Start ``cam-app-example`` from the Primary Compute terminal to create an
-   application with four streams. Each stream sends an event message 10 times
-   with a period of 3000 milliseconds.
-
-   .. code-block:: text
-
-      cam-app-example -u 11085ddc-bc10-11ed-9a44-7ef9696e -t 3000 -c 10 -s 4 -a 192.168.1.1
-
-   The following configure messages are expected from the Primary Compute
-   terminal:
+   The stream event log files (``.csel``) for each stream are generated. The output
+   should look like as below:
 
    .. code-block:: text
 
       Cam application configuration:
-          Service IP address: 192.168.1.1
+          Service IP address: 127.0.0.1
           Service port: 21604
-          UUID base: 11085ddc-bc10-11ed-9a44-7ef9696e
-          Stream count: 4
-          Processing period (ms): 3000
-          Processing count: 10
+          UUID base: 22085ddc-bc10-11ed-9a44-7ef9696e
+          Stream count: 2
+          Processing period (ms): 2000
+          Processing count: 5
           Multiple connection support: false
-          Calibration mode support: false
+          Calibration mode support: true
+          Calibration directory: ./[uuid].csel
           Fault injection support: false
           Event(s) interval time (ms): 0
       Using libcam v0.1
       Starting activity...
       Starting activity...
-      Starting activity...
-      Starting activity...
+          Stream 0 sends event 0
+          Stream 1 sends event 0
+          ...
 
-   And the log of sent event messages are shown repeatedly:
-
-   .. code-block:: text
-
-    Stream 0 sends event 0
-    Stream 1 sends event 0
-    Stream 2 sends event 0
-    Stream 3 sends event 0
-    Stream 0 sends event 0
-    Stream 1 sends event 0
-    Stream 2 sends event 0
-    Stream 3 sends event 0
-    ...
-
-   As observed from the ``cam-service`` terminal, ``cam-service`` is loading
-   four stream deployment files for monitoring. In the following log, the stream
-   messages are received and processed by it:
+   List the files generated:
 
    .. code-block:: text
 
-      Connection 4 is created.
-      Init Message
-      Stream 11085ddc-bc10-11ed-9a44-7ef9696e0001 configuration is loaded.
-      Init Message
-      Stream 11085ddc-bc10-11ed-9a44-7ef9696e0000 configuration is loaded.
-      Init Message
-      Stream 11085ddc-bc10-11ed-9a44-7ef9696e0002 configuration is loaded.
-      Init Message
-      Stream 11085ddc-bc10-11ed-9a44-7ef9696e0003 configuration is loaded.
-      Start Message
-      Start Message
-      Start Message
-      Start Message
-      Event Message
-      Event Message
-      Event Message
-      Event Message
-      Event Message
-      # Repeated event messages
-      ...
+      ls -1 *.csel
 
-7. ``cam-app-example`` has a mode to inject a fault to test the CAM framework.
-   Run ``cam-app-example`` again from the Primary Compute terminal with fault
-   injection to event stream 0:
+   The stream event log files can be shown as below:
 
    .. code-block:: text
 
-      cam-app-example -u 11085ddc-bc10-11ed-9a44-7ef9696e -t 3000 -c 10 -s 4 -f -S 0 -T 1000 -a 192.168.1.1
+      22085ddc-bc10-11ed-9a44-7ef9696e0000.csel
+      22085ddc-bc10-11ed-9a44-7ef9696e0001.csel
 
-   The fault happens 100ms after stream initialization. At that time
-   ``cam-service`` should detect a stream temporal error with the following
-   output from the ``cam-service`` terminal.
-
-   .. code-block:: text
-
-      #Repeated event messages
-      ...
-      Stream temporal error:
-      stream_name: CAM STREAM 0
-      stream_uuid: 11085ddc-bc10-11ed-9a44-7ef9696e0000
-      event_id: 0
-      time_received: 0
-      time_expected: 1701066141314201
-      ...
-
-8. To leave the DomU1 console, type ``Ctrl-]`` and enter ``send esc``.
-
-9. To shutdown the FVP and terminate the emulation, issue a ``shutdown now``
-   on the Primary Compute terminal. The below messages indicate the shutdown
-   process is complete.
+9. Run ``cam-tool`` from the DomU2 terminal to analyze stream event log files
+   and convert them to stream configuration files (``.csc.yml``).
 
    .. code-block:: text
 
-      [  OK  ] Finished System Power Off.
-      [  OK  ] Reached target System Power Off.
-      reboot: Power down
+      cam-tool analyze -m 1000000 -i 22085ddc-bc10-11ed-9a44-7ef9696e0000.csel
+
+   The analysis result is reported from the DomU2 terminal as below:
+
+   .. code-block:: text
+
+      CAM event log analyze report:
+      Input event log file:                   22085ddc-bc10-11ed-9a44-7ef9696e0000.csel
+      Output configuration file:              analyzed.csc.yml
+      Stream UUID:                            22085ddc-bc10-11ed-9a44-7ef9696e0000
+      Stream name:                            CAM STREAM  0
+      Timeout between init and start:         300000
+      Timeout between start and event:        450000
+      Application running times:              1
+      Processing count in each run:           [5]
+
+   The stream configuration files contain human-readable settings used for the
+   deployment phase of a critical application. Users can modify this
+   configuration, for example to fine tune timeout values depending on the
+   system capabilities.
+
+   Run ``cam-tool`` three more times for each of the other stream.
+
+   .. code-block:: text
+
+      cam-tool analyze -m 1000000 -i 22085ddc-bc10-11ed-9a44-7ef9696e0001.csel
+
+   Then, use the ``cam-tool pack`` command for each of the streams to generate
+   deployment data.
+
+   .. code-block:: text
+
+      cam-tool pack -i 22085ddc-bc10-11ed-9a44-7ef9696e0000.csc.yml
+      cam-tool pack -i 22085ddc-bc10-11ed-9a44-7ef9696e0001.csc.yml
+
+10. Run the ``cam-tool deploy`` command from the DomU2 terminal to
+    transfer the generated stream deployment data to SI Cluster 1 (where
+    ``cam-service`` is running):
+
+    .. code-block:: text
+
+       cam-tool deploy -i 22085ddc-bc10-11ed-9a44-7ef9696e0000.csd -a 192.168.1.1
+
+    The output on the ``cam-service`` terminal should look like as below, the
+    connection number might change:
+
+    .. code-block:: text
+
+       Connection 4 is created.
+       Deploy Message
+
+       Connection 4 is closed.
+
+    After that, the stream data of ``22085ddc-bc10-11ed-9a44-7ef9696e0000`` is
+    deployed to the ``cam-service`` file system.
+
+    Running ``cam-tool deploy`` three more times can deploy the data of the
+    other stream to ``cam-service``.
+
+    .. code-block:: text
+
+       cam-tool deploy -i 22085ddc-bc10-11ed-9a44-7ef9696e0001.csd -a 192.168.1.1
+
+    The output on the ``cam-service`` terminal after each one of the
+    ``cam-tool deploy`` command should look like as below, the connection number
+    might change:
+
+    .. code-block:: text
+
+       Connection 4 is created.
+       Deploy Message
+
+       Connection 4 is closed.
+
+11. List all the files from the ``cam-service`` terminal:
+
+    .. code-block:: text
+
+       fs ls RAM:/
+
+    The stream deployment data can be shown as below:
+
+    .. code-block:: text
+
+       11085ddc-bc10-11ed-9a44-7ef9696e0000.csd
+       11085ddc-bc10-11ed-9a44-7ef9696e0001.csd
+       11085ddc-bc10-11ed-9a44-7ef9696e0002.csd
+       11085ddc-bc10-11ed-9a44-7ef9696e0003.csd
+       22085ddc-bc10-11ed-9a44-7ef9696e0000.csd
+       22085ddc-bc10-11ed-9a44-7ef9696e0001.csd
+
+12. Start ``cam-app-example`` from the DomU1 terminal to create an
+    application with four streams. Each stream sends an event message 10 times
+    with a period of 3000 milliseconds.
+
+    .. code-block:: text
+
+       cam-app-example -u 11085ddc-bc10-11ed-9a44-7ef9696e -t 3000 -c 10 -s 4 -a 192.168.1.1
+
+    The following configure messages are expected from the Primary Compute
+    terminal:
+
+    .. code-block:: text
+
+       Cam application configuration:
+           Service IP address: 192.168.1.1
+           Service port: 21604
+           UUID base: 11085ddc-bc10-11ed-9a44-7ef9696e
+           Stream count: 4
+           Processing period (ms): 3000
+           Processing count: 10
+           Multiple connection support: false
+           Calibration mode support: false
+           Fault injection support: false
+           Event(s) interval time (ms): 0
+       Using libcam v0.1
+       Starting activity...
+       Starting activity...
+       Starting activity...
+       Starting activity...
+
+    And the log of sent event messages are shown repeatedly:
+
+    .. code-block:: text
+
+     Stream 0 sends event 0
+     Stream 1 sends event 0
+     Stream 2 sends event 0
+     Stream 3 sends event 0
+     Stream 0 sends event 0
+     Stream 1 sends event 0
+     Stream 2 sends event 0
+     Stream 3 sends event 0
+     ...
+
+    While ``cam-app-example`` is running on DomU1, start another instance on
+    DomU2. ``cam-app-example`` has a mode to inject a fault to test the CAM
+    framework. Run ``cam-app-example`` again from the DomU2 terminal with fault
+    injection to event stream 0:
+
+    .. code-block:: text
+
+       cam-app-example -u 22085ddc-bc10-11ed-9a44-7ef9696e -t 2000 -c 5 -s 2 -f -S 0 -T 1000 -a 192.168.1.1
+
+    As observed from the ``cam-service`` terminal, ``cam-service`` is loading
+    four stream deployment files from DomU1 and two stream deployment files from
+    DomU2 for monitoring. In the following log, the stream messages are received
+    and processed by it:
+
+    .. code-block:: text
+
+       Connection 4 is created.
+       Init Message
+       Stream 11085ddc-bc10-11ed-9a44-7ef9696e0002 configuration is loaded.
+       Init Message
+       Stream 11085ddc-bc10-11ed-9a44-7ef9696e0001 configuration is loaded.                                                                        Init Message
+       Stream 11085ddc-bc10-11ed-9a44-7ef9696e0003 configuration is loaded.                                                                        Init Message
+       Stream 11085ddc-bc10-11ed-9a44-7ef9696e0000 configuration is loaded.                                                                        Start Message
+       Start Message                                                                                                                               Start Message
+       Start Message                                                                                                                               Event Message
+       Event Message                                                                                                                               Event Message
+       Event Message
+
+       Connection 5 is created.
+       Init Message
+       Stream 22085ddc-bc10-11ed-9a44-7ef9696e0001 configuration is loaded.
+       Init Message
+       Stream 22085ddc-bc10-11ed-9a44-7ef9696e0000 configuration is loaded.
+       Start Message
+       Start Message
+       Event Message
+       Event Message
+       Event Message
+       # Repeated event messages
+       ...
+
+    The fault happens 100ms after stream initialization. At that time
+    ``cam-service`` should detect a stream temporal error with the following
+    output from the ``cam-service`` terminal.
+
+    .. code-block:: text
+
+       #Repeated event messages
+       ...
+       Stream temporal error:
+       stream_name: CAM STREAM 0
+       stream_uuid: 2285ddc-bc10-11ed-9a44-7ef9696e0000
+       event_id: 0
+       time_received: 0
+       time_expected: 1701066141314201
+       ...
+
+13. To leave the DomU1 console, type ``Ctrl-]`` and enter ``send esc``.
+
+14. To leave the DomU2 console, type ``Ctrl-]`` and enter ``send esc``.
+
+15. To shutdown the FVP and terminate the emulation, follow the below steps:
+
+    * Issue a ``shutdown now`` from either Primary Compute terminal. The below
+      messages indicate the shutdown process is complete.
+
+      .. code-block:: text
+
+         [  OK  ] Finished System Power Off.
+         [  OK  ] Reached target System Power Off.
+         reboot: Power down
+
+    * Close the tmux pane started for DomU2 by pressing ``Ctrl-d``.
+
 
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
@@ -974,8 +1139,8 @@ fvp invocation.
 
 The Safety Island (SI) Cluster 2 terminal running the Actuation Service is
 available via the tmux window titled ``terminal_uart_si_cluster2``. For ease of
-navigation, it's recommended to join the SI Cluster 2 terminal window to the 
-Primary Compute terminal window and creating a tmux pane attached to the build 
+navigation, it's recommended to join the SI Cluster 2 terminal window to the
+Primary Compute terminal window and creating a tmux pane attached to the build
 host machine in order to issue commands on it.
 
 Follow the steps below to achieve the same:
@@ -1176,8 +1341,8 @@ fvp invocation.
 
 The Safety Island (SI) Cluster 2 terminal running the Actuation Service is
 available via the tmux window titled ``terminal_uart_si_cluster2``. For ease of
-navigation, it's recommended to join the SI Cluster 2 terminal window to the 
-Primary Compute terminal window and creating a tmux pane attached to the build 
+navigation, it's recommended to join the SI Cluster 2 terminal window to the
+Primary Compute terminal window and creating a tmux pane attached to the build
 host machine in order to issue commands on it.
 
 Follow the steps below to achieve the same:

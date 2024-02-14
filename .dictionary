@@ -177,6 +177,8 @@ domctl
 domctls
 domid
 domu
+DomU1
+DomU2
 domus
 DOVERLAY
 DPLX
@@ -713,6 +715,7 @@ upscaling
 upstreamed
 upto
 userspace
+userspaces
 validitems
 vardeps
 vbuffer
