@@ -27,6 +27,9 @@ repos:
       meta-cassini-distro:
       meta-cassini-bsp: excluded
 
+  meta-secure-core:
+    path: layers/meta-secure-core
+
   kronos:
     layers:
       yocto/meta-kronos:
