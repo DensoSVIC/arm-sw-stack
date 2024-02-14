@@ -62,7 +62,18 @@ class ArtifactoryHandler(object):
 
         return df
 
-    def _is_pass(self, api_url, project_id, pipeline_id):
+    def _is_pass(self, build_properties):
+        api_url = build_properties["buildInfo.env.CI_API_V4_URL"]
+        project_id = build_properties["buildInfo.env.CI_PROJECT_ID"]
+        pipeline_id = build_properties["buildInfo.env.CI_PIPELINE_ID"]
+
+        # Get is necessary here since Kronos golden version builds
+        # won't have either PARENT_PROJECT_ID or PARENT_PIPELINE_ID
+        parent_project_id = build_properties.get(
+                "buildInfo.env.PARENT_PROJECT_ID")
+        parent_pipeline_id = build_properties.get(
+                "buildInfo.env.PARENT_PIPELINE_ID")
+
         # The GitLab response is paginated so iterate over the return
         # exhaustively.
         url = (
@@ -73,14 +84,35 @@ class ArtifactoryHandler(object):
         pages = int(requests.head(url).headers["X-Total-Pages"])
         for page in range(1, pages+1):
             jobs = requests.get(f"{url}&page={page}").json()
-
             if any(
                 job["stage"] == "Build" and job["status"] != "success"
                 for job in jobs
             ):
-                return False
+                return "Fail"
 
-        return True
+        # If there isn't a parent pipeline then only Kronos build is used to
+        # infer success. If there is, check the meta-arm pipeline, then
+        # success = kronos success and meta-arm success.
+        # Legacy builds which have a parent pipeline ID but not a parent
+        # project ID will ignore the meta-arm success but these will be cleared
+        # because of the retention policy
+        if parent_pipeline_id and parent_project_id:
+            bridges_url = (
+                f"{api_url}/projects/{parent_project_id}/"
+                f"pipelines/{parent_pipeline_id}/bridges"
+            )
+            bridges = requests.get(bridges_url).json()
+            for bridge in (
+                    b for b in bridges if b["name"] == "trigger-meta-arm"):
+                status = bridge["status"]
+                stage = bridge["stage"]
+                if status == "failed":
+                    return "Fail"
+                # Check if meta-arm is still running
+                elif status != "success":
+                    return "Pending"
+
+        return "Pass"
 
     def get_kronos_image_builds(self):
         builds = self.build_mgr.get_build_runs(
@@ -125,13 +157,7 @@ class ArtifactoryHandler(object):
 
         # Only builds for "passed" pipelines will have artifacts
         df["pass"] = df.apply(
-            lambda x: self._is_pass(
-                x["properties"]["buildInfo.env.CI_API_V4_URL"],
-                x["properties"]["buildInfo.env.CI_PROJECT_ID"],
-                x["properties"]["buildInfo.env.CI_PIPELINE_ID"],
-            ),
-            axis=1,
-        )
+            lambda x: self._is_pass(x["properties"]), axis=1,)
 
         image_url = self._getenv("FVP_SERVER_IMAGE_BUILD_PATH").replace(
             "/", "%2F"
