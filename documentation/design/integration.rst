@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -9,7 +9,7 @@ Integration
 ###########
 
 The Reference Software Stack uses the Yocto Project build framework to build,
-integrate and validate the :ref:`Use-Cases <introduction_use_cases>`.
+integrate and validate the :ref:`Use-Cases <overview_use_cases>`.
 
 The Yocto Project version used by the Reference Stack is |yocto version|.
 
@@ -22,10 +22,10 @@ implements the ``fvp-rd-kronos`` bitbake ``MACHINE`` definition to enable the
 Reference Stack to run on the Arm Kronos Reference Design FVP (FVP_RD_Kronos).
 The layer ``meta-kronos`` is based on the `Cassini`_ distribution. It also
 contains a set of bitbake bbclasses, recipes and libraries to build, integrate,
-and validate the :ref:`introduction_use_cases` with either or both the
+and validate the :ref:`overview_use_cases` with either or both the
 **Baremetal** and **Virtualization** Reference Stack Architectures as described
 in :ref:`Reference Stack Overview
-<introduction_reference_software_stack_overview>`.
+<overview_reference_software_stack_overview>`.
 
 The layer source code can be found at :kronos-repo:`yocto/meta-kronos`.
 

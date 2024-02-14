@@ -4,24 +4,34 @@
  #
  # SPDX-License-Identifier: MIT
 
-############
+########
+Overview
+########
+
+************
 Introduction
-############
+************
 
 A Reference Design (RD) is a collection of resources to provide a representative
 view of typical compute subsystems that can be designed and implemented using
 specific generations of Arm IP.
 
 
-The |Arm| Kronos Reference Design targets the Automotive segment and introduces
-the concept of a high-performance |Neoverse| V3AE Application Processor (Primary
-Compute) system augmented with a |Cortex|-R82AE based Safety Island, for
-scenarios where additional system safety monitoring is required. The system
-additionally includes a Runtime Security Subsystem (RSS) used for the secure
-boot of the system elements and the runtime Secure Services.
+The **Arm Reference Design-1 AE**, or **RD 1-AE**, targets the Automotive
+segment and introduces the concept of a high-performance |Neoverse| V3AE
+Application Processor (Primary Compute) system augmented with an |Cortex|-R82AE
+based Safety Island for scenarios where additional system safety monitoring is
+required. The system additionally includes a Runtime Security Engine (RSE)
+used for the secure boot of the system elements and the runtime Secure Services.
 
-A Fixed Virtual Platform (FVP) is available as part of the Kronos Reference
-Design.
+Throughout the following documentation, the alias "Kronos Reference Design"
+is used in place of Arm Reference Design-1 AE. For more information,
+including how to obtain the Technical Overview document, visit the
+`Arm Reference Design-1 AE page on developer.arm.com`_.
+
+A Fixed Virtual Platform (FVP) is available as part of the Reference Design.
+Further information on FVPs, including expected runtime performance and other
+capabilities, can be found at `Arm Ecosystem FVPs`_.
 
 This documentation covers the Kronos reference software stack which together
 with the FVP allow for the exploration of baremetal and XEN hypervisor hosted
@@ -31,11 +41,64 @@ system root of trust. The Primary Compute firmware stack of Trusted Firmware-A,
 U-Boot, OP-TEE and Trusted Services is also aligned with the technologies and
 goals of the |Arm SystemReadyTM| IR program.
 
-For more details of the Kronos Reference Design including FVP and further
-technical documentation can be found at
-`Arm Kronos Reference Design Technical Overview`_.
+********
+Audience
+********
 
-.. _introduction_reference_software_stack_overview:
+The intended target audience of this document are software, hardware, and system
+engineers who are planning to evaluate and use the Arm Kronos Reference Stack.
+
+It describes how to build and run images for the Arm Kronos Reference Design
+FVP (FVP_RD_Kronos) using the Yocto Project build framework. Basic instructions
+about the Yocto Project can be found in the `Yocto Project Quick Start`_.
+
+In addition to having Yocto related knowledge, the target audience also needs
+to have a certain understanding of the following technologies:
+
+  * Arm Firmware:
+
+    * `OP-TEE`_
+
+    * `Runtime Security Engine (RSE)`_
+
+    * `System Control Processor (SCP) Firmware`_
+
+    * `Local Control Processor (LCP) Firmware`_
+
+    * `Trusted Firmware-A (TF-A)`_
+
+    * `Trusted Services`_
+
+  * `U-boot`_
+
+  * `Xen Hypervisor`_
+
+  * `Zephyr`_
+
+
+Documentation Structure
+=======================
+
+  * :ref:`User Guide <user_guide/index:User Guide>`
+
+    Provides guidance for configuring, building, and deploying the Reference
+    Stack on the FVP and running and validating the supported functionalities.
+
+  * :ref:`Solution Design <design/index:Solution Design>`
+
+    Provides more advanced developer-focused details of the Reference Stack,
+    its implementation, and dependencies.
+
+  * :ref:`License <license_link:License>`
+
+    Defines the license under which the Reference Stack is provided.
+
+  * :ref:`Changelog & Release Notes <changelog:Changelog & Release Notes>`
+
+    Documents new features, bug fixes, limitations, and any other changes
+    provided under each Reference Stack release.
+
+.. _overview_reference_software_stack_overview:
 
 *********************************
 Reference Software Stack Overview
@@ -46,7 +109,8 @@ Reference Design and is composed of multiple Open Source components which
 together form the proposed solution, including:
 
 
-  * The `Runtime Security Subsystem (RSS)`_, running an instance of Trusted
+  * The `Runtime Security Engine (RSE)`_ - referred to in this document as
+    the Runtime Security Subsystem (RSS) - running an instance of Trusted
     Firmware-M, which offers boot, cryptography, and secure storage services.
 
   * The Safety Island subsystem, running three instances of the Zephyr real-time
@@ -58,6 +122,7 @@ together form the proposed solution, including:
 
 The remaining software in the Primary Compute subsystem, based on the
 `Cassini`_ distribution, is available in two main architectures:
+baremetal and virtualization.
 
   **Baremetal Architecture**
 
@@ -81,12 +146,6 @@ The remaining software in the Primary Compute subsystem, based on the
 
 |
 
-In both architectures the Primary Compute (Linux) can communicate with the
-Safety Island subsystem (Zephyr) via a bi-directional communication channel. The
-:ref:`design_applications_actuation` and :ref:`design_applications_cam` are
-integrated into the stack to show-case this Heterogeneous Inter-processor
-Communication (HIPC) between subsystems.
-
 **********************************
 Safety and Security Considerations
 **********************************
@@ -97,7 +156,7 @@ fixes published over time. Arm partners are responsible for ensuring that the
 components they use contain all the required security fixes, if and when they
 deploy a product derived from Arm reference solutions.
 
-.. _introduction_use_cases:
+.. _overview_use_cases:
 
 *********
 Use-Cases
@@ -218,63 +277,6 @@ Demonstrates an implementation of Secure Firmware Update initiated from
 the Primary Compute and follows the
 `Platform Security Firmware Update Specification`_. Refer to
 :ref:`design_secure_firmware_update` for more information.
-
-**********************
-Documentation Overview
-**********************
-
-The intended target audience of this document are software, hardware, and system
-engineers who are planning to evaluate and use the Arm Kronos Reference Stack.
-
-It describes how to build and run images for the Arm Kronos Reference Design
-FVP (FVP_RD_Kronos) using the Yocto Project build framework. Basic instructions
-about the Yocto Project can be found in the `Yocto Project Quick Start`_.
-
-In addition to having Yocto related knowledge, the target audience also needs
-to have a certain understanding of the following technologies:
-
-  * Arm Firmware:
-
-    * `OP-TEE`_
-
-    * `Runtime Security Subsystem (RSS)`_
-
-    * `System Control Processor (SCP) Firmware`_
-
-    * `Local Control Processor (LCP) Firmware`_
-
-    * `Trusted Firmware-A (TF-A)`_
-
-    * `Trusted Services`_
-
-  * `U-boot`_
-
-  * `Xen Hypervisor`_
-
-  * `Zephyr`_
-
-
-Documentation Structure
-=======================
-
-  * :ref:`User Guide <user_guide/index:User Guide>`
-
-    Provides guidance for configuring, building, and deploying the Reference
-    Stack on the FVP and running and validating the supported functionalities.
-
-  * :ref:`Solution Design <design/index:Solution Design>`
-
-    Provides more advanced developer-focused details of the Reference Stack,
-    its implementation, and dependencies.
-
-  * :ref:`License <license_link:License>`
-
-    Defines the license under which the Reference Stack is provided.
-
-  * :ref:`Changelog & Release Notes <changelog:Changelog & Release Notes>`
-
-    Documents new features, bug fixes, limitations, and any other changes
-    provided under each Reference Stack release.
 
 ********************
 Repository Structure

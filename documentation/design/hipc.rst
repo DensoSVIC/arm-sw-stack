@@ -316,7 +316,7 @@ make use of gPTP have a dedicated service to handle the network messages:
   PTP Port on a specified network interface. At system boot, one ``ptp4l``
   daemon is started per network interface specified in the ``LINUXPTP_IFACES``
   bitbake variable. This variable is set per :ref:`Use-Case
-  <introduction_use_cases>`, with the Safety Island Communication Demo Use-Case
+  <overview_use_cases>`, with the Safety Island Communication Demo Use-Case
   making use of gPTP on all Operating Systems. The network interfaces created by
   Open vSwitch are not capable of software timestamping; hence, the direct
   network interfaces to the remote participant are used instead (for example for

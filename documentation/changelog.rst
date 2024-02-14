@@ -15,7 +15,7 @@ v1.0
 New Features
 ============
 
-Implementation of the :ref:`Use-Cases <introduction_use_cases>`.
+Implementation of the :ref:`Use-Cases <overview_use_cases>`.
 
 The main components versions used in the Reference Stack:
 

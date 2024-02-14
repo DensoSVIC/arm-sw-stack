@@ -52,7 +52,7 @@ The Reference Stack comprises of the following main components:
 RSS
 ***
 
-The `Runtime Security Subsystem (RSS)`_ is a security subsystem, which
+The `Runtime Security Engine (RSE)`_ is a security subsystem, which
 additionally adds an isolated environment to provide platform security services.
 
 The RSS serves as the Root of Trust for the system, offering critical platform

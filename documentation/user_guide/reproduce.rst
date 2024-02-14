@@ -16,7 +16,7 @@ Introduction
 ************
 
 This Reference Stack uses the `kas menu tool`_ to configure and customize the
-different :ref:`Use-Cases <introduction_use_cases>` via a set of configuration
+different :ref:`Use-Cases <overview_use_cases>` via a set of configuration
 options provided in the configuration menu.
 
 .. note::
@@ -118,7 +118,7 @@ Kas Build
 ---------
 
 The Kronos stack has a kas configuration menu that can be used to build the
-:ref:`introduction_use_cases`. It can also apply customizable parameters to build
+:ref:`overview_use_cases`. It can also apply customizable parameters to build
 different Reference Stack Architecture types.
 
 .. note::
