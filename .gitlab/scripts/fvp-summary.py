@@ -63,15 +63,24 @@ class ArtifactoryHandler(object):
         return df
 
     def _is_pass(self, api_url, project_id, pipeline_id):
-        r = requests.get(
-            f"{api_url}/projects/{project_id}/pipelines/{pipeline_id}/jobs"
+        # The GitLab response is paginated so iterate over the return
+        # exhaustively.
+        url = (
+            f"{api_url}/projects/{project_id}/"
+            f"pipelines/{pipeline_id}/jobs?"
+            "pagination=keyset&per_page=20&order_by=id&sort=asc"
         )
-        json = r.json()
+        pages = int(requests.head(url).headers["X-Total-Pages"])
+        for page in range(1, pages+1):
+            jobs = requests.get(f"{url}&page={page}").json()
 
-        return all(
-            job["status"] == "success" or job["stage"] != "Build"
-            for job in json
-        )
+            if any(
+                job["stage"] == "Build" and job["status"] != "success"
+                for job in jobs
+            ):
+                return False
+
+        return True
 
     def get_kronos_image_builds(self):
         builds = self.build_mgr.get_build_runs(
