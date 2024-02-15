@@ -187,10 +187,14 @@ TEST_SUITES_EXTRA:si-psa-crypto-tests = " test_10_si_psa_arch_tests"
 TEST_SUITES_EXTRA:append:actuation:virtualization = " \
     test_40_virtualization \
     "
+TEST_SUITES:remove = "\
+    fvp_devices \
+    "
 
 TEST_SUITES:append = " \
     test_10_linuxboot \
     test_10_linuxlogin \
+    test_20_fvp_devices \
     test_40_parsec \
     ${@'test_40_sve' if d.getVar('SVE_DISABLE_FLAG', True) != '1' else ''} \
     ${TEST_SUITES_EXTRA} \
@@ -201,7 +205,7 @@ TEST_SUITES:remove:si0-bridge-ethernet0 = "\
     test_00_lcp \
     test_00_trusted_firmware_a \
     test_10_linuxboot \
-    fvp_devices \
+    test_20_fvp_devices \
     ssh \
     ping \
     test_10_linuxlogin \
@@ -211,7 +215,7 @@ TEST_SUITES:remove:si0-bridge-ethernet0 = "\
     "
 
 TEST_SUITES:remove:hipc-validation = " \
-    fvp_devices \
+    test_20_fvp_devices \
     ssh \
     ping \
     test_40_parsec \
@@ -224,7 +228,7 @@ TEST_SUITES:remove:virtualization = " \
     "
 
 TEST_SUITES:remove:cam = "\
-    fvp_devices \
+    test_20_fvp_devices \
     ssh \
     ping \
     test_40_parsec \
@@ -232,7 +236,7 @@ TEST_SUITES:remove:cam = "\
     "
 
 TEST_SUITES:remove:si-psa-storage-tests = "\
-    fvp_devices \
+    test_20_fvp_devices \
     ssh \
     ping \
     test_40_parsec \
@@ -240,14 +244,14 @@ TEST_SUITES:remove:si-psa-storage-tests = "\
     "
 
 TEST_SUITES:remove:si-psa-crypto-tests = "\
-    fvp_devices \
+    test_20_fvp_devices \
     ssh \
     ping \
     test_40_parsec \
     test_40_sve \
     "
 TEST_SUITES:remove:nosve = "\
-    fvp_devices \
+    test_20_fvp_devices \
     ping \
     ssh \
     test_30_actuation \
