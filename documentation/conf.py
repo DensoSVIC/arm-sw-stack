@@ -250,6 +250,7 @@ rst_prolog = f"""
 .. _Base System Architecture (BSA): https://developer.arm.com/documentation/den0094/latest
 .. _Cassini: https://cassini.readthedocs.io/en/{cassini_version}/
 .. _Critical Application Monitoring repository: https://gitlab.arm.com/automotive-and-industrial/safety-island/critical-app-monitoring/-/tree/{critical_application_monitoring_version}
+.. _Critical Application Monitoring Documentation: https://critical-app-monitoring.docs.arm.com/en/{critical_application_monitoring_version}/
 .. _Crypto Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/crypto-service-description.html
 .. _CycloneDDS: https://cyclonedds.io/docs/cyclonedds/latest/about_dds/eclipse_cyclone_dds.html
 .. _Data Distribution Service: https://www.dds-foundation.org/what-is-dds-3
