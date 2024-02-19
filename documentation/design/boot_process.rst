@@ -17,19 +17,7 @@ RSS-oriented Boot Flow
 The :ref:`design_components_rss` is the root of trust chain. It is the
 first booting element when the system is powered up.
 
-The RSS, implemented in Trusted Firmware-M (TF-M), has 3 boot stages: BL1_1,
-BL1_2 and BL2. When the platform is released from reset, the following steps
-occur:
-
-1. BL1_1 boots from RSS ROM.
-2. BL1_1 provisions the BL1_2 image into the One Time Programmable (OTP) flash,
-   and transfers the execution to BL1_2.
-3. BL1_2 loads and authenticates the BL2 image, and transfers the execution to
-   BL2.
-4. BL2, which is implemented based on `MCUboot`_, loads and authenticates all
-   images of the other components: SCP, Safety Island, LCP and AP.
-
-The sequence is shown in the RSS-oriented Boot Flow diagram below
+The boot sequence is shown in the RSS-oriented Boot Flow diagram below
 :ref:`design_boot_process_boot_flow` section.
 
 The RSS uses a NVM flash to store the images of various components, including:
@@ -120,8 +108,8 @@ Major steps of the boot flow:
 1. RSS BL1_1:
 
    * Begins executing in place from ROM when the system is powered up
-   * (This step only happens on the system's first boot) Provisions RSS BL1_2
-     and various keys and other data from the provisioning bundle to the OTP
+   * Provisions RSS BL1_2 and various keys and other data from the provisioning
+     bundle to the OTP (This step only happens on the system's first boot)
    * Copies the RSS BL1_2 image from the OTP to the SRAM
    * Validates RSS BL1_2 against the hash stored in the OTP
    * Transfers the execution to RSS BL1_2
