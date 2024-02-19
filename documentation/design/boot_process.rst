@@ -150,7 +150,8 @@ the :ref:`design_components_u-boot` bootloader is used in the Normal world,
 which provides the UEFI implementation and exposes the device tree to Linux.
 
 :ref:`design_components_trusted-firmware-a` provides the initial, Secure world
-firmware, which consists of BL2, BL31 and BL32. BL33 is provided by U-Boot.
+firmware, which consists of BL2 and BL31. BL32 is provided by OP-TEE.
+BL33 is provided by U-Boot.
 
 The Primary Compute boot flow follows the following steps:
 
