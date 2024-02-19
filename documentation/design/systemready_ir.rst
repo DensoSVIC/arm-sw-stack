@@ -38,7 +38,7 @@ At a high level, the IR band requires that:
    Requirements (EBBR)
  * Firmware by default provides a device tree suitable for booting mainline
    Linux
- * Firmware can be updated using UEFI UpdateCapsule()
+ * Firmware can be updated using UEFI ``UpdateCapsule()``
  * At least three Linux distros must be able to boot, install, and run storage
    medium tests using the UEFI boot flow
 
