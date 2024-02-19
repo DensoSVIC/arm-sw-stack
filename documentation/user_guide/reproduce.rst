@@ -2898,8 +2898,8 @@ To start the FVP and connect to the Primary Compute terminal (running Linux):
   :ref:`releasenotes_knownissues` for possible workarounds.
 
 Note that the main tmux windows involved in the Secure Firmware Update are
-``terminal_ns_uart0`` and ``terminal_rss_uart``. For ease of navigation, we
-recommend joining these in a single window with two panes.
+``terminal_ns_uart0`` and ``terminal_rss_uart``. For ease of navigation, it is
+recommended to join these in a single window with two panes.
 
 Follow the steps below to achieve the same:
 
