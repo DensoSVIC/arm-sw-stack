@@ -248,7 +248,7 @@ the ``.csd`` files.
       cam-app-example -u 11085ddc-bc10-11ed-9a44-7ef9696e -t 3000 -c 10 -s 4 -C
 
    The stream event log files (``.csel``) for each stream are generated. The output
-   should look like as below:
+   should look as below:
 
    .. code-block:: text
 
@@ -342,7 +342,7 @@ the ``.csd`` files.
 
       cam-tool deploy -i /usr/share/cam-data/11085ddc-bc10-11ed-9a44-7ef9696e0000.csd -a 192.168.1.1
 
-   The output on the ``cam-service`` terminal should look like as below, the
+   The output on the ``cam-service`` terminal should look as below, the
    connection number might change:
 
    .. code-block:: text
@@ -365,7 +365,7 @@ the ``.csd`` files.
       cam-tool deploy -i 11085ddc-bc10-11ed-9a44-7ef9696e0003.csd -a 192.168.1.1
 
    The output on the ``cam-service`` terminal after each one of the
-   ``cam-tool deploy`` command should look like as below, the connection number
+   ``cam-tool deploy`` command should look as below, the connection number
    might change:
 
    .. code-block:: text
@@ -655,7 +655,7 @@ the ``.csd`` files.
       cam-app-example -u 11085ddc-bc10-11ed-9a44-7ef9696e -t 3000 -c 10 -s 4 -C
 
    The stream event log files (``.csel``) for each stream are generated. The output
-   should look like as below:
+   should look as below:
 
    .. code-block:: text
 
@@ -764,7 +764,7 @@ the ``.csd`` files.
 
       cam-tool deploy -i 11085ddc-bc10-11ed-9a44-7ef9696e0000.csd -a 192.168.1.1
 
-   The output on the ``cam-service`` terminal should look like as below, the
+   The output on the ``cam-service`` terminal should look as below, the
    connection number might change:
 
    .. code-block:: text
@@ -793,7 +793,7 @@ the ``.csd`` files.
       cam-tool deploy -i 11085ddc-bc10-11ed-9a44-7ef9696e0003.csd -a 192.168.1.1
 
    The output on the ``cam-service`` terminal after each one of the
-   ``cam-tool deploy`` command should look like as below, the connection number
+   ``cam-tool deploy`` command should look as below, the connection number
    might change:
 
    .. code-block:: text
@@ -810,7 +810,7 @@ the ``.csd`` files.
       cam-app-example -u 22085ddc-bc10-11ed-9a44-7ef9696e -t 2000 -c 5 -s 2 -C
 
    The stream event log files (``.csel``) for each stream are generated. The output
-   should look like as below:
+   should look as below:
 
    .. code-block:: text
 
@@ -894,7 +894,7 @@ the ``.csd`` files.
 
        cam-tool deploy -i 22085ddc-bc10-11ed-9a44-7ef9696e0000.csd -a 192.168.1.1
 
-    The output on the ``cam-service`` terminal should look like as below, the
+    The output on the ``cam-service`` terminal should look as below, the
     connection number might change:
 
     .. code-block:: text
@@ -915,7 +915,7 @@ the ``.csd`` files.
        cam-tool deploy -i 22085ddc-bc10-11ed-9a44-7ef9696e0001.csd -a 192.168.1.1
 
     The output on the ``cam-service`` terminal after each one of the
-    ``cam-tool deploy`` command should look like as below, the connection number
+    ``cam-tool deploy`` command should look as below, the connection number
     might change:
 
     .. code-block:: text
