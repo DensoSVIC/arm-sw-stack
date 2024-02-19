@@ -33,7 +33,7 @@ A Fixed Virtual Platform (FVP) is available as part of the Reference Design.
 Further information on FVPs, including expected runtime performance and other
 capabilities, can be found at `Arm Ecosystem FVPs`_.
 
-This documentation covers the Kronos reference software stack which together
+This documentation covers the Kronos Reference Software Stack which together
 with the FVP allow for the exploration of baremetal and XEN hypervisor hosted
 Linux instances, Primary Compute to/from Safety Island communication mechanisms
 (for both baremetal and virtualized scenarios), and boot flows coordinated via a
@@ -46,7 +46,8 @@ Audience
 ********
 
 The intended target audience of this document are software, hardware, and system
-engineers who are planning to evaluate and use the Arm Kronos Reference Stack.
+engineers who are planning to evaluate and use the Arm Kronos Reference
+Software Stack.
 
 It describes how to build and run images for the Arm Kronos Reference Design
 FVP (FVP_RD_Kronos) using the Yocto Project build framework. Basic instructions
@@ -82,21 +83,22 @@ Documentation Structure
   * :ref:`User Guide <user_guide/index:User Guide>`
 
     Provides guidance for configuring, building, and deploying the Reference
-    Stack on the FVP and running and validating the supported functionalities.
+    Software Stack on the FVP and running and validating the supported
+    functionalities.
 
   * :ref:`Solution Design <design/index:Solution Design>`
 
-    Provides more advanced developer-focused details of the Reference Stack,
-    its implementation, and dependencies.
+    Provides more advanced developer-focused details of the Reference Software
+    Stack, its implementation, and dependencies.
 
   * :ref:`License <license_link:License>`
 
-    Defines the license under which the Reference Stack is provided.
+    Defines the license under which the Reference Software Stack is provided.
 
   * :ref:`Changelog & Release Notes <changelog:Changelog & Release Notes>`
 
     Documents new features, bug fixes, limitations, and any other changes
-    provided under each Reference Stack release.
+    provided under each Reference Software Stack release.
 
 .. _overview_reference_software_stack_overview:
 

@@ -1,11 +1,11 @@
 <!--
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
 -->
 
-# Kronos Reference Stack
+# Kronos Reference Software Stack
 
 To build a local version of the documentation, you will need [Sphinx][1]
 installed in your work environment.

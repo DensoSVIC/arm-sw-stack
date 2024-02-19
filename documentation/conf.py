@@ -21,7 +21,7 @@ import sys
 
 # -- Project information -----------------------------------------------------
 
-project = 'Arm Kronos Reference Stack'
+project = 'Arm Kronos Reference Software Stack'
 copyright = '2023-2024, Arm Ltd.'
 author = 'Arm Ltd.'
 

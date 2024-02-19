@@ -11,7 +11,8 @@ Integration
 The Reference Software Stack uses the Yocto Project build framework to build,
 integrate and validate the :ref:`Use-Cases <overview_use_cases>`.
 
-The Yocto Project version used by the Reference Stack is |yocto version|.
+The Yocto Project version used by the Reference Software Stack
+is |yocto version|.
 
 ***********************
 meta-kronos Yocto Layer
@@ -19,12 +20,13 @@ meta-kronos Yocto Layer
 
 The ``meta-kronos`` layer primarily depends on the ``meta-arm-bsp`` layer which
 implements the ``fvp-rd-kronos`` bitbake ``MACHINE`` definition to enable the
-Reference Stack to run on the Arm Kronos Reference Design FVP (FVP_RD_Kronos).
+Reference Software Stack to run on the Arm Kronos Reference Design
+FVP (FVP_RD_Kronos).
 The layer ``meta-kronos`` is based on the `Cassini`_ distribution. It also
 contains a set of bitbake bbclasses, recipes and libraries to build, integrate,
 and validate the :ref:`overview_use_cases` with either or both the
-**Baremetal** and **Virtualization** Reference Stack Architectures as described
-in :ref:`Reference Stack Overview
+**Baremetal** and **Virtualization** Reference Software Stack Architectures
+as described in :ref:`Reference Software Stack Overview
 <overview_reference_software_stack_overview>`.
 
 The layer source code can be found at :kronos-repo:`yocto/meta-kronos`.
@@ -40,7 +42,7 @@ Yocto Layers Dependency
 =======================
 
 The following diagram illustrates the layers which are integrated as part of
-the Reference Stack.
+the Reference Software Stack.
 
 |
 

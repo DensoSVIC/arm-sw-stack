@@ -120,9 +120,9 @@ PSA Secure Storage APIs
 =======================
 
 The PSA Secure Storage APIs are provided by the Trusted Firmware-M interfaces
-instead of duplicating code in Kronos Reference Stack. They are linked into
-Zephyr and use the provided ``psa_call()`` in order to communicate with the RSS
-to use the Secure Storage Service provided by Trusted Firmware-M.
+instead of duplicating code in Kronos Reference Software Stack. They are linked
+into Zephyr and use the provided ``psa_call()`` in order to communicate with
+the RSS to use the Secure Storage Service provided by Trusted Firmware-M.
 
 Refer to `Trusted Firmware-M PSA Protected Storage Interfaces`_ and
 `Trusted Firmware-M PSA Internal Trusted Storage Interfaces`_ for more

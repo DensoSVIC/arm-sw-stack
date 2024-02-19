@@ -14,9 +14,9 @@ User Guide
 
    reproduce
 
-Describes how to reproduce a Reference Stack image, and how to configure, build
-, run and validate the supported set of architecture features and
-:ref:`Use-Cases <overview_use_cases>`.
+Describes how to reproduce a Reference Software Stack image, and how to
+configure, build, run and validate the supported set of architecture features
+and :ref:`Use-Cases <overview_use_cases>`.
 
 .. toctree::
    :maxdepth: 1

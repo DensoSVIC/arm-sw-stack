@@ -63,9 +63,9 @@ Requirements (BBSR)`_ rules are still required:
 |Arm SystemReadyTM| IR Objective
 ********************************
 
-This Reference Stack aims to be aligned with |Arm SystemReadyTM| IR version
-|SystemReady IR ACS version|, but does not aim to be |Arm SystemReadyTM| IR
-certified, meaning that neither formal compliance testing nor validation are
+This Reference Software Stack aims to be aligned with |Arm SystemReadyTM| IR
+version |SystemReady IR ACS version|, but does not aim to be |Arm SystemReadyTM|
+IR certified, meaning that neither formal compliance testing nor validation are
 performed.
 
 .. _boot_process_systemready-status:
@@ -74,11 +74,12 @@ performed.
 Current Status
 **************
 
-This Reference Stack has the testing capability to check for |Arm SystemReadyTM|
-alignment. Refer to :ref:`user_guide_reproduce_sr_ir_acs` to
-see how to run the |Arm SystemReadyTM| IR `ACS`_ tests in this Reference Stack.
+This Reference Software Stack has the testing capability to check for
+|Arm SystemReadyTM| alignment. Refer to :ref:`user_guide_reproduce_sr_ir_acs` to
+see how to run the |Arm SystemReadyTM| IR `ACS`_ tests in this Reference
+Software Stack.
 
-The |Arm SystemReadyTM| IR ACS tests of the Reference Stack use the
+The |Arm SystemReadyTM| IR ACS tests of the Reference Software Stack use the
 |Arm SystemReadyTM| scripts to check the test results. The checks are currently
 patched to account for the current non-alignments. A high-level summary of
 these non-alignments is described in
@@ -90,9 +91,10 @@ these non-alignments is described in
 Identified Non-Alignments
 *************************
 
-The Reference Stack is currently known to have the following non-alignments:
+The Reference Software Stack is currently known to have the following
+non-alignments:
 
-* Reference stack
+* Reference Software Stack
 
   1. Kronos system does not support populating the list of runtime variables,
      which will lead to "Can't populate EFI variables. No runtime variables will

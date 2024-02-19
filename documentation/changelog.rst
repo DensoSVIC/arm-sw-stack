@@ -17,7 +17,7 @@ New Features
 
 Implementation of the :ref:`Use-Cases <overview_use_cases>`.
 
-The main components versions used in the Reference Stack:
+The main components versions used in the Reference Software Stack:
 
 .. list-table::
   :header-rows: 1
@@ -65,7 +65,7 @@ The main components versions used in the Reference Stack:
     - |Critical Application Monitoring version|
     - `Critical Application Monitoring repository`_
 
-Third-party Yocto layers used to build the Reference Stack:
+Third-party Yocto layers used to build the Reference Software Stack:
 
   .. code-block:: yaml
     :substitutions:
@@ -125,10 +125,10 @@ Limitations
    not support IP fragmentation.
  * `PSA Secure Storage API`_ defines two interfaces for storages: Internal
    Trusted Storage (ITS) API and Protected Storage (PS) API. For now the
-   Reference Stack supports the ITS API on Safety Island only.
+   Reference Software Stack supports the ITS API on Safety Island only.
  * PSA Protected Storage Optional APIs ``psa_ps_create`` and ``psa_ps_extended``
-   are not supported by Kronos Reference Stack as they are not implemented
-   in the Protected Storage Service provided by Trusted Firmware-M.
+   are not supported by Kronos Reference Software Stack as they are not
+   implemented in the Protected Storage Service provided by Trusted Firmware-M.
  * PSA Secure Storage APIs Architecture Test Suite only runs on
    Cluster 2 in the Safety Island due to the following limitations:
 

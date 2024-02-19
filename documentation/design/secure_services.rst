@@ -28,7 +28,7 @@ to the following specifications:
 
     * Internal Trusted Storage (ITS) API: An interface for storage provided by
       the Platform Root of Trust (PRoT). For now the ITS API is not supported by
-      the Reference Stack on the Primary Compute.
+      the Reference Software Stack on the Primary Compute.
     * Protected Storage (PS) API: An interface for external protected storage.
 
 
@@ -208,7 +208,7 @@ Two use cases are addressed by `PSA Secure Storage API`_:
   trusted storage.
 
   The following PSA Internal Trusted Storage APIs are supported in Kronos
-  Reference Stack:
+  Reference Software Stack:
 
     * ``psa_its_set``
     * ``psa_its_get``
@@ -225,7 +225,7 @@ Two use cases are addressed by `PSA Secure Storage API`_:
   threat model of the device and the nature of its deployment.
 
   The following PSA Protected Storage APIs are supported in Kronos
-  Reference Stack:
+  Reference Software Stack:
 
     * ``psa_ps_set``
     * ``psa_ps_get``

@@ -65,7 +65,7 @@ Instead, they use BSD sockets for IPC. The reason for this is that BSD sockets c
 abstract the difference between inter-processor communication and intra-processor
 communication. This makes it possible for applications to be more versatile and
 portable. In response to the needs of such applications, a virtual network device
-based on RPMsg has been added to the Reference Stack.
+based on RPMsg has been added to the Reference Software Stack.
 
 On the Safety Island side, a network device is created over an RPMsg endpoint
 with a specific service name. The RPMsg endpoint sends a Name Service message
@@ -123,8 +123,8 @@ communication.
 Virtualization Architecture
 ===========================
 
-In the Virtualization Architecture of the Reference Stack, virtual network
-interfaces based on Xen drivers created in the control domain (Dom0) are
+In the Virtualization Architecture of the Reference Software Stack, virtual
+network interfaces based on Xen drivers created in the control domain (Dom0) are
 exposed to the domUs. These virtual network interfaces are added to an Open
 vSwitch virtual switch along with an RPMsg Virtual Interface to communicate
 with the Safety Island.
@@ -305,8 +305,8 @@ have one or more logical access point to the network (a "PTP Port"). The source
 of the synchronized time in a domain is a single PTP Instance, the "Grandmaster
 PTP Instance", which always act as a server.
 
-In the Kronos Reference Stack, Grandmaster PTP Instances are deployed on the
-Primary Compute (in Dom0 in case of the Virtualization Architecture),
+In the Kronos Reference Software Stack, Grandmaster PTP Instances are deployed
+on the Primary Compute (in Dom0 in case of the Virtualization Architecture),
 advertizing a single source of time to the other PTP Instances (on the Safety
 Island clusters and the DomUs) acting as clients. The Grandmaster PTP Instances
 each have one PTP Port per remote PTP Instance. All the Operating Systems that
@@ -332,7 +332,7 @@ make use of gPTP have a dedicated service to handle the network messages:
   subsystem prints a warning-level logging message (``<wrn> net_gptp: Reset
   Pdelay requests``) at each tick of its state machine (about once per second).
 
-In the Kronos Reference Stack, all of the PTP Instances use software
+In the Kronos Reference Software Stack, all of the PTP Instances use software
 timestamping. This limits the maximum achievable precision of the clock
 synchronization and it makes the stability of the clock vulnerable to software
 activity on either side of the gPTP link.

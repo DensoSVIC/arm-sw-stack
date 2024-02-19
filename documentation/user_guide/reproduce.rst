@@ -9,15 +9,15 @@ Reproduce
 #########
 
 This section of the User Guide describes how to download, configure, build and
-execute this Reference Stack.
+execute this Reference Software Stack.
 
 ************
 Introduction
 ************
 
-This Reference Stack uses the `kas menu tool`_ to configure and customize the
-different :ref:`Use-Cases <overview_use_cases>` via a set of configuration
-options provided in the configuration menu.
+This Reference Software Stack uses the `kas menu tool`_ to configure and
+customize the different :ref:`Use-Cases <overview_use_cases>` via a set of
+configuration options provided in the configuration menu.
 
 .. note::
   All command examples on this page from the HTML document format can be copied
@@ -119,7 +119,7 @@ Kas Build
 
 The Kronos stack has a kas configuration menu that can be used to build the
 :ref:`overview_use_cases`. It can also apply customizable parameters to build
-different Reference Stack Architecture types.
+different Reference Software Stack Architecture types.
 
 .. note::
   Before running the configuration menu, ensure it is done inside a tmux session.
@@ -152,14 +152,14 @@ Primary Compute terminal titled as ``terminal_ns_uart0``. User may press
 through the windows and press ``Enter`` to select any processing element
 terminal.
 
-The Reference Stack running on the Primary Compute can be logged into as
-``root`` user without a password in the Linux terminal.
+The Reference Software Stack running on the Primary Compute can be logged into
+as ``root`` user without a password in the Linux terminal.
 
 .. note::
   FVPs, and Fast Models in general, are functionally accurate, meaning that they
   fully execute all instructions correctly, however they are not cycle accurate.
-  The main goal of the Reference Stack is to prove functionality only, and
-  should not be used for performance analysis.
+  The main goal of the Reference Software Stack is to prove functionality only,
+  and should not be used for performance analysis.
 
 .. _user_guide_reproduce_cam:
 
@@ -184,7 +184,7 @@ To run the configuration menu:
 To build a Baremetal Architecture image:
 
 1. Select ``Critical Application Monitoring Demo`` from the ``Use-Case`` menu.
-2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+2. Select ``Baremetal`` from the ``Reference Software Stack Architecture`` menu.
 3. Select ``Save & Build``.
 
 Run the FVP
@@ -220,8 +220,8 @@ be navigated using ``Ctrl-b`` followed by the arrow keys.
 
 |
 
-The Reference Stack running on the Primary Compute can be logged into as
-``root`` user without a password in the Linux terminal. Run the below
+The Reference Software Stack running on the Primary Compute can be logged into
+as ``root`` user without a password in the Linux terminal. Run the below
 command to guarantee that all the expected services have been
 initialized.
 
@@ -507,7 +507,8 @@ To run the configuration menu:
 
 To enable the validation tests:
   1. Select ``Critical Application Monitoring Demo`` as ``Use-Case``.
-  2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+  2. Select ``Baremetal`` from the ``Reference Software Stack Architecture``
+     menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
   4. Select ``Save & Build``.
@@ -543,7 +544,8 @@ To run the configuration menu:
 To build a Virtualization Architecture image:
 
 1. Select ``Critical Application Monitoring Demo`` from the ``Use-Case`` menu.
-2. Select ``Virtualization`` from the ``Reference Stack Architecture`` menu.
+2. Select ``Virtualization`` from the ``Reference Software Stack Architecture``
+   menu.
 3. Select ``Save & Build``.
 
 Run the FVP
@@ -587,8 +589,8 @@ be navigated using ``Ctrl-b`` followed by the arrow keys.
 
 |
 
-The Reference Stack running on the Primary Compute can be logged into as
-``root`` user without a password in the Linux terminal. Run the below
+The Reference Software Stack running on the Primary Compute can be logged into
+as ``root`` user without a password in the Linux terminal. Run the below
 command to guarantee that all the expected services have been
 initialized.
 
@@ -1072,7 +1074,8 @@ To run the configuration menu:
 
 To enable the validation tests:
   1. Select ``Critical Application Monitoring Demo`` as ``Use-Case``.
-  2. Select ``Virtualization`` from the ``Reference Stack Architecture`` menu.
+  2. Select ``Virtualization`` from the
+     ``Reference Software Stack Architecture`` menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
   4. Select ``Save & Build``.
@@ -1124,7 +1127,7 @@ To run the configuration menu:
 To build a Baremetal Architecture image:
 
 1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
-2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+2. Select ``Baremetal`` from the ``Reference Software Stack Architecture`` menu.
 3. Select ``Save & Build``.
 
 Run the FVP
@@ -1169,8 +1172,8 @@ be navigated using ``Ctrl-b`` followed by the arrow keys.
 
 |
 
-The Reference Stack running on the Primary Compute can be logged into as
-``root`` user without a password in the Linux terminal. Run the below
+The Reference Software Stack running on the Primary Compute can be logged into
+as ``root`` user without a password in the Linux terminal. Run the below
 command to guarantee that all the expected services have been
 initialized.
 
@@ -1294,7 +1297,8 @@ To run the configuration menu:
 
 To enable the validation tests:
   1. Select ``Safety Island Actuation Demo`` as ``Use-Case``.
-  2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+  2. Select ``Baremetal`` from the ``Reference Software Stack Architecture``
+     menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
   4. Select ``Save & Build``.
@@ -1325,7 +1329,8 @@ To run the configuration menu:
 To build a Virtualization Architecture image:
 
 1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
-2. Select ``Virtualization`` from the ``Reference Stack Architecture`` menu.
+2. Select ``Virtualization`` from the ``Reference Software Stack Architecture``
+   menu.
 3. Select ``Save & Build``.
 
 Run the FVP
@@ -1371,8 +1376,8 @@ be navigated using ``Ctrl-b`` followed by the arrow keys.
 
 |
 
-The Reference Stack running on the Primary Compute can be logged into as
-``root`` user without a password in the Linux terminal. Run the below
+The Reference Software Stack running on the Primary Compute can be logged into
+as ``root`` user without a password in the Linux terminal. Run the below
 command to guarantee that all the expected services have been
 initialized.
 
@@ -1509,7 +1514,8 @@ To run the configuration menu:
 
 To enable the validation tests:
   1. Select ``Safety Island Actuation Demo`` as ``Use-Case``.
-  2. Select ``Virtualization`` from the ``Reference Stack Architecture`` menu.
+  2. Select ``Virtualization`` from the
+     ``Reference Software Stack Architecture`` menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
   4. Select ``Save & Build``.
@@ -1551,7 +1557,8 @@ To build a Baremetal Architecture image:
 
 1. Select ``Safety Island Communication Demo (using HIPC)`` from the
    ``Use-Case`` menu.
-2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+2. Select ``Baremetal`` from the ``Reference Software Stack Architecture``
+   menu.
 3. Select ``Save & Build``.
 
 Automated Validation
@@ -1566,7 +1573,8 @@ To run the configuration menu:
 To enable the validation tests:
 
   1. Select ``Safety Island Communication Demo (using HIPC)`` as ``Use-Case``.
-  2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+  2. Select ``Baremetal`` from the ``Reference Software Stack Architecture``
+     menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
   4. Select ``Save & Build``.
@@ -1608,7 +1616,8 @@ To run the configuration menu:
 To build a Virtualization Architecture image:
 
 1. Select ``Safety Island Communication Demo (using HIPC)`` as ``Use-Case``.
-2. Select ``Virtualization`` from the ``Reference Stack Architecture`` menu.
+2. Select ``Virtualization`` from the ``Reference Software Stack Architecture``
+   menu.
 3. Select ``Save & Build``.
 
 
@@ -1623,7 +1632,8 @@ To run the configuration menu:
 
 To enable the validation tests:
   1. Select ``Safety Island Communication Demo (using HIPC)`` as ``Use-Case``.
-  2. Select ``Virtualization`` from the ``Reference Stack Architecture`` menu.
+  2. Select ``Virtualization`` from the
+     ``Reference Software Stack Architecture`` menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
   4. Select ``Save & Build``.
@@ -1681,7 +1691,7 @@ To run the configuration menu:
 To build a Baremetal Architecture image:
 
 1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
-2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+2. Select ``Baremetal`` from the ``Reference Software Stack Architecture`` menu.
 3. Select ``Save & Build``.
 
 Run the FVP
@@ -1695,8 +1705,8 @@ To start the FVP and connect to the Primary Compute terminal (running Linux):
 
 The user should wait for the system to boot and for the Linux prompt to appear.
 
-The Reference Stack running on the Primary Compute can be logged into as
-``root`` user without a password in the Linux terminal. Run the below
+The Reference Software Stack running on the Primary Compute can be logged into
+as ``root`` user without a password in the Linux terminal. Run the below
 command to guarantee that all the expected services have been
 initialized.
 
@@ -1793,8 +1803,8 @@ To run the configuration menu:
 
 To enable the validation tests:
   1. Select ``Safety Island Actuation Demo`` as ``Use-Case``.
-  2. Select ``Baremetal Architecture`` from the ``Reference Stack Architecture``
-     menu.
+  2. Select ``Baremetal Architecture`` from the
+     ``Reference Software Stack Architecture`` menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
   4. Select ``Save & Build``.
@@ -2189,7 +2199,7 @@ To run the configuration menu:
 To build the Baremetal Architecture image:
 
 1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
-2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+2. Select ``Baremetal`` from the ``Reference Software Stack Architecture`` menu.
 3. Select ``Save & Build``.
 
 Run the FVP
@@ -2385,7 +2395,8 @@ To run the configuration menu:
 To enable the validation tests:
 
   1. Select ``Safety Island Actuation Demo`` as ``Use-Case``.
-  2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+  2. Select ``Baremetal`` from the ``Reference Software Stack Architecture``
+     menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
   4. Select ``Save & Build``.
@@ -2551,7 +2562,7 @@ messages are expected to validate this Use-Case:
      TEST_OVERALL_TIMEOUT="\${@16*60*60}" kas shell -c "bitbake arm-systemready-ir-acs -C unpack"
 
 Refer to :ref:`systemready_ir_acs_tests` for an explanation on how the
-ACS tests are set up and how they work in the Reference Stack.
+ACS tests are set up and how they work in the Reference Software Stack.
 
 .. _user_guide_reproduce_arm_systemready_ir_linux:
 
@@ -2579,7 +2590,7 @@ and `openSUSE Leap`_.
 
 Refer to :ref:`systemready_ir_linux_install` for an explanation on how
 the Linux distros installation is set up and how they work in the Reference
-Stack.
+Software Stack.
 
 Debian
 ------
@@ -2859,7 +2870,7 @@ To run the configuration menu:
 To build a Baremetal Architecture image:
 
 1. Select ``Critical Application Monitoring Demo`` from the ``Use-Case`` menu.
-2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+2. Select ``Baremetal`` from the ``Reference Software Stack Architecture`` menu.
 3. Select ``Save & Build``.
 
 Run the FVP
@@ -2981,7 +2992,8 @@ To run the configuration menu:
 To enable the validation tests:
 
   1. Select ``Critical Application Monitoring Demo`` as ``Use-Case``.
-  2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+  2. Select ``Baremetal`` from the ``Reference Software Stack Architecture``
+     menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
   4. Select ``Save & Build``.

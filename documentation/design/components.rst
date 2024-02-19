@@ -10,7 +10,7 @@
 Components
 ##########
 
-The Reference Stack comprises of the following main components:
+The Reference Software Stack comprises of the following main components:
 
 .. list-table::
   :header-rows: 1
@@ -483,7 +483,8 @@ scheduling of all virtual machines (domains), and for launching the most
 privileged domain (Dom0) - the only virtual machine which by default
 has direct access to hardware. From the Dom0 the hypervisor can be managed
 and unprivileged domains (DomU) can be launched.
-Xen is only included in the Virtualization Reference Stack Architecture.
+Xen is only included in the Virtualization Reference Software Stack
+Architecture.
 
 .. _design_components_xen_boot_flow:
 
@@ -717,10 +718,10 @@ Zephyr
 `Zephyr`_ is an open source real-time operating system based on a small
 footprint kernel designed for use on resource-constrained and embedded systems.
 
-The Reference Stack uses Zephyr |zephyr version| as a baseline and introduces a
-new board ``fvp_rd_kronos_safety_island`` for the Kronos FVP. It reuses the
-``fvp_aemv8r`` SoC support and adds a pair of patches for MPU device region
-configuration.
+The Reference Software Stack uses Zephyr |zephyr version| as a baseline and
+introduces a new board ``fvp_rd_kronos_safety_island`` for the Kronos FVP.
+It reuses the ``fvp_aemv8r`` SoC support and adds a pair of patches for MPU
+device region configuration.
 
 The Zephyr image for this board is running on the Safety Island clusters.
 In order to enable communication with |Arm| 9-A cores (from Primary Compute),

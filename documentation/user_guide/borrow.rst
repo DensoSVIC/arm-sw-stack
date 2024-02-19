@@ -8,16 +8,16 @@
 Borrow
 ######
 
-To reuse the components and patches of the Reference Stack, refer to each
-of the individual components mentioned in :ref:`design_components`.
+To reuse the components and patches of the Reference Software Stack, refer to
+each of the individual components mentioned in :ref:`design_components`.
 
 ******************
 Downstream Changes
 ******************
 
-Detailed below is a table linking each component of the Reference Stack to its
-Downstream Changes section. Each section contains the component's patch files
-and a high level overview of their purpose/functionality as a group:
+Detailed below is a table linking each component of the Reference Software Stack
+to its Downstream Changes section. Each section contains the component's patch
+files and a high level overview of their purpose/functionality as a group:
 
 .. list-table::
   :header-rows: 1
