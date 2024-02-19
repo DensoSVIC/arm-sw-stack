@@ -58,7 +58,7 @@ The diagram below shows an illustrative fault device tree. (For the simpler
 Kronos topology, see :ref:`design_applications_fault_mgmt_kronos_deployment`
 below.)
 
-.. image:: ../images/sample_fault_device_tree.png
+.. image:: ../images/sample_fault_device_tree.*
    :align: center
    :alt: A Sample Fault Device Tree
 
@@ -95,7 +95,7 @@ recovered by resetting the system. A non-critical fault causes a transition to
 The diagram below shows all the possible transitions between these states using
 these signals.
 
-.. image:: ../images/ssu_states.png
+.. image:: ../images/ssu_states.*
    :align: center
    :alt: SSU States
 
@@ -236,7 +236,7 @@ The Kronos FVP models:
  * An FMU attached to the GIC-720AE in the Primary Compute, attached to the
    System FMU.
 
-.. image:: ../images/kronos_fault_device_tree.png
+.. image:: ../images/kronos_fault_device_tree.*
    :align: center
    :alt: Kronos Fault Device Tree
 

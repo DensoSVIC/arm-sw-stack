@@ -49,7 +49,7 @@ The following diagram describes the data flow of the demo:
 
 |
 
-.. image:: ../../images/actuation.png
+.. image:: ../../images/actuation.*
    :align: center
    :alt: Safety Island Actuation Demo High-Level Diagram
 

@@ -131,7 +131,7 @@ baremetal and virtualization.
   The Primary Compute boots a single rich operating system (real-time Linux with
   PREEMPT_RT patches).
 
-.. image:: images/kronos_baremetal_high_level_arch.png
+.. image:: images/kronos_baremetal_high_level_arch.*
    :align: center
    :alt: Arm Kronos Reference Software Stack High-Level Diagram - Baremetal Architecture
 
@@ -144,7 +144,7 @@ baremetal and virtualization.
     virtual machines: Dom0 (privileged domain) and DomU1 and DomU2 (unprivileged
     domains).
 
-.. image:: images/kronos_virtualization_high_level_arch.png
+.. image:: images/kronos_virtualization_high_level_arch.*
    :align: center
    :alt: Arm Kronos Reference Software Stack High-Level Diagram - Virtualization Architecture
 

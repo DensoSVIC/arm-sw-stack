@@ -62,7 +62,7 @@ the Primary Compute Secure Services.
 
 |
 
-.. image:: ../images/primary_compute_secure_services.png
+.. image:: ../images/primary_compute_secure_services.*
    :align: center
    :alt: Primary Compute Secure Services
 
@@ -147,7 +147,7 @@ the Safety Island Secure Services.
 
 |
 
-.. image:: ../images/safety_island_secure_services.png
+.. image:: ../images/safety_island_secure_services.*
    :align: center
    :alt: Safety Island Secure Services
 

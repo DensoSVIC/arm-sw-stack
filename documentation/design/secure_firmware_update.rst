@@ -40,7 +40,7 @@ each one of the RSS flash and secure flash is divided into two banks, where one
 bank has the currently running images and the other bank is used for staging
 new images. The flash layouts are shown in the below figures.
 
-.. image:: ../images/rss_flash_layout.png
+.. image:: ../images/rss_flash_layout.*
    :align: center
    :alt: RSS Flash Layout
 
@@ -59,9 +59,9 @@ new images. The flash layouts are shown in the below figures.
 ..
   /* cspell:enable */
 
-.. image:: ../images/secure_flash_layout.png
+.. image:: ../images/secure_flash_layout.*
    :align: center
-   :width: 30 %
+   :width: 35 %
    :alt: Primary Compute Secure Flash Layout
 
 |
@@ -72,9 +72,9 @@ new images. The flash layouts are shown in the below figures.
 The following diagram illustrates the components and data flow that implement
 the Secure Firmware Update.
 
-.. image:: ../images/secure_firmware_update.png
+.. image:: ../images/secure_firmware_update.*
    :align: center
-   :width: 60 %
+   :width: 80 %
    :alt: Secure Firmware Update Architecture
 
 |

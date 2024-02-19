@@ -45,7 +45,7 @@ The following diagram shows the architecture of the demo:
 
 |
 
-.. image:: ../../images/critical_application_monitoring.png
+.. image:: ../../images/critical_application_monitoring.*
    :align: center
    :alt: Critical Application Monitoring Demo High-Level Diagram
 

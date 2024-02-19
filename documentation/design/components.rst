@@ -83,7 +83,7 @@ relevant external components.
 
 |
 
-.. image:: ../images/rss_software_structure_simplified.png
+.. image:: ../images/rss_software_structure_simplified.*
    :align: center
    :alt: RSS Software Structure
 
@@ -164,7 +164,7 @@ can be used by multiple operating systems.
 
 |
 
-.. image:: ../images/rss_gic_multiple_view.png
+.. image:: ../images/rss_gic_multiple_view.*
    :align: center
    :alt: GIC Multiple Views Overview
 
@@ -295,7 +295,7 @@ the RSS and SCP.
 
 |
 
-.. image:: ../images/mhuv3_comm_rss_scp.png
+.. image:: ../images/mhuv3_comm_rss_scp.*
    :align: center
    :alt: MHUv3 Communication Between RSS and SCP
 
@@ -514,7 +514,7 @@ slices so that cache contention with multiple domains can be mitigated.
 
 |
 
-.. image:: ../images/xen_mpam_structure.png
+.. image:: ../images/xen_mpam_structure.*
    :align: center
    :alt: Xen MPAM Overview
 
@@ -595,7 +595,7 @@ entered.
 With Xen Kconfig ``CONFIG_GICV4=y``, the Kronos platform will be automatically
 equipped with the capability of all GICv4.1 features.
 
-.. image:: ../images/xen_gicv4_1_structure.png
+.. image:: ../images/xen_gicv4_1_structure.*
    :align: center
    :alt: Xen GICv4.1 Overview
 

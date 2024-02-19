@@ -32,7 +32,7 @@ Communication between Primary Compute and Safety Island clusters
 
 |
 
-.. image:: ../images/hipc_baremetal_design.png
+.. image:: ../images/hipc_baremetal_design.*
    :align: center
    :alt: Arm Kronos Reference Software Stack HIPC - Baremetal Architecture
 
@@ -135,7 +135,7 @@ the Baremetal Architecture.
 
 |
 
-.. image:: ../images/hipc_virtualization_design.png
+.. image:: ../images/hipc_virtualization_design.*
    :align: center
    :alt: Arm Kronos Reference Software Stack HIPC - Virtualization Architecture
 
@@ -158,7 +158,7 @@ implemented on top of Virtio based RPMsg communication.
 
 |
 
-.. image:: ../images/hipc_inter_si_communication_design.png
+.. image:: ../images/hipc_inter_si_communication_design.*
    :align: center
    :alt: Inter-Safety Island Clusters Communication
 
@@ -373,7 +373,7 @@ Island Cluster N via brsi{N}.
 
 |
 
-.. image:: ../images/hipc_network_topology_baremetal.png
+.. image:: ../images/hipc_network_topology_baremetal.*
    :align: center
    :alt: Arm Kronos Reference Software Stack Network Topology - Baremetal Architecture
 
@@ -393,7 +393,7 @@ Island Cluster N.
 
 |
 
-.. image:: ../images/hipc_network_topology_virtualization.png
+.. image:: ../images/hipc_network_topology_virtualization.*
    :align: center
    :alt: Arm Kronos Reference Software Stack Network Topology - Virtualization Architecture
 

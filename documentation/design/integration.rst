@@ -46,7 +46,7 @@ the Reference Software Stack.
 
 |
 
-.. image:: ../images/kronos_yocto_layers_dependency_diagram.png
+.. image:: ../images/kronos_yocto_layers_dependency_diagram.*
    :align: center
    :alt: Yocto Layer Dependency
 

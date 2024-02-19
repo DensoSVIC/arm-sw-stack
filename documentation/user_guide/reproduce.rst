@@ -136,7 +136,7 @@ To run the configuration menu:
   option in the build setup. The Safety Island Actuation Demo is built as
   part of the default deployment.
 
-.. image:: ../images/kronos_reference_stack_build_config.png
+.. image:: ../images/kronos_reference_stack_build_config.*
    :align: center
    :width: 60 %
    :alt: Kronos Reference Software Stack Build Configuration Menu
@@ -216,7 +216,7 @@ Follow the steps below to achieve the same:
 Refer to the following image of the tmux panes rearrangement. Panes can
 be navigated using ``Ctrl-b`` followed by the arrow keys.
 
-.. image:: ../images/cam_reproduce_startup.png
+.. image:: ../images/cam_reproduce_startup.*
   :align: center
   :alt: Critical Application Monitoring Demo Reproduce Startup
 
@@ -586,7 +586,7 @@ recommended to create a tmux pane to connect to DomU2.
 Please refer to the following image of the tmux panes rearrangement. Panes can
 be navigated using ``Ctrl-b`` followed by the arrow keys.
 
-.. image:: ../images/cam_reproduce_startup_virtualization.png
+.. image:: ../images/cam_reproduce_startup_virtualization.*
   :align: center
   :alt: Critical Application Monitoring Demo Reproduce Startup for Virtualization
 
@@ -1146,7 +1146,7 @@ The user should wait for the system to boot and for the Linux prompt to appear.
 The following image shows an example on how the terminal should look after the
 fvp invocation.
 
-  .. image:: ../images/kronos_reference_stack_fvp_run.png
+  .. image:: ../images/kronos_reference_stack_fvp_run.*
    :align: center
    :alt: Kronos Reference Software Stack Linux Login Prompt
 
@@ -1171,7 +1171,7 @@ Follow the steps below to achieve the same:
 Refer to the following image of the tmux panes rearrangement. Panes can
 be navigated using ``Ctrl-b`` followed by the arrow keys.
 
-  .. image:: ../images/kronos_reference_stack_fvp_rearrange_windows.png
+  .. image:: ../images/kronos_reference_stack_fvp_rearrange_windows.*
     :align: center
     :alt: Kronos Reference Software Stack FVP Rearrange Windows
 
@@ -1231,7 +1231,7 @@ Run the demo
    Refer to the following image for an invocation example of the Packet
    Analyzer.
 
-     .. image:: ../images/kronos_reference_stack_packet_analyzer_baremetal.png
+     .. image:: ../images/kronos_reference_stack_packet_analyzer_baremetal.*
        :align: center
        :alt: Kronos Reference Software Stack Packet Analyzer - Baremetal Architecture
 
@@ -1353,7 +1353,7 @@ On a Virtualization Architecture image, this will access the Dom0 terminal.
 The following image shows an example on how the terminal should look after the
 fvp invocation.
 
-  .. image:: ../images/kronos_reference_stack_fvp_run.png
+  .. image:: ../images/kronos_reference_stack_fvp_run.*
    :align: center
    :alt: Kronos Reference Software Stack Linux Login Prompt
 
@@ -1378,7 +1378,7 @@ Follow the steps below to achieve the same:
 Refer to the following image of the tmux panes rearrangement. Panes can
 be navigated using ``Ctrl-b`` followed by the arrow keys.
 
-  .. image:: ../images/kronos_reference_stack_fvp_rearrange_windows.png
+  .. image:: ../images/kronos_reference_stack_fvp_rearrange_windows.*
     :align: center
     :alt: Kronos Reference Software Stack FVP Rearrange Windows
 
@@ -1450,7 +1450,7 @@ Run the Demo
    Refer to the following image for an invocation example of the Packet
    Analyzer.
 
-     .. image:: ../images/kronos_reference_stack_packet_analyzer_virtualization.png
+     .. image:: ../images/kronos_reference_stack_packet_analyzer_virtualization.*
        :align: center
        :alt: Kronos Reference Software Stack Packet Analyzer - Virtualization Architecture
 
@@ -2440,7 +2440,7 @@ The Arm SystemReady IR Firmware Build option just builds the
 Arm SystemReady IR-aligned firmware. Refer to :ref:`design_systemready_ir`
 for more details.
 
-.. image:: ../images/kronos_reference_stack_build_config_sr_ir.png
+.. image:: ../images/kronos_reference_stack_build_config_sr_ir.*
    :align: center
    :width: 60 %
    :alt: Kronos Reference Software Stack Build Configuration Menu - Arm SystemReady IR Firmware Build
@@ -2623,7 +2623,7 @@ To build the Arm SystemReady IR Linux distros installation tests:
    ``Use-Case`` menu.
 2. Select ``Save & Build``.
 
-.. image:: ../images/kronos_reference_stack_build_config_sr_distro_debian.png
+.. image:: ../images/kronos_reference_stack_build_config_sr_distro_debian.*
    :align: center
    :width: 60 %
    :alt: Kronos Reference Software Stack Build Configuration Menu - Debian Linux Distro Installation
@@ -2647,7 +2647,7 @@ Run the following command to start the installation:
 The whole process of installing Debian will probably take about 5 hours. The
 install process begins when you see the following:
 
-    .. image:: ../images/sr-ir-linux-distro-debian-install-grub-4.png
+    .. image:: ../images/sr-ir-linux-distro-debian-install-grub-4.*
        :align: center
        :width: 60 %
        :alt: Grub Install Options Menu - Debian Linux Distro Installation
@@ -2675,7 +2675,7 @@ installation process and how to solve them:
      ``/dev/mmcblk0`` as the device file for accessing the installation media,
      then select ``Continue``.
 
-  .. image:: ../images/sr-ir-linux-distro-debian-install-media.png
+  .. image:: ../images/sr-ir-linux-distro-debian-install-media.*
      :align: center
      :width: 60 %
      :alt: Detect and Mount Installation Media Device File - Debian Linux Distro Installation
@@ -2689,7 +2689,7 @@ installation process and how to solve them:
   This is because on an EBBR platform, UEFI ``SetVariable()`` is not required at
   runtime (however, it is required at boot time).
 
-  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-0.png
+  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-0.*
      :align: center
      :width: 60 %
      :alt: Grub Installation Failure Prompt - Debian Linux Distro Installation
@@ -2709,7 +2709,7 @@ installation process and how to solve them:
 
   A snapshot is as below:
 
-  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-1.png
+  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-1.*
      :align: center
      :width: 60 %
      :alt: Grub Workaround Console Output - Debian Linux Distro Installation
@@ -2719,7 +2719,7 @@ installation process and how to solve them:
   After doing the above GRUB workaround, press ``Ctrl-a p`` to go back to the
   installer again. Select ``Continue`` on the GRUB failure screen.
 
-  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-2.png
+  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-2.*
      :align: center
      :width: 60 %
      :alt: Second Grub Installation Failure Prompt - Debian Linux Distro Installation
@@ -2729,7 +2729,7 @@ installation process and how to solve them:
   Select ``Continue without boot loader`` in the ``Debian installer main menu``
   and continue.
 
-  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-3.png
+  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-3.*
      :align: center
      :width: 60 %
      :alt: Debian Installer Main Menu - Debian Linux Distro Installation
@@ -2776,7 +2776,7 @@ To build the Arm SystemReady IR Linux distros installation tests:
    ``Use-Case`` menu.
 2. Select ``Save & Build``.
 
-.. image:: ../images/kronos_reference_stack_build_config_sr_distro_opensuse.png
+.. image:: ../images/kronos_reference_stack_build_config_sr_distro_opensuse.*
    :align: center
    :width: 60 %
    :alt: Kronos Reference Software Stack Build Configuration Menu - openSUSE Linux Distro Installation
@@ -2800,7 +2800,7 @@ Run the following command to start the installation:
 The whole process of installing openSUSE will take several hours. The install
 process begins when you see the following:
 
-   .. image:: ../images/sr-ir-linux-distro-opensuse-install-installation.png
+   .. image:: ../images/sr-ir-linux-distro-opensuse-install-installation.*
       :align: center
       :width: 60 %
       :alt: Leap Install Options Menu - openSUSE Linux Distro Installation
@@ -2812,7 +2812,7 @@ Select ``Installation`` to start the installation process.
   When you get to the ``System Role`` screen, select ``Server``, then select
   ``Next`` to continue with the installation.
 
-   .. image:: ../images/sr-ir-linux-distro-opensuse-install-system-role.png
+   .. image:: ../images/sr-ir-linux-distro-opensuse-install-system-role.*
       :align: center
       :width: 60 %
       :alt: System Role Selection Menu - openSUSE Linux Distro Installation

@@ -41,7 +41,7 @@ Diagram
 
 |
 
-.. image:: ../../images/safety_island_c0_bridge.png
+.. image:: ../../images/safety_island_c0_bridge.*
    :align: center
    :alt: Safety Island Cluster 0 Bridge High-Level Diagram
 
