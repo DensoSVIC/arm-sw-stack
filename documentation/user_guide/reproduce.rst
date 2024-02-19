@@ -2061,7 +2061,7 @@ To shutdown the FVP and terminate the emulation, select the terminal titled as
 
 .. note::
     There is a known failure whereby a kernel panic is seen from the Primary
-    Compute terminal. Refer to :ref:`changelog_knownissues`.
+    Compute terminal. Refer to :ref:`releasenotes_knownissues`.
 
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
@@ -2090,7 +2090,7 @@ The following message is expected in the output to validate this Use-Case:
 
 .. note::
     There are currently known failures in the automated validation. Refer to
-    :ref:`changelog_knownissues`.
+    :ref:`releasenotes_knownissues`.
 
 .. _user_guide_reproduce_si_psa_crypto_api_test:
 
@@ -2642,7 +2642,7 @@ Run the following command to start the installation:
 .. note::
 
   In case of a kernel error message during system boot, refer to the
-  :ref:`changelog_knownissues` for possible workarounds.
+  :ref:`releasenotes_knownissues` for possible workarounds.
 
 The whole process of installing Debian will probably take about 5 hours. The
 install process begins when you see the following:
@@ -2795,7 +2795,7 @@ Run the following command to start the installation:
 .. note::
 
   In case of a kernel error message during system boot, refer to the
-  :ref:`changelog_knownissues` for possible workarounds.
+  :ref:`releasenotes_knownissues` for possible workarounds.
 
 The whole process of installing openSUSE will take several hours. The install
 process begins when you see the following:
@@ -2895,7 +2895,7 @@ To start the FVP and connect to the Primary Compute terminal (running Linux):
 .. note::
 
   In case of a kernel error message during system boot, refer to the
-  :ref:`changelog_knownissues` for possible workarounds.
+  :ref:`releasenotes_knownissues` for possible workarounds.
 
 Note that the main tmux windows involved in the Secure Firmware Update are
 ``terminal_ns_uart0`` and ``terminal_rss_uart``. For ease of navigation, we

@@ -15,4 +15,4 @@
    user_guide/index
    design/index
    license_link
-   changelog
+   releasenotes

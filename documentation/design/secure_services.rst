@@ -304,5 +304,5 @@ information about how the Secure Services work in the RSS, read the
 `TF-M Secure Services`_ page.
 
 Trusted Firmware-M has some limitations regarding the Secure Storage Service.
-Refer to the changelog :ref:`changelog_limitations` section for more
+Refer to the release notes :ref:`releasenotes_limitations` section for more
 details.

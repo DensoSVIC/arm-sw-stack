@@ -95,7 +95,7 @@ Documentation Structure
 
     Defines the license under which the Reference Software Stack is provided.
 
-  * :ref:`Changelog & Release Notes <changelog:Changelog & Release Notes>`
+  * :ref:`Release Notes <releasenotes:Release Notes>`
 
     Documents new features, bug fixes, limitations, and any other changes
     provided under each Reference Software Stack release.

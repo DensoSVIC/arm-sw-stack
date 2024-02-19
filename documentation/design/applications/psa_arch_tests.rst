@@ -115,7 +115,7 @@ there should be no failed tests:
 
 There are some limitations behind running
 ``PSA Secure Storage APIs Architecture Test Suite`` on Safety Island Cluster 2
-only. Refer to the changelog :ref:`changelog_limitations` section.
+only. Refer to the release notes :ref:`releasenotes_limitations` section.
 
 PSA Secure Storage APIs
 =======================

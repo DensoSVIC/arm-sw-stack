@@ -4,9 +4,9 @@
  #
  # SPDX-License-Identifier: MIT
 
-#########################
-Changelog & Release Notes
-#########################
+#############
+Release Notes
+#############
 
 ****
 v1.0
@@ -115,7 +115,7 @@ Changed
 
 Initial version.
 
-.. _changelog_limitations:
+.. _releasenotes_limitations:
 
 Limitations
 ===========
@@ -146,7 +146,7 @@ Limitations
 Resolved and Known Issues
 =========================
 
-.. _changelog_knownissues:
+.. _releasenotes_knownissues:
 
 Known Issues
 ------------
