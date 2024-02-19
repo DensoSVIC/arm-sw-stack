@@ -14,9 +14,9 @@ Secure Firmware Update
 Introduction
 ************
 
-The Reference Software Stack provides the implementation of Secure Firmware
-Update that follows the `Platform Security Firmware Update Specification`_
-for below components:
+The Reference Software Stack implements Secure Firmware Update following
+the `Platform Security Firmware Update Specification`_. The following firmware
+images are included:
 
   * RSS BL2 image
   * RSS Runtime image
