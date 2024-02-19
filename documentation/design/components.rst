@@ -85,6 +85,7 @@ relevant external components.
 
 .. image:: ../images/rss_software_structure_simplified.png
    :align: center
+   :alt: RSS Software Structure
 
 |
 
@@ -165,6 +166,7 @@ can be used by multiple operating systems.
 
 .. image:: ../images/rss_gic_multiple_view.png
    :align: center
+   :alt: GIC Multiple Views Overview
 
 |
 
@@ -295,6 +297,7 @@ the RSS and SCP.
 
 .. image:: ../images/mhuv3_comm_rss_scp.png
    :align: center
+   :alt: MHUv3 Communication Between RSS and SCP
 
 |
 
@@ -513,6 +516,7 @@ slices so that cache contention with multiple domains can be mitigated.
 
 .. image:: ../images/xen_mpam_structure.png
    :align: center
+   :alt: Xen MPAM Overview
 
 |
 
@@ -593,6 +597,7 @@ equipped with the capability of all GICv4.1 features.
 
 .. image:: ../images/xen_gicv4_1_structure.png
    :align: center
+   :alt: Xen GICv4.1 Overview
 
 |
 

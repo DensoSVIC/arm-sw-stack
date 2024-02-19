@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -43,6 +43,7 @@ Diagram
 
 .. image:: ../../images/safety_island_c0_bridge.png
    :align: center
+   :alt: Safety Island Cluster 0 Bridge High-Level Diagram
 
 |
 

@@ -139,6 +139,7 @@ To run the configuration menu:
 .. image:: ../images/kronos_reference_stack_build_config.png
    :align: center
    :width: 60 %
+   :alt: Kronos Reference Software Stack Build Configuration Menu
 
 |
 
@@ -217,6 +218,7 @@ be navigated using ``Ctrl-b`` followed by the arrow keys.
 
 .. image:: ../images/cam_reproduce_startup.png
   :align: center
+  :alt: Critical Application Monitoring Demo Reproduce Startup
 
 |
 
@@ -586,6 +588,7 @@ be navigated using ``Ctrl-b`` followed by the arrow keys.
 
 .. image:: ../images/cam_reproduce_startup_virtualization.png
   :align: center
+  :alt: Critical Application Monitoring Demo Reproduce Startup for Virtualization
 
 |
 
@@ -1145,6 +1148,7 @@ fvp invocation.
 
   .. image:: ../images/kronos_reference_stack_fvp_run.png
    :align: center
+   :alt: Kronos Reference Software Stack Linux Login Prompt
 
 |
 
@@ -1169,6 +1173,7 @@ be navigated using ``Ctrl-b`` followed by the arrow keys.
 
   .. image:: ../images/kronos_reference_stack_fvp_rearrange_windows.png
     :align: center
+    :alt: Kronos Reference Software Stack FVP Rearrange Windows
 
 |
 
@@ -1228,6 +1233,7 @@ Run the demo
 
      .. image:: ../images/kronos_reference_stack_packet_analyzer_baremetal.png
        :align: center
+       :alt: Kronos Reference Software Stack Packet Analyzer - Baremetal Architecture
 
 |
 
@@ -1349,6 +1355,7 @@ fvp invocation.
 
   .. image:: ../images/kronos_reference_stack_fvp_run.png
    :align: center
+   :alt: Kronos Reference Software Stack Linux Login Prompt
 
 |
 
@@ -1373,6 +1380,7 @@ be navigated using ``Ctrl-b`` followed by the arrow keys.
 
   .. image:: ../images/kronos_reference_stack_fvp_rearrange_windows.png
     :align: center
+    :alt: Kronos Reference Software Stack FVP Rearrange Windows
 
 |
 
@@ -1444,6 +1452,7 @@ Run the Demo
 
      .. image:: ../images/kronos_reference_stack_packet_analyzer_virtualization.png
        :align: center
+       :alt: Kronos Reference Software Stack Packet Analyzer - Virtualization Architecture
 
 |
 
@@ -2434,6 +2443,7 @@ for more details.
 .. image:: ../images/kronos_reference_stack_build_config_sr_ir.png
    :align: center
    :width: 60 %
+   :alt: Kronos Reference Software Stack Build Configuration Menu - Arm SystemReady IR Firmware Build
 
 |
 

@@ -37,6 +37,7 @@ Diagram
 
 .. image:: ../../images/psa_arch_tests.png
    :align: center
+   :alt: Safety Island PSA APIs Architecture Test Suite
 
 |
 

@@ -133,6 +133,7 @@ baremetal and virtualization.
 
 .. image:: images/kronos_baremetal_high_level_arch.png
    :align: center
+   :alt: Arm Kronos Reference Software Stack High-Level Diagram - Baremetal Architecture
 
 |
 
@@ -145,6 +146,7 @@ baremetal and virtualization.
 
 .. image:: images/kronos_virtualization_high_level_arch.png
    :align: center
+   :alt: Arm Kronos Reference Software Stack High-Level Diagram - Virtualization Architecture
 
 |
 

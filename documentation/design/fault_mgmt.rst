@@ -60,6 +60,7 @@ below.)
 
 .. image:: ../images/sample_fault_device_tree.png
    :align: center
+   :alt: A Sample Fault Device Tree
 
 Safety States
 =============
@@ -96,6 +97,7 @@ these signals.
 
 .. image:: ../images/ssu_states.png
    :align: center
+   :alt: SSU States
 
 Finite State Machine (FSM) States and Transitions:
 
@@ -236,6 +238,7 @@ The Kronos FVP models:
 
 .. image:: ../images/kronos_fault_device_tree.png
    :align: center
+   :alt: Kronos Fault Device Tree
 
 The Kronos Fault Management application
 (:kronos-repo:`components/safety_island/zephyr/src/apps/fault_mgmt`)

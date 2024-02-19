@@ -30,6 +30,7 @@ Architecture
 
 .. image:: ../../images/parsec_tls_demo_architecture.png
    :align: center
+   :alt: Parsec-enabled TLS Demo
 
 |
 
@@ -102,6 +103,7 @@ demo.
 
 .. image:: ../../images/parsec_tls_demo_handshake.png
    :align: center
+   :alt: TLS Handshake Process
 
 |
 

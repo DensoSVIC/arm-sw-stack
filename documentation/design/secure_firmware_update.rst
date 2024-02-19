@@ -42,6 +42,7 @@ new images. The flash layouts are shown in the below figures.
 
 .. image:: ../images/rss_flash_layout.png
    :align: center
+   :alt: RSS Flash Layout
 
 ..
   /* cspell:disable */
@@ -61,6 +62,7 @@ new images. The flash layouts are shown in the below figures.
 .. image:: ../images/secure_flash_layout.png
    :align: center
    :width: 30 %
+   :alt: Primary Compute Secure Flash Layout
 
 |
 
@@ -73,6 +75,7 @@ the Secure Firmware Update.
 .. image:: ../images/secure_firmware_update.png
    :align: center
    :width: 60 %
+   :alt: Secure Firmware Update Architecture
 
 |
 
