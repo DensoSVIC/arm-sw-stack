@@ -52,7 +52,7 @@ the Reference Software Stack.
 |
 
 **Note** that the ``meta-arm-systemready`` layer is only required when building
-for the |Arm SystemReadyTM| IR ACS tests.
+for the Arm SystemReady IR ACS tests.
 
 The layer dependency sources and their revisions for the ``kronos`` repository
 (|kronos repository|) |layer dependency statement| are:

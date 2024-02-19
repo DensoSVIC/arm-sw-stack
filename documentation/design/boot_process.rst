@@ -144,7 +144,7 @@ Primary Compute Boot Flow
 
 The Application Processor (AP) refers to the cores in the Primary Compute of
 the Kronos Reference Design. The purpose of its firmware is to provide an
-|Arm SystemReadyTM| IR-aligned interface to Linux. |Arm SystemReadyTM| IR
+Arm SystemReady IR-aligned interface to Linux. Arm SystemReady IR
 compatible systems are required to follow the `Device Tree specification`_, so
 the :ref:`design_components_u-boot` bootloader is used in the Normal world,
 which provides the UEFI implementation and exposes the device tree to Linux.

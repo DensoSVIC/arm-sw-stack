@@ -172,7 +172,7 @@ high-performance compute platform can be enhanced to improve functional safety:
   * Safety Island Communication
   * Transport Layer Security (TLS) with hardware cryptography support
   * RSS Secure Services providing PSA Secure Storage and Crypto compliant APIs
-  * |Arm SystemReadyTM| IR-aligned software stack
+  * Arm SystemReady IR-aligned software stack
   * Secure firmware update following Arm's Security Firmware Update
     Specification
   * System Fault Handling for increased safety
@@ -196,7 +196,7 @@ Refer to :ref:`design_applications_cam` for more information.
 Safety Island Actuation Demo
 ============================
 
-The Safety Island Actuation demo consists of the |Arm SystemReadyTM| IR-aligned
+The Safety Island Actuation demo consists of the Arm SystemReady IR-aligned
 firmware along with Linux-based software on the Primary Compute and Zephyr
 application on the Safety Island to demonstrate automotive workloads.
 Refer to :ref:`design_applications_actuation` for more information.
@@ -272,9 +272,9 @@ the design of safety-critical systems.
 
 Refer to :ref:`design_applications_fault_mgmt` for more information.
 
-|Arm SystemReadyTM| IR Validation
-=================================
-|Arm SystemReadyTM| is a compliance certification program based on a set of
+Arm SystemReady IR Validation
+=============================
+Arm SystemReady is a compliance certification program based on a set of
 hardware and firmware standards that enable interoperability with generic
 off-the-shelf operating systems and hypervisors. Refer to
 :ref:`design_systemready_ir` for more information.
@@ -283,7 +283,7 @@ Linux Distribution Installation
 ===============================
 
 Demonstrates the installation of two unmodified generic UEFI distribution
-images, Debian and openSUSE, fulfilling |Arm SystemReadyTM| requirements.
+images, Debian and openSUSE, fulfilling Arm SystemReady requirements.
 
 Secure Firmware Update
 ======================

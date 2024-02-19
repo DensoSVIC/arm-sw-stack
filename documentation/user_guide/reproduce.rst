@@ -2421,14 +2421,14 @@ See :ref:`validation_fault_management` for more details.
 
 .. _user_guide_reproduce_arm_systemready_ir_validation:
 
-|Arm SystemReadyTM| IR Validation
-=================================
+Arm SystemReady IR Validation
+=============================
 
-|Arm SystemReadyTM| IR Firmware Build
---------------------------------------
+Arm SystemReady IR Firmware Build
+---------------------------------
 
 The Arm SystemReady IR Firmware Build option just builds the
-|Arm SystemReadyTM| IR-aligned firmware. Refer to :ref:`design_systemready_ir`
+Arm SystemReady IR-aligned firmware. Refer to :ref:`design_systemready_ir`
 for more details.
 
 .. image:: ../images/kronos_reference_stack_build_config_sr_ir.png
@@ -2446,7 +2446,7 @@ To run the configuration menu:
 
   kas menu kronos/Kconfig
 
-To build the |Arm SystemReadyTM| IR-aligned firmware image:
+To build the Arm SystemReady IR-aligned firmware image:
 
 1. Select ``Arm SystemReady IR Firmware Build`` under
    ``Arm SystemReady IR Validation`` from the ``Use-Case`` menu.
@@ -2457,10 +2457,10 @@ The firmware artifacts can be found in the directory
 
 .. _user_guide_reproduce_sr_ir_acs:
 
-|Arm SystemReadyTM| IR Architecture Compliance Suite (ACS) Tests
-----------------------------------------------------------------
+Arm SystemReady IR Architecture Compliance Suite (ACS) Tests
+------------------------------------------------------------
 
-The ACS for the |Arm SystemReadyTM| IR certification is delivered through a
+The ACS for the Arm SystemReady IR certification is delivered through a
 live OS image, which enables the basic automation to run the tests.
 
 The system will boot with the ACS live OS image and the ACS tests will run
@@ -2476,7 +2476,7 @@ To run the configuration menu:
 
   kas menu kronos/Kconfig
 
-To build and run the |Arm SystemReadyTM| IR ACS tests:
+To build and run the Arm SystemReady IR ACS tests:
 
 1. Select ``Arm SystemReady IR Architecture Compliance Suite (ACS) Tests`` under
    ``Arm SystemReady IR Validation`` from the ``Use-Case`` menu.
@@ -2569,7 +2569,7 @@ ACS tests are set up and how they work in the Reference Software Stack.
 Linux Distribution Installation (Debian and openSUSE)
 =====================================================
 
-The |Arm SystemReadyTM| IR-aligned firmware must boot at least two unmodified
+The Arm SystemReady IR-aligned firmware must boot at least two unmodified
 generic UEFI distribution images from an ISO image.
 
 This Software Stack currently supports two Linux distributions: `Debian Stable`_
@@ -2606,7 +2606,7 @@ To run the configuration menu:
 
   kas menu kronos/Kconfig
 
-To build the |Arm SystemReadyTM| IR Linux distros installation tests:
+To build the Arm SystemReady IR Linux distros installation tests:
 
 1. Select ``Debian Linux Distro Installation`` under
    ``Linux Distribution Installation (Debian and openSUSE)`` from the
@@ -2759,7 +2759,7 @@ To run the configuration menu:
 
   kas menu kronos/Kconfig
 
-To build the |Arm SystemReadyTM| IR Linux distros installation tests:
+To build the Arm SystemReady IR Linux distros installation tests:
 
 1. Select ``openSUSE Linux Distro Installation`` under
    ``Linux Distribution Installation (Debian and openSUSE)`` from the

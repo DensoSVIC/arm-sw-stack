@@ -6,9 +6,9 @@
 
 .. _design_systemready_ir:
 
-######################
-|Arm SystemReadyTM| IR
-######################
+##################
+Arm SystemReady IR
+##################
 
 `Arm SystemReady`_ is a compliance certification program based on a set of
 hardware and firmware standards that enable interoperability with generic
@@ -21,13 +21,13 @@ platform definitions to cover a range of systems from the cloud to IoT and edge,
 helping software 'just work' seamlessly across an ecosystem of Arm-based
 hardware.
 
-|Arm SystemReadyTM| is divided into a set of bands with a combination of specs
-available to suit the different devices and markets. |Arm SystemReadyTM| IR is
+Arm SystemReady is divided into a set of bands with a combination of specs
+available to suit the different devices and markets. Arm SystemReady IR is
 one of these bands.
 
 `Arm SystemReady IR`_ certified platforms implement a minimum set of hardware
 and firmware features that an operating system can depend on to deploy the
-operating system image. Hence, |Arm SystemReadyTM| IR ensures the deployment and
+operating system image. Hence, Arm SystemReady IR ensures the deployment and
 maintenance of standard firmware interfaces and targets both custom (Yocto,
 OpenWRT, Buildroot) and pre-built (Debian, Fedora, SUSE) Linux distributions.
 
@@ -59,31 +59,22 @@ Requirements (BBSR)`_ rules are still required:
  * R150_BBSR: Before updates to system firmware are applied, images must be
    verified using digital signatures
 
-********************************
-|Arm SystemReadyTM| IR Objective
-********************************
+******************************************
+Support on Kronos Reference Software Stack
+******************************************
 
-This Reference Software Stack aims to be aligned with |Arm SystemReadyTM| IR
-version |SystemReady IR ACS version|, but does not aim to be |Arm SystemReadyTM|
-IR certified, meaning that neither formal compliance testing nor validation are
-performed.
+This Reference Software Stack aims to be aligned with Arm SystemReady IR
+version |SystemReady IR ACS version| by implementing most of its requirements.
+Given this is a reference design, the software is not being submitted for
+formal certification.
 
-.. _boot_process_systemready-status:
+The support for running the Architectural Compliance Tests (ACS) is included in
+the Reference Software Stack. For more details on how to run it, refer to
+the :ref:`user_guide_reproduce_sr_ir_acs` section of this documentation.
 
-**************
-Current Status
-**************
-
-This Reference Software Stack has the testing capability to check for
-|Arm SystemReadyTM| alignment. Refer to :ref:`user_guide_reproduce_sr_ir_acs` to
-see how to run the |Arm SystemReadyTM| IR `ACS`_ tests in this Reference
-Software Stack.
-
-The |Arm SystemReadyTM| IR ACS tests of the Reference Software Stack use the
-|Arm SystemReadyTM| scripts to check the test results. The checks are currently
-patched to account for the current non-alignments. A high-level summary of
-these non-alignments is described in
-:ref:`boot_process_systemready-non_alignments`.
+The Arm SystemReady scripts used to check the test results skip the identified
+non-alignments which are further described in the
+:ref:`boot_process_systemready-non_alignments` section below.
 
 .. _boot_process_systemready-non_alignments:
 
@@ -140,23 +131,23 @@ non-alignments:
   1. Only two Linux distro installations are performed (Debian and openSUSE),
      rather than the requisite three.
 
-****************************
-|Arm SystemReadyTM| IR Tests
-****************************
+************************
+Arm SystemReady IR Tests
+************************
 
 .. _systemready_ir_acs_tests:
 
-|Arm SystemReadyTM| IR ACS Tests
-================================
+Arm SystemReady IR ACS Tests
+============================
 
-The |Arm SystemReadyTM| ACS (Architecture Compliance Suite) is a set of tests
+The Arm SystemReady ACS (Architecture Compliance Suite) is a set of tests
 that ensure architectural compliance across different implementations and
 variants of the architecture. The ACS is delivered as a prebuilt release image.
 The image is a bootable live OS image containing a collection of test suites.
 
 The :meta-arm-repo:`meta-arm-systemready/classes/arm-systemready-acs.bbclass`
 class in the meta-arm-systemready Yocto layer contains the common logic to
-deploy the |Arm SystemReadyTM| IR ACS version |SystemReady IR ACS version|
+deploy the Arm SystemReady IR ACS version |SystemReady IR ACS version|
 pre-built image and set up the testimage environment. It also contains a
 testimage "postfunc" called ``acs_logs_handle`` which generates report files
 and checks the results.
@@ -174,7 +165,7 @@ To run the tests, refer to :ref:`user_guide_reproduce_sr_ir_acs`.
 Linux Distributions Installation Tests
 ======================================
 
-The |Arm SystemReadyTM| IR requires that at least two Linux distros must be able
+The Arm SystemReady IR requires that at least two Linux distros must be able
 to boot and install using the UEFI boot flow.
 
 Recipes for testing the installation of Linux distributions are provided under
