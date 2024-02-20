@@ -152,3 +152,10 @@ class SVETestDomU1(SVETestBase):
 
 class SVETestDomU2(SVETestDomU1):
     domu_hostname = "domu2"
+
+    @classmethod
+    def setUpClass(cls):
+        if int(cls.td.get('DOMU_INSTANCES', 0)) < 2:
+            raise unittest.SkipTest("SVETestDomU2 skipped because DomU2 is"
+                                    " not generated in this build")
+        super().setUpClass()
