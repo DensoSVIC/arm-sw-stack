@@ -985,8 +985,8 @@ Follow the steps below to achieve the same:
 2. Press ``Ctrl-b %`` to add a new tmux pane which will be used to issue
    commands on the build host machine.
 3. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_uart_si_cluster2``
-   followed by pressing ``Enter`` key to join the ``cam-service`` terminal window
-   to the Primary Compute terminal window.
+   followed by pressing ``Enter`` key to join the ``cam-service`` terminal
+   window to the Primary Compute terminal window.
 
 Refer to the following image of the tmux panes rearrangement. Panes can
 be navigated using ``Ctrl-b`` followed by the arrow keys.
@@ -1187,8 +1187,8 @@ Follow the steps below to achieve the same:
 2. Press ``Ctrl-b %`` to add a new tmux pane which will be used to issue
    commands on the build host machine.
 3. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_uart_si_cluster2``
-   followed by pressing ``Enter`` key to join the ``cam-service`` terminal window
-   to the Primary Compute terminal window.
+   followed by pressing ``Enter`` key to join the ``cam-service`` terminal
+   window to the Primary Compute terminal window.
 
 Refer to the following image of the tmux panes rearrangement. Panes can
 be navigated using ``Ctrl-b`` followed by the arrow keys.
@@ -1557,8 +1557,8 @@ this application.
         . Setting up the SSL data.... ok
         . Waiting for a remote connection ...
 
-   The TLS client can take an optional parameter as the TLS server IP address. The
-   default value of the parameter is ``localhost``.
+   The TLS client can take an optional parameter as the TLS server IP address.
+   The default value of the parameter is ``localhost``.
 
 2. Run ``ssl_client1`` from the Primary Compute terminal in a container:
 
