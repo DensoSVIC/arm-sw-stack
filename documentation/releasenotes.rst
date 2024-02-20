@@ -26,43 +26,43 @@ The main components versions used in the Reference Software Stack:
     - Version
     - Source
   * - Kronos Reference Design FVP (FVP_RD_Kronos)
-    - |FVP_RD_Kronos version|
+    - 11.25.3
     - `FVP download`_
   * - Trusted Firmware-M (RSS)
-    - |Trusted Firmware-M version|
+    - 53aa78efef274b9e46e63b429078ae1863609728
     - `Trusted Firmware-M repository`_
   * - SCP-firmware
-    - |SCP-Firmware version|
+    - cc4c9e017348d92054f74026ee1beb081403c168
     - `SCP-Firmware repository`_
   * - Trusted Firmware-A
-    - |Trusted Firmware-A version|
+    - 2.8.0
     - `Trusted Firmware-A repository`_
   * - OP-TEE
-    - |OP-TEE version|
+    - 3.22.0
     - `OP-TEE repository`_
   * - Trusted Services
-    - |Trusted Services version| (based on main branch, pre v1.0.0)
+    - 08b3d39471f4914186bd23793dc920e83b0e3197 (based on main branch, pre v1.0.0)
     - `Trusted Services repository`_
   * - U-Boot
-    - |U-Boot version|
+    - 2023.07.02
     - `U-Boot repository`_
   * - Xen
-    - |Xen version|
+    - 4.18
     - `Xen repository`_
   * - Linux Kernel
-    - |Linux version|
+    - 6.1.73
     - `Linux repository`_ and `Linux preempt-rt repository`_
   * - Zephyr
-    - |Zephyr version|
+    - 3.5.0
     - `Zephyr repository`_
   * - Safety Island Actuation Demo
-    - |Actuation version|
+    - v2.0
     - `Actuation repository`_
   * - Mbed TLS
-    - |Mbed TLS version| (based on |Mbed TLS base version|)
+    - 1ec69067fa1351427f904362c1221b31538c8b57 (based on 3.5.0)
     - `Mbed TLS repository`_
   * - Critical Application Monitoring
-    - |Critical Application Monitoring version|
+    - v1.0
     - `Critical Application Monitoring repository`_
 
 Third-party Yocto layers used to build the Reference Software Stack:
@@ -72,43 +72,43 @@ Third-party Yocto layers used to build the Reference Software Stack:
 
     URL: |meta-arm repository|
     layers: meta-arm, meta-arm-bsp, meta-arm-systemready, meta-arm-toolchain
-    branch: |meta-arm branch|
-    revision: |meta-arm revision|
+    branch: kronos-nanbield
+    revision: HEAD
 
     URL: |meta-cassini repository|
     layers: meta-cassini-distro
-    branch: |meta-cassini branch|
-    revision: |meta-cassini revision|
+    branch: nanbield
+    revision: v1.1.0
 
     URL: |meta-clang repository|
     layers: meta-clang
-    branch: |meta-clang branch|
-    revision: |meta-clang revision|
+    branch: nanbield
+    revision: 5170ec9cdfe215fcef146fa9142521bfad1d7d6c
 
     URL: |meta-openembedded repository|
     layers: meta-filesystems, meta-networking, meta-oe, meta-python
-    branch: |meta-openembedded branch|
-    revision: |meta-openembedded revision|
+    branch: nanbield
+    revision: da9063bdfbe130f424ba487f167da68e0ce90e7d
 
     URL: |meta-security repository|
     layers: meta-parsec
-    branch: |meta-security branch|
-    revision: |meta-security revision|
+    branch: nanbield
+    revision: 5938fa58396968cc6412b398d403e37da5b27fce
 
     URL: |meta-virtualization repository|
     layers: meta-virtualization
-    branch: |meta-virtualization branch|
-    revision: |meta-virtualization revision|
+    branch: nanbield
+    revision: ac125d881f34ff356390e19e02964f8980d4ec38
 
     URL: |meta-zephyr repository|
     layers: meta-zephyr-core
-    branch: |meta-zephyr branch|
-    revision: |meta-zephyr revision|
+    branch: nanbield
+    revision: fa76b75bd65da63abcc2d65dd5d4eb24296f2f65
 
     URL: |poky repository|
     layers: meta, meta-poky
-    branch: |poky branch|
-    revision: |poky revision|
+    branch: nanbield
+    revision: 6d6ccbca0ce6b145224fa94d3c62a45e453c969f
 
 Changed
 =======
