@@ -219,6 +219,7 @@ to:
 * Configure the NI-710AE of the Safety Island.
 * Support the runtime services listed above.
 * Add Secure Firmware Update support for RSS, SCP, LCP, Safety Island and Primary Compute.
+* Add a shutdown handler to be able to shutdown the FVP.
 
 .. _design_components_scp-firmware:
 
@@ -316,6 +317,7 @@ Patches for the SCP are included at
 * Power on PC.
 * Add Primary Compute and Safety Island shared SRAM to Interconnect memory
   region map.
+* Add a shutdown handler to be able to shutdown the FVP.
 
 ***************
 Primary Compute
@@ -473,6 +475,7 @@ to:
 * Introduce Arm FF-A support.
 * Introduce armffa command.
 * Add MM communication support using FF-A transport.
+* Add Secure Firmware Update support.
 
 .. _design_components_xen:
 
