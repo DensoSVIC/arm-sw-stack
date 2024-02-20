@@ -5,9 +5,32 @@
 # SPDX-License-Identifier: MIT
 -->
 
-# Kronos Reference Software Stack
+# Arm® Kronos Reference Software Stack
 
-To build a local version of the documentation, you will need [Sphinx][1]
+The Arm Kronos Reference Software Stack is made available as part of the
+Arm Kronos Reference Design and is composed of multiple Open Source components
+which together form the proposed solution, including:
+
+- The [Runtime Security Engine (RSE)][1] running an instance of Trusted
+  Firmware-M, which offers boot, cryptography, and secure storage services.
+
+- The Safety Island subsystem, running three instances of the Zephyr real-time
+  operating system (RTOS).
+
+- The firmware for the Primary Compute, using Trusted Firmware-A, U-Boot,
+  OP-TEE and Trusted Services. These are configured to be aligned with
+  [Arm SystemReady IR][2].
+
+The remaining software in the Primary Compute subsystem, based on the
+[Cassini][3] distribution, is available in two main architectures:
+baremetal and virtualization.
+
+## Arm Kronos Reference Software Stack Documentation
+
+The project's documentation can be browsed at
+<https://kronos-ref-stack.docs.arm.com>.
+
+To build a local version of the documentation, you will need [Sphinx][4]
 installed in your work environment.
 
 The following commands should be executed on a Linux machine and have been
@@ -21,4 +44,7 @@ version of the documentation under `public/`:
 To render and explore the documentation, simply open `public/index.html` in a
 web browser.
 
-[1]: https://www.sphinx-doc.org/
+[1]: https://tf-m-user-guide.trustedfirmware.org/platform/arm/rss/readme.html
+[2]: https://www.arm.com/architecture/system-architectures/systemready-certification-program/ir
+[3]: https://cassini.readthedocs.io/en/v1.1.0/
+[4]: https://www.sphinx-doc.org/
