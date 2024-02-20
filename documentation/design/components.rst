@@ -95,8 +95,11 @@ Runtime and the relevant components.
 Memory Map
 ==========
 
- Runtime Security Subsystem (RSS) configuring the Primary Compute, System Control Processor (SCP),
- and Safety Island Clusters 0, 1, and 2 to dedicated address spaces.
+The Runtime Security Subsystem (RSS) maps the Primary Compute, System Control
+Processor (SCP), and Safety Island Clusters 0, 1, and 2 system memory regions
+via an Address Translation Unit (ATU) device to dedicated address spaces. This
+mapping allows access to those components memories and enables the transfer of
+the boot images.
 
 .. list-table::
    :widths: 50 50 25
@@ -124,28 +127,8 @@ Memory Map
 Boot Loaders
 ============
 
-RSS BL1
--------
-
-The first stage bootloader (BL1) of the RSS is immutable code located in the RSS
-ROM that executes in place on reset. Its purpose is to load and verify the
-integrity of the second stage bootloader (BL2) image.
-
-RSS BL2
--------
-
-RSS BL2 is provisioned in the RSS OTP and executed from the RSS SRAM. Its
-purpose is to load, decrypt and authenticate the BL3 image.
-
-RSS BL3
--------
-
-RSS BL3 is implemented through extensions to the existing MCUBoot bootloader in
-Trusted Firmware-M (TF-M). It loads and authenticates the initial bootloaders
-of the SCP, Safety Island (SI), LCP and Application Processor (AP).
-
-After all the aforementioned PEs begin to boot, BL3 loads and authenticates the
-RSS Runtime and starts it.
+Refer to :ref:`design_boot_process_rss-oriented_boot_flow` for more details
+on the boot process. 
 
 Runtime
 =======
