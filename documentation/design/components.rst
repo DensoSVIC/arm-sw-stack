@@ -259,8 +259,8 @@ also minimizes potential fault sources.
 MHUv3 Communication
 ===================
 
-There are MHUv3 devices between the |Cortex|-M core where the RSS runs and the
-|Cortex|-M core where SCP-firmware runs. In the transport layer of MHUv3,
+There are MHUv3 devices between the Cortex-M core where the RSS runs and the
+Cortex-M core where SCP-firmware runs. In the transport layer of MHUv3,
 doorbell signals are exchanged between the RSS and SCP.
 
 For RD-Fremont platform, MHUv3 signals are sent:
@@ -614,7 +614,7 @@ implementations.
 SVE vector length can be specified as an optional parameter along with enabling
 SVE2. The allowed values are from 128 to maximum 2048 limited by the hardware
 supported maximum SVE vector length. Dom0 and guest SVE settings follow the
-|Arm| Kronos Reference Design's maximum vector length of 128. These settings
+Arm Kronos Reference Design's maximum vector length of 128. These settings
 are set in
 :kronos-repo:`yocto/meta-kronos/recipes-core/domu-package/domu-envs.inc` and
 :kronos-repo:`b/yocto/meta-kronos/recipes-extended/xen-cfg/xen-cfg.bb`.
@@ -715,7 +715,7 @@ It reuses the ``fvp_aemv8r`` SoC support and adds a pair of patches for MPU
 device region configuration.
 
 The Zephyr image for this board is running on the Safety Island clusters.
-In order to enable communication with |Arm| 9-A cores (from Primary Compute),
+In order to enable communication with Arm 9-A cores (from Primary Compute),
 a set of drivers are added into Zephyr by means of an out-of-tree module.
 More details on the communication can be found in the
 :ref:`HIPC <design/hipc:Heterogeneous Inter-processor Communication (HIPC)>` section.
@@ -725,7 +725,7 @@ MHUv3
 
 The Arm Message Handling Unit Version 3 (MHUv3) is a mailbox controller for
 inter-processor communication. In the Kronos FVP, there are MHUv3 devices
-on-chip for signaling between |Arm| 9-A and Safety Island clusters, using the
+on-chip for signaling between Arm 9-A and Safety Island clusters, using the
 doorbell protocol. A driver is added into the Zephyr mailbox framework to
 support this device.
 
@@ -733,7 +733,7 @@ Virtual Network over RPMsg
 --------------------------
 
 A ``veth_rpmsg`` driver is added for network socket based communication between
-|Arm| 9-A and Safety Island clusters. It implements an RPMsg backend by the OpenAMP
+Arm 9-A and Safety Island clusters. It implements an RPMsg backend by the OpenAMP
 library and an adaptation layer for converting RPMsg data to network data.
 
 Virtual Network over IPC RPMsg Static Vrings
@@ -749,7 +749,7 @@ Zperf sample
 The `zperf sample`_ can be used to stress test inter-processor communication
 over a virtual network on the Kronos FVP. The board overlay dts and
 configuration file are added to this sample. This sample needs to be used
-together with iperf on the |Arm| 9-A side for network performance testing.
+together with iperf on the Arm 9-A side for network performance testing.
 
 .. _design_components_zephyr_downstream_changes:
 

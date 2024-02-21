@@ -25,7 +25,7 @@ The subsystem interfaces with the following types of devices:
    of a fault device tree.
  * A safety state device, which manages a state in reaction to reported faults.
 
-Supporting driver implementations are provided for the following |Arm| hardware
+Supporting driver implementations are provided for the following Arm hardware
 designs:
 
  * A Device Fault Management Unit (Device FMU): a fault device attached to a
