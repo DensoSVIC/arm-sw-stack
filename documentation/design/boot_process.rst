@@ -154,16 +154,37 @@ which provides the UEFI implementation and exposes the device tree to Linux.
 firmware, which consists of BL2 and BL31. BL32 is provided by OP-TEE.
 BL33 is provided by U-Boot.
 
+The Primary Compute uses:
+
+* Secure Flash to store the following components:
+
+  * AP BL31
+  * AP BL32 (OP-TEE)
+  * AP BL33 (U-Boot)
+
+* First VFAT (boot) partition of the VirtIO Block to store the following
+  components:
+
+  * GRUB2
+  * Linux (Baremetal Architecture)
+  * Xen (Virtualization Architecture)
+
 The Primary Compute boot flow follows the following steps:
 
 1. AP BL2:
 
-   * Copies AP BL31, BL32 and BL33 from flash to SRAM and DRAM
-   * Jumps to AP BL31
+   * Copies the AP BL31 image from Secure Flash to Secure RAM
+   * Transfers the execution to AP BL31
 
-2. AP BL31 starts AP BL32 (OP-TEE)
-3. AP BL31 starts AP BL33 (U-Boot)
-4. AP BL33 loads GRUB2 from the boot partition
-5. Grub loads and boots either Linux (Baremetal Architecture) or Xen
+2. AP BL31:
+
+   * Copies the AP BL32 (OP-TEE) image from Secure Flash to Secure DRAM
+   * Transfers the execution to AP BL32
+   * Copies the AP BL33 (U-Boot) image from Secure Flash to Normal DRAM
+   * Transfers the execution to AP BL33
+
+3. AP BL33 loads GRUB2 from the boot partition
+
+4. Grub loads and boots either Linux (Baremetal Architecture) or Xen
    (Virtualization Architecture) from the boot partition, depending on the Grub
    configuration
