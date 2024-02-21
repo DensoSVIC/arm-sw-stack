@@ -177,7 +177,8 @@ TEST_SUITES_EXTRA:cam = " test_40_cam"
 
 TEST_SUITES_EXTRA:append:cam:baremetal = " \
     test_00_fwu \
-"
+    test_50_trusted_services \
+    "
 
 TEST_SUITES_EXTRA:nosve = ""
 
@@ -229,10 +230,13 @@ TEST_SUITES:remove:virtualization = " \
 
 TEST_SUITES:remove:cam = "\
     test_20_fvp_devices \
-    ssh \
-    ping \
     test_40_parsec \
     test_40_sve \
+    "
+
+TEST_SUITES:remove:cam:virtualization = "\
+    ssh \
+    ping \
     "
 
 TEST_SUITES:remove:si-psa-storage-tests = "\
