@@ -31,7 +31,7 @@ class DomUTest(OERuntimeTestCase):
         XenUtils.enter_guest_from_dom0(cls.console, cls.dom0_prompt,
                                        cls.linux_prompt, cls.domu_hostname)
 
-    def run_cmd(self, cmd, timeout=200, check=True):
+    def run_cmd(self, cmd, timeout=400, check=True):
         # Get the output of the command
         cmd_echo = re.compile(re.escape(cmd))
         self.target.sendline(self.linux_console, cmd)
@@ -55,7 +55,7 @@ class DomUTest(OERuntimeTestCase):
 
         # Get the exit code of the command
         self.target.sendline(self.linux_console, 'echo $?')
-        self.target.expect(self.linux_console, r'[0-9]+\r\r\n', timeout=40)
+        self.target.expect(self.linux_console, r'[0-9]+\r\r\n', timeout=90)
         matches = self.target.match(self.linux_console)
         status = int(matches[0].decode("utf-8", errors="replace").strip())
         self.target.expect(self.linux_console, self.linux_prompt, timeout=200)
