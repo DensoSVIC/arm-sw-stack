@@ -152,7 +152,7 @@ meta_arm_version = os.environ.get(
 actuation_version = "v2.0"
 cassini_version = "v1.1.0"
 critical_application_monitoring_version = "v1.0"
-fvp_version = "0.0"
+fvp_version = "11.25.3"
 kas_version = "4.2"
 linux_version = "6.1"
 linux_version_patch = "73"
@@ -168,7 +168,7 @@ trusted_firmware_a_version = "2.8.0"
 # /* cspell:disable-next-line */
 trusted_firmware_m_base_version = "master branch post v1.8.1"
 trusted_firmware_m_version = "53aa78efef274b9e46e63b429078ae1863609728"
-trusted_services_base_version = "integration branch"
+trusted_services_base_version = "main branch, pre v1.0.0"
 trusted_services_doc_version = "integration"
 trusted_services_version = "08b3d39471f4914186bd23793dc920e83b0e3197"
 uboot_version = "2023.07.02"
@@ -208,12 +208,12 @@ rst_prolog = f"""
 .. |kronos repository| replace:: https://gitlab.arm.com/automotive-and-industrial/kronos/kronos
 .. |kronos version| replace:: {kronos_version}
 .. |layer dependency statement| replace:: {kronos_version} branch
-.. |meta-arm branch| replace:: {yocto_version}
+.. |meta-arm branch| replace:: kronos-{yocto_version}
 .. |meta-arm repository| replace:: https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/meta-arm
 .. |meta-arm revision| replace:: HEAD
-.. |meta-cassini branch| replace:: {cassini_version}
+.. |meta-cassini branch| replace:: {yocto_version}
 .. |meta-cassini repository| replace:: https://gitlab.com/Linaro/cassini/meta-cassini
-.. |meta-cassini revision| replace:: 3c6f011c78b4bad210e14cffaae33d8da5fcb288
+.. |meta-cassini revision| replace:: {cassini_version}
 .. |meta-clang branch| replace:: {yocto_version}
 .. |meta-clang repository| replace:: https://github.com/kraj/meta-clang
 .. |meta-clang revision| replace:: 5170ec9cdfe215fcef146fa9142521bfad1d7d6c
