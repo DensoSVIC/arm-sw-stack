@@ -82,8 +82,8 @@ In the Kronos Reference Software Stack, ``cam-service`` is deployed on the
 Safety Island Cluster 1 in order to provide applications on the Primary Compute
 with a high safety level of monitoring services.
 
-To support ``cam-service`` deployment on the Safety Island, there are the
-following platform requirements:
+The following are platform requirements to support the ``cam-service``
+deployment on the Safety Island:
 
   * Communication between the Safety Island and the Primary Compute for event
     streams.
@@ -109,9 +109,10 @@ Zephyr File System
 Zephyr supports the FAT file system and can mount it to a RAM disk.
 Refer to `Zephyr file system`_.
 
-Due to the volatility of the RAM disk, on every system boot, the CAM stream data
-needs to be deployed from the Primary Compute to the Safety Island Cluster 1 via
-``cam-tool``.
+.. note::
+  Due to the volatility of the RAM disk, on every system boot, the CAM stream
+  data needs to be deployed from the Primary Compute to the Safety Island
+  Cluster 1 via ``cam-tool``.
 
 Validation
 ==========

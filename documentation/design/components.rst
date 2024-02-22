@@ -568,15 +568,15 @@ GICv4.1
 -------
 
 The `GICv4.1 - Direct injection of virtual interrupts`_ (GICv4.1) is enabled
-in Xen. GICv4.1 is an extension to GICv3 with extra direct vLPI (Virtual
-Locality-specific Peripheral Interrupt) and vSGI (Virtual Software-generated
-Interrupt) injection enabled. This feature allows users to describe to the ITS
-(Interrupt Translation Service) how physical events map to virtual interrupts
-in advance. If the vPE (Virtual Processing Element) targeted by a virtual
-interrupt is running, the virtual interrupt can be forwarded without the need
-to first enter the Xen hypervisor. This can reduce the overhead associated with
-virtualized interrupts, by reducing the number of times the hypervisor is
-entered.
+in Xen. GICv4.1 is an extension to GICv3 with extra direct Virtual
+Locality-specific Peripheral Interrupt (vLPI) and Virtual Software-generated
+Interrupt (vSGI) injection enabled. This feature allows users to describe to the
+Interrupt Translation Service (ITS) how physical events map to virtual
+interrupts in advance. If the Virtual Processing Element (vPE) targeted by
+a virtual interrupt is running, the virtual interrupt can be forwarded without
+the need to first enter the Xen hypervisor. This can reduce the overhead
+associated with virtualized interrupts, by reducing the number of times the
+hypervisor is entered.
 
 With Xen Kconfig ``CONFIG_GICV4=y``, the Kronos platform will be automatically
 equipped with the capability of all GICv4.1 features.

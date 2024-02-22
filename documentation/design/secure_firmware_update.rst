@@ -38,7 +38,7 @@ Architecture
 As standardized into the `Platform Security Firmware Update Specification`_,
 each one of the RSS flash and secure flash is divided into two banks, where one
 bank has the currently running images and the other bank is used for staging
-new images. The flash layouts are shown in the below figures.
+new images. The flash layouts are shown in the following figures.
 
 .. image:: ../images/rss_flash_layout.*
    :align: center
