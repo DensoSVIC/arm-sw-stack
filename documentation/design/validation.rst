@@ -108,25 +108,6 @@ The BSP Tests consist of a series of device tests that can be found in
    Checks that the watchdog device and its correct driver are available and
    accessible via the filesystem.
 
-.. _design_trusted_services_tests:
-
-Trusted Services Tests
-======================
-
-The meta-arm Yocto layer provides Trusted Service OEQA tests which can be used
-for automated `Trusted Services Test Executables`_. The script that implements
-the test is
-:meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/trusted_services.py`.
-
-Currently, only the following test cases for `psa-api-test` (from
-the `PSA Arch Tests`_ project) are supported:
-
-* ts-psa-crypto-api-test
-   Used for PSA API conformance testing for `PSA Crypto API`_.
-
-* ts-psa-ps-api-test
-   Used for PSA API conformance testing for `PSA Secure Storage API`_.
-
 Integration Tests Implementation
 ================================
 
@@ -362,6 +343,27 @@ The test consists of the following aspects and will only be run on DomU1:
 
 The testing of interrupt injection is not currently validated for run time
 operations, e.g. file system actions or data transfer.
+
+.. _validation_trusted_services_tests:
+
+Integration Tests Validating Primary Compute PSA APIs Architecture Test Suite
+=============================================================================
+
+The meta-arm Yocto layer provides Trusted Service OEQA tests which can be used
+for automated `Trusted Services Test Executables`_. The script that implements
+the test is
+:meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/trusted_services.py`.
+
+Currently, only the following test cases for `psa-api-test` (from
+the `PSA Arch Tests`_ project) are supported:
+
+* ts-psa-crypto-api-test
+   Used for PSA API conformance testing for `PSA Crypto API`_.
+
+* ts-psa-ps-api-test
+   Used for PSA API conformance testing for `PSA Secure Storage API`_.
+   Currently only the Protected Storage component of Secure Storage is
+   supported.
 
 .. _validation_psa_arch_tests:
 

@@ -222,6 +222,19 @@ carried out by `Parsec`_. While the backend of the Parsec service is based on
 RSS cryptographic runtime service. Refer to
 :ref:`design_applications_parsec_enabled_tls` for more information.
 
+Primary Compute PSA Protected Storage and Crypto APIs Architecture Test Suite
+=============================================================================
+
+The PSA Protected Storage and Crypto architecture test suites are a set of
+examples of the invariant behaviors that are specified in the PSA Protected
+Storage APIs and PSA Crypto APIs specifications respectively.
+
+Both suites are used to verify whether these behaviors are implemented
+correctly in our system. This suites contain self-checking and portable
+C-based tests with directed stimulus.
+
+Refer to :ref:`design_primary_compute_secure_services` for more information.
+
 Safety Island PSA Secure Storage APIs Architecture Test Suite
 =============================================================
 

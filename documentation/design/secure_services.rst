@@ -31,9 +31,12 @@ to the following specifications:
       the Reference Stack on the Primary Compute.
     * Protected Storage (PS) API: An interface for external protected storage.
 
-***************
-Primary Compute
-***************
+
+.. _design_primary_compute_secure_services:
+
+*******************************
+Primary Compute Secure Services
+*******************************
 
 On Primary Compute, the implementation of `Crypto Service`_ and `Secure Storage
 Service`_ is based on the SE Proxy secure partition.
@@ -63,6 +66,16 @@ the Primary Compute Secure Services.
    :align: center
 
 |
+
+PSA Protected Storage and Crypto APIs Arch Tests
+------------------------------------------------
+
+The PSA Protected Storage and PSA Crypto APIs Arch Tests can be accessed from
+the Primary Compute linux terminal by running a single command for each. The
+test suites execute over around a minute, and a table of results is displayed
+upon completion.
+
+Refer to :ref:`validation_trusted_services_tests` for more information.
 
 Parsec
 ------
@@ -118,9 +131,9 @@ The backend of the SMM services uses the Protected Storage proxy from the
 `SE Proxy SP`_. From there on, the Protected Storage calls are forwarded to the
 secure enclave as explained above.
 
-*************
-Safety Island
-*************
+*****************************
+Safety Island Secure Services
+*****************************
 
 The Safety Island provides the implementation of `Crypto Service`_ and
 `Secure Storage Service`_. The data paths of the services are different.

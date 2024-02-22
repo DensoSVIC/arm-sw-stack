@@ -1808,6 +1808,142 @@ The following messages are expected in the output to validate this Use-Case:
 
   RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: PASSED (263.85s)
 
+.. _user_guide_reproduce_pc_psa_ps_crypto_api_test:
+
+Primary Compute PSA Protected Storage and Crypto APIs Architecture Test Suite
+=============================================================================
+
+The demo can be run on the Baremetal Architecture. Refer to
+:ref:`design_primary_compute_secure_services` for more information on this
+application. This demo is included as part of the ``Critical Application
+Monitoring Demo``.
+
+Baremetal Architecture
+----------------------
+
+Build
+^^^^^
+
+To run the configuration menu:
+
+.. code-block:: text
+
+  kas menu kronos/Kconfig
+
+To build a Baremetal Architecture image:
+
+1. Select ``Critical Application Monitoring Demo`` from the ``Use-Case`` menu.
+2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
+3. Select ``Save & Build``.
+
+Run the FVP
+^^^^^^^^^^^
+
+To start the FVP and connect to the Primary Compute terminal (running Linux):
+
+.. code-block:: text
+
+  kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
+
+The user should wait for the system to boot and for the Linux prompt to appear.
+
+The Reference Software Stack running on the Primary Compute can be logged into
+as ``root`` user without a password in the Linux terminal. Run the below
+command to guarantee that all the expected services have been
+initialized.
+
+.. code-block:: text
+
+  systemctl is-system-running --wait
+
+Wait for it to return. The expected terminal output is ``running``.
+
+Run the demo
+^^^^^^^^^^^^
+
+The demo consists of simple tests run from the Linux terminal. Refer to
+:ref:`design_primary_compute_secure_services` for more information on
+this application.
+
+1. Run the PSA Crypto API tests from the Primary Compute terminal using the
+   following command:
+
+   .. code-block:: text
+
+      psa-crypto-api-test
+
+   A message similar to the following should appear:
+
+   .. code-block:: text
+
+      ************ Crypto Suite Report **********
+      TOTAL TESTS     : 59
+      TOTAL PASSED    : 59
+      TOTAL SIM ERROR : 0
+      TOTAL FAILED    : 0
+      TOTAL SKIPPED   : 0
+      ******************************************
+
+
+2. Run the PSA Protected Storage API tests from the Primary Compute terminal
+   using the following command:
+
+   .. code-block:: text
+
+      psa-ps-api-test
+
+   A message similar to the following should appear:
+
+   .. code-block:: text
+
+      ************ Storage Suite Report **********
+      TOTAL TESTS     : 17
+      TOTAL PASSED    : 11
+      TOTAL SIM ERROR : 0
+      TOTAL FAILED    : 0
+      TOTAL SKIPPED   : 6
+      ******************************************
+
+4. To shutdown the FVP and terminate the emulation, issue a ``shutdown now``
+   on the Primary Compute terminal. The below messages indicate the shutdown
+   process is complete.
+
+   .. code-block:: text
+
+      [  OK  ] Finished System Power Off.
+      [  OK  ] Reached target System Power Off.
+      reboot: Power down
+
+Automated Validation
+^^^^^^^^^^^^^^^^^^^^
+
+For more details about the validation of PSA Architecture Test Suite, refer to
+:ref:`validation_trusted_services_tests`.
+
+To run the configuration menu:
+
+.. code-block:: text
+
+  kas menu kronos/Kconfig
+
+To enable the validation tests:
+  1. Select ``Critical Application Monitoring Demo`` as ``Use-Case``.
+  2. Select ``Baremetal Architecture`` from the ``Reference Stack Architecture``
+     menu.
+  3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
+     menu.
+  4. Select ``Save & Build``.
+
+The complete test suite takes around 20 minutes to complete on an x86_64
+host. See :ref:`validation_trusted_services_tests` for more details.
+
+The following messages are expected in the output to validate this Use-Case:
+
+.. code-block:: text
+
+   RESULTS - test_50_trusted_services.KronosTrustedServices.test_03_psa_crypto_api_test: PASSED (134.31s)
+   RESULTS - test_50_trusted_services.KronosTrustedServices.test_05_psa_ps_api_test: PASSED (16.88s)
+
 .. _user_guide_reproduce_si_psa_ps_api_test:
 
 Safety Island PSA Secure Storage APIs Architecture Test Suite
