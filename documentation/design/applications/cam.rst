@@ -38,9 +38,6 @@ more information on CAM project and its implementation details.
 Critical Application Monitoring on Kronos
 *****************************************
 
-High-Level Diagram
-==================
-
 The following diagram shows the architecture of the demo:
 
 |

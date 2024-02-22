@@ -42,9 +42,6 @@ This demo can run on both the Baremetal and Virtualization Architectures. In
 case of the Virtualization Architecture, the "Actuation Player" is deployed on
 DomU1.
 
-High-Level Diagram
-==================
-
 The following diagram describes the data flow of the demo:
 
 |
