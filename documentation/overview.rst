@@ -34,7 +34,7 @@ Further information on FVPs, including expected runtime performance and other
 capabilities, can be found at `Arm Ecosystem FVPs`_.
 
 This documentation covers the Kronos Reference Software Stack which together
-with the FVP allow for the exploration of baremetal and XEN hypervisor hosted
+with the FVP allow for the exploration of baremetal and Xen hypervisor hosted
 Linux instances, Primary Compute to/from Safety Island communication mechanisms
 (for both baremetal and virtualized scenarios), and boot flows coordinated via a
 system root of trust. The Primary Compute firmware stack of Trusted Firmware-A,
