@@ -1165,7 +1165,7 @@ Follow the steps below to achieve the same:
 2. Press ``Ctrl-b %`` to add a new tmux pane which will be used to issue
    commands on the build host machine.
 3. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_uart_si_cluster2``
-   followed by pressing ``Enter`` key to join the ``cam-service`` terminal
+   followed by pressing ``Enter`` key to join the Actuation Service terminal
    window to the Primary Compute terminal window.
 
 Refer to the following image of the tmux panes rearrangement. Panes can
@@ -1372,7 +1372,7 @@ Follow the steps below to achieve the same:
 2. Press ``Ctrl-b %`` to add a new tmux pane which will be used to issue
    commands on the build host machine.
 3. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_uart_si_cluster2``
-   followed by pressing ``Enter`` key to join the ``cam-service`` terminal
+   followed by pressing ``Enter`` key to join the Actuation Service terminal
    window to the Primary Compute terminal window.
 
 Refer to the following image of the tmux panes rearrangement. Panes can
