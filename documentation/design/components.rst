@@ -661,7 +661,7 @@ Remoteproc
 ----------
 
 In Linux, a remoteproc driver for the Safety Island is added to the Linux
-kernel. It is used to support RPMsg communication between the |Arm| 9-A cores
+kernel. It is used to support RPMsg communication between the |Arm|\v9-A cores
 (from Primary Compute) and the Safety Island. More details on the communication can be
 found in the :ref:`HIPC <design/hipc:Heterogeneous Inter-processor Communication (HIPC)>` section.
 
@@ -715,7 +715,7 @@ It reuses the ``fvp_aemv8r`` SoC support and adds a pair of patches for MPU
 device region configuration.
 
 The Zephyr image for this board is running on the Safety Island clusters.
-In order to enable communication with Arm 9-A cores (from Primary Compute),
+In order to enable communication with Armv9-A cores (from Primary Compute),
 a set of drivers are added into Zephyr by means of an out-of-tree module.
 More details on the communication can be found in the
 :ref:`HIPC <design/hipc:Heterogeneous Inter-processor Communication (HIPC)>` section.
@@ -725,7 +725,7 @@ MHUv3
 
 The Arm Message Handling Unit Version 3 (MHUv3) is a mailbox controller for
 inter-processor communication. In the Kronos FVP, there are MHUv3 devices
-on-chip for signaling between Arm 9-A and Safety Island clusters, using the
+on-chip for signaling between Armv9-A and Safety Island clusters, using the
 doorbell protocol. A driver is added into the Zephyr mailbox framework to
 support this device.
 
@@ -733,7 +733,7 @@ Virtual Network over RPMsg
 --------------------------
 
 A ``veth_rpmsg`` driver is added for network socket based communication between
-Arm 9-A and Safety Island clusters. It implements an RPMsg backend by the OpenAMP
+Armv9-A and Safety Island clusters. It implements an RPMsg backend by the OpenAMP
 library and an adaptation layer for converting RPMsg data to network data.
 
 Virtual Network over IPC RPMsg Static Vrings
@@ -749,7 +749,7 @@ Zperf sample
 The `zperf sample`_ can be used to stress test inter-processor communication
 over a virtual network on the Kronos FVP. The board overlay dts and
 configuration file are added to this sample. This sample needs to be used
-together with iperf on the Arm 9-A side for network performance testing.
+together with iperf on the Armv9-A side for network performance testing.
 
 .. _design_components_zephyr_downstream_changes:
 
