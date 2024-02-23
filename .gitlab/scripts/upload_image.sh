@@ -17,13 +17,13 @@ if [[ -d "${DEPLOY_DIR}" ]]; then
   "files": [
     {
       "pattern": "${TARFILE}",
-      "target": "${ARTIFACTORY_ARTIFACT_PATH}/"
+      "target": "${FVP_SERVER_ARTIFACT_PATH}/"
     }
   ]
 }
 EOF
   jf rt upload --spec=./upload_spec.json \
-    --build-name="${ARTIFACTORY_IMAGE_BUILD_PATH}" \
+    --build-name="${FVP_SERVER_IMAGE_BUILD_PATH}" \
     --build-number="${CI_PIPELINE_ID}"
 fi
 
@@ -31,9 +31,9 @@ fi
 export RECIPEINFO
 RECIPEINFO="${DEPLOY_DIR}/licenses/fvp-rd-kronos-native/recipeinfo"
 jf rt build-collect-env \
-  "${ARTIFACTORY_IMAGE_BUILD_PATH}" "${CI_PIPELINE_ID}"
+  "${FVP_SERVER_IMAGE_BUILD_PATH}" "${CI_PIPELINE_ID}"
 
 # Publish build to Artifactory
 jf rt build-publish --build-url "${CI_PIPELINE_URL}" \
-  --url "${ARTIFACTORY_BASE_URL}" --password "${ARTIFACTORY_KEY}" \
-  "${ARTIFACTORY_IMAGE_BUILD_PATH}" "${CI_PIPELINE_ID}"
+  --url "${FVP_SERVER_BASE_URL}" --password "${FVP_SERVER_KEY}" \
+  "${FVP_SERVER_IMAGE_BUILD_PATH}" "${CI_PIPELINE_ID}"

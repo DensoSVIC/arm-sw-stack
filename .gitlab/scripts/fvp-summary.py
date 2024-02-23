@@ -16,9 +16,9 @@ import requests
 
 class ArtifactoryHandler(object):
     def __init__(self):
-        password = self._getenv("ARTIFACTORY_KEY")
-        user = self._getenv("ARTIFACTORY_USER")
-        self.artifactory_url = self._getenv("ARTIFACTORY_BASE_URL")
+        password = self._getenv("FVP_SERVER_KEY")
+        user = self._getenv("FVP_SERVER_USER")
+        self.artifactory_url = self._getenv("FVP_SERVER_BASE_URL")
 
         self.build_mgr = ArtifactoryBuildManager(
             self.artifactory_url, project="", auth=(user, password)
@@ -38,7 +38,7 @@ class ArtifactoryHandler(object):
 
     def get_kronos_fvp_builds(self):
         builds = self.build_mgr.get_build_runs(
-            self._getenv("ARTIFACTORY_FVP_BUILD_PATH")
+            self._getenv("FVP_SERVER_FVP_BUILD_PATH")
         )
         df = (
             pd.DataFrame.from_dict(b.info["buildInfo"] for b in builds)
@@ -46,7 +46,7 @@ class ArtifactoryHandler(object):
             .rename(columns={"number": "fvp_pv"})
         )
 
-        fvp_url = self._getenv("ARTIFACTORY_FVP_BUILD_PATH").replace(
+        fvp_url = self._getenv("FVP_SERVER_FVP_BUILD_PATH").replace(
             "/", "%2F"
         )
         df["timestamp"] = pd.to_datetime(df["started"]).apply(
@@ -84,7 +84,7 @@ class ArtifactoryHandler(object):
 
     def get_kronos_image_builds(self):
         builds = self.build_mgr.get_build_runs(
-            self._getenv("ARTIFACTORY_IMAGE_BUILD_PATH")
+            self._getenv("FVP_SERVER_IMAGE_BUILD_PATH")
         )
         df = (
             pd.DataFrame.from_dict(b.info["buildInfo"] for b in builds)
@@ -133,7 +133,7 @@ class ArtifactoryHandler(object):
             axis=1,
         )
 
-        image_url = self._getenv("ARTIFACTORY_IMAGE_BUILD_PATH").replace(
+        image_url = self._getenv("FVP_SERVER_IMAGE_BUILD_PATH").replace(
             "/", "%2F"
         )
 

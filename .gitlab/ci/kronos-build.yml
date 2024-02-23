@@ -124,10 +124,10 @@ build-retention:
       if [[ ${GENERATE_BUILD_INFO} != "true" ]]; then exit; fi
     - .gitlab/scripts/jf_setup.sh
     - |
-      jf rt bdi --url ${ARTIFACTORY_BASE_URL} \
-      --access-token ${ARTIFACTORY_KEY} --max-days ${PIPELINE_RETENTION_DAYS} \
+      jf rt bdi --url ${FVP_SERVER_BASE_URL} \
+      --access-token ${FVP_SERVER_KEY} --max-days ${PIPELINE_RETENTION_DAYS} \
       --delete-artifacts=true \
-      --async=true ${ARTIFACTORY_IMAGE_BUILD_PATH}
+      --async=true ${FVP_SERVER_IMAGE_BUILD_PATH}
 
 Image-Build-baremetal:
   extends: .kas_image_build_kronos

@@ -10,5 +10,5 @@ curl -fL https://install-cli.jfrog.io | bash -s -- 2.51.1
 
 # Upload the deploy dir images
 jf config add --interactive=false \
-  --artifactory-url="${ARTIFACTORY_BASE_URL}" \
-  --user="${ARTIFACTORY_USER}" --password="${ARTIFACTORY_KEY}"
+  --artifactory-url="${FVP_SERVER_BASE_URL}" \
+  --user="${FVP_SERVER_USER}" --password="${FVP_SERVER_KEY}"
