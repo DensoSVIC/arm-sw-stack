@@ -2080,7 +2080,7 @@ To enable the validation tests:
   3. Select ``Save & Build``.
 
 The complete test suite takes around 6 minutes to complete on
-an x86_64 host. See :ref:`validation_psa_arch_tests` for more details.
+an x86_64 host. See :ref:`validation_si_psa_arch_tests` for more details.
 
 The following message is expected in the output to validate this Use-Case:
 
@@ -2174,7 +2174,7 @@ To enable the validation tests:
   3. Select ``Save & Build``.
 
 The complete test suite takes around 11 minutes to complete on
-an x86_64 host. See :ref:`validation_psa_arch_tests` for more details.
+an x86_64 host. See :ref:`validation_si_psa_arch_tests` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
 

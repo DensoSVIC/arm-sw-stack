@@ -265,7 +265,7 @@ port forwarding for UDP traffic.
 .. _validation_parsec_enabled_tls_demo:
 
 Integration Tests Validating the Parsec-enabled TLS Demo
-================================================================
+========================================================
 
 The ``test_parsec_demo`` integration test in
 :kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_40_parsec.py`
@@ -365,10 +365,10 @@ the `PSA Arch Tests`_ project) are supported:
    Currently only the Protected Storage component of Secure Storage is
    supported.
 
-.. _validation_psa_arch_tests:
+.. _validation_si_psa_arch_tests:
 
-Integration Tests Validating PSA APIs Architecture Test Suite
-=============================================================
+Integration Tests Validating Safety Island PSA APIs Architecture Test Suite
+===========================================================================
 
 The ``test_psa_si_cluster{N}`` integration tests in
 :kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_10_si_psa_arch_tests.py`

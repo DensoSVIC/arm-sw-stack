@@ -167,7 +167,7 @@ refer to :ref:`design_safety_island_secure_services_psa_crypto_apis`.
 Validation
 **********
 
-See :ref:`validation_psa_arch_tests`.
+See :ref:`validation_si_psa_arch_tests`.
 
 ******************
 Downstream Changes
