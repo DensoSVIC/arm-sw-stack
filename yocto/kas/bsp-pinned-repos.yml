@@ -8,7 +8,7 @@ header:
 
 repos:
   meta-arm:
-  # commit:
+    commit: b433241902a65b10be1304bc25995f3f5df80ab8
   meta-openembedded:
     commit: da9063bdfbe130f424ba487f167da68e0ce90e7d
   poky:

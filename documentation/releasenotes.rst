@@ -73,7 +73,7 @@ Third-party Yocto layers used to build the Reference Software Stack:
     URL: |meta-arm repository|
     layers: meta-arm, meta-arm-bsp, meta-arm-systemready, meta-arm-toolchain
     branch: kronos-nanbield
-    revision: HEAD
+    revision: b433241902a65b10be1304bc25995f3f5df80ab8
 
     URL: |meta-cassini repository|
     layers: meta-cassini-distro
