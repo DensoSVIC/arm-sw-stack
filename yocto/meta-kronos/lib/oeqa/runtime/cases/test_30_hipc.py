@@ -110,8 +110,8 @@ class HIPCTestBase(OERuntimeTestCase):
             # 'ERROR: [...]', 'WARN: [...]', 'WARNING: [...]'
             # and also zephyr shell possible errors:
             # '<err> [...]', '<wrn> [...]'
-            msg_regex = br'(ERROR:|WARN:|WARNING:|<err>|<wrn>)\s'
-            br'(?P<msg>.*)\r\n'
+            msg_regex = (br'(ERROR:|WARN:|WARNING:|<err>|<wrn>)\s'
+                         br'(?P<msg>.*)\r\n')
             matches = re.finditer(msg_regex, messages)
 
             for line in [match.group("msg") for match in matches]:
