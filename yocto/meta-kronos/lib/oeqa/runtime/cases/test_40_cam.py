@@ -192,7 +192,7 @@ class CAMTest(OERuntimeTestCase):
     def test_data_calibration(self):
         st = (f'cam-app-example -u {self.dom.uuid_base} '
               f' --enable-calibration-mode -s {self.dom.streams}')
-        status, output = self.lt_utils.run(st)
+        status, output = self.lt_utils.run(st, timeout=120)
         self.tc.logger.debug(output)
         self.assertEqual(
             status, 0,
