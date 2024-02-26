@@ -1812,8 +1812,8 @@ To run the configuration menu:
 
 To enable the validation tests:
   1. Select ``Safety Island Actuation Demo`` as ``Use-Case``.
-  2. Select ``Baremetal Architecture`` from the
-     ``Reference Software Stack Architecture`` menu.
+  2. Select ``Baremetal`` from the ``Reference Software Stack Architecture``
+     menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
   4. Select ``Save & Build``.
@@ -1947,8 +1947,7 @@ To run the configuration menu:
 
 To enable the validation tests:
   1. Select ``Critical Application Monitoring Demo`` as ``Use-Case``.
-  2. Select ``Baremetal Architecture`` from the ``Reference Stack Architecture``
-     menu.
+  2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
   4. Select ``Save & Build``.
