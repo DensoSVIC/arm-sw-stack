@@ -37,9 +37,9 @@ class XenUtils:
         # Return to Dom0
         console.sendline()
         console.expect(domu_prompt, timeout=30)
-        # Send Ctrl-D to log out
-        console.sendcontrol('D')
-        console.sendline()
+        # Send an "exit" to logout from the guest
+        console.sendline('exit')
+        console.expect('exit', timeout=30)
         console.expect(rf'{domu_name} login:', timeout=300)
         # Send Ctrl-] to exit 'xl console' or to enter telnet console
         console.sendcontrol(']')
