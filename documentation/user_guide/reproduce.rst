@@ -515,7 +515,7 @@ To enable the validation tests:
      menu.
   4. Select ``Save & Build``.
 
-The complete test suite takes around 20 minutes to complete on
+The complete test suite takes around 25 minutes to complete on
 an x86_64 host. See :ref:`validation_cam_tests` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
@@ -1083,7 +1083,7 @@ To enable the validation tests:
      menu.
   4. Select ``Save & Build``.
 
-The complete test suite takes around 25 minutes to complete. See
+The complete test suite takes around 35 minutes to complete. See
 :ref:`validation_cam_tests` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
@@ -1309,7 +1309,7 @@ To enable the validation tests:
      menu.
   4. Select ``Save & Build``.
 
-The complete test suite takes around 23 minutes to complete on
+The complete test suite takes around 25 minutes to complete on
 an x86_64 host. See :ref:`validation_actuation_demo` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
@@ -1529,7 +1529,7 @@ To enable the validation tests:
      menu.
   4. Select ``Save & Build``.
 
-The complete test suite takes around 42 minutes to complete on
+The complete test suite takes around 50 minutes to complete on
 an x86_64 host. See :ref:`validation_actuation_demo` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
@@ -1588,7 +1588,7 @@ To enable the validation tests:
      menu.
   4. Select ``Save & Build``.
 
-The complete test suite takes around 19 minutes to complete on
+The complete test suite takes around 15 minutes to complete on
 an x86_64 host. See :ref:`validation_hipc_demo` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
@@ -1647,7 +1647,7 @@ To enable the validation tests:
      menu.
   4. Select ``Save & Build``.
 
-The complete test suite takes around 43 minutes to complete on
+The complete test suite takes around 30 minutes to complete on
 an x86_64 host. See :ref:`validation_hipc_demo` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
@@ -1818,7 +1818,7 @@ To enable the validation tests:
      menu.
   4. Select ``Save & Build``.
 
-The complete test suite takes around 23 minutes to complete on an x86_64
+The complete test suite takes around 25 minutes to complete on an x86_64
 host. See :ref:`validation_parsec_enabled_tls_demo` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
@@ -1953,7 +1953,7 @@ To enable the validation tests:
      menu.
   4. Select ``Save & Build``.
 
-The complete test suite takes around 20 minutes to complete on an x86_64
+The complete test suite takes around 25 minutes to complete on an x86_64
 host. See :ref:`validation_trusted_services_tests` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
@@ -2079,7 +2079,7 @@ To enable the validation tests:
      menu.
   3. Select ``Save & Build``.
 
-The complete test suite takes around 6 minutes to complete on
+The complete test suite takes around 10 minutes to complete on
 an x86_64 host. See :ref:`validation_si_psa_arch_tests` for more details.
 
 The following message is expected in the output to validate this Use-Case:
@@ -2141,7 +2141,7 @@ Run the tests
 ^^^^^^^^^^^^^
 
 The tests will automatically run after the FVP is started. The complete test
-suite takes around 8 minutes to complete on an x86_64 host.
+suite takes around 5 minutes to complete on an x86_64 host.
 When the tests finish, a log similar to the following should be visible.
 Normally no failure should be seen::
 
@@ -2173,7 +2173,7 @@ To enable the validation tests:
      menu.
   3. Select ``Save & Build``.
 
-The complete test suite takes around 11 minutes to complete on
+The complete test suite takes around 25 minutes to complete on
 an x86_64 host. See :ref:`validation_si_psa_arch_tests` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
