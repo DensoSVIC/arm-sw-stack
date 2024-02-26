@@ -7,6 +7,7 @@
 from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.core.decorator.depends import OETestDepends
 from time import sleep
+import pexpect
 
 
 class LinuxShutdownTest(OERuntimeTestCase):
@@ -15,6 +16,9 @@ class LinuxShutdownTest(OERuntimeTestCase):
         super().setUpClass()
         cls.linux_console = cls.tc.target.DEFAULT_CONSOLE
         cls.rss_console = 'rss'
+        cls.scp_console = 'scp'
+        cls.lcp_console = 'lcp'
+        cls.tfa_console = 'tf-a'
 
     @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
     def test_linux_shutdown(self):
@@ -28,5 +32,14 @@ class LinuxShutdownTest(OERuntimeTestCase):
                            timeout=300)
         # Give the FVP some time to shutdown
         sleep(30)
+        # Verify there were no errors in any of the consoles
+        self.assertNotIn(b'[ERR]', self.target.before(self.rss_console))
+        self.target.expect(self.scp_console, pexpect.EOF)
+        self.assertNotIn(b'[ERROR]', self.target.before(self.scp_console))
+        self.target.expect(self.lcp_console, pexpect.EOF)
+        self.assertNotIn(b'[ERROR]', self.target.before(self.lcp_console))
+        self.target.expect(self.tfa_console, pexpect.EOF)
+        self.assertNotRegex(self.target.before(self.tfa_console),
+                            br'ERROR:|E\/TC|PANIC')
         # Leave the system in the correct state
         self.target.transition('off')
