@@ -17,7 +17,7 @@ view of typical compute subsystems that can be designed and implemented using
 specific generations of Arm IP.
 
 
-The **Arm Reference Design-1 AE**, or **RD 1-AE**, targets the Automotive
+The **Arm Reference Design-1 AE**, or **RD-1 AE**, targets the Automotive
 segment and introduces the concept of a high-performance |Neoverse| V3AE
 Application Processor (Primary Compute) system augmented with an |Cortex|-R82AE
 based Safety Island for scenarios where additional system safety monitoring is
