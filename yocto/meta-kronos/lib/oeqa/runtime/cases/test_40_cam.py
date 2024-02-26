@@ -198,6 +198,8 @@ class CAMTest(OERuntimeTestCase):
             status, 0,
             msg='Failed to run cam-app-example calibration mode.'
         )
+        init_to_start = 600000
+        start_to_event = 600000
 
         for uuid in self.dom.uuids:
             csc_file = f'{uuid}.csc.yml'
@@ -217,6 +219,18 @@ class CAMTest(OERuntimeTestCase):
             status, _ = self.lt_utils.run(st)
             self.assertEqual(status, 0,
                              msg=f'Failed to fetch {csc_file}')
+
+            st = (f'sed -i -E \'s/timeout_init_to_start: ([0-9]+)'
+                  f'/timeout_init_to_start: {init_to_start}/\' {csc_file}')
+            status, output = self.lt_utils.run(st, timeout=20)
+            self.assertEqual(status, 0,
+                             msg=f'Failed to sed {csc_file}\n{output}')
+
+            st = (f'sed -i -E \'s/timeout_start_to_event: ([0-9]+)'
+                  f'/timeout_start_to_event: {start_to_event}/\' {csc_file}')
+            status, output = self.lt_utils.run(st, timeout=20)
+            self.assertEqual(status, 0,
+                             msg=f'Failed to sed {csc_file}\n{output}')
 
     @OETestDepends(['test_40_cam.CAMTest.test_data_calibration'])
     def test_cam_tool_pack(self):
