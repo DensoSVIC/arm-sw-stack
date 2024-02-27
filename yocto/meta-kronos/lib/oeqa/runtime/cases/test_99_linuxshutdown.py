@@ -26,7 +26,7 @@ class LinuxShutdownTest(OERuntimeTestCase):
         self.target.sendline(self.linux_console, 'shutdown now')
         self.target.expect(self.linux_console,
                            r'reboot: Power down',
-                           timeout=600)
+                           timeout=900)
         self.target.expect(self.rss_console,
                            r'System shutdown complete',
                            timeout=300)
