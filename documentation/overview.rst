@@ -166,8 +166,9 @@ deploy a product derived from Arm reference solutions.
 Use-Cases
 *********
 
-The Reference Software Stack demonstrates the following capabilities of how a
-high-performance compute platform can be enhanced to improve functional safety:
+The Reference Software Stack demonstrates how the following features can be
+used to enhance the overall functional safety level of a high-performance
+compute platform:
 
   * Critical Application Monitoring
   * High reliability compute subsystem
