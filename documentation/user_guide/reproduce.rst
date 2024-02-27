@@ -342,7 +342,7 @@ the ``.csd`` files.
 
    .. code-block:: text
 
-      cam-tool deploy -i /usr/share/cam-data/11085ddc-bc10-11ed-9a44-7ef9696e0000.csd -a 192.168.1.1
+      cam-tool deploy -i 11085ddc-bc10-11ed-9a44-7ef9696e0000.csd -a 192.168.1.1
 
    The output on the ``cam-service`` terminal should look as below, the
    connection number might change:
