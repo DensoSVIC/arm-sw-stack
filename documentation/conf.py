@@ -204,8 +204,8 @@ rst_prolog = f"""
 .. |Xen version| replace:: {xen_version}
 .. |Zephyr version| replace:: {zephyr_version}
 .. |kas version| replace:: {kas_version}
-.. |kronos remote| replace:: https://git.gitlab.arm.com/automotive-and-industrial/kronos/kronos.git
-.. |kronos repository| replace:: https://gitlab.arm.com/automotive-and-industrial/kronos/kronos
+.. |kronos remote| replace:: https://git.gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/kronos.git
+.. |kronos repository| replace:: https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/kronos
 .. |kronos version| replace:: {kronos_version}
 .. |layer dependency statement| replace:: {kronos_version} branch
 .. |meta-arm branch| replace:: kronos-{yocto_version}
@@ -265,7 +265,7 @@ rst_prolog = f"""
 .. _FVP download: https://developer.arm.com
 .. _Fast Models FVP Reference Guide: https://developer.arm.com/documentation/100966/latest
 .. _GICv4.1 - Direct injection of virtual interrupts: https://developer.arm.com/documentation/107627/0101/GICv4-1---Direct-injection-of-virtual-interrupts
-.. _GitLab Issues: https://gitlab.arm.com/automotive-and-industrial/kronos/kronos/-/issues
+.. _GitLab Issues: https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/kronos/-/issues
 .. _IEEE 802.1AS: https://ieeexplore.ieee.org/document/9121845
 .. _IEEE 802.1Q: https://ieeexplore.ieee.org/document/10004498
 .. _IPC service: https://docs.zephyrproject.org/{zephyr_version}/services/ipc/ipc_service/ipc_service.html
