@@ -9,7 +9,7 @@
 SUMMARY = "Zephyr fault management application"
 DESCRIPTION = "The Zephyr fault management application demonstrates the usage \
 of Arm FMU devices using the shell."
-HOMEPAGE = "https://kronos.docs.arm.com/"
+HOMEPAGE = "https://kronos-ref-stack.docs.arm.com/"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://license.rst;md5=e805dc5353977631b7881c7705a6c04a"
 

@@ -1,7 +1,7 @@
 # nooelint: oelint.var.mandatoryvar - The SRC_URI is found in a common .inc file
 # in meta-zephyr.
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -9,7 +9,7 @@
 SUMMARY = "Zephyr Bridge application"
 DESCRIPTION = "The Zephyr Bridge application bridges the interfaces internal \
 to Kronos with the interface to its external connection."
-HOMEPAGE = "https://kronos.docs.arm.com/"
+HOMEPAGE = "https://kronos-ref-stack.docs.arm.com/"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://license.rst;md5=e805dc5353977631b7881c7705a6c04a"
 

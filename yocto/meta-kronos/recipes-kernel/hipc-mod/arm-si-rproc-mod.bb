@@ -1,12 +1,12 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
 
 SUMMARY = "ARM Safety Island remoteproc kernel module"
 DESCRIPTION = "A driver for remote communications to the Safety Island core"
-HOMEPAGE = "https://kronos.docs.arm.com/"
+HOMEPAGE = "https://kronos-ref-stack.docs.arm.com/"
 LICENSE = "GPL-2.0-only"
 # License file is in "layers/poky/meta/files/common-licenses".
 # nooelint: oelint.var.licenseremotefile

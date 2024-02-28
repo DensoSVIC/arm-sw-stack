@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -7,7 +7,7 @@
 SUMMARY = "Kronos network configuration"
 DESCRIPTION = "Systemd configuration files for network interfaces \
 for the Kronos stacks"
-HOMEPAGE = "https://kronos.docs.arm.com/"
+HOMEPAGE = "https://kronos-ref-stack.docs.arm.com/"
 LICENSE = "MIT"
 # License file is in "layers/poky/meta/files/common-licenses".
 # nooelint: oelint.var.licenseremotefile
