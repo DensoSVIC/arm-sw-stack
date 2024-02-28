@@ -8,8 +8,4 @@ header:
 
 repos:
   meta-arm:
-    commit: 345762c9992297da742abfdcd1f226fce9425849
-  meta-openembedded:
-    commit: da9063bdfbe130f424ba487f167da68e0ce90e7d
-  poky:
-    commit: 6d6ccbca0ce6b145224fa94d3c62a45e453c969f
+    commit: fe935ba02e4389b6b9e3a7dc6e4b500d087e92a8

@@ -210,7 +210,7 @@ rst_prolog = f"""
 .. |layer dependency statement| replace:: {kronos_version} branch
 .. |meta-arm branch| replace:: kronos-{yocto_version}
 .. |meta-arm repository| replace:: https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/meta-arm
-.. |meta-arm revision| replace:: b433241902a65b10be1304bc25995f3f5df80ab8
+.. |meta-arm revision| replace:: fe935ba02e4389b6b9e3a7dc6e4b500d087e92a8
 .. |meta-cassini branch| replace:: {yocto_version}
 .. |meta-cassini repository| replace:: https://gitlab.com/Linaro/cassini/meta-cassini
 .. |meta-cassini revision| replace:: {cassini_version}
@@ -231,7 +231,7 @@ rst_prolog = f"""
 .. |meta-zephyr revision| replace:: fa76b75bd65da63abcc2d65dd5d4eb24296f2f65
 .. |poky branch| replace:: {yocto_version}
 .. |poky repository| replace:: https://git.yoctoproject.org/git/poky
-.. |poky revision| replace:: 6d6ccbca0ce6b145224fa94d3c62a45e453c969f
+.. |poky revision| replace:: 1a5c00f00c14cee3ba5d39c8c8db7a9738469eab
 .. |yocto version| replace:: {yocto_version}
 
 .. _ACS: https://developer.arm.com/Architectures/Architectural%20Compliance%20Suite
