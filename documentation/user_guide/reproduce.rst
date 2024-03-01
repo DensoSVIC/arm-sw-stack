@@ -186,7 +186,7 @@ To build a Baremetal Architecture image:
 
 1. Select ``Critical Application Monitoring Demo`` from the ``Use-Case`` menu.
 2. Select ``Baremetal`` from the ``Reference Software Stack Architecture`` menu.
-3. Select ``Save & Build``.
+3. Select ``Build``.
 
 Run the FVP
 ^^^^^^^^^^^
@@ -513,7 +513,7 @@ To enable the validation tests:
      menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
-  4. Select ``Save & Build``.
+  4. Select ``Build``.
 
 The complete test suite takes around 25 minutes to complete on
 an x86_64 host. See :ref:`validation_cam_tests` for more details.
@@ -548,7 +548,7 @@ To build a Virtualization Architecture image:
 1. Select ``Critical Application Monitoring Demo`` from the ``Use-Case`` menu.
 2. Select ``Virtualization`` from the ``Reference Software Stack Architecture``
    menu.
-3. Select ``Save & Build``.
+3. Select ``Build``.
 
 Run the FVP
 ^^^^^^^^^^^
@@ -1081,7 +1081,7 @@ To enable the validation tests:
      ``Reference Software Stack Architecture`` menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
-  4. Select ``Save & Build``.
+  4. Select ``Build``.
 
 The complete test suite takes around 35 minutes to complete. See
 :ref:`validation_cam_tests` for more details.
@@ -1131,7 +1131,7 @@ To build a Baremetal Architecture image:
 
 1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
 2. Select ``Baremetal`` from the ``Reference Software Stack Architecture`` menu.
-3. Select ``Save & Build``.
+3. Select ``Build``.
 
 Run the FVP
 ^^^^^^^^^^^
@@ -1307,7 +1307,7 @@ To enable the validation tests:
      menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
-  4. Select ``Save & Build``.
+  4. Select ``Build``.
 
 The complete test suite takes around 25 minutes to complete on
 an x86_64 host. See :ref:`validation_actuation_demo` for more details.
@@ -1337,7 +1337,7 @@ To build a Virtualization Architecture image:
 1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
 2. Select ``Virtualization`` from the ``Reference Software Stack Architecture``
    menu.
-3. Select ``Save & Build``.
+3. Select ``Build``.
 
 Run the FVP
 ^^^^^^^^^^^
@@ -1527,7 +1527,7 @@ To enable the validation tests:
      ``Reference Software Stack Architecture`` menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
-  4. Select ``Save & Build``.
+  4. Select ``Build``.
 
 The complete test suite takes around 50 minutes to complete on
 an x86_64 host. See :ref:`validation_actuation_demo` for more details.
@@ -1568,7 +1568,7 @@ To build a Baremetal Architecture image:
    ``Use-Case`` menu.
 2. Select ``Baremetal`` from the ``Reference Software Stack Architecture``
    menu.
-3. Select ``Save & Build``.
+3. Select ``Build``.
 
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
@@ -1586,7 +1586,7 @@ To enable the validation tests:
      menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
-  4. Select ``Save & Build``.
+  4. Select ``Build``.
 
 The complete test suite takes around 15 minutes to complete on
 an x86_64 host. See :ref:`validation_hipc_demo` for more details.
@@ -1627,7 +1627,7 @@ To build a Virtualization Architecture image:
 1. Select ``Safety Island Communication Demo (using HIPC)`` as ``Use-Case``.
 2. Select ``Virtualization`` from the ``Reference Software Stack Architecture``
    menu.
-3. Select ``Save & Build``.
+3. Select ``Build``.
 
 
 Automated Validation
@@ -1645,7 +1645,7 @@ To enable the validation tests:
      ``Reference Software Stack Architecture`` menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
-  4. Select ``Save & Build``.
+  4. Select ``Build``.
 
 The complete test suite takes around 30 minutes to complete on
 an x86_64 host. See :ref:`validation_hipc_demo` for more details.
@@ -1701,7 +1701,7 @@ To build a Baremetal Architecture image:
 
 1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
 2. Select ``Baremetal`` from the ``Reference Software Stack Architecture`` menu.
-3. Select ``Save & Build``.
+3. Select ``Build``.
 
 Run the FVP
 ^^^^^^^^^^^
@@ -1816,7 +1816,7 @@ To enable the validation tests:
      menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
-  4. Select ``Save & Build``.
+  4. Select ``Build``.
 
 The complete test suite takes around 25 minutes to complete on an x86_64
 host. See :ref:`validation_parsec_enabled_tls_demo` for more details.
@@ -1853,7 +1853,7 @@ To build a Baremetal Architecture image:
 
 1. Select ``Critical Application Monitoring Demo`` from the ``Use-Case`` menu.
 2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
-3. Select ``Save & Build``.
+3. Select ``Build``.
 
 Run the FVP
 ^^^^^^^^^^^
@@ -1950,7 +1950,7 @@ To enable the validation tests:
   2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
-  4. Select ``Save & Build``.
+  4. Select ``Build``.
 
 The complete test suite takes around 25 minutes to complete on an x86_64
 host. See :ref:`validation_trusted_services_tests` for more details.
@@ -1986,7 +1986,7 @@ To build a Baremetal Architecture image:
 
 1. Select ``Safety Island PSA Secure Storage APIs Architecture Test Suite``
    from the ``Use-Case`` menu.
-2. Select ``Save & Build``.
+2. Select ``Build``.
 
 Run the FVP
 ^^^^^^^^^^^
@@ -2076,7 +2076,7 @@ To enable the validation tests:
      from the ``Use-Case`` menu.
   2. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
-  3. Select ``Save & Build``.
+  3. Select ``Build``.
 
 The complete test suite takes around 10 minutes to complete on
 an x86_64 host. See :ref:`validation_si_psa_arch_tests` for more details.
@@ -2115,7 +2115,7 @@ To build a Baremetal Architecture image:
 
 1. Select ``Safety Island PSA Crypto APIs Architecture Test Suite``
    from the ``Use-Case`` menu.
-2. Select ``Save & Build``.
+2. Select ``Build``.
 
 Run the FVP
 ^^^^^^^^^^^
@@ -2170,7 +2170,7 @@ To enable the validation tests:
      ``Use-Case`` menu.
   2. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
-  3. Select ``Save & Build``.
+  3. Select ``Build``.
 
 The complete test suite takes around 25 minutes to complete on
 an x86_64 host. See :ref:`validation_si_psa_arch_tests` for more details.
@@ -2208,7 +2208,7 @@ To build the Baremetal Architecture image:
 
 1. Select ``Safety Island Actuation Demo`` from the ``Use-Case`` menu.
 2. Select ``Baremetal`` from the ``Reference Software Stack Architecture`` menu.
-3. Select ``Save & Build``.
+3. Select ``Build``.
 
 Run the FVP
 ^^^^^^^^^^^
@@ -2407,7 +2407,7 @@ To enable the validation tests:
      menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
-  4. Select ``Save & Build``.
+  4. Select ``Build``.
 
 The following messages are expected in the output to validate this Use-Case:
 
@@ -2459,7 +2459,7 @@ To build the Arm SystemReady IR-aligned firmware image:
 
 1. Select ``Arm SystemReady IR Firmware Build`` under
    ``Arm SystemReady IR Validation`` from the ``Use-Case`` menu.
-2. Select ``Save & Build``.
+2. Select ``Build``.
 
 The firmware artifacts can be found in the directory
 ``build/tmp_systemready-glibc/deploy/images/fvp-rd-kronos/``.
@@ -2489,7 +2489,7 @@ To build and run the Arm SystemReady IR ACS tests:
 
 1. Select ``Arm SystemReady IR Architecture Compliance Suite (ACS) Tests`` under
    ``Arm SystemReady IR Validation`` from the ``Use-Case`` menu.
-2. Select ``Save & Build``.
+2. Select ``Build``.
 
 A similar output to the following is printed out:
 
@@ -2620,7 +2620,7 @@ To build the Arm SystemReady IR Linux distros installation tests:
 1. Select ``Debian Linux Distro Installation`` under
    ``Linux Distribution Installation (Debian and openSUSE)`` from the
    ``Use-Case`` menu.
-2. Select ``Save & Build``.
+2. Select ``Build``.
 
 .. image:: ../images/kronos_reference_stack_build_config_sr_distro_debian.*
    :align: center
@@ -2773,7 +2773,7 @@ To build the Arm SystemReady IR Linux distros installation tests:
 1. Select ``openSUSE Linux Distro Installation`` under
    ``Linux Distribution Installation (Debian and openSUSE)`` from the
    ``Use-Case`` menu.
-2. Select ``Save & Build``.
+2. Select ``Build``.
 
 .. image:: ../images/kronos_reference_stack_build_config_sr_distro_opensuse.*
    :align: center
@@ -2880,7 +2880,7 @@ To build a Baremetal Architecture image:
 
 1. Select ``Critical Application Monitoring Demo`` from the ``Use-Case`` menu.
 2. Select ``Baremetal`` from the ``Reference Software Stack Architecture`` menu.
-3. Select ``Save & Build``.
+3. Select ``Build``.
 
 Run the FVP
 ^^^^^^^^^^^
@@ -3005,7 +3005,7 @@ To enable the validation tests:
      menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.
-  4. Select ``Save & Build``.
+  4. Select ``Build``.
 
 The following messages are expected in the output to validate this Use-Case:
 
