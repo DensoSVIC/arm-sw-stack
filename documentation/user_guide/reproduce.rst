@@ -206,7 +206,8 @@ Primary Compute terminal window in order to issue commands on it.
 
 Follow the steps below to achieve the same:
 
-1. Press ``Ctrl-b w`` from the tmux session, navigate to the tmux window titled
+1. Ensure that the tmux window titled ``terminal_ns_uart0`` is selected. If not,
+   press ``Ctrl-b w`` from the tmux session, navigate to the tmux window titled
    ``terminal_ns_uart0`` using the arrow keys, then press the ``Enter`` key.
 2. Press ``Ctrl-b :`` and then type
    ``join-pane -s :terminal_uart_si_cluster1 -h`` followed by pressing ``Enter``
@@ -568,7 +569,8 @@ Primary Compute terminal window in order to issue commands on it.
 
 Follow the steps below to achieve the same:
 
-1. Press ``Ctrl-b w`` from the tmux session, navigate to the tmux window titled
+1. Ensure that the tmux window titled ``terminal_ns_uart0`` is selected. If not,
+   press ``Ctrl-b w`` from the tmux session, navigate to the tmux window titled
    ``terminal_ns_uart0`` using the arrow keys, then press the ``Enter`` key.
 2. Press ``Ctrl-b :`` and then type
    ``join-pane -s :terminal_uart_si_cluster1 -h`` followed by pressing ``Enter``
@@ -1160,7 +1162,8 @@ host machine in order to issue commands on it.
 
 Follow the steps below to achieve the same:
 
-1. Press ``Ctrl-b w`` from the tmux session, navigate to the tmux window titled
+1. Ensure that the tmux window titled ``terminal_ns_uart0`` is selected. If not,
+   press ``Ctrl-b w`` from the tmux session, navigate to the tmux window titled
    ``terminal_ns_uart0`` using the arrow keys, then press the ``Enter`` key.
 2. Press ``Ctrl-b %`` to add a new tmux pane which will be used to issue
    commands on the build host machine.
@@ -1367,7 +1370,8 @@ host machine in order to issue commands on it.
 
 Follow the steps below to achieve the same:
 
-1. Press ``Ctrl-b w`` from the tmux session, navigate to the tmux window titled
+1. Ensure that the tmux window titled ``terminal_ns_uart0`` is selected. If not,
+   press ``Ctrl-b w`` from the tmux session, navigate to the tmux window titled
    ``terminal_ns_uart0`` using the arrow keys, then press the ``Enter`` key.
 2. Press ``Ctrl-b %`` to add a new tmux pane which will be used to issue
    commands on the build host machine.
@@ -1997,10 +2001,13 @@ To start the FVP:
 
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
-The Safety Island (SI) Cluster 2 terminal running the ``PSA Secure Storage APIs
+The Safety Island Cluster 2 terminal running the ``PSA Secure Storage APIs
 Architecture Test Suite`` is available via the tmux window titled
-``terminal_uart_si_cluster2``. The user can navigate through the panes by
-pressing ``Ctrl-b w`` and arrow keys followed by the ``Enter`` key.
+``terminal_uart_si_cluster2``.
+
+The Safety Island Cluster 2 tmux window can be accessed by typing ``Ctrl-b w``,
+using the arrow keys to select ``terminal_uart_si_cluster2`` then pressing the
+``Enter`` key.
 
 Run the tests
 ^^^^^^^^^^^^^
@@ -2220,9 +2227,11 @@ To start the FVP:
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
 The Fault Management subsystem is deployed on Safety Island Cluster 1 so the
-instructions below should be executed on its terminal. This can be accessed in
-tmux by typing ``Ctrl-b w``, using the arrow keys to select
-``terminal_uart_si_cluster1`` then pressing the ``Enter`` key.
+instructions below should be executed on its terminal.
+
+The Safety Island Cluster 1 tmux window can be accessed by typing ``Ctrl-b w``,
+using the arrow keys to select ``terminal_uart_si_cluster1`` then pressing the
+``Enter`` key.
 
 Run the demo
 ^^^^^^^^^^^^
@@ -2902,8 +2911,9 @@ recommended to join these in a single window with two panes.
 
 Follow the steps below to achieve the same:
 
- 1. Press ``Ctrl-b w`` from the tmux session, navigate to the tmux window
-    titled ``terminal_ns_uart0`` followed by pressing the ``Enter`` key.
+ 1. Ensure that the tmux window titled ``terminal_ns_uart0`` is selected.
+    If not, press ``Ctrl-b w`` from the tmux session, navigate to the tmux
+    window titled ``terminal_ns_uart0`` followed by pressing the ``Enter`` key.
  2. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_rss_uart -h``
     followed by pressing the ``Enter`` key to join the RSS terminal window to
     the Primary Compute terminal window.
