@@ -40,7 +40,7 @@ TOOLCHAIN = "clang"
 # nooelint: oelint.vars.insaneskip
 INSANE_SKIP:${PN}-staticdev += "buildpaths"
 
-do_configure[postfuncs] = "0"
+do_configure[postfuncs] = ""
 do_install() {
     install -d "${D}/${libdir}"
     install -m 755 "${B}/target/${CARGO_TARGET_SUBDIR}/libparsec_se_driver.a" "${D}/${libdir}"
