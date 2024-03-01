@@ -6,6 +6,7 @@
 
 import os
 import pexpect
+import signal
 
 from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.core.decorator.depends import OETestDepends
@@ -69,9 +70,6 @@ class ActuationTest(OERuntimeTestCase):
         proc = pexpect.spawn(cmd, logfile=self.host_log)
         proc.expect('Starting analyze, use Ctrl-C to stop the process',
                     timeout=10)
-        self.target.expect(self.si_console,
-                           'Accepted tcp connection from the Packet Analyzer',
-                           timeout=15)
         return proc
 
     def test_analyzer_help(self):
@@ -88,30 +86,47 @@ class ActuationTest(OERuntimeTestCase):
         proc_timeout = 500
 
         proc = self.connect_to_host()
-
         cmd = f'actuation_player -p {test_recordings}'
-        self.target.sendline(self.linux_console, cmd)
-        self.target.expect(self.linux_console, 'Starting replay.',
-                           timeout=10)
-        self.target.expect(self.si_console,
-                           r'[0-9]+:\s+-?\d+\.\d{4} \(m\/s\^2\) \|'
-                           r'\s+-?\d+\.\d{4} \(rad\)',
-                           timeout=10)
-        proc.expect('All expected control packets received',
-                    timeout=proc_timeout)
-        proc.expect('Received fin ack from Actuation Service',
-                    timeout=proc_timeout)
-        proc.terminate()
-        self.target.expect(self.si_console,
-                           'Thread get_analyzer_handle performing a blocking '
-                           'accept', timeout=10)
-        self.target.sendline(self.linux_console, 'echo $?')
-        self.target.expect(self.linux_console, r'0', timeout=proc_timeout)
-        before = proc.before.decode("utf-8", errors="replace").strip()
-        after = proc.after.decode("utf-8", errors="replace").strip()
-        read = proc.read()
-        read = read.decode("utf-8", errors="replace").strip()
-        full_debug = f"cmd: {cmd}, after: <{after}>," + \
-                     f"before: <{before}>," f"read: <{read}>"
-        self.logger.debug('host_output:')
-        self.logger.debug(full_debug)
+        before = ""
+        after = ""
+        # Catch any exceptions thrown from PC or SI so that packet analyzer
+        # can be terminated gracefully and then re-throw the exception.
+        try:
+            si_expect = 'Accepted tcp connection from the Packet Analyzer'
+            self.target.expect(self.si_console, si_expect, timeout=20)
+            self.target.sendline(self.linux_console, cmd)
+            self.target.expect(self.linux_console, 'Starting replay.',
+                               timeout=10)
+            self.console.expect(self.linux_prompt, timeout=proc_timeout)
+            self.target.sendline(self.linux_console, 'echo $?')
+            self.target.expect(self.linux_console, r'0', timeout=5)
+
+            # Verify that the replay messages from player have reached
+            # actuation service
+            self.target.expect(self.si_console,
+                               r'[0-9]+:\s+-?\d+\.\d{4} \(m\/s\^2\) \|'
+                               r'\s+-?\d+\.\d{4} \(rad\)',
+                               timeout=10)
+
+            # Verify if packet analyzer received all control packets from SI
+            proc.expect('All expected control packets received',
+                        timeout=proc_timeout)
+            proc.expect('Received fin ack from Actuation Service',
+                        timeout=proc_timeout)
+            proc.expect('AnalyzerResult.SUCCESS', timeout=proc_timeout)
+            before = proc.before.decode("utf-8", errors="replace").strip()
+            after = proc.after.decode("utf-8", errors="replace").strip()
+        except Exception as e:
+            raise e
+        finally:
+            proc.kill(signal.SIGINT)
+            read = proc.read()
+            read = read.decode("utf-8", errors="replace").strip()
+            self.logger.debug('host_output:')
+            full_debug = f"cmd: {cmd}, after: <{after}>," + \
+                         f"before: <{before}>," f"read: <{read}>"
+            self.logger.debug(f"cmd: {cmd}, read: <{read}>")
+
+        # Ensure player goes back to waiting for connection from analyzer
+        si_expect = 'Thread get_analyzer_handle performing a blocking accept'
+        self.target.expect(self.si_console, si_expect, timeout=10)
