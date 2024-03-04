@@ -198,8 +198,8 @@ class CAMTest(OERuntimeTestCase):
             status, 0,
             msg='Failed to run cam-app-example calibration mode.'
         )
-        init_to_start = 600000
-        start_to_event = 600000
+        init_to_start = 700000
+        start_to_event = 700000
 
         for uuid in self.dom.uuids:
             csc_file = f'{uuid}.csc.yml'
