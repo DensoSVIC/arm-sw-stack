@@ -300,7 +300,8 @@ the ``.csd`` files.
 
       cam-tool analyze -m 1000000 -i 11085ddc-bc10-11ed-9a44-7ef9696e0000.csel
 
-   The analysis result is reported from the Primary Compute terminal as below:
+   The analysis result is reported from the Primary Compute terminal as below,
+   the timeout value might change:
 
    .. code-block:: text
 
@@ -313,6 +314,9 @@ the ``.csd`` files.
       Timeout between start and event:        450000
       Application running times:              1
       Processing count in each run:           [10]
+
+      Event ID        timeout
+      0               4000106
 
    The stream configuration files contain human-readable settings used for the
    deployment phase of a critical application. Users can modify this
@@ -711,7 +715,8 @@ the ``.csd`` files.
 
       cam-tool analyze -m 1000000 -i 11085ddc-bc10-11ed-9a44-7ef9696e0000.csel
 
-   The analysis result is reported from the DomU1 terminal as below:
+   The analysis result is reported from the DomU1 terminal as below,
+   the timeout value might change:
 
    .. code-block:: text
 
@@ -724,6 +729,9 @@ the ``.csd`` files.
       Timeout between start and event:        450000
       Application running times:              1
       Processing count in each run:           [10]
+
+      Event ID        timeout
+      0               15061660
 
    The stream configuration files contain human-readable settings used for the
    deployment phase of a critical application. Users can modify this
@@ -860,7 +868,8 @@ the ``.csd`` files.
 
       cam-tool analyze -m 1000000 -i 22085ddc-bc10-11ed-9a44-7ef9696e0000.csel
 
-   The analysis result is reported from the DomU2 terminal as below:
+   The analysis result is reported from the DomU2 terminal as below,
+   the timeout value might change:
 
    .. code-block:: text
 
@@ -873,6 +882,9 @@ the ``.csd`` files.
       Timeout between start and event:        450000
       Application running times:              1
       Processing count in each run:           [5]
+
+      Event ID        timeout
+      0               3000066
 
    The stream configuration files contain human-readable settings used for the
    deployment phase of a critical application. Users can modify this
