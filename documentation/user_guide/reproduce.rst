@@ -609,6 +609,11 @@ initialized.
 
 Wait for it to return. The expected terminal output is ``running``.
 
+.. note::
+  The Primary Compute terminal might get interrupted with messages similar to
+  the following ``(XEN) d2v0: vGICR: SGI: unhandled word write 0x000000ffffffff
+  to ICACTIVER0``, this is an expected behavior.
+
 Run the Demo
 ^^^^^^^^^^^^
 
@@ -1410,6 +1415,11 @@ initialized.
   systemctl is-system-running --wait
 
 Wait for it to return. The expected terminal output is ``running``.
+
+.. note::
+  The Primary Compute terminal might get interrupted with messages similar to
+  the following ``(XEN) d2v0: vGICR: SGI: unhandled word write 0x000000ffffffff
+  to ICACTIVER0``, this is an expected behavior.
 
 Run the Demo
 ^^^^^^^^^^^^

@@ -262,6 +262,7 @@ GENMASK
 gentimer
 gettext
 gicd
+gicr
 gicv
 GICv4
 GICv4.1
@@ -291,6 +292,7 @@ hwid
 hwinfo
 hwpage
 hypercall
+ICACTIVER
 iceoryx
 IDLC
 idxs
