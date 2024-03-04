@@ -896,7 +896,7 @@ the ``.csd`` files.
    configuration, for example to fine tune timeout values depending on the
    system capabilities.
 
-   Run ``cam-tool`` three more times for each of the other stream.
+   Run ``cam-tool`` for the other stream.
 
    .. code-block:: text
 
@@ -931,8 +931,8 @@ the ``.csd`` files.
     After that, the stream data of ``22085ddc-bc10-11ed-9a44-7ef9696e0000`` is
     deployed to the ``cam-service`` file system.
 
-    Running ``cam-tool deploy`` three more times can deploy the data of the
-    other stream to ``cam-service``.
+    Running ``cam-tool deploy`` one more time deploys the data of the other
+    stream to ``cam-service``.
 
     .. code-block:: text
 
