@@ -51,7 +51,7 @@ class SVETestBase(OERuntimeTestCase):
         prefix = "dom0=sve="
         for part in xen_commandline_line.split():
             if part.startswith(prefix):
-                return int(part.removeprefix(prefix))
+                return int(part[len(prefix):])
 
     def _get_configured_sve_vl(self):
         if "virtualization" in self.td.get("IMAGE_FEATURES").split():
