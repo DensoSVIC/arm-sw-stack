@@ -482,14 +482,14 @@ the ``.csd`` files.
 
    .. code-block:: text
 
-      #Repeated event messages
+      # Repeated event messages
       ...
-      Stream temporal error:
-      stream_name: CAM STREAM 0
-      stream_uuid: 11085ddc-bc10-11ed-9a44-7ef9696e0000
-      event_id: 0
-      time_received: 0
-      time_expected: 1701066141314201
+      ERROR: Stream temporal error:
+      ERROR:     stream_name: CAM STREAM 0
+      ERROR:     stream_uuid: 11085ddc-bc10-11ed-9a44-7ef9696e0000
+      ERROR:     event_id: 0
+      ERROR:     time_received: 0
+      ERROR:     time_expected: 1701066141314201
       ...
 
 6. To shutdown the FVP and terminate the emulation, issue a ``shutdown now``
@@ -1057,14 +1057,14 @@ the ``.csd`` files.
 
     .. code-block:: text
 
-       #Repeated event messages
+       # Repeated event messages
        ...
-       Stream temporal error:
-       stream_name: CAM STREAM 0
-       stream_uuid: 2285ddc-bc10-11ed-9a44-7ef9696e0000
-       event_id: 0
-       time_received: 0
-       time_expected: 1701066141314201
+       ERROR: Stream temporal error:
+       ERROR:     stream_name: CAM STREAM 0
+       ERROR:     stream_uuid: 2285ddc-bc10-11ed-9a44-7ef9696e0000
+       ERROR:     event_id: 0
+       ERROR:     time_received: 0
+       ERROR:     time_expected: 1701066141314201
        ...
 
 13. To leave the DomU1 console, type ``Ctrl-]`` and enter ``send esc``.
