@@ -1289,6 +1289,12 @@ Run the demo
     INFO : analyzer_client.py/_connect_to: Attempting a connect to (localhost : 49152)
     INFO : analyzer_client.py/_connect_to: Successfully connected to (localhost : 49152)
     INFO : analyzer_client.py/run_analyze_on_chain: (1) Analyzer synced with packet chain
+
+   The following messages should appear once the Packet Analyzer has finished
+   running:
+
+   .. code-block:: text
+
     INFO : analyzer_client.py/run_analyze_on_chain: All expected control packets received
     INFO : analyzer_client.py/_log_jitter: Observed Frequency = 21.36147200, Avg Jitter = 0.02624593, Std Deviation:0.06096328
     INFO : analyzer_client.py/run_analyze_on_chain: End of cycle: AnalyzerResult.SUCCESS
@@ -1513,6 +1519,12 @@ Run the Demo
     INFO : analyzer_client.py/_connect_to: Attempting a connect to (localhost : 49152)
     INFO : analyzer_client.py/_connect_to: Successfully connected to (localhost : 49152)
     INFO : analyzer_client.py/run_analyze_on_chain: (1) Analyzer synced with packet chain
+
+   The following messages should appear once the Packet Analyzer has finished
+   running:
+
+   .. code-block:: text
+
     INFO : analyzer_client.py/run_analyze_on_chain: All expected control packets received
     INFO : analyzer_client.py/_log_jitter: Observed Frequency = 21.36147200, Avg Jitter = 0.02624593, Std Deviation:0.06096328
     INFO : analyzer_client.py/run_analyze_on_chain: End of cycle: AnalyzerResult.SUCCESS
