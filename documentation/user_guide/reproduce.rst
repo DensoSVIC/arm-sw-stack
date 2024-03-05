@@ -1929,7 +1929,8 @@ this application.
 
       psa-crypto-api-test
 
-   A message similar to the following should appear:
+   A message similar to the following should appear once the tests have
+   completed:
 
    .. code-block:: text
 
@@ -1949,7 +1950,8 @@ this application.
 
       psa-ps-api-test
 
-   A message similar to the following should appear:
+   A message similar to the following should appear once the tests have
+   completed:
 
    .. code-block:: text
 
