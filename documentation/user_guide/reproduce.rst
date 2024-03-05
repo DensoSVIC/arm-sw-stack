@@ -2176,8 +2176,8 @@ Island (SI) Clusters. The test result can be seen on the following tmux windows:
   * ``terminal_uart_si_cluster1``
   * ``terminal_uart_si_cluster2``
 
-The user can navigate through the panes by pressing ``Ctrl-b w`` and arrow keys
-followed by the ``Enter`` key.
+The user can navigate through the windows mentioned above by pressing
+``Ctrl-b w`` and arrow keys followed by the ``Enter`` key.
 
 Run the tests
 ^^^^^^^^^^^^^
@@ -2198,6 +2198,9 @@ Normally no failure should be seen::
 To shutdown the FVP and terminate the emulation, select the terminal titled as
 ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0`` and press
 ``Ctrl-c`` to stop the FVP process.
+
+.. note::
+  This use-case does not require waiting for the Primary Compute to boot.
 
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
