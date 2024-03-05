@@ -2383,7 +2383,7 @@ and GIC-720AE FMU and how this affects the SSU safety state.
       [00:09:13.270,000] <inf> fault_mgmt_protected_storage: Fault count for 0x20000a00 on fmu@2a570000: 1
 
  7. The number of occurrences of each fault is tracked per device by the
-    storage component. Inject the same fault into the System FMU again:
+    storage component. Inject another *Lockstep error* into the System FMU:
 
     .. code-block:: text
 
