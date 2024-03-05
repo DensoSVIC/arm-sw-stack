@@ -2170,7 +2170,8 @@ To start the FVP:
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
 The ``PSA Crypto APIs Architecture Test Suite`` is deployed on all the 3 Safety
-Island (SI) Clusters. The test result can be seen on the following tmux windows:
+Island (SI) Clusters. The test results can be seen on the following tmux
+windows:
 
   * ``terminal_uart_si_cluster0``
   * ``terminal_uart_si_cluster1``
