@@ -38,7 +38,11 @@ more information on CAM project and its implementation details.
 Critical Application Monitoring on Kronos
 *****************************************
 
-The following diagram shows the architecture of the demo:
+The Critical Application Monitoring demo can be run on both Baremetal and
+Virtualization Architectures.
+
+The following diagram shows the architecture of the demo in the Baremetal
+Architecture:
 
 |
 
@@ -90,6 +94,24 @@ deployment on the Safety Island:
   * Synchronized clocks on the Safety Island and the Primary Compute for
     temporal check.
   * Storage and a file system on the Safety Island for stream data deployment.
+
+Virtualization Architecture
+===========================
+
+The following diagram shows the architecture of the demo in the Virtualization
+Architecture:
+
+|
+
+.. image:: ../../images/critical_application_monitoring_virtualization.*
+   :align: center
+   :alt: Critical Application Monitoring Demo High-Level Diagram Virtualization
+
+|
+
+In this deployment, two different instances of **cam-app-example** run on
+DomU1 and DomU2. Each application is monitored by **cam-service** concurrently
+via separate data deployment and event streams.
 
 Communication Interfaces
 ========================
