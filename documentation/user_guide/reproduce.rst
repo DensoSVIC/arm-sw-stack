@@ -38,7 +38,7 @@ System Requirements
 
   * x86_64 or aarch64 host to build the stack and execute the Kronos FVP
   * Ubuntu Desktop or Server 20.04 Linux distribution
-  * At least 300GiB of free disk for the download and builds
+  * At least 500GiB of free disk for the download and builds
   * At least 32GiB of RAM memory
   * At least 8GiB of swap memory
 
