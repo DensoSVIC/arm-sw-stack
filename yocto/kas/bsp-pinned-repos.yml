@@ -6,6 +6,6 @@
 header:
   version: 16
 
-repos:
-  meta-arm:
-    commit: 5e4851a884985b952b33f6f88a8724fbbe5300ec
+# repos:
+#   meta-arm:
+#     commit:

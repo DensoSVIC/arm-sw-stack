@@ -9,7 +9,7 @@ header:
   version: 16
   includes:
     - repo: meta-cassini
-      file: meta-cassini-config/kas/cassini.yml
+      file: kas/cassini.yml
     - repo: meta-arm
       file: kas/fvp-rd-kronos.yml
     - yocto/kas/ref-stack-pinned-repos.yml
@@ -22,12 +22,10 @@ repos:
   meta-cassini:
     url: https://gitlab.com/Linaro/cassini/meta-cassini
     path: layers/meta-cassini
+    branch: nanbield-dev
     layers:
       meta-cassini-distro:
       meta-cassini-bsp: excluded
-
-  meta-secure-core:
-    path: layers/meta-secure-core
 
   kronos:
     layers:

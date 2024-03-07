@@ -150,7 +150,7 @@ meta_arm_version = os.environ.get(
 
 # Common variables for rst_prolog
 actuation_version = "v2.0"
-cassini_version = "v1.1.0"
+cassini_version = "nanbield-dev"
 critical_application_monitoring_version = "v1.0"
 fvp_version = "11.25.3"
 kas_version = "4.2"
@@ -210,28 +210,28 @@ rst_prolog = f"""
 .. |layer dependency statement| replace:: {kronos_version} branch
 .. |meta-arm branch| replace:: kronos-{yocto_version}
 .. |meta-arm repository| replace:: https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/meta-arm
-.. |meta-arm revision| replace:: 5e4851a884985b952b33f6f88a8724fbbe5300ec
-.. |meta-cassini branch| replace:: {yocto_version}
+.. |meta-arm revision| replace:: HEAD
+.. |meta-cassini branch| replace:: {cassini_version}
 .. |meta-cassini repository| replace:: https://gitlab.com/Linaro/cassini/meta-cassini
 .. |meta-cassini revision| replace:: {cassini_version}
 .. |meta-clang branch| replace:: {yocto_version}
 .. |meta-clang repository| replace:: https://github.com/kraj/meta-clang
-.. |meta-clang revision| replace:: 5170ec9cdfe215fcef146fa9142521bfad1d7d6c
+.. |meta-clang revision| replace:: HEAD
 .. |meta-openembedded branch| replace:: {yocto_version}
 .. |meta-openembedded repository| replace:: https://git.openembedded.org/meta-openembedded
-.. |meta-openembedded revision| replace:: da9063bdfbe130f424ba487f167da68e0ce90e7d
+.. |meta-openembedded revision| replace:: HEAD
 .. |meta-security branch| replace:: {yocto_version}
 .. |meta-security repository| replace:: https://git.yoctoproject.org/git/meta-security
-.. |meta-security revision| replace:: 5938fa58396968cc6412b398d403e37da5b27fce
+.. |meta-security revision| replace:: HEAD
 .. |meta-virtualization branch| replace:: {yocto_version}
 .. |meta-virtualization repository| replace:: https://git.yoctoproject.org/git/meta-virtualization
-.. |meta-virtualization revision| replace:: ac125d881f34ff356390e19e02964f8980d4ec38
+.. |meta-virtualization revision| replace:: HEAD
 .. |meta-zephyr branch| replace:: {yocto_version}
 .. |meta-zephyr repository| replace:: https://git.yoctoproject.org/git/meta-zephyr
-.. |meta-zephyr revision| replace:: fa76b75bd65da63abcc2d65dd5d4eb24296f2f65
+.. |meta-zephyr revision| replace:: HEAD
 .. |poky branch| replace:: {yocto_version}
 .. |poky repository| replace:: https://git.yoctoproject.org/git/poky
-.. |poky revision| replace:: 1a5c00f00c14cee3ba5d39c8c8db7a9738469eab
+.. |poky revision| replace:: HEAD
 .. |yocto version| replace:: {yocto_version}
 
 .. _ACS: https://developer.arm.com/Architectures/Architectural%20Compliance%20Suite
