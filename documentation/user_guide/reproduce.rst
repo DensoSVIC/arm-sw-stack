@@ -2958,7 +2958,14 @@ Follow the steps below to achieve the same:
     followed by pressing the ``Enter`` key to join the RSS terminal window to
     the Primary Compute terminal window.
 
-Panes can be navigated using ``Ctrl-b`` followed by the arrow keys.
+Refer to the following image of the tmux panes rearrangement. Panes can
+be navigated using ``Ctrl-b`` followed by the arrow keys.
+
+  .. image:: ../images/kronos_reference_stack_secure_firmware_update.*
+    :align: center
+    :alt: Kronos Reference Software Stack Secure Firmware Update FVP Windows
+
+|
 
 Run the Demo
 ^^^^^^^^^^^^
