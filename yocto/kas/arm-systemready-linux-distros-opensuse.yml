@@ -19,7 +19,7 @@ defaults:
 
 repos:
   meta-arm:
-    url: |
+    url: >-
       https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/meta-arm
     branch: kronos-nanbield
 
