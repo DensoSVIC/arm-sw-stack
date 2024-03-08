@@ -2107,10 +2107,6 @@ To shutdown the FVP and terminate the emulation, select the terminal titled as
 ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0`` and press
 ``Ctrl-c`` to stop the FVP process.
 
-.. note::
-    There is a known failure whereby a kernel panic is seen from the Primary
-    Compute terminal. Refer to :ref:`releasenotes_knownissues`.
-
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -2135,10 +2131,6 @@ The following message is expected in the output to validate this Use-Case:
 .. code-block:: text
 
   RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.00s)
-
-.. note::
-    There are currently known failures in the automated validation. Refer to
-    :ref:`releasenotes_knownissues`.
 
 .. _user_guide_reproduce_si_psa_crypto_api_test:
 
@@ -2693,11 +2685,6 @@ Run the following command to start the installation:
 
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
-.. note::
-
-  In case of a kernel error message during system boot, refer to the
-  :ref:`releasenotes_knownissues` for possible workarounds.
-
 The whole process of installing Debian will probably take about 5 hours. The
 install process begins when you see the following:
 
@@ -2846,11 +2833,6 @@ Run the following command to start the installation:
 
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
-.. note::
-
-  In case of a kernel error message during system boot, refer to the
-  :ref:`releasenotes_knownissues` for possible workarounds.
-
 The whole process of installing openSUSE will take several hours. The install
 process begins when you see the following:
 
@@ -2951,11 +2933,6 @@ To start the FVP and connect to the Primary Compute terminal (running Linux):
 .. code-block:: text
 
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
-
-.. note::
-
-  In case of a kernel error message during system boot, refer to the
-  :ref:`releasenotes_knownissues` for possible workarounds.
 
 Note that the main tmux windows involved in the Secure Firmware Update are
 ``terminal_ns_uart0`` and ``terminal_rss_uart``. For ease of navigation, it is
