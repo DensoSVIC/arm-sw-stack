@@ -145,3 +145,32 @@ Limitations
      where a test running on one entity might take up all the storage
      on the RSS resulting in denial of service for tests running on other
      entities.
+
+Resolved and Known Issues
+=========================
+
+.. _releasenotes_knownissues:
+
+Known Issues
+------------
+  * The automated validation might fail due to the encoding issues in the logs.
+    This has been observed on an AWS aarch64 Graviton 2 build host. On the test logs,
+    the error message that appears is a typical timeout error.
+
+    The console log appears normal, but some characters are either corrupted or
+    replaced with \00, \x00 or ^@ characters. This issue is likely caused by encoding
+    mismatches or inconsistencies in the logging process, and it could occur in any of
+    the test suites. A workaround is to trigger the "Automated Validation" again. When
+    this issue occurs, something similar to the following would be observed in the logs:
+
+    .. cspell:disable
+
+    .. code-block:: text
+
+      52 28 bytes from 192.168.1.2 to 192.168.1.1: icmp_seq=7 ttl=64 time=0.00 ^@s^M
+      or
+      fault set_critical f\00u@2a570000 0x10000600 0
+      or
+      System shutdown complet\x00
+
+    .. cspell:enable

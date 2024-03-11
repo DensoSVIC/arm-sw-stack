@@ -22,6 +22,10 @@ Software Stack's core functionalities.
 The tests are run on the image using the oeqa test framework. Refer to
 `OEQA FVP`_ for more information on this framework.
 
+.. note::
+    There is a rare known failure where a timeout might occur during test execution. Refer to
+    :ref:`releasenotes_knownissues` for possible workarounds.
+
 In this section, details on the structure, implementation and debugging of the
 tests is given.
 

@@ -542,6 +542,10 @@ The following messages are expected in the output to validate this Use-Case:
    RESULTS - test_40_cam.CAMTest.test_logical_check_on_si: PASSED (9.27s)
    RESULTS - test_40_cam.CAMTest.test_temporal_check_on_si: PASSED (24.33s)
 
+.. note::
+    There is a rare known failure where a timeout might occur during test execution. Refer to
+    :ref:`releasenotes_knownissues` for possible workarounds.
+
 Virtualization Architecture
 ---------------------------
 
@@ -1132,6 +1136,10 @@ The following messages are expected in the output to validate this Use-Case:
    RESULTS - test_40_cam.CAMTestDomU2.test_temporal_check_on_si: PASSED (22.54s)
    RESULTS - test_40_cam.CAMTestMultiDom.test_cam_app_example_to_service_on_si_with_multiple_vms: PASSED (25.70s)
 
+.. note::
+    There is a rare known failure where a timeout might occur during test execution. Refer to
+    :ref:`releasenotes_knownissues` for possible workarounds.
+
 .. _user_guide_reproduce_actuation_demo:
 
 Safety Island Actuation Demo
@@ -1351,6 +1359,10 @@ The following messages are expected in the output to validate this Use-Case:
   RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (1.76s)
   RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (12.28s)
   RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (85.32s)
+
+.. note::
+    There is a rare known failure where a timeout might occur during test execution. Refer to
+    :ref:`releasenotes_knownissues` for possible workarounds.
 
 Virtualization Architecture
 ---------------------------
@@ -1584,6 +1596,10 @@ The following messages are expected in the output to validate this Use-Case:
   RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (25.01s)
   RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (155.29s)
 
+.. note::
+    There is a rare known failure where a timeout might occur during test execution. Refer to
+    :ref:`releasenotes_knownissues` for possible workarounds.
+
 .. _user_guide_reproduce_hipc:
 
 Safety Island Communication Demo (using HIPC)
@@ -1654,6 +1670,10 @@ The following messages are expected in the output to validate this Use-Case:
   RESULTS - test_30_ptp.PTPTest.test_ptp_linux_services: PASSED (2.11s)
   RESULTS - test_30_ptp.PTPTest.test_ptp_si_clients: PASSED (15.43s)
 
+.. note::
+    There is a rare known failure where a timeout might occur during test execution. Refer to
+    :ref:`releasenotes_knownissues` for possible workarounds.
+
 Virtualization Architecture
 ---------------------------
 
@@ -1718,6 +1738,10 @@ The following messages are expected in the output to validate this Use-Case:
   RESULTS - test_30_ptp.PTPTestDomU1.test_ptp_linux_services: PASSED (0.80s)
   RESULTS - test_30_ptp.PTPTestDomU2.test_ptp_domu_client: PASSED (28.63s)
   RESULTS - test_30_ptp.PTPTestDomU2.test_ptp_linux_services: PASSED (0.76s)
+
+.. note::
+    There is a rare known failure where a timeout might occur during test execution. Refer to
+    :ref:`releasenotes_knownissues` for possible workarounds.
 
 .. _user_guide_reproduce_parsec_tls:
 
@@ -1871,6 +1895,10 @@ The following messages are expected in the output to validate this Use-Case:
 
   RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: PASSED (263.85s)
 
+.. note::
+    There is a rare known failure where a timeout might occur during test execution. Refer to
+    :ref:`releasenotes_knownissues` for possible workarounds.
+
 .. _user_guide_reproduce_pc_psa_ps_crypto_api_test:
 
 Primary Compute PSA Protected Storage and Crypto APIs Architecture Test Suite
@@ -2008,6 +2036,10 @@ The following messages are expected in the output to validate this Use-Case:
    RESULTS - test_50_trusted_services.KronosTrustedServices.test_03_psa_crypto_api_test: PASSED (134.31s)
    RESULTS - test_50_trusted_services.KronosTrustedServices.test_05_psa_ps_api_test: PASSED (16.88s)
 
+.. note::
+    There is a rare known failure where a timeout might occur during test execution. Refer to
+    :ref:`releasenotes_knownissues` for possible workarounds.
+
 .. _user_guide_reproduce_si_psa_ps_api_test:
 
 Safety Island PSA Secure Storage APIs Architecture Test Suite
@@ -2132,6 +2164,10 @@ The following message is expected in the output to validate this Use-Case:
 
   RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.00s)
 
+.. note::
+    There is a rare known failure where a timeout might occur during test execution. Refer to
+    :ref:`releasenotes_knownissues` for possible workarounds.
+
 .. _user_guide_reproduce_si_psa_crypto_api_test:
 
 Safety Island PSA Crypto APIs Architecture Test Suite
@@ -2227,6 +2263,10 @@ The following messages are expected in the output to validate this Use-Case:
    RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster0: PASSED (269.99s)
    RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster1: PASSED (0.01s)
    RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.01s)
+
+.. note::
+    There is a rare known failure where a timeout might occur during test execution. Refer to
+    :ref:`releasenotes_knownissues` for possible workarounds.
 
 .. _user_guide_reproduce_fault_management:
 
@@ -2472,6 +2512,10 @@ The following messages are expected in the output to validate this Use-Case:
   RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_system_fmu_internal_set_enabled: PASSED (10.37s)
   RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_tree: PASSED (0.16s)
 
+.. note::
+    There is a rare known failure where a timeout might occur during test execution. Refer to
+    :ref:`releasenotes_knownissues` for possible workarounds.
+
 See :ref:`validation_fault_management` for more details.
 
 .. _user_guide_reproduce_arm_systemready_ir_validation:
@@ -2616,6 +2660,10 @@ messages are expected to validate this Use-Case:
   .. code-block:: text
 
      TEST_OVERALL_TIMEOUT="\${@16*60*60}" kas shell -c "bitbake arm-systemready-ir-acs -C unpack"
+
+.. note::
+    There is a rare known failure where a timeout might occur during test execution. Refer to
+    :ref:`releasenotes_knownissues` for possible workarounds.
 
 Refer to :ref:`systemready_ir_acs_tests` for an explanation on how the
 ACS tests are set up and how they work in the Reference Software Stack.
@@ -3064,5 +3112,9 @@ The following messages are expected in the output to validate this Use-Case:
 .. code-block:: text
 
   RESULTS - test_00_fwu.SecureFirmwareUpdateTest.test_securefirmwareupdate: PASSED (414.85s)
+
+.. note::
+    There is a rare known failure where a timeout might occur during test execution. Refer to
+    :ref:`releasenotes_knownissues` for possible workarounds.
 
 See :ref:`validation_secure_firmware_update` for more details.
