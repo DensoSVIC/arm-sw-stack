@@ -19,6 +19,9 @@ Implementation of the :ref:`Use-Cases <overview_use_cases>`.
 
 The main components versions used in the Reference Software Stack:
 
+..
+  cspell:disable
+
 .. list-table::
   :header-rows: 1
 
@@ -26,13 +29,13 @@ The main components versions used in the Reference Software Stack:
     - Version
     - Source
   * - Kronos Reference Design FVP (FVP_RD_Kronos)
-    - 11.25.3
+    - 11.25.15
     - `FVP download`_
-  * - Trusted Firmware-M (RSS)
-    - 53aa78efef274b9e46e63b429078ae1863609728
+  * - RSS (Trusted Firmware-M)
+    - 53aa78efef274b9e46e63b429078ae1863609728 (based on master branch post v1.8.1)
     - `Trusted Firmware-M repository`_
   * - SCP-firmware
-    - cc4c9e017348d92054f74026ee1beb081403c168
+    - cc4c9e017348d92054f74026ee1beb081403c168 (based on master branch post v2.13.0)
     - `SCP-Firmware repository`_
   * - Trusted Firmware-A
     - 2.8.0
@@ -64,6 +67,9 @@ The main components versions used in the Reference Software Stack:
   * - Critical Application Monitoring
     - v1.0
     - `Critical Application Monitoring repository`_
+
+..
+  cspell:enable
 
 Third-party Yocto layers used to build the Reference Software Stack:
 
