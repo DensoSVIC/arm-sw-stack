@@ -356,7 +356,7 @@ repo_url_pattern = repo_url_pattern.strip("'")
 
 meta_arm_url_repo_pattern = os.environ.get(
     'META_ARM_REPO_URL_PATTERN',
-    'https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/meta-arm/tree/{path}?h={ref}')  # noqa
+    'https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/meta-arm/-/tree/{ref}/{path}')  # noqa
 # Read the Docs sometimes adds extra quotes to environment variables
 meta_arm_url_repo_pattern = meta_arm_url_repo_pattern.strip("'")
 
