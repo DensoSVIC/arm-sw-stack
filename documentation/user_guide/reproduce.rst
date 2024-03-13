@@ -1465,8 +1465,8 @@ Run the demo
     INFO : analyzer_client.py/_connect_to: Successfully connected to (localhost : 49152)
     INFO : analyzer_client.py/run_analyze_on_chain: (1) Analyzer synced with packet chain
 
-   The following messages should appear once the Packet Analyzer has finished
-   running:
+   The following messages should appear, but values may differ once the Packet
+   Analyzer has finished running:
 
    .. code-block:: text
 
@@ -1706,8 +1706,8 @@ Run the Demo
     INFO : analyzer_client.py/_connect_to: Successfully connected to (localhost : 49152)
     INFO : analyzer_client.py/run_analyze_on_chain: (1) Analyzer synced with packet chain
 
-   The following messages should appear once the Packet Analyzer has finished
-   running:
+   The following messages should appear, but values may differ once the Packet
+   Analyzer has finished running:
 
    .. code-block:: text
 
