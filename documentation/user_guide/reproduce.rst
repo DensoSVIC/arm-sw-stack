@@ -537,6 +537,10 @@ the ``.csd`` files.
       ERROR:     current_state: Failed state
       ERROR:     requested_state: In-progress state
 
+.. note::
+   ``time_received: 0`` should be ignored as the ``time_received`` is not set
+   during a fault.
+
 6. To shut down the FVP and terminate the emulation automatically, issue the
    following command on the Primary Compute terminal.
 
@@ -1218,6 +1222,10 @@ the ``.csd`` files.
        ERROR:     timestamp: 1710275909816069
        ERROR:     current_state: Failed state
        ERROR:     requested_state: In-progress state
+
+.. note::
+   ``time_received: 0`` should be ignored as the ``time_received`` is not set
+   during a fault.
 
 15. To leave the DomU1 console, type ``Ctrl-]`` and enter ``send esc``.
 
