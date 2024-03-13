@@ -573,7 +573,8 @@ To run the configuration menu:
 
   kas menu kronos/Kconfig
 
-To enable the validation tests:
+To run the validation tests:
+
   1. Select ``Critical Application Monitoring Demo`` as ``Use-Case``.
   2. Select ``Baremetal`` from the ``Reference Software Stack Architecture``
      menu.
@@ -1261,7 +1262,8 @@ To run the configuration menu:
 
   kas menu kronos/Kconfig
 
-To enable the validation tests:
+To run the validation tests:
+
   1. Select ``Critical Application Monitoring Demo`` as ``Use-Case``.
   2. Select ``Virtualization`` from the
      ``Reference Software Stack Architecture`` menu.
@@ -1506,7 +1508,8 @@ To run the configuration menu:
 
   kas menu kronos/Kconfig
 
-To enable the validation tests:
+To run the validation tests:
+
   1. Select ``Safety Island Actuation Demo`` as ``Use-Case``.
   2. Select ``Baremetal`` from the ``Reference Software Stack Architecture``
      menu.
@@ -1748,7 +1751,8 @@ To run the configuration menu:
 
   kas menu kronos/Kconfig
 
-To enable the validation tests:
+To run the validation tests:
+
   1. Select ``Safety Island Actuation Demo`` as ``Use-Case``.
   2. Select ``Virtualization`` from the
      ``Reference Software Stack Architecture`` menu.
@@ -1810,7 +1814,7 @@ To run the configuration menu:
 
   kas menu kronos/Kconfig
 
-To enable the validation tests:
+To run the validation tests:
 
   1. Select ``Safety Island Communication Demo (using HIPC)`` as ``Use-Case``.
   2. Select ``Baremetal`` from the ``Reference Software Stack Architecture``
@@ -1874,7 +1878,8 @@ To run the configuration menu:
 
   kas menu kronos/Kconfig
 
-To enable the validation tests:
+To run the validation tests:
+
   1. Select ``Safety Island Communication Demo (using HIPC)`` as ``Use-Case``.
   2. Select ``Virtualization`` from the
      ``Reference Software Stack Architecture`` menu.
@@ -2054,7 +2059,8 @@ To run the configuration menu:
 
   kas menu kronos/Kconfig
 
-To enable the validation tests:
+To run the validation tests:
+
   1. Select ``Safety Island Actuation Demo`` as ``Use-Case``.
   2. Select ``Baremetal`` from the ``Reference Software Stack Architecture``
      menu.
@@ -2200,7 +2206,8 @@ To run the configuration menu:
 
   kas menu kronos/Kconfig
 
-To enable the validation tests:
+To run the validation tests:
+
   1. Select ``Critical Application Monitoring Demo`` as ``Use-Case``.
   2. Select ``Baremetal`` from the ``Reference Stack Architecture`` menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
@@ -2329,7 +2336,8 @@ To run the configuration menu:
 
   kas menu kronos/Kconfig
 
-To enable the validation tests:
+To run the validation tests:
+
   1. Select ``Safety Island PSA Secure Storage APIs Architecture Test Suite``
      from the ``Use-Case`` menu.
   2. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
@@ -2427,7 +2435,8 @@ To run the configuration menu:
 
   kas menu kronos/Kconfig
 
-To enable the validation tests:
+To run the validation tests:
+
   1. Select ``Safety Island PSA Crypto APIs Architecture Test Suite`` from the
      ``Use-Case`` menu.
   2. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
@@ -2668,7 +2677,7 @@ To run the configuration menu:
 
   kas menu kronos/Kconfig
 
-To enable the validation tests:
+To run the validation tests:
 
   1. Select ``Safety Island Actuation Demo`` as ``Use-Case``.
   2. Select ``Baremetal`` from the ``Reference Software Stack Architecture``
@@ -3292,7 +3301,7 @@ To run the configuration menu:
 
   kas menu kronos/Kconfig
 
-To enable the validation tests:
+To run the validation tests:
 
   1. Select ``Critical Application Monitoring Demo`` as ``Use-Case``.
   2. Select ``Baremetal`` from the ``Reference Software Stack Architecture``
