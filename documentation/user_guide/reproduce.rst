@@ -201,7 +201,7 @@ The user should wait for the system to boot and for the Linux prompt to appear.
 
 The Safety Island (SI) Cluster 1 terminal running ``cam-service`` is available
 via the tmux window titled ``terminal_uart_si_cluster1``. For ease of
-navigation, it's recommended to join the ``cam-service`` terminal window to the
+navigation, it's recommended to join the SI Cluster 1 terminal window to the
 Primary Compute terminal window in order to issue commands on it.
 
 Follow the steps below to achieve the same:
@@ -211,7 +211,7 @@ Follow the steps below to achieve the same:
    ``terminal_ns_uart0`` using the arrow keys, then press the ``Enter`` key.
 2. Press ``Ctrl-b :`` and then type
    ``join-pane -s :terminal_uart_si_cluster1 -h`` followed by pressing ``Enter``
-   key to join the ``cam-service`` terminal window to the Primary Compute
+   key to join the SI Cluster 1 terminal window to the Primary Compute
    terminal window.
 
 Refer to the following image of the tmux panes rearrangement. Panes can
@@ -349,7 +349,7 @@ the ``.csd`` files.
 
       cam-tool deploy -i 11085ddc-bc10-11ed-9a44-7ef9696e0000.csd -a 192.168.1.1
 
-   The output on the ``cam-service`` terminal should look as below, the
+   The output on the SI Cluster 1 terminal should look as below, the
    connection number might change:
 
    .. code-block:: text
@@ -371,7 +371,7 @@ the ``.csd`` files.
       cam-tool deploy -i 11085ddc-bc10-11ed-9a44-7ef9696e0002.csd -a 192.168.1.1
       cam-tool deploy -i 11085ddc-bc10-11ed-9a44-7ef9696e0003.csd -a 192.168.1.1
 
-   The output on the ``cam-service`` terminal after each one of the
+   The output on the SI Cluster 1 terminal after each one of the
    ``cam-tool deploy`` command should look as below, the connection number
    might change:
 
@@ -382,7 +382,7 @@ the ``.csd`` files.
 
       Connection 4 is closed.
 
-   List all the files from the ``cam-service`` terminal:
+   List all the files from the SI Cluster 1 terminal:
 
    .. code-block:: text
 
@@ -441,7 +441,7 @@ the ``.csd`` files.
     Stream 3 sends event 0
     ...
 
-   As observed from the ``cam-service`` terminal, ``cam-service`` is loading
+   As observed from the SI Cluster 1 terminal, ``cam-service`` is loading
    four stream deployment files for monitoring. In the following log, the stream
    messages are received and processed by it:
 
@@ -516,7 +516,7 @@ the ``.csd`` files.
 
    The fault happens 100ms after stream initialization. At that time
    ``cam-service`` should detect a stream temporal error with the following
-   output from the ``cam-service`` terminal.
+   output from the SI Cluster 1 terminal.
 
    .. code-block:: text
 
@@ -629,7 +629,7 @@ The user should wait for the system to boot and for the Linux prompt to appear.
 
 The Safety Island (SI) Cluster 1 terminal running ``cam-service`` is available
 via the tmux window titled ``terminal_uart_si_cluster1``. For ease of
-navigation, it's recommended to join the ``cam-service`` terminal window to the
+navigation, it's recommended to join the SI Cluster 1 terminal window to the
 Primary Compute terminal window in order to issue commands on it.
 
 Follow the steps below to achieve the same:
@@ -639,7 +639,7 @@ Follow the steps below to achieve the same:
    ``terminal_ns_uart0`` using the arrow keys, then press the ``Enter`` key.
 2. Press ``Ctrl-b :`` and then type
    ``join-pane -s :terminal_uart_si_cluster1 -h`` followed by pressing ``Enter``
-   key to join the ``cam-service`` terminal window to the Primary Compute
+   key to join the SI Cluster 1 terminal window to the Primary Compute
    terminal window.
 
 Since both DomU1 and DomU2 will be used to run ``cam-app-example``, it is also
@@ -868,7 +868,7 @@ the ``.csd`` files.
 
       cam-tool deploy -i 11085ddc-bc10-11ed-9a44-7ef9696e0000.csd -a 192.168.1.1
 
-   The output on the ``cam-service`` terminal should look as below, the
+   The output on the SI Cluster 1 terminal should look as below, the
    connection number might change:
 
    .. code-block:: text
@@ -896,7 +896,7 @@ the ``.csd`` files.
 
       cam-tool deploy -i 11085ddc-bc10-11ed-9a44-7ef9696e0003.csd -a 192.168.1.1
 
-   The output on the ``cam-service`` terminal after each one of the
+   The output on the SI Cluster 1 terminal after each one of the
    ``cam-tool deploy`` command should look as below, the connection number
    might change:
 
@@ -1025,7 +1025,7 @@ the ``.csd`` files.
 
        cam-tool deploy -i 22085ddc-bc10-11ed-9a44-7ef9696e0000.csd -a 192.168.1.1
 
-    The output on the ``cam-service`` terminal should look as below, the
+    The output on the SI Cluster 1 terminal should look as below, the
     connection number might change:
 
     .. code-block:: text
@@ -1045,7 +1045,7 @@ the ``.csd`` files.
 
        cam-tool deploy -i 22085ddc-bc10-11ed-9a44-7ef9696e0001.csd -a 192.168.1.1
 
-    The output on the ``cam-service`` terminal after each one of the
+    The output on the SI Cluster 1 terminal after each one of the
     ``cam-tool deploy`` command should look as below, the connection number
     might change:
 
@@ -1056,7 +1056,7 @@ the ``.csd`` files.
 
        Connection 4 is closed.
 
-13. List all the files from the ``cam-service`` terminal:
+13. List all the files from the SI Cluster 1 terminal:
 
     .. code-block:: text
 
@@ -1158,7 +1158,7 @@ the ``.csd`` files.
     Stream 1 sends event 0
     ...
 
-    As observed from the ``cam-service`` terminal, ``cam-service`` is loading
+    As observed from the SI Cluster 1 terminal, ``cam-service`` is loading
     four stream deployment files from DomU1 and two stream deployment files from
     DomU2 for monitoring. In the following log, the stream messages are received
     and processed by it:
@@ -1198,7 +1198,7 @@ the ``.csd`` files.
 
     The fault happens 100ms after stream initialization. At that time
     ``cam-service`` should detect a stream temporal error with the following
-    output from the ``cam-service`` terminal.
+    output from the SI Cluster 1 terminal.
 
     .. code-block:: text
 
