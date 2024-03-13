@@ -476,6 +476,44 @@ the ``.csd`` files.
 
       cam-app-example -u 11085ddc-bc10-11ed-9a44-7ef9696e -t 3000 -c 10 -s 4 -f -S 0 -T 1000 -a 192.168.1.1
 
+   The following configure messages are expected from the Primary Compute
+   terminal:
+
+   .. code-block:: text
+
+      Cam application configuration:
+          Service IP address: 192.168.1.1
+          Service port: 21604
+          UUID base: 111085ddc-bc10-11ed-9a44-7ef9696e
+          Stream count: 4
+          Processing period (ms): 3000
+          Processing count: 10
+          Multiple connection support: false
+          Calibration mode support: false
+          Fault injection support: true
+          Fault injection time: 1000
+          Fault injection stream: 0
+          Event(s) interval time (ms): 0
+      Using libcam v1.0
+      Starting activity...
+      Starting activity...
+      Starting activity...
+      Starting activity...
+
+   And the log of sent event messages are shown repeatedly:
+
+   .. code-block:: text
+
+    Stream 0 sends event 0
+    Stream 1 sends event 0
+    Stream 2 sends event 0
+    Stream 3 sends event 0
+    Stream 0 sends event 0
+    Stream 1 sends event 0
+    Stream 2 sends event 0
+    Stream 3 sends event 0
+    ...
+
    The fault happens 100ms after stream initialization. At that time
    ``cam-service`` should detect a stream temporal error with the following
    output from the ``cam-service`` terminal.
@@ -485,12 +523,19 @@ the ``.csd`` files.
       # Repeated event messages
       ...
       ERROR: Stream temporal error:
-      ERROR:     stream_name: CAM STREAM 0
+      ERROR:     stream_name: CAM STREAM  0
       ERROR:     stream_uuid: 11085ddc-bc10-11ed-9a44-7ef9696e0000
       ERROR:     event_id: 0
       ERROR:     time_received: 0
-      ERROR:     time_expected: 1701066141314201
+      ERROR:     time_expected: 1710328901375511
+      # Repeated event messages
       ...
+      ERROR: Stream state error:
+      ERROR:     stream_name: CAM STREAM  0
+      ERROR:     stream_uuid: 11085ddc-bc10-11ed-9a44-7ef9696e0000
+      ERROR:     timestamp: 1710328927375278
+      ERROR:     current_state: Failed state
+      ERROR:     requested_state: In-progress state
 
 6. To shutdown the FVP and terminate the emulation, issue a ``shutdown now``
    on the Primary Compute terminal. The below messages indicate the shutdown
@@ -1076,6 +1121,38 @@ the ``.csd`` files.
 
        cam-app-example -u 22085ddc-bc10-11ed-9a44-7ef9696e -t 2000 -c 5 -s 2 -f -S 0 -T 1000 -a 192.168.1.1
 
+   The following configure messages are expected from the Primary Compute
+   terminal:
+
+   .. code-block:: text
+
+      Cam application configuration:
+          Service IP address: 192.168.1.1
+          Service port: 21604
+          UUID base: 22085ddc-bc10-11ed-9a44-7ef9696e
+          Stream count: 2
+          Processing period (ms): 2000
+          Processing count: 5
+          Multiple connection support: false
+          Calibration mode support: false
+          Fault injection support: true
+          Fault injection time: 1000
+          Fault injection stream: 0
+          Event(s) interval time (ms): 0
+      Using libcam v1.0
+      Starting activity...
+      Starting activity...
+
+   And the log of sent event messages are shown repeatedly:
+
+   .. code-block:: text
+
+    Stream 0 sends event 0
+    Stream 1 sends event 0
+    Stream 1 sends event 0
+    Stream 1 sends event 0
+    ...
+
     As observed from the ``cam-service`` terminal, ``cam-service`` is loading
     four stream deployment files from DomU1 and two stream deployment files from
     DomU2 for monitoring. In the following log, the stream messages are received
@@ -1087,12 +1164,18 @@ the ``.csd`` files.
        Init Message
        Stream 11085ddc-bc10-11ed-9a44-7ef9696e0002 configuration is loaded.
        Init Message
-       Stream 11085ddc-bc10-11ed-9a44-7ef9696e0001 configuration is loaded.                                                                        Init Message
-       Stream 11085ddc-bc10-11ed-9a44-7ef9696e0003 configuration is loaded.                                                                        Init Message
-       Stream 11085ddc-bc10-11ed-9a44-7ef9696e0000 configuration is loaded.                                                                        Start Message
-       Start Message                                                                                                                               Start Message
-       Start Message                                                                                                                               Event Message
-       Event Message                                                                                                                               Event Message
+       Stream 11085ddc-bc10-11ed-9a44-7ef9696e0001 configuration is loaded.
+       Init Message
+       Stream 11085ddc-bc10-11ed-9a44-7ef9696e0003 configuration is loaded.
+       Init Message
+       Stream 11085ddc-bc10-11ed-9a44-7ef9696e0000 configuration is loaded.
+       Start Message
+       Start Message
+       Start Message
+       Start Message
+       Event Message
+       Event Message
+       Event Message
        Event Message
 
        Connection 5 is created.
@@ -1117,12 +1200,19 @@ the ``.csd`` files.
        # Repeated event messages
        ...
        ERROR: Stream temporal error:
-       ERROR:     stream_name: CAM STREAM 0
+       ERROR:     stream_name: CAM STREAM  0
        ERROR:     stream_uuid: 2285ddc-bc10-11ed-9a44-7ef9696e0000
        ERROR:     event_id: 0
        ERROR:     time_received: 0
-       ERROR:     time_expected: 1701066141314201
+       ERROR:     time_expected: 1710275907816057
+       # Repeated event messages
        ...
+       ERROR: Stream state error:
+       ERROR:     stream_name: CAM STREAM  0
+       ERROR:     stream_uuid: 22085ddc-bc10-11ed-9a44-7ef9696e0000
+       ERROR:     timestamp: 1710275909816069
+       ERROR:     current_state: Failed state
+       ERROR:     requested_state: In-progress state
 
 15. To leave the DomU1 console, type ``Ctrl-]`` and enter ``send esc``.
 
