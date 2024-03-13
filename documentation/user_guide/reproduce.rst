@@ -560,7 +560,8 @@ the ``.csd`` files.
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
 
-Ensure the presence of new flash images:
+Ensure the presence of new flash images because previously updated firmware
+will lead to failure of the tests.
 
 .. code-block:: text
 
@@ -3146,7 +3147,8 @@ The to be updated firmware capsule for testing will be generated together with
 the image for the software stack when building. The firmware capsule is placed
 on a removable storage device (in the case of Kronos, an MMC card).
 
-Ensure the presence of new flash images:
+Ensure the presence of new flash images because previously updated firmware
+will lead to failure of the secure firmware update.
 
 .. code-block:: text
 
@@ -3277,7 +3279,8 @@ To start Secure Firmware Update:
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
 
-Ensure the presence of new flash images:
+Ensure the presence of new flash images because previously updated firmware
+will lead to failure of the tests.
 
 .. code-block:: text
 
