@@ -537,9 +537,14 @@ the ``.csd`` files.
       ERROR:     current_state: Failed state
       ERROR:     requested_state: In-progress state
 
-6. To shutdown the FVP and terminate the emulation, issue a ``shutdown now``
-   on the Primary Compute terminal. The below messages indicate the shutdown
-   process is complete.
+6. To shut down the FVP and terminate the emulation automatically, issue the
+   following command on the Primary Compute terminal.
+
+   .. code-block:: text
+
+      shutdown now
+
+   The below messages indicate the shutdown process is complete.
 
    .. code-block:: text
 
@@ -1218,10 +1223,16 @@ the ``.csd`` files.
 
 16. To leave the DomU2 console, type ``Ctrl-]`` and enter ``send esc``.
 
-17. To shutdown the FVP and terminate the emulation, follow the below steps:
+17. To shut down the FVP and terminate the emulation automatically, follow the
+    below steps:
 
-    * Issue a ``shutdown now`` from either Primary Compute terminal. The below
-      messages indicate the shutdown process is complete.
+    * Issue the following command on the Primary Compute terminal.
+
+      .. code-block:: text
+
+         shutdown now
+
+      The below messages indicate the shutdown process is complete.
 
       .. code-block:: text
 
@@ -1457,10 +1468,16 @@ Run the demo
     Chain ID   Result
     0          AnalyzerResult.SUCCESS
 
-4. To shutdown the FVP and terminate the emulation, follow the below steps:
+4. To shut down the FVP and terminate the emulation automatically, follow the
+   below steps:
 
-    * Issue a ``shutdown now`` on the Primary Compute terminal. The below
-      messages indicate the shutdown process is complete.
+    * Issue the following command on the Primary Compute terminal.
+
+      .. code-block:: text
+
+         shutdown now
+
+      The below messages indicate the shutdown process is complete.
 
       .. code-block:: text
 
@@ -1693,10 +1710,16 @@ Run the Demo
 
 5. To leave the DomU1 console, type ``Ctrl-]`` and enter ``send esc``.
 
-6. To shutdown the FVP and terminate the emulation, follow the below steps:
+6. To shut down the FVP and terminate the emulation automatically, follow the
+   below steps:
 
-    * Issue a ``shutdown now`` on the Primary Compute terminal. The below
-      messages indicate the shutdown process is complete.
+    * Issue the following command on the Primary Compute terminal.
+
+      .. code-block:: text
+
+         shutdown now
+
+      The below messages indicate the shutdown process is complete.
 
       .. code-block:: text
 
@@ -1995,9 +2018,14 @@ this application.
         pkill ssl_server
         sync
 
-4. To shutdown the FVP and terminate the emulation, issue a ``shutdown now``
-   on the Primary Compute terminal. The below messages indicate the shutdown
-   process is complete.
+4. To shut down the FVP and terminate the emulation automatically, issue the
+   following command on the Primary Compute terminal.
+
+   .. code-block:: text
+
+      shutdown now
+
+   The below messages indicate the shutdown process is complete.
 
    .. code-block:: text
 
@@ -2136,9 +2164,14 @@ this application.
       TOTAL SKIPPED   : 6
       ******************************************
 
-4. To shutdown the FVP and terminate the emulation, issue a ``shutdown now``
-   on the Primary Compute terminal. The below messages indicate the shutdown
-   process is complete.
+3. To shut down the FVP and terminate the emulation automatically, issue the
+   following command on the Primary Compute terminal.
+
+   .. code-block:: text
+
+      shutdown now
+
+   The below messages indicate the shutdown process is complete.
 
    .. code-block:: text
 
@@ -2274,7 +2307,7 @@ failed tests:
   TOTAL SKIPPED   : 6
   ******************************************
 
-To shutdown the FVP and terminate the emulation, select the terminal titled as
+To shut down the FVP and terminate the emulation, select the terminal titled as
 ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0`` and press
 ``Ctrl-c`` to stop the FVP process.
 
@@ -2369,7 +2402,7 @@ Normally no failure should be seen::
   TOTAL SKIPPED   : 0
   ******************************************
 
-To shutdown the FVP and terminate the emulation, select the terminal titled as
+To shut down the FVP and terminate the emulation, select the terminal titled as
 ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0`` and press
 ``Ctrl-c`` to stop the FVP process.
 
@@ -2610,7 +2643,7 @@ and GIC-720AE FMU and how this affects the SSU safety state.
     The state can now only be affected through a full system reset (e.g. by
     stopping and starting the FVP), after which the state will be ``TEST``
     once again.
- 9. To shutdown the FVP and terminate the emulation, select the terminal titled
+ 9. To shut down the FVP and terminate the emulation, select the terminal titled
     as ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0``
     and press ``Ctrl-c`` to stop the FVP process.
 
@@ -2973,9 +3006,14 @@ installation process and how to solve them:
 
 * Terminate the FVP
 
-  To shutdown the FVP and terminate the emulation, log into the Linux shell as
-  the root user then run ``shutdown now``. The below message indicates the
-  shutdown process is complete.
+  To shut down the FVP and terminate the emulation automatically, log into the
+  Linux shell as the root user then run the following command.
+
+      .. code-block:: text
+
+         shutdown now
+
+  The below message indicates the shutdown process is complete.
 
       .. code-block:: text
 
@@ -3067,7 +3105,13 @@ Select ``Installation`` to start the installation process.
 
 * Terminate the FVP
 
-  To shutdown the FVP and terminate the emulation, run ``sudo shutdown now``.
+  To shut down the FVP and terminate the emulation automatically, run the
+  following command.
+
+  .. code-block:: text
+
+     sudo shutdown now
+
   The below message indicates the shutdown process is complete.
 
       .. code-block:: text
@@ -3218,7 +3262,7 @@ To start Secure Firmware Update:
 
 6. The system will eventually boot into Linux using the upgraded firmware.
 
-7. To shutdown the FVP and terminate the emulation, select the terminal titled
+7. To shut down the FVP and terminate the emulation, select the terminal titled
    as ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0``
    and press ``Ctrl-c`` to stop the FVP process.
 
