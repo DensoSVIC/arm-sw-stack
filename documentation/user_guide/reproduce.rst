@@ -135,6 +135,10 @@ To run the configuration menu:
   `EULA`_, which can be done by selecting the corresponding configuration
   option in the build setup. The Safety Island Actuation Demo is built as
   part of the default deployment.
+  
+  The kas build configuration menu selections performed in each use-case are
+  saved. Ensure to only select the options mentioned in the use-case reproduce
+  steps and deselect any other non-relevant ones.
 
 .. image:: ../images/kronos_reference_stack_build_config.*
    :align: center
@@ -267,7 +271,7 @@ the ``.csd`` files.
           Calibration directory: ./[uuid].csel
           Fault injection support: false
           Event(s) interval time (ms): 0
-      Using libcam v0.1
+      Using libcam v1.0
       Starting activity...
       Starting activity...
       Starting activity...
@@ -421,7 +425,7 @@ the ``.csd`` files.
           Calibration mode support: false
           Fault injection support: false
           Event(s) interval time (ms): 0
-      Using libcam v0.1
+      Using libcam v1.0
       Starting activity...
       Starting activity...
       Starting activity...
@@ -677,8 +681,8 @@ initialized.
 Wait for it to return. The expected terminal output is ``running``.
 
 .. note::
-  The Primary Compute terminal might get interrupted with messages similar to
-  the following ``(XEN) d2v0: vGICR: SGI: unhandled word write 0x000000ffffffff
+  A message similar to the following might appear in the Primary Compute
+  terminal ``(XEN) d2v0: vGICR: SGI: unhandled word write 0x000000ffffffff
   to ICACTIVER0``, this is an expected behavior.
 
 Run the Demo
@@ -777,7 +781,7 @@ the ``.csd`` files.
           Calibration directory: ./[uuid].csel
           Fault injection support: false
           Event(s) interval time (ms): 0
-      Using libcam v0.1
+      Using libcam v1.0
       Starting activity...
       Starting activity...
       Starting activity...
@@ -959,7 +963,7 @@ the ``.csd`` files.
            Calibration directory: ./[uuid].csel
            Fault injection support: false
            Event(s) interval time (ms): 0
-       Using libcam v0.1
+       Using libcam v1.0
        Starting activity...
        Starting activity...
            Stream 0 sends event 0
@@ -1103,7 +1107,7 @@ the ``.csd`` files.
            Calibration mode support: false
            Fault injection support: false
            Event(s) interval time (ms): 0
-       Using libcam v0.1
+       Using libcam v1.0
        Starting activity...
        Starting activity...
        Starting activity...
@@ -1231,7 +1235,7 @@ the ``.csd`` files.
 
 15. To leave the DomU1 console, type ``Ctrl-]`` and enter ``send esc``.
 
-16. To leave the DomU2 console, type ``Ctrl-]`` and enter ``send esc``.
+16. To leave the DomU2 console, type ``Ctrl-]``.
 
 17. To shut down the FVP and terminate the emulation automatically, follow the
     below steps:
@@ -1387,7 +1391,8 @@ Run the Demo
 ^^^^^^^^^^^^
 
 1. Run the ``ping`` command from the Primary Compute terminal (running Linux)
-   to verify that it can communicate with the Safety Island (running Zephyr):
+   to verify that it can communicate with the Safety Island Cluster 2 
+   (running Zephyr):
 
    .. code-block:: text
 
@@ -1617,8 +1622,8 @@ initialized.
 Wait for it to return. The expected terminal output is ``running``.
 
 .. note::
-  The Primary Compute terminal might get interrupted with messages similar to
-  the following ``(XEN) d2v0: vGICR: SGI: unhandled word write 0x000000ffffffff
+  A message similar to the following might appear in the Primary Compute
+  terminal ``(XEN) d2v0: vGICR: SGI: unhandled word write 0x000000ffffffff
   to ICACTIVER0``, this is an expected behavior.
 
 Run the Demo
@@ -1637,7 +1642,8 @@ Run the Demo
    `xl documentation`_ for further details.
 
 2. Run the ``ping`` command from the DomU1 terminal (running Linux)
-   to verify that it can communicate with the Safety Island (running Zephyr):
+   to verify that it can communicate with the Safety Island Cluster 2
+   (running Zephyr):
 
    .. code-block:: text
 
@@ -1799,7 +1805,7 @@ Safety Island Communication Demo (using HIPC)
 The Safety Island Communication Demo uses :ref:`HIPC (Heterogeneous
 Inter-processor Communication) <design/hipc:Heterogeneous Inter-processor
 Communication (HIPC)>` to validate networking between the Primary Compute and
-the three Safety Island clusters. ``ping`` and ``iperf`` tools are installed.
+the three Safety Island clusters.
 
 Baremetal Architecture
 ----------------------
@@ -2018,7 +2024,7 @@ this application.
 
       docker run  --rm -v /run/parsec/parsec.sock:/run/parsec/parsec.sock -v /usr/bin/ssl_client1:/usr/bin/ssl_client1 --network host docker.io/library/ubuntu:22.04 ssl_client1
 
-   A message similar to the following should appear:
+   After a few seconds, a message similar to the following should appear:
 
    .. code-block:: text
 

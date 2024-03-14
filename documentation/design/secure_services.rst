@@ -113,8 +113,8 @@ managed by `OP-TEE`_. It provides access to services hosted by the RSS.
 
 The ``SE Proxy SP`` receives secure service operation requests from the Normal
 world, translates the request parameters to IPC calls, and invokes the runtime
-services provided by the RSS. The IPC is carried by shared memory and MHUv3
-doorbell communication between the Primary Compute and the RSS.
+services provided by the RSS. The IPC is carried by Shared Memory and MHUv3
+Doorbell communication between the Primary Compute and the RSS.
 
 SMM Gateway SP
 --------------

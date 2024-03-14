@@ -174,3 +174,7 @@ Known Issues
       System shutdown complet\x00
 
     .. cspell:enable
+
+  * The automated validation might rarely fail due to timeouts related to the
+    host CPU frequency and throttling, if this happens then simply running the
+    automated validation again would fix such as issue.
