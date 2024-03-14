@@ -1383,7 +1383,7 @@ initialized.
 
 Wait for it to return. The expected terminal output is ``running``.
 
-Run the demo
+Run the Demo
 ^^^^^^^^^^^^
 
 1. Run the ``ping`` command from the Primary Compute terminal (running Linux)
@@ -1985,7 +1985,7 @@ initialized.
 
 Wait for it to return. The expected terminal output is ``running``.
 
-Run the demo
+Run the Demo
 ^^^^^^^^^^^^
 
 The demo consists of a TLS server and a TLS client. Refer to
@@ -2147,7 +2147,7 @@ initialized.
 
 Wait for it to return. The expected terminal output is ``running``.
 
-Run the demo
+Run the Demo
 ^^^^^^^^^^^^
 
 The demo consists of simple tests run from the Linux terminal. Refer to
@@ -2287,8 +2287,8 @@ The Safety Island Cluster 2 tmux window can be accessed by typing ``Ctrl-b w``,
 using the arrow keys to select ``terminal_uart_si_cluster2`` then pressing the
 ``Enter`` key.
 
-Run the tests
-^^^^^^^^^^^^^
+Run the Demo
+^^^^^^^^^^^^
 
 The tests will automatically run. A log similar to the following should be
 visible; it is normal for some tests to be skipped but there should be no
@@ -2517,7 +2517,7 @@ The Safety Island Cluster 1 tmux window can be accessed by typing ``Ctrl-b w``,
 using the arrow keys to select ``terminal_uart_si_cluster1`` then pressing the
 ``Enter`` key.
 
-Run the demo
+Run the Demo
 ^^^^^^^^^^^^
 
 The instructions below demonstrate injecting faults into both the System FMU
