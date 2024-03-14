@@ -687,6 +687,7 @@ thepage
 THISDIR
 THRTL
 tickless
+timedatectl
 timestamping
 timesyncd
 titlesonly

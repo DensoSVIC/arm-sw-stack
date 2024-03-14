@@ -536,6 +536,7 @@ The following messages are expected in the output to validate this Use-Case:
    RESULTS - test_40_cam.CAMServiceTest.test_cam_service_boot_on_si: PASSED (0.00s)
    RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si: PASSED (20.92s)
    RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si_with_multiple_connections: PASSED (20.86s)
+   RESULTS - test_40_cam.CAMTest.test_cam_ptp_sync: PASSED (0.00s)
    RESULTS - test_40_cam.CAMTest.test_cam_tool_deploy_to_si: PASSED (43.38s)
    RESULTS - test_40_cam.CAMTest.test_cam_tool_pack: PASSED (42.93s)
    RESULTS - test_40_cam.CAMTest.test_data_calibration: PASSED (92.78s)
@@ -674,7 +675,30 @@ the ``.csd`` files.
 
       stty rows 76 cols 282
 
-5. From the DomU1 terminal, start ``cam-app-example`` in calibration mode:
+5. From the DomU1 terminal, check that the clock is synchronized using the
+   command ``timedatectl``, one of the line of its output needs to be
+   ``System clock synchronized: yes`` to confirm that the clock is synchronized:
+
+   .. code-block:: text
+
+      timedatectl
+
+   The output should look as below, the date and time can differ, in case the
+   ``System clock synchronized:`` shows the ``no`` value, allow at least 1 minute
+   for the system to settle and for the clock to synchronize, afterwards repeat
+   the step 5 until ``System clock synchronized: yes`` is shown in the output:
+
+   .. code-block:: text
+
+                     Local time: Thu 2024-03-14 12:56:26 UTC
+                 Universal time: Thu 2024-03-14 12:56:26 UTC
+                       RTC time: n/a
+                      Time zone: UTC (UTC, +0000)
+      System clock synchronized: yes
+                    NTP service: n/a
+                RTC in local TZ: no
+
+6. Start ``cam-app-example`` in calibration mode from the DomU1 terminal:
 
    .. code-block:: text
 
@@ -723,7 +747,7 @@ the ``.csd`` files.
       11085ddc-bc10-11ed-9a44-7ef9696e0002.csel
       11085ddc-bc10-11ed-9a44-7ef9696e0003.csel
 
-6. Run ``cam-tool`` from the DomU1 terminal to analyze stream event log files
+7. Run ``cam-tool`` from the DomU1 terminal to analyze stream event log files
    and convert them to stream configuration files (``.csc.yml``).
 
    .. code-block:: text
@@ -786,7 +810,7 @@ the ``.csd`` files.
 
       cam-tool pack -i 11085ddc-bc10-11ed-9a44-7ef9696e0003.csc.yml
 
-7. Run the ``cam-tool deploy`` command from the DomU1 terminal to
+8. Run the ``cam-tool deploy`` command from the DomU1 terminal to
    transfer the generated stream deployment data to SI Cluster 1 (where
    ``cam-service`` is running):
 
@@ -833,94 +857,117 @@ the ``.csd`` files.
 
       Connection 4 is closed.
 
-8. From the DomU2 terminal, start ``cam-app-example`` in calibration mode:
+9. From the DomU2 terminal, check that the clock is synchronized using the
+   command ``timedatectl``, one of the line of its output needs to be
+   ``System clock synchronized: yes`` to confirm that the clock is synchronized:
 
    .. code-block:: text
 
-      cam-app-example -u 22085ddc-bc10-11ed-9a44-7ef9696e -t 2000 -c 5 -s 2 -C
+      timedatectl
 
-   The stream event log files (``.csel``) for each stream are generated. The output
-   should look as below:
-
-   .. code-block:: text
-
-      Cam application configuration:
-          Service IP address: 127.0.0.1
-          Service port: 21604
-          UUID base: 22085ddc-bc10-11ed-9a44-7ef9696e
-          Stream count: 2
-          Processing period (ms): 2000
-          Processing count: 5
-          Multiple connection support: false
-          Calibration mode support: true
-          Calibration directory: ./[uuid].csel
-          Fault injection support: false
-          Event(s) interval time (ms): 0
-      Using libcam v0.1
-      Starting activity...
-      Starting activity...
-          Stream 0 sends event 0
-          Stream 1 sends event 0
-          ...
-
-   List the files generated:
+   The output should look as below, the date and time can differ, in case the
+   ``System clock synchronized:`` shows the ``no`` value, allow at least 1 minute
+   for the system to settle and for the clock to synchronize, afterwards repeat
+   the step 9 until ``System clock synchronized: yes`` is shown in the output:
 
    .. code-block:: text
 
-      ls -1 *.csel
+                     Local time: Thu 2024-03-14 12:56:26 UTC
+                 Universal time: Thu 2024-03-14 12:56:26 UTC
+                       RTC time: n/a
+                      Time zone: UTC (UTC, +0000)
+      System clock synchronized: yes
+                    NTP service: n/a
+                RTC in local TZ: no
 
-   The stream event log files can be shown as below:
+10. Start ``cam-app-example`` in calibration mode from the DomU2 terminal:
 
-   .. code-block:: text
+    .. code-block:: text
 
-      22085ddc-bc10-11ed-9a44-7ef9696e0000.csel
-      22085ddc-bc10-11ed-9a44-7ef9696e0001.csel
+       cam-app-example -u 22085ddc-bc10-11ed-9a44-7ef9696e -t 2000 -c 5 -s 2 -C
 
-9. Run ``cam-tool`` from the DomU2 terminal to analyze stream event log files
-   and convert them to stream configuration files (``.csc.yml``).
+    The stream event log files (``.csel``) for each stream are generated. The output
+    should look as below:
 
-   .. code-block:: text
+    .. code-block:: text
 
-      cam-tool analyze -m 1000000 -i 22085ddc-bc10-11ed-9a44-7ef9696e0000.csel
+       Cam application configuration:
+           Service IP address: 127.0.0.1
+           Service port: 21604
+           UUID base: 22085ddc-bc10-11ed-9a44-7ef9696e
+           Stream count: 2
+           Processing period (ms): 2000
+           Processing count: 5
+           Multiple connection support: false
+           Calibration mode support: true
+           Calibration directory: ./[uuid].csel
+           Fault injection support: false
+           Event(s) interval time (ms): 0
+       Using libcam v0.1
+       Starting activity...
+       Starting activity...
+           Stream 0 sends event 0
+           Stream 1 sends event 0
+           ...
 
-   The analysis result is reported from the DomU2 terminal as below,
-   the timeout value might change:
+    List the files generated:
 
-   .. code-block:: text
+    .. code-block:: text
 
-      CAM event log analyze report:
-      Input event log file:                   22085ddc-bc10-11ed-9a44-7ef9696e0000.csel
-      Output configuration file:              analyzed.csc.yml
-      Stream UUID:                            22085ddc-bc10-11ed-9a44-7ef9696e0000
-      Stream name:                            CAM STREAM  0
-      Timeout between init and start:         300000
-      Timeout between start and event:        450000
-      Application running times:              1
-      Processing count in each run:           [5]
+       ls -1 *.csel
 
-      Event ID        timeout
-      0               3000066
+    The stream event log files can be shown as below:
 
-   The stream configuration files contain human-readable settings used for the
-   deployment phase of a critical application. Users can modify this
-   configuration, for example to fine tune timeout values depending on the
-   system capabilities.
+    .. code-block:: text
 
-   Run ``cam-tool`` for the other stream.
+       22085ddc-bc10-11ed-9a44-7ef9696e0000.csel
+       22085ddc-bc10-11ed-9a44-7ef9696e0001.csel
 
-   .. code-block:: text
+11. Run ``cam-tool`` from the DomU2 terminal to analyze stream event log files
+    and convert them to stream configuration files (``.csc.yml``).
 
-      cam-tool analyze -m 1000000 -i 22085ddc-bc10-11ed-9a44-7ef9696e0001.csel
+    .. code-block:: text
 
-   Then, use the ``cam-tool pack`` command for each of the streams to generate
-   deployment data.
+       cam-tool analyze -m 1000000 -i 22085ddc-bc10-11ed-9a44-7ef9696e0000.csel
 
-   .. code-block:: text
+    The analysis result is reported from the DomU2 terminal as below,
+    the timeout value might change:
 
-      cam-tool pack -i 22085ddc-bc10-11ed-9a44-7ef9696e0000.csc.yml
-      cam-tool pack -i 22085ddc-bc10-11ed-9a44-7ef9696e0001.csc.yml
+    .. code-block:: text
 
-10. Run the ``cam-tool deploy`` command from the DomU2 terminal to
+       CAM event log analyze report:
+       Input event log file:                   22085ddc-bc10-11ed-9a44-7ef9696e0000.csel
+       Output configuration file:              analyzed.csc.yml
+       Stream UUID:                            22085ddc-bc10-11ed-9a44-7ef9696e0000
+       Stream name:                            CAM STREAM  0
+       Timeout between init and start:         300000
+       Timeout between start and event:        450000
+       Application running times:              1
+       Processing count in each run:           [5]
+
+       Event ID        timeout
+       0               3000066
+
+    The stream configuration files contain human-readable settings used for the
+    deployment phase of a critical application. Users can modify this
+    configuration, for example to fine tune timeout values depending on the
+    system capabilities.
+
+    Run ``cam-tool`` for the other stream.
+
+    .. code-block:: text
+
+       cam-tool analyze -m 1000000 -i 22085ddc-bc10-11ed-9a44-7ef9696e0001.csel
+
+    Then, use the ``cam-tool pack`` command for each of the streams to generate
+    deployment data.
+
+    .. code-block:: text
+
+       cam-tool pack -i 22085ddc-bc10-11ed-9a44-7ef9696e0000.csc.yml
+       cam-tool pack -i 22085ddc-bc10-11ed-9a44-7ef9696e0001.csc.yml
+
+12. Run the ``cam-tool deploy`` command from the DomU2 terminal to
     transfer the generated stream deployment data to SI Cluster 1 (where
     ``cam-service`` is running):
 
@@ -959,7 +1006,7 @@ the ``.csd`` files.
 
        Connection 4 is closed.
 
-11. List all the files from the ``cam-service`` terminal:
+13. List all the files from the ``cam-service`` terminal:
 
     .. code-block:: text
 
@@ -976,7 +1023,7 @@ the ``.csd`` files.
        22085ddc-bc10-11ed-9a44-7ef9696e0000.csd
        22085ddc-bc10-11ed-9a44-7ef9696e0001.csd
 
-12. Start ``cam-app-example`` from the DomU1 terminal to create an
+14. Start ``cam-app-example`` from the DomU1 terminal to create an
     application with four streams. Each stream sends an event message 10 times
     with a period of 3000 milliseconds.
 
@@ -1077,11 +1124,11 @@ the ``.csd`` files.
        ERROR:     time_expected: 1701066141314201
        ...
 
-13. To leave the DomU1 console, type ``Ctrl-]`` and enter ``send esc``.
+15. To leave the DomU1 console, type ``Ctrl-]`` and enter ``send esc``.
 
-14. To leave the DomU2 console, type ``Ctrl-]`` and enter ``send esc``.
+16. To leave the DomU2 console, type ``Ctrl-]`` and enter ``send esc``.
 
-15. To shutdown the FVP and terminate the emulation, follow the below steps:
+17. To shutdown the FVP and terminate the emulation, follow the below steps:
 
     * Issue a ``shutdown now`` from either Primary Compute terminal. The below
       messages indicate the shutdown process is complete.
@@ -1122,6 +1169,7 @@ The following messages are expected in the output to validate this Use-Case:
    RESULTS - test_40_cam.CAMServiceTest.test_cam_service_boot_on_si: PASSED (0.00s)
    RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si: PASSED (18.71s)
    RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si_with_multiple_connections: PASSED (18.67s)
+   RESULTS - test_40_cam.CAMTest.test_cam_ptp_sync: PASSED (72.78s)
    RESULTS - test_40_cam.CAMTest.test_cam_tool_deploy_to_si: PASSED (23.50s)
    RESULTS - test_40_cam.CAMTest.test_cam_tool_pack: PASSED (22.90s)
    RESULTS - test_40_cam.CAMTest.test_data_calibration: PASSED (68.70s)
@@ -1129,6 +1177,7 @@ The following messages are expected in the output to validate this Use-Case:
    RESULTS - test_40_cam.CAMTest.test_temporal_check_on_si: PASSED (22.87s)
    RESULTS - test_40_cam.CAMTestDomU2.test_cam_app_example_to_service_on_si: PASSED (18.45s)
    RESULTS - test_40_cam.CAMTestDomU2.test_cam_app_example_to_service_on_si_with_multiple_connections: PASSED (18.38s)
+   RESULTS - test_40_cam.CAMTestDomU2.test_cam_ptp_sync: PASSED (7.54s)
    RESULTS - test_40_cam.CAMTestDomU2.test_cam_tool_deploy_to_si: PASSED (11.87s)
    RESULTS - test_40_cam.CAMTestDomU2.test_cam_tool_pack: PASSED (11.57s)
    RESULTS - test_40_cam.CAMTestDomU2.test_data_calibration: PASSED (38.87s)

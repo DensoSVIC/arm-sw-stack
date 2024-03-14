@@ -12,6 +12,7 @@ from oeqa.utils.linux_terminal_utils import LinuxTermUtils, LinuxMultiTermUtils
 from oeqa.utils.zephyr_shell import Shell
 from oeqa.utils.xen_utils import XenUtils
 from oeqa.utils.kronos_config import KronosConfig
+from time import sleep
 import unittest
 
 
@@ -104,6 +105,37 @@ class CAMTest(OERuntimeTestCase):
 
         super(CAMTest, cls).tearDownClass()
 
+    @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
+    def test_cam_ptp_sync(self):
+        # The current setup is that the DomUs clock need to be in sync with the
+        # clock from Dom0, in the baremetal case we don't need to do anything.
+        # This test is not using any skipIf(Not)Feature decorator because it
+        # will be a dependency of the following tests, so we can't skip it as
+        # it would stop the others from running
+        if 'virtualization' not in self.td.get('IMAGE_FEATURES', '').split():
+            return
+
+        retry = 3
+        expected_string = 'NTPSynchronized=yes'
+        while retry > 0:
+            status, output = self.lt_utils.run('timedatectl show')
+            self.assertEqual(status, 0, msg=f'timedatectl command failed')
+            if expected_string in output:
+                break
+            retry -= 1
+            sleep(60)
+
+        # This command is here only to debug cases when the clocks are not
+        # in sync
+        if expected_string not in output:
+            cmd = 'systemctl status ptp4l@ethsi1 -l'
+            status, _ = self.lt_utils.run(cmd)
+            self.assertEqual(status, 0,
+                             msg=f'systemctl status ptp4l[...] failed')
+
+        self.assertIn(expected_string, output,
+                      msg='PTP clocks are not in sync.')
+
     @OETestDepends([
         'test_40_cam.CAMServiceTest.test_cam_service_boot_on_si',
         'test_40_cam.CAMTest.test_cam_tool_pack'])
@@ -188,7 +220,7 @@ class CAMTest(OERuntimeTestCase):
                            r'Stream temporal error',
                            timeout=300)
 
-    @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
+    @OETestDepends(['test_40_cam.CAMTest.test_cam_ptp_sync'])
     def test_data_calibration(self):
         st = (f'cam-app-example -u {self.dom.uuid_base} '
               f' --enable-calibration-mode -s {self.dom.streams}')
@@ -265,6 +297,10 @@ class CAMTestDomU2(CAMTest):
     def tearDownClass(cls):
         cls.dom.shut_down()
 
+    @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
+    def test_cam_ptp_sync(self):
+        super().test_cam_ptp_sync()
+
     @OETestDepends([
         'test_40_cam.CAMServiceTest.test_cam_service_boot_on_si',
         'test_40_cam.CAMTestDomU2.test_cam_tool_pack'])
@@ -293,7 +329,7 @@ class CAMTestDomU2(CAMTest):
     def test_temporal_check_on_si(self):
         super().test_temporal_check_on_si()
 
-    @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
+    @OETestDepends(['test_40_cam.CAMTestDomU2.test_cam_ptp_sync'])
     def test_data_calibration(self):
         super().test_data_calibration()
 
