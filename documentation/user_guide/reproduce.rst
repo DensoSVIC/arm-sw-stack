@@ -1439,6 +1439,14 @@ Run the demo
 
       actuation_player -p /usr/share/actuation_player/
 
+   A message similar to the following should appear on the Primary Compute
+   terminal:
+
+   .. code-block::text
+
+      Waiting for readers...
+      ...Done. Starting replay.
+
    A message similar to the following should appear on the SI Cluster 2
    terminal:
 
@@ -1679,6 +1687,14 @@ Run the Demo
    .. code-block:: text
 
       actuation_player -p /usr/share/actuation_player/
+
+   A message similar to the following should appear on the Primary Compute
+   terminal:
+
+   .. code-block::text
+
+      Waiting for readers...
+      ...Done. Starting replay.
 
    A message similar to the following should appear on the SI Cluster 2
    terminal:
