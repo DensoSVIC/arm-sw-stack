@@ -586,22 +586,22 @@ To run the validation tests:
      menu.
   4. Select ``Build``.
 
-The complete test suite takes around 25 minutes to complete on
-an x86_64 host. See :ref:`validation_cam_tests` for more details.
+The complete test suite takes around 40 minutes to complete. See
+:ref:`validation_cam_tests` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
    RESULTS - test_40_cam.CAMServiceTest.test_cam_service_boot_on_si: PASSED (0.00s)
-   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si: PASSED (20.92s)
-   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si_with_multiple_connections: PASSED (20.86s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si: PASSED (36.89s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si_with_multiple_connections: PASSED (36.98s)
    RESULTS - test_40_cam.CAMTest.test_cam_ptp_sync: PASSED (0.00s)
-   RESULTS - test_40_cam.CAMTest.test_cam_tool_deploy_to_si: PASSED (43.38s)
-   RESULTS - test_40_cam.CAMTest.test_cam_tool_pack: PASSED (42.93s)
-   RESULTS - test_40_cam.CAMTest.test_data_calibration: PASSED (92.78s)
-   RESULTS - test_40_cam.CAMTest.test_logical_check_on_si: PASSED (9.27s)
-   RESULTS - test_40_cam.CAMTest.test_temporal_check_on_si: PASSED (24.33s)
+   RESULTS - test_40_cam.CAMTest.test_cam_tool_deploy_to_si: PASSED (75.69s)
+   RESULTS - test_40_cam.CAMTest.test_cam_tool_pack: PASSED (74.72s)
+   RESULTS - test_40_cam.CAMTest.test_data_calibration: PASSED (187.73s)
+   RESULTS - test_40_cam.CAMTest.test_logical_check_on_si: PASSED (15.63s)
+   RESULTS - test_40_cam.CAMTest.test_temporal_check_on_si: PASSED (44.32s)
 
 .. note::
     There is a rare known failure where a timeout might occur during test execution. Refer to
@@ -1275,7 +1275,7 @@ To run the validation tests:
      menu.
   4. Select ``Build``.
 
-The complete test suite takes around 35 minutes to complete. See
+The complete test suite takes around 65 minutes to complete. See
 :ref:`validation_cam_tests` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
@@ -1283,23 +1283,23 @@ The following messages are expected in the output to validate this Use-Case:
 .. code-block:: text
 
    RESULTS - test_40_cam.CAMServiceTest.test_cam_service_boot_on_si: PASSED (0.00s)
-   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si: PASSED (18.71s)
-   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si_with_multiple_connections: PASSED (18.67s)
-   RESULTS - test_40_cam.CAMTest.test_cam_ptp_sync: PASSED (72.78s)
-   RESULTS - test_40_cam.CAMTest.test_cam_tool_deploy_to_si: PASSED (23.50s)
-   RESULTS - test_40_cam.CAMTest.test_cam_tool_pack: PASSED (22.90s)
-   RESULTS - test_40_cam.CAMTest.test_data_calibration: PASSED (68.70s)
-   RESULTS - test_40_cam.CAMTest.test_logical_check_on_si: PASSED (8.78s)
-   RESULTS - test_40_cam.CAMTest.test_temporal_check_on_si: PASSED (22.87s)
-   RESULTS - test_40_cam.CAMTestDomU2.test_cam_app_example_to_service_on_si: PASSED (18.45s)
-   RESULTS - test_40_cam.CAMTestDomU2.test_cam_app_example_to_service_on_si_with_multiple_connections: PASSED (18.38s)
-   RESULTS - test_40_cam.CAMTestDomU2.test_cam_ptp_sync: PASSED (7.54s)
-   RESULTS - test_40_cam.CAMTestDomU2.test_cam_tool_deploy_to_si: PASSED (11.87s)
-   RESULTS - test_40_cam.CAMTestDomU2.test_cam_tool_pack: PASSED (11.57s)
-   RESULTS - test_40_cam.CAMTestDomU2.test_data_calibration: PASSED (38.87s)
-   RESULTS - test_40_cam.CAMTestDomU2.test_logical_check_on_si: PASSED (8.58s)
-   RESULTS - test_40_cam.CAMTestDomU2.test_temporal_check_on_si: PASSED (22.54s)
-   RESULTS - test_40_cam.CAMTestMultiDom.test_cam_app_example_to_service_on_si_with_multiple_vms: PASSED (25.70s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si: PASSED (63.55s)
+   RESULTS - test_40_cam.CAMTest.test_cam_app_example_to_service_on_si_with_multiple_connections: PASSED (62.12s)
+   RESULTS - test_40_cam.CAMTest.test_cam_ptp_sync: PASSED (143.39s)
+   RESULTS - test_40_cam.CAMTest.test_cam_tool_deploy_to_si: PASSED (63.58s)
+   RESULTS - test_40_cam.CAMTest.test_cam_tool_pack: PASSED (62.96s)
+   RESULTS - test_40_cam.CAMTest.test_data_calibration: PASSED (175.01s)
+   RESULTS - test_40_cam.CAMTest.test_logical_check_on_si: PASSED (26.43s)
+   RESULTS - test_40_cam.CAMTest.test_temporal_check_on_si: PASSED (78.28s)
+   RESULTS - test_40_cam.CAMTestDomU2.test_cam_app_example_to_service_on_si: PASSED (60.84s)
+   RESULTS - test_40_cam.CAMTestDomU2.test_cam_app_example_to_service_on_si_with_multiple_connections: PASSED (63.07s)
+   RESULTS - test_40_cam.CAMTestDomU2.test_cam_ptp_sync: PASSED (13.27s)
+   RESULTS - test_40_cam.CAMTestDomU2.test_cam_tool_deploy_to_si: PASSED (32.96s)
+   RESULTS - test_40_cam.CAMTestDomU2.test_cam_tool_pack: PASSED (32.19s)
+   RESULTS - test_40_cam.CAMTestDomU2.test_data_calibration: PASSED (100.73s)
+   RESULTS - test_40_cam.CAMTestDomU2.test_logical_check_on_si: PASSED (25.67s)
+   RESULTS - test_40_cam.CAMTestDomU2.test_temporal_check_on_si: PASSED (77.41s)
+   RESULTS - test_40_cam.CAMTestMultiDom.test_cam_app_example_to_service_on_si_with_multiple_vms: PASSED (68.86s)
 
 .. note::
     There is a rare known failure where a timeout might occur during test execution. Refer to
@@ -1530,16 +1530,16 @@ To run the validation tests:
      menu.
   4. Select ``Build``.
 
-The complete test suite takes around 25 minutes to complete on
-an x86_64 host. See :ref:`validation_actuation_demo` for more details.
+The complete test suite takes around 45 minutes to complete. See
+:ref:`validation_actuation_demo` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
-  RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (1.76s)
-  RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (12.28s)
-  RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (85.32s)
+  RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.44s)
+  RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (26.04s)
+  RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (167.15s)
 
 .. note::
     There is a rare known failure where a timeout might occur during test execution. Refer to
@@ -1782,16 +1782,16 @@ To run the validation tests:
      menu.
   4. Select ``Build``.
 
-The complete test suite takes around 50 minutes to complete on
-an x86_64 host. See :ref:`validation_actuation_demo` for more details.
+The complete test suite takes around 110 minutes to complete. See
+:ref:`validation_actuation_demo` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
-  RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.32s)
-  RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (25.01s)
-  RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (155.29s)
+  RESULTS - test_30_actuation.ActuationTest.test_analyzer_help: PASSED (0.40s)
+  RESULTS - test_30_actuation.ActuationTest.test_ping: PASSED (42.15s)
+  RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (265.77s)
 
 .. note::
     There is a rare known failure where a timeout might occur during test execution. Refer to
@@ -1845,27 +1845,27 @@ To run the validation tests:
      menu.
   4. Select ``Build``.
 
-The complete test suite takes around 15 minutes to complete on
-an x86_64 host. See :ref:`validation_hipc_demo` for more details.
+The complete test suite takes around 45 minutes to complete. See
+:ref:`validation_hipc_demo` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
-  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster0: PASSED (105.82s)
-  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster1: PASSED (154.09s)
-  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster2: PASSED (155.98s)
-  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl1: PASSED (37.84s)
-  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl2: PASSED (46.70s)
-  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl1_cl2: PASSED (64.38s)
-  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl1: PASSED (18.96s)
-  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl2: PASSED (19.10s)
-  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl1_cl2: PASSED (19.39s)
-  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster0: PASSED (48.29s)
-  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster1: PASSED (48.09s)
-  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster2: PASSED (47.48s)
-  RESULTS - test_30_ptp.PTPTest.test_ptp_linux_services: PASSED (2.11s)
-  RESULTS - test_30_ptp.PTPTest.test_ptp_si_clients: PASSED (15.43s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster0: PASSED (223.04s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster1: PASSED (351.62s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster2: PASSED (426.17s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl1: PASSED (100.46s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl0_cl2: PASSED (120.00s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_hipc_cluster_cl1_cl2: PASSED (161.80s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl1: PASSED (37.34s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl0_cl2: PASSED (36.80s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cl1_cl2: PASSED (37.10s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster0: PASSED (102.31s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster1: PASSED (95.50s)
+  RESULTS - test_30_hipc.HIPCTestBase.test_ping_cluster2: PASSED (92.91s)
+  RESULTS - test_30_ptp.PTPTest.test_ptp_linux_services: PASSED (4.56s)
+  RESULTS - test_30_ptp.PTPTest.test_ptp_si_clients: PASSED (34.73s)
 
 .. note::
     There is a rare known failure where a timeout might occur during test execution. Refer to
@@ -1909,33 +1909,33 @@ To run the validation tests:
      menu.
   4. Select ``Build``.
 
-The complete test suite takes around 30 minutes to complete on
-an x86_64 host. See :ref:`validation_hipc_demo` for more details.
+The complete test suite takes around 90 minutes to complete. See
+:ref:`validation_hipc_demo` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
-  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster0: PASSED (184.76s)
-  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster1: PASSED (192.63s)
-  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster2: PASSED (215.54s)
-  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl1: PASSED (46.24s)
-  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl2: PASSED (55.92s)
-  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl1_cl2: PASSED (71.76s)
-  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl1: PASSED (35.27s)
-  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl2: PASSED (35.55s)
-  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl1_cl2: PASSED (35.71s)
-  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster0: PASSED (89.74s)
-  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster1: PASSED (91.10s)
-  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster2: PASSED (89.06s)
-  RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster1: PASSED (178.85s)
-  RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster1: PASSED (90.27s)
-  RESULTS - test_30_ptp.PTPTest.test_ptp_linux_services: PASSED (3.99s)
-  RESULTS - test_30_ptp.PTPTest.test_ptp_si_clients: PASSED (27.96s)
-  RESULTS - test_30_ptp.PTPTestDomU1.test_ptp_domu_client: PASSED (27.41s)
-  RESULTS - test_30_ptp.PTPTestDomU1.test_ptp_linux_services: PASSED (0.80s)
-  RESULTS - test_30_ptp.PTPTestDomU2.test_ptp_domu_client: PASSED (28.63s)
-  RESULTS - test_30_ptp.PTPTestDomU2.test_ptp_linux_services: PASSED (0.76s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster0: PASSED (311.77s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster1: PASSED (389.55s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster2: PASSED (413.83s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl1: PASSED (114.97s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl0_cl2: PASSED (138.32s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl1_cl2: PASSED (182.33s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl1: PASSED (60.64s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl0_cl2: PASSED (61.63s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cl1_cl2: PASSED (61.06s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster0: PASSED (153.76s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster1: PASSED (154.39s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster2: PASSED (153.34s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster1: PASSED (365.17s)
+  RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster1: PASSED (152.43s)
+  RESULTS - test_30_ptp.PTPTest.test_ptp_linux_services: PASSED (7.17s)
+  RESULTS - test_30_ptp.PTPTest.test_ptp_si_clients: PASSED (47.37s)
+  RESULTS - test_30_ptp.PTPTestDomU1.test_ptp_domu_client: PASSED (50.57s)
+  RESULTS - test_30_ptp.PTPTestDomU1.test_ptp_linux_services: PASSED (1.38s)
+  RESULTS - test_30_ptp.PTPTestDomU2.test_ptp_domu_client: PASSED (50.31s)
+  RESULTS - test_30_ptp.PTPTestDomU2.test_ptp_linux_services: PASSED (1.48s)
 
 .. note::
     There is a rare known failure where a timeout might occur during test execution. Refer to
@@ -2090,14 +2090,14 @@ To run the validation tests:
      menu.
   4. Select ``Build``.
 
-The complete test suite takes around 25 minutes to complete on an x86_64
-host. See :ref:`validation_parsec_enabled_tls_demo` for more details.
+The complete test suite takes around 45 minutes to complete. See
+:ref:`validation_parsec_enabled_tls_demo` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
-  RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: PASSED (263.85s)
+  RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: PASSED (479.25s)
 
 .. note::
     There is a rare known failure where a timeout might occur during test execution. Refer to
@@ -2236,15 +2236,15 @@ To run the validation tests:
      menu.
   4. Select ``Build``.
 
-The complete test suite takes around 25 minutes to complete on an x86_64
-host. See :ref:`validation_trusted_services_tests` for more details.
+The complete test suite takes around 40 minutes to complete. See
+:ref:`validation_trusted_services_tests` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
-   RESULTS - test_50_trusted_services.KronosTrustedServices.test_03_psa_crypto_api_test: PASSED (134.31s)
-   RESULTS - test_50_trusted_services.KronosTrustedServices.test_05_psa_ps_api_test: PASSED (16.88s)
+   RESULTS - test_50_trusted_services.KronosTrustedServices.test_03_psa_crypto_api_test: PASSED (298.70s)
+   RESULTS - test_50_trusted_services.KronosTrustedServices.test_05_psa_ps_api_test: PASSED (68.88s)
 
 .. note::
     There is a rare known failure where a timeout might occur during test execution. Refer to
@@ -2366,8 +2366,8 @@ To run the validation tests:
      menu.
   3. Select ``Build``.
 
-The complete test suite takes around 10 minutes to complete on
-an x86_64 host. See :ref:`validation_si_psa_arch_tests` for more details.
+The complete test suite takes around 15 minutes to complete. See
+:ref:`validation_si_psa_arch_tests` for more details.
 
 The following message is expected in the output to validate this Use-Case:
 
@@ -2429,7 +2429,7 @@ Run the tests
 ^^^^^^^^^^^^^
 
 The tests will automatically run after the FVP is started. The complete test
-suite takes around 5 minutes to complete on an x86_64 host.
+suite takes around 5 minutes to complete.
 When the tests finish, a log similar to the following should be visible.
 Normally no failure should be seen::
 
@@ -2465,14 +2465,14 @@ To run the validation tests:
      menu.
   3. Select ``Build``.
 
-The complete test suite takes around 25 minutes to complete on
-an x86_64 host. See :ref:`validation_si_psa_arch_tests` for more details.
+The complete test suite takes around 35 minutes to complete. See
+:ref:`validation_si_psa_arch_tests` for more details.
 
 The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
-   RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster0: PASSED (269.99s)
+   RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster0: PASSED (0.01s)
    RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster1: PASSED (0.01s)
    RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.01s)
 
@@ -2708,27 +2708,28 @@ To run the validation tests:
      menu.
   4. Select ``Build``.
 
+The complete test suite takes around 45 minutes to complete. See
+:ref:`validation_fault_management` for more details.
+
 The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
-  RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_ce_not_ok: PASSED (31.65s)
-  RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_compl_ok: PASSED (26.17s)
-  RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_nce_ok: PASSED (25.80s)
-  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_clear: PASSED (21.17s)
-  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_count: PASSED (11.32s)
-  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_list: PASSED (77.61s)
-  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_summary: PASSED (26.37s)
-  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_gic_fmu_inject: PASSED (252.64s)
-  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_system_fmu_internal_inject: PASSED (5.62s)
-  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_system_fmu_internal_set_enabled: PASSED (10.37s)
-  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_tree: PASSED (0.16s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_ce_not_ok: PASSED (38.18s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_compl_ok: PASSED (30.66s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_nce_ok: PASSED (29.24s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_clear: PASSED (11.24s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_count: PASSED (6.04s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_list: PASSED (36.22s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_summary: PASSED (22.64s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_gic_fmu_inject: PASSED (18.69s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_system_fmu_internal_inject: PASSED (8.77s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_system_fmu_internal_set_enabled: PASSED (11.09s)
+  RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_tree: PASSED (0.71s)
 
 .. note::
     There is a rare known failure where a timeout might occur during test execution. Refer to
     :ref:`releasenotes_knownissues` for possible workarounds.
-
-See :ref:`validation_fault_management` for more details.
 
 .. _user_guide_reproduce_arm_systemready_ir_validation:
 

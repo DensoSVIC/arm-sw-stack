@@ -288,7 +288,7 @@ RSS communication
 
 The RSS communication protocol is designed to be a lightweight serialization of
 the ``psa_call()`` API through a combination of in-band MHUv3
-(Message Handling Unit) transport and parameter-passing through shared memory.
+(Message Handling Unit) transport and parameter-passing through Shared Memory.
 
 To call an RSS service, the client must send a message in-band over the MHUv3
 sender link to RSS and wait for a reply message on the MHUv3 receiver.
