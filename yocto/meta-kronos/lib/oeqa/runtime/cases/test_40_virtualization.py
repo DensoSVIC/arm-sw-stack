@@ -13,6 +13,8 @@ from oeqa.runtime.cases.fvp_devices import FvpDevicesTest
 from oeqa.runtime.cases.test_40_gicv4_1 import GICv4Test
 from oeqa.runtime.cases.test_40_parsec import ParsecTest
 from oeqa.utils.xen_utils import XenUtils
+from oeqa.utils.linux_terminal_utils import LinuxTermUtils
+from oeqa.utils.kronos_config import KronosConfig
 
 
 class DomUTest(OERuntimeTestCase):
@@ -21,45 +23,18 @@ class DomUTest(OERuntimeTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.linux_console = cls.tc.target.DEFAULT_CONSOLE
-        # Use negative lookahead to match Dom0 prompt, so match every prompt
-        # that is not of this guest
-        cls.dom0_prompt = \
-            rf'root@(?!{cls.domu_hostname})fvp-rd-kronos:~#'
+
         cls.linux_prompt = rf'root@{cls.domu_hostname}:~#'
-        cls.console = cls.tc.target._get_terminal(cls.linux_console)
-        XenUtils.enter_guest_from_dom0(cls.console, cls.dom0_prompt,
-                                       cls.linux_prompt, cls.domu_hostname)
+        linux_console = XenUtils.spawn_console_domu(cls.linux_prompt,
+                                                    KronosConfig.dom0_prompt,
+                                                    cls.domu_hostname,
+                                                    cls.tc.target,
+                                                    cls.tc.logger)
+        cls.lt_utils = LinuxTermUtils(cls.tc, linux_console,
+                                      cls.linux_prompt)
 
     def run_cmd(self, cmd, timeout=400, check=True):
-        # Get the output of the command
-        cmd_echo = re.compile(re.escape(cmd))
-        self.target.sendline(self.linux_console, cmd)
-        check_line = ""
-        # Here we try to delete the Xen output for maximum 5 consecutive lines
-        for _ in range(5):
-            line = self.target.readline(self.linux_console)
-            line = line.decode("utf-8", errors="replace").strip()
-            check_line += re.sub(r'\(XEN\).*$', "", line).replace('\r\n', '')
-            if cmd_echo.search(check_line):
-                break
-
-        if not cmd_echo.search(check_line):
-            self.fail(f"Unable to check echo for command:\n'{cmd}'"
-                      f"\nCommand line content: '{check_line}'")
-
-        self.target.expect(self.linux_console,
-                           self.linux_prompt, timeout=timeout)
-        output = self.target.before(self.linux_console)
-        output = output.decode("utf-8", errors="replace").strip()
-
-        # Get the exit code of the command
-        self.target.sendline(self.linux_console, 'echo $?')
-        self.target.expect(self.linux_console, r'[0-9]+\r\r\n', timeout=90)
-        matches = self.target.match(self.linux_console)
-        status = int(matches[0].decode("utf-8", errors="replace").strip())
-        self.target.expect(self.linux_console, self.linux_prompt, timeout=200)
-
+        status, output = self.lt_utils.run(cmd, timeout)
         if status and check:
             self.fail("Command '%s' returned non-zero exit "
                       "status %d:\n%s" % (cmd, status, output))
@@ -68,8 +43,9 @@ class DomUTest(OERuntimeTestCase):
 
     @classmethod
     def tearDownClass(cls):
-        XenUtils.exit_guest_to_dom0(cls.console, cls.dom0_prompt,
-                                    cls.linux_prompt, cls.domu_hostname)
+        XenUtils.close_console_domu(cls.lt_utils, cls.linux_prompt,
+                                    KronosConfig.dom0_prompt,
+                                    cls.domu_hostname, cls.tc.logger)
         super().tearDownClass()
 
 
