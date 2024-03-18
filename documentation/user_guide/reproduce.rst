@@ -3216,7 +3216,10 @@ Follow the steps below to achieve the same:
  1. Ensure that the tmux window titled ``terminal_ns_uart0`` is selected.
     If not, press ``Ctrl-b w`` from the tmux session, navigate to the tmux
     window titled ``terminal_ns_uart0`` followed by pressing the ``Enter`` key.
- 2. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_rss_uart -h``
+ 2. The user should wait for the U-Boot ``Hit any key to stop autoboot``
+    to appear.
+ 3. Press any key before the time limit to enter the U-Boot shell.
+ 4. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_rss_uart -h``
     followed by pressing the ``Enter`` key to join the RSS terminal window to
     the Primary Compute terminal window.
 
@@ -3234,10 +3237,7 @@ Run the Demo
 
 To start Secure Firmware Update:
 
-1. The user should wait for the U-Boot ``Hit any key to stop
-   autoboot`` to appear.
-2. Press any key before the time limit to enter the U-Boot shell.
-3. In the U-Boot shell, run the following commands to start Secure Firmware
+1. In the U-Boot shell, run the following commands to start Secure Firmware
    Update:
 
    .. note::
@@ -3249,7 +3249,7 @@ To start Secure Firmware Update:
       fatload mmc 0:1 0xa2000000 fw.cap
       efidebug capsule update -v 0xa2000000
 
-4. The system will automatically start upgrading the firmware capsule.
+2. The system will automatically start upgrading the firmware capsule.
    **Note: This time there is no need to press any keys.**
 
    The following logs indicate that the upgrade process has started and is in
@@ -3287,7 +3287,7 @@ To start Secure Firmware Update:
 
    **Note: This step will take about 10 minutes.**
 
-5. The system will reset after a successful firmware update and boot with the
+3. The system will reset after a successful firmware update and boot with the
    updated firmware. This can be confirmed by checking the terminal logs; if
    there are lines in the log like below, then the upgrade was successful and
    the system has successfully rebooted with the updated firmware.
@@ -3302,9 +3302,9 @@ To start Secure Firmware Update:
       ...
       [INF]:[FWU]: get_fwu_agent_state: enter, boot_index = 1
 
-6. The system will eventually boot into Linux using the upgraded firmware.
+4. The system will eventually boot into Linux using the upgraded firmware.
 
-7. To shut down the FVP and terminate the emulation, select the terminal titled
+5. To shut down the FVP and terminate the emulation, select the terminal titled
    as ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0``
    and press ``Ctrl-c`` to stop the FVP process.
 
