@@ -87,14 +87,14 @@ following steps:
   2. The firmware upgrade process is initiated from the UEFI UpdateCapsule
      runtime service.
   3. The capsule image is then read and copied from the Primary Compute
-     disk to the shared memory between the Primary Compute and RSS.
+     disk to the Shared Memory between the Primary Compute and RSS.
   4. The Capsule Update service in SE Proxy SP handles the firmware update
      request. It then sends a request to the RSS Platform Runtime Service to
      handle the firmware update request.
   5. Once the RSS Platform service receives the firmware update request, it
      firstly carries out validations of the header of the capsule, the version
      of the images, and the counter of the images, then copies the image from
-     the shared memory to the RSS flash, and finally updates the image to the
+     the Shared Memory to the RSS flash, and finally updates the image to the
      Bank-0 or the Bank-1 of the RSS flash and Primary Compute Secure Flash.
   6. The system will reset after a successful firmware update and boot from
      the bank with the new firmware images. If the firmware update fails, when
