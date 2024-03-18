@@ -6,4 +6,4 @@
 
 SRC_URI_CAM ?= "git://git.gitlab.arm.com/automotive-and-industrial/safety-island/critical-app-monitoring.git;protocol=https"
 BRANCH_CAM ?= "branch=main"
-SRCREV_CAM ?= "aa36180c79cc6b95e5a29a90141773c503c064be"
+SRCREV_CAM ?= "e42e43837def8f406db8aed03ae5dccf568a5090"
