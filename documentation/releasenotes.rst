@@ -30,7 +30,7 @@ The main components versions used in the Reference Software Stack:
     - Source
   * - Kronos Reference Design FVP (FVP_RD_Kronos)
     - 11.25.15
-    - `FVP download`_
+    - `FVP download (x86 host)`_ `FVP download (arm64 host)`_
   * - RSS (Trusted Firmware-M)
     - 53aa78efef274b9e46e63b429078ae1863609728 (based on master branch post v1.8.1)
     - `Trusted Firmware-M repository`_
