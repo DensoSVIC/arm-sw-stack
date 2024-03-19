@@ -262,8 +262,6 @@ rst_prolog = f"""
 .. _EULA: https://developer.arm.com/downloads/-/arm-ecosystem-fvps/eula
 .. _Embedded Base Boot Requirements (EBBR): https://developer.arm.com/architectures/platform-design/embedded-systems
 .. _Ethernet Bridging API: https://docs.zephyrproject.org/apidoc/{zephyr_version}/group__eth__bridge.html
-.. _FVP download (x86 host): https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Automotive%20FVPs/FVP_RD_Kronos_11.25_15_Linux64.tgz
-.. _FVP download (arm64 host): https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Automotive%20FVPs/FVP_RD_Kronos_11.25_15_Linux64_armv8l.tgz
 .. _Fast Models FVP Reference Guide: https://developer.arm.com/documentation/100966/latest
 .. _GICv4.1 - Direct injection of virtual interrupts: https://developer.arm.com/documentation/107627/0101/GICv4-1---Direct-injection-of-virtual-interrupts
 .. _GitLab Issues: https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/kronos/-/issues
