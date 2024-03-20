@@ -339,7 +339,7 @@ rst_prolog = f"""
 .. _libts: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/libraries.html#libts
 .. _openSUSE Installation Guide: https://doc.opensuse.org/documentation/leap/startup/html/book-startup/part-basics.html
 .. _openSUSE Leap: https://download.opensuse.org/distribution/leap/
-.. _testimage.bbclass: https://docs.yoctoproject.org/{yocto_doc_version}ref-manual/classes.html#testimage-bbclass
+.. _testimage.bbclass: https://docs.yoctoproject.org/{yocto_doc_version}ref-manual/classes.html#testimage
 .. _xen-command-line options: https://xenbits.xen.org/docs/{xen_version}-testing/misc/xen-command-line.html#dom0
 .. _xl configuration: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.cfg.5.html#Architecture-Specific-options
 .. _xl documentation: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.1.html
