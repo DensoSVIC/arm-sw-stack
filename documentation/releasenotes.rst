@@ -179,3 +179,6 @@ Known Issues
   * The automated validation might rarely fail due to timeouts related to the
     host CPU frequency and throttling, if this happens then simply running the
     automated validation again would fix such as issue.
+
+  * Refer to `Critical Application Monitoring Known Issues <https://critical-app-monitoring.docs.arm.com/en/v1.0/release_notes.html#known-issues>`_
+    for CAM-related known issues.
