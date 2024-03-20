@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -30,34 +30,34 @@ class PTPTestBase(OERuntimeTestCase):
                            timeout=60)
 
     def check_zephyr_state(self, cl_console, expect_sync, max_tries=1):
-        def state(role):
-            return rf' 1\s+0x[0-9a-f]+ \[1\]\s+{role}'
+        def id_str(role):
+            return rf'Port id    : 1 \({role}\)'
+
+        def as_str(capable):
+            return rf'AS capable : {capable}'
 
         # The port can be in different states after a de-sync, depending on the
         # timing. We only expect it not to be in "client" mode anymore.
         # /* cspell:disable-next-line */
         sync_role = 'SLAVE'
-        desync_role = rf'[A-Z]+\b(?<!{sync_role})'
-        pattern = [state(desync_role), state(sync_role)]
+        desync_role = rf'[A-Z\-]+\b(?<!{sync_role})'
+        id_pattern = [id_str(desync_role), id_str(sync_role)]
+        as_pattern = [as_str('no'), as_str('yes')]
 
         tries = 0
         while tries < max_tries:
-            self.target.sendline(cl_console, 'net gptp')
-            match = self.target.expect(cl_console, pattern, timeout=60)
+            self.target.sendline(cl_console, 'net gptp 1')
+            id_match = self.target.expect(cl_console, id_pattern, timeout=60)
+            as_match = self.target.expect(cl_console, as_pattern, timeout=60)
             self.target.expect(cl_console, self.si_prompt, timeout=60)
 
-            if match == expect_sync:
+            if id_match == expect_sync and (as_match or not expect_sync):
                 break
 
             tries += 1
             sleep(1)
 
         self.assertLess(tries, max_tries)
-
-        if expect_sync:
-            self.target.sendline(cl_console, 'net gptp 1')
-            self.target.expect(cl_console, 'AS capable : yes', timeout=60)
-            self.target.expect(cl_console, self.si_prompt, timeout=60)
 
     def linux_ctrl_c(self):
         self.target.sendcontrol(self.linux_console, 'C')

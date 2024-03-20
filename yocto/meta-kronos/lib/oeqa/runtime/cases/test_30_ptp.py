@@ -39,6 +39,9 @@ class PTPTest(PTPTestBase):
         # Breakdown test into several loops in order to optimize wait time on
         # state machine changes.
         for i in range(self.nb_clusters):
+            self.target.sendline(cl_console(i))
+            self.target.expect(cl_console(i), self.si_prompt, timeout=60)
+
             self.check_zephyr_state(cl_console(i), True, 60)
 
             # Check for year 2XXX, as Zephyr gets initialized to 1970
