@@ -518,7 +518,7 @@ the ``.csd`` files.
     Stream 3 sends event 0
     ...
 
-   The fault happens 100ms after stream initialization. At that time
+   The fault happens 1000ms after stream initialization. At that time
    ``cam-service`` should detect a stream temporal error with the following
    output from the SI Cluster 1 terminal.
 
@@ -1206,7 +1206,7 @@ the ``.csd`` files.
        # Repeated event messages
        ...
 
-    The fault happens 100ms after stream initialization. At that time
+    The fault happens 1000ms after stream initialization. At that time
     ``cam-service`` should detect a stream temporal error with the following
     output from the SI Cluster 1 terminal.
 
