@@ -3177,7 +3177,8 @@ Build
 
 The to be updated firmware capsule for testing will be generated together with
 the image for the software stack when building. The firmware capsule is placed
-on a removable storage device (in the case of Kronos, an MMC card).
+on a removable storage device (in the case of Kronos, an MMC card implementation
+in the FVP).
 
 Ensure the presence of new flash images because previously updated firmware
 will lead to failure of the secure firmware update.
