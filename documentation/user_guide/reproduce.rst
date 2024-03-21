@@ -830,7 +830,7 @@ the ``.csd`` files.
       Processing count in each run:           [10]
 
       Event ID        timeout
-      0               15061660
+      0               4000072
 
    The stream configuration files contain human-readable settings used for the
    deployment phase of a critical application. Users can modify this
@@ -1006,7 +1006,7 @@ the ``.csd`` files.
        Processing count in each run:           [5]
 
        Event ID        timeout
-       0               3000066
+       0               3000001
 
     The stream configuration files contain human-readable settings used for the
     deployment phase of a critical application. Users can modify this
