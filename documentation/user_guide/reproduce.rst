@@ -2765,8 +2765,15 @@ To build the Arm SystemReady IR-aligned firmware image:
    ``Arm SystemReady IR Validation`` from the ``Use-Case`` menu.
 2. Select ``Build``.
 
-The firmware artifacts can be found in the directory
+The firmware images listed below can be found in the directory
 ``build/tmp_systemready-glibc/deploy/images/fvp-rd-kronos/``.
+
+ * ``ap-flash-image-fvp-rd-kronos.wic``
+ * ``encrypted_cm_provisioning_bundle_0.bin``
+ * ``encrypted_dm_provisioning_bundle.bin``
+ * ``rss-flash-image-fvp-rd-kronos.wic``
+ * ``rss-nvm-image.bin``
+ * ``rss-rom-image-fvp-rd-kronos.wic.nopt``
 
 .. _user_guide_reproduce_sr_ir_acs:
 
