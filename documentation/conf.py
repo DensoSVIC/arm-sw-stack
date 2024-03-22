@@ -210,7 +210,7 @@ rst_prolog = f"""
 .. |layer dependency statement| replace:: {kronos_version} branch
 .. |meta-arm branch| replace:: kronos-{yocto_version}
 .. |meta-arm repository| replace:: https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/meta-arm
-.. |meta-arm revision| replace:: 516e71784a428c5298c89b59e95d83b730367d3b
+.. |meta-arm revision| replace:: 5e4851a884985b952b33f6f88a8724fbbe5300ec
 .. |meta-cassini branch| replace:: {yocto_version}
 .. |meta-cassini repository| replace:: https://gitlab.com/Linaro/cassini/meta-cassini
 .. |meta-cassini revision| replace:: {cassini_version}
