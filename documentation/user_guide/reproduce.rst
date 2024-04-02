@@ -569,7 +569,7 @@ firmware will lead to failure of the tests.
 
 .. code-block:: text
 
-  kas shell -c "bitbake ap-flash-image rss-flash-image -C image"
+  kas shell -c "bitbake firmware-fvp-rd-kronos -C deploy"
 
 To run the configuration menu:
 
@@ -2768,12 +2768,12 @@ To build the Arm SystemReady IR-aligned firmware image:
 The firmware images listed below can be found in the directory
 ``build/tmp_systemready-glibc/deploy/images/fvp-rd-kronos/``.
 
- * ``ap-flash-image-fvp-rd-kronos.wic``
+ * ``ap-flash-image.img``
  * ``encrypted_cm_provisioning_bundle_0.bin``
  * ``encrypted_dm_provisioning_bundle.bin``
- * ``rss-flash-image-fvp-rd-kronos.wic``
- * ``rss-nvm-image.bin``
- * ``rss-rom-image-fvp-rd-kronos.wic.nopt``
+ * ``rss-flash-image.img``
+ * ``rss-nvm-image.img``
+ * ``rss-rom-image.img``
 
 .. _user_guide_reproduce_sr_ir_acs:
 
@@ -3167,7 +3167,7 @@ firmware will lead to failure of the secure firmware update tests.
 
 .. code-block:: text
 
-  kas shell -c "bitbake ap-flash-image rss-flash-image -C image"
+  kas shell -c "bitbake firmware-fvp-rd-kronos -C deploy"
 
 To run the configuration menu:
 
@@ -3299,7 +3299,7 @@ firmware will lead to failure of the tests.
 
 .. code-block:: text
 
-  kas shell -c "bitbake ap-flash-image rss-flash-image -C image"
+  kas shell -c "bitbake firmware-fvp-rd-kronos -C deploy"
 
 To run the configuration menu:
 

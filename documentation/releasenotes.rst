@@ -18,6 +18,9 @@ New Features
 Changed
 =======
 
+* Assemble the firmware images using genimage from the meta-ptx Yocto layer instead of
+  wks/wic images.
+
 ****
 v1.0
 ****
