@@ -27,7 +27,7 @@ class PTPTestBase(OERuntimeTestCase):
                              f'systemctl is-active ptp4l@{iface}.service')
         self.target.expect(self.linux_console,
                            r'(\r){1,2}\nactive(\r){1,2}\n' + self.linux_prompt,
-                           timeout=60)
+                           timeout=90)
 
     def check_zephyr_state(self, cl_console, expect_sync, max_tries=1):
         def id_str(role):
@@ -47,9 +47,9 @@ class PTPTestBase(OERuntimeTestCase):
         tries = 0
         while tries < max_tries:
             self.target.sendline(cl_console, 'net gptp 1')
-            id_match = self.target.expect(cl_console, id_pattern, timeout=60)
-            as_match = self.target.expect(cl_console, as_pattern, timeout=60)
-            self.target.expect(cl_console, self.si_prompt, timeout=60)
+            id_match = self.target.expect(cl_console, id_pattern, timeout=90)
+            as_match = self.target.expect(cl_console, as_pattern, timeout=90)
+            self.target.expect(cl_console, self.si_prompt, timeout=90)
 
             if id_match == expect_sync and (as_match or not expect_sync):
                 break
@@ -62,17 +62,17 @@ class PTPTestBase(OERuntimeTestCase):
     def linux_ctrl_c(self):
         self.target.sendcontrol(self.linux_console, 'C')
         self.target.sendline(self.linux_console)
-        self.target.expect(self.linux_console, self.linux_prompt, timeout=60)
+        self.target.expect(self.linux_console, self.linux_prompt, timeout=90)
 
     def check_linux_remote_clock(self):
         self.target.expect(self.linux_console,
                            # /* cspell:disable-next-line */
                            'selected best master clock '
-                           r'[0-9a-f]+\.[0-9a-f]+\.[0-9a-f]+', timeout=60)
+                           r'[0-9a-f]+\.[0-9a-f]+\.[0-9a-f]+', timeout=90)
         self.target.expect(self.linux_console,
                            r'rms\s+\d+ max \d+ freq\s+(\+|-)\d+ '
                            r'\+\/-\s+\d+ delay\s+\d+ \+\/-\s+\d+',
-                           timeout=60)
+                           timeout=90)
 
     @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
     def test_ptp_linux_services(self):

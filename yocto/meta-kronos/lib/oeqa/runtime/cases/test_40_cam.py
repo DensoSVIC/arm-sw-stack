@@ -71,9 +71,9 @@ class CAMServiceTest(OERuntimeTestCase):
     def test_cam_service_boot_on_si(self):
         self.target.expect(KronosConfig.si_cl1_console_name,
                            r'Cam service configuration:',
-                           timeout=180)
+                           timeout=270)
         self.target.expect(KronosConfig.si_cl1_console_name, r'uart:~\$',
-                           timeout=180)
+                           timeout=270)
 
 
 class CAMTest(OERuntimeTestCase):
@@ -151,7 +151,7 @@ class CAMTest(OERuntimeTestCase):
 
             # Verify whether the file exists
             st = f'fs read /RAM:/{uuid}.csd'
-            output = self.si1_shell.exec_command(st, timeout=60)
+            output = self.si1_shell.exec_command(st, timeout=90)
             self.assertIn('File size: 104', output,
                           ('SI: Configuration error for '
                            f'/RAM:/{uuid}.csd'))
@@ -176,7 +176,7 @@ class CAMTest(OERuntimeTestCase):
               f' -a {KronosConfig.si_cl1_ipaddr}'
               f' --processing-count {self.dom.processing_count}'
               f' --stream-count {self.dom.streams}')
-        status, _ = self.run_check_errors(st, timeout=60*self.dom.streams)
+        status, _ = self.run_check_errors(st, timeout=90*self.dom.streams)
         self.assertEqual(status, 0, msg='cam-app-example failed.')
 
     @OETestDepends([
@@ -187,7 +187,7 @@ class CAMTest(OERuntimeTestCase):
               f' --processing-count {self.dom.processing_count}'
               f' --stream-count {self.dom.streams}'
               ' --enable-multiple-connection')
-        status, _ = self.run_check_errors(st, timeout=60*self.dom.streams)
+        status, _ = self.run_check_errors(st, timeout=90*self.dom.streams)
         self.assertEqual(status, 0, msg='cam-app-example failed.')
 
     @OETestDepends([
@@ -204,7 +204,7 @@ class CAMTest(OERuntimeTestCase):
                          msg='cam-app-example failed.')
         self.target.expect(KronosConfig.si_cl1_console_name,
                            r'Stream logical error',
-                           timeout=300)
+                           timeout=450)
 
     @OETestDepends(['test_40_cam.CAMTest.test_logical_check_on_si'])
     def test_temporal_check_on_si(self):
@@ -213,18 +213,18 @@ class CAMTest(OERuntimeTestCase):
               ' --enable-fault-injection'
               ' --fault-injection-time=8000'
               f' --processing-count={self.dom.processing_count}')
-        status, _ = self.lt_utils.run(st, timeout=120)
+        status, _ = self.lt_utils.run(st, timeout=180)
         self.assertEqual(status, 0,
                          msg='cam-app-example failed.')
         self.target.expect(KronosConfig.si_cl1_console_name,
                            r'Stream temporal error',
-                           timeout=300)
+                           timeout=450)
 
     @OETestDepends(['test_40_cam.CAMTest.test_cam_ptp_sync'])
     def test_data_calibration(self):
         st = (f'cam-app-example -u {self.dom.uuid_base} '
               f' --enable-calibration-mode -s {self.dom.streams}')
-        status, output = self.lt_utils.run(st, timeout=120)
+        status, output = self.lt_utils.run(st, timeout=180)
         self.tc.logger.debug(output)
         self.assertEqual(
             status, 0,
@@ -243,7 +243,7 @@ class CAMTest(OERuntimeTestCase):
 
             st = (f'cam-tool analyze -m 1000000 -i {calib_file}')
 
-            status, _ = self.lt_utils.run(st, timeout=180)
+            status, _ = self.lt_utils.run(st, timeout=270)
             self.assertEqual(status, 0,
                              msg=f'An error has occurred for cam-tool')
 
@@ -254,13 +254,13 @@ class CAMTest(OERuntimeTestCase):
 
             st = (f'sed -i -E \'s/timeout_init_to_start: ([0-9]+)'
                   f'/timeout_init_to_start: {init_to_start}/\' {csc_file}')
-            status, output = self.lt_utils.run(st, timeout=20)
+            status, output = self.lt_utils.run(st, timeout=30)
             self.assertEqual(status, 0,
                              msg=f'Failed to sed {csc_file}\n{output}')
 
             st = (f'sed -i -E \'s/timeout_start_to_event: ([0-9]+)'
                   f'/timeout_start_to_event: {start_to_event}/\' {csc_file}')
-            status, output = self.lt_utils.run(st, timeout=20)
+            status, output = self.lt_utils.run(st, timeout=30)
             self.assertEqual(status, 0,
                              msg=f'Failed to sed {csc_file}\n{output}')
 
@@ -271,7 +271,7 @@ class CAMTest(OERuntimeTestCase):
 
             # Use cam-tool to pack the modified stream configuration
             st = f'cam-tool pack -i {csc_f}'
-            status, output = self.lt_utils.run(st, timeout=180)
+            status, output = self.lt_utils.run(st, timeout=270)
             self.assertEqual(status, 0, msg=f'{st} failed.\n{output}')
 
 

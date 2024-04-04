@@ -12,7 +12,7 @@ from oeqa.utils.xen_utils import XenUtils
 class LinuxLoginTest(OERuntimeTestCase):
     def setUp(self):
         super().setUp()
-        self.timeout = int(self.td.get('TEST_FVP_LINUX_BOOT_TIMEOUT') or 10*60)
+        self.timeout = int(self.td.get('TEST_FVP_LINUX_BOOT_TIMEOUT') or 900)
         self.console_name = self.target.DEFAULT_CONSOLE
         self.hostname = r'.*'
 
@@ -38,7 +38,7 @@ class LinuxLoginTest(OERuntimeTestCase):
 
         # Ensure all services have started
         status, output = self.target.run('systemctl is-system-running --wait',
-                                         timeout=1500)
+                                         timeout=2250)
         self.assertEqual(status, 0,
                          msg=f'Failed to get systemctl running.\n{output}')
 

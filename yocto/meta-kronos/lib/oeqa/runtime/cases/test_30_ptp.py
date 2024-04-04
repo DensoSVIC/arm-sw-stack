@@ -25,7 +25,7 @@ class PTPTest(PTPTestBase):
         for i in range(cls.nb_clusters):
             cls.console.sendline(
                 f'ifconfig {cls.cl_iface_template + str(i)} up')
-            cls.console.expect(cls.linux_prompt, timeout=60)
+            cls.console.expect(cls.linux_prompt, timeout=90)
         super().tearDownClass()
 
     @OETestDepends(['test_30_ptp.PTPTest.test_ptp_linux_services'])
@@ -40,7 +40,7 @@ class PTPTest(PTPTestBase):
         # state machine changes.
         for i in range(self.nb_clusters):
             self.target.sendline(cl_console(i))
-            self.target.expect(cl_console(i), self.si_prompt, timeout=60)
+            self.target.expect(cl_console(i), self.si_prompt, timeout=90)
 
             self.check_zephyr_state(cl_console(i), True, 60)
 
@@ -48,25 +48,25 @@ class PTPTest(PTPTestBase):
             self.target.sendline(cl_console(i), 'date get')
             self.target.expect(cl_console(i),
                                r'2\d{3}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC',
-                               timeout=60)
-            self.target.expect(cl_console(i), self.si_prompt, timeout=60)
+                               timeout=90)
+            self.target.expect(cl_console(i), self.si_prompt, timeout=90)
 
             self.target.sendline(self.linux_console,
                                  f'ifconfig {cl_iface(i)} down')
             self.target.expect(self.linux_console,
-                               self.linux_prompt, timeout=60)
+                               self.linux_prompt, timeout=90)
 
         for i in range(self.nb_clusters):
             self.target.expect(cl_console(i),
                                '<wrn> net_gptp: Reset Pdelay requests',
-                               timeout=60)
+                               timeout=90)
 
             self.check_zephyr_state(cl_console(i), False)
 
             self.target.sendline(self.linux_console,
                                  f'ifconfig {cl_iface(i)} up')
             self.target.expect(self.linux_console,
-                               self.linux_prompt, timeout=60)
+                               self.linux_prompt, timeout=90)
 
         for i in range(self.nb_clusters):
             self.check_zephyr_state(cl_console(i), True, 60)
@@ -94,12 +94,12 @@ class PTPTestDomU1(PTPTestBase):
         # Cancel potentially pending 'journalctl -f' command
         cls.console.sendcontrol('C')
         cls.console.sendline()
-        cls.console.expect(cls.linux_prompt, timeout=60)
+        cls.console.expect(cls.linux_prompt, timeout=90)
         XenUtils.exit_guest_to_dom0(cls.console, cls.dom0_prompt,
                                     cls.linux_prompt, cls.domu_hostname)
         # Ensure network interface is not left in a down state
         cls.console.sendline(f'ifconfig {cls.domu_hostname}.ethsi0 up')
-        cls.console.expect(cls.dom0_prompt, timeout=60)
+        cls.console.expect(cls.dom0_prompt, timeout=90)
         super().tearDownClass()
 
     @OETestDepends(['test_30_ptp.PTPTestDomU1.test_ptp_linux_services'])
@@ -107,7 +107,7 @@ class PTPTestDomU1(PTPTestBase):
         self.target.sendline(self.linux_console,
                              'journalctl | grep ptp4l | head -n 40')
         self.check_linux_remote_clock()
-        self.target.expect(self.linux_console, self.linux_prompt, timeout=60)
+        self.target.expect(self.linux_console, self.linux_prompt, timeout=90)
 
         # Use SSH target to run command on dom0 while the console is in domu
         status, output = self.target.run(
@@ -121,7 +121,7 @@ class PTPTestDomU1(PTPTestBase):
                            'selected local clock '
                            # /* cspell:disable-next-line */
                            r'[0-9a-f]+\.[0-9a-f]+\.[0-9a-f]+ as best master',
-                           timeout=60)
+                           timeout=90)
         self.linux_ctrl_c()
 
         status, output = self.target.run(

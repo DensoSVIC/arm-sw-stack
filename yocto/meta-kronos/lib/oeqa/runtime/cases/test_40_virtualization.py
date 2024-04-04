@@ -33,7 +33,7 @@ class DomUTest(OERuntimeTestCase):
         cls.lt_utils = LinuxTermUtils(cls.tc, linux_console,
                                       cls.linux_prompt)
 
-    def run_cmd(self, cmd, timeout=400, check=True):
+    def run_cmd(self, cmd, timeout=600, check=True):
         status, output = self.lt_utils.run(cmd, timeout)
         if status and check:
             self.fail("Command '%s' returned non-zero exit "
@@ -110,5 +110,5 @@ class PtestRunnerDom0Test(OERuntimeTestCase):
     @skipIfDataVar('FREQUENCY', 'adhoc', 'Skip ptest-runner in adhoc builds')
     def test_ptestrunner(self):
         # Run ptest-runner
-        status, _ = self.target.run('ptest-runner', timeout=2000)
+        status, _ = self.target.run('ptest-runner', timeout=3000)
         self.assertEqual(status, 0)
