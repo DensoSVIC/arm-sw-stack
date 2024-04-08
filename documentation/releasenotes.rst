@@ -8,6 +8,16 @@
 Release Notes
 #############
 
+**********
+Unreleased
+**********
+
+New Features
+============
+
+Changed
+=======
+
 ****
 v1.0
 ****
