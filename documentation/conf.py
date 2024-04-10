@@ -254,7 +254,7 @@ rst_prolog = f"""
 .. _Crypto Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/crypto-service-description.html
 .. _CycloneDDS: https://cyclonedds.io/docs/cyclonedds/latest/about_dds/eclipse_cyclone_dds.html
 .. _Data Distribution Service: https://www.dds-foundation.org/what-is-dds-3
-.. _Debian GNU/Linux Installation Guide: https://www.debian.org/releases/bullseye/arm64/
+.. _Debian GNU/Linux Installation Guide: https://www.debian.org/releases/bookworm/arm64/
 .. _Debian Stable: https://www.debian.org/releases/stable/
 .. _Device Tree specification: https://www.devicetree.org/
 .. _EBBR Specification - Required Platform Specific Elements: https://arm-software.github.io/ebbr/index.html#required-platform-specific-elements

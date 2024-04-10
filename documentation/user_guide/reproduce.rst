@@ -2963,33 +2963,8 @@ install process begins when you see the following:
 
 Select ``Install`` to start the installation process.
 
-The following are problems that have been encountered during the Debian
-installation process and how to solve them:
-
-* Detect and mount installation media
-
-  1. After the installer starts, a tab titled
-     ``Detect and mount installation media`` will appear with
-     ``No device for installation media was detected.``
-     When prompted with ``Load drivers from removable media?``
-     select ``No`` to continue.
-
-  2. For ``Manually select a module and device for installation media?`` select
-     ``Yes``.
-
-  3. For ``Module needed for accessing the installation media:`` select
-     ``none``.
-
-  4. For ``Device file for accessing the installation media:`` input
-     ``/dev/mmcblk0`` as the device file for accessing the installation media,
-     then select ``Continue``.
-
-  .. image:: ../images/sr-ir-linux-distro-debian-install-media.*
-     :align: center
-     :width: 60 %
-     :alt: Detect and Mount Installation Media Device File - Debian Linux Distro Installation
-
-|
+The following is the problem that has been encountered during the Debian
+installation process and how to solve it:
 
 * Install the GRUB boot loader
 
