@@ -18,8 +18,8 @@ New Features
 Changed
 =======
 
-* Assemble the firmware images using genimage from the meta-ptx Yocto layer instead of
-  wks/wic images.
+* Assemble the firmware images using genimage from the meta-ptx Yocto layer instead of wks/wic images
+* Updated support from openSUSE 15.4 to 15.5
 
 ****
 v1.0
