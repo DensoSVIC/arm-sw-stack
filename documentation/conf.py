@@ -151,7 +151,7 @@ meta_arm_version = os.environ.get(
 # Common variables for rst_prolog
 actuation_version = "v2.0"
 cassini_version = "nanbield-dev"
-critical_application_monitoring_version = "v1.0"
+critical_application_monitoring_version = "main"
 fvp_version = "11.25.3"
 kas_version = "4.2"
 linux_version = "6.1"
