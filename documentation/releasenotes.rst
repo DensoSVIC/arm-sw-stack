@@ -21,6 +21,7 @@ Changed
 * Assemble the firmware images using genimage from the meta-ptx Yocto layer instead of wks/wic images
 * Updated support from openSUSE 15.4 to 15.5
 * Updated support from Debian 11.7 to 12.4
+* Added compiler tuning for Cortex-R82 to the Zephyr toolchain
 
 ****
 v1.0

@@ -1,0 +1,147 @@
+From 25aaed66f23c808cd99a27dd5d7c10a7a61ca373 Mon Sep 17 00:00:00 2001
+From: Debbie Martin <Debbie.Martin@arm.com>
+Date: Thu, 18 Apr 2024 19:09:54 +0100
+Subject: [PATCH] arch: arm: cortex-r: Add compiler tuning for Cortex-R82
+
+Change the GCC toolchain configuration to make use of the Cortex-R82
+target. When Cortex-R82 was added as a GCC toolchain option, the GCC
+version of the Zephyr SDK did not support Cortex-R82 tuning. Zephyr was
+therefore compiled compiled for the Armv8.4-A architecture. Since Zephyr
+SDK 0.15.0 (which updated GCC from 10.3.0 to 12.1.0) coupled with Zephyr
+3.2, the Cortex-R82 target is supported.
+
+The Armv8-R AArch64 architecture does not support the EL3 exception level.
+EL3 support is therefore made conditional on Armv8-R vs Armv8-A.
+
+Signed-off-by: Debbie Martin <Debbie.Martin@arm.com>
+Upstream-Status: Backport [882238116e6732a16b004ec0152fa6abfde6f20c]
+---
+ arch/arm64/core/fatal.c                 | 2 ++
+ arch/arm64/core/reset.S                 | 5 +++++
+ arch/arm64/core/reset.c                 | 5 +++++
+ cmake/gcc-m-cpu.cmake                   | 2 +-
+ include/zephyr/arch/arm64/lib_helpers.h | 4 +++-
+ 5 files changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm64/core/fatal.c b/arch/arm64/core/fatal.c
+index 5d475e4c655..84ff767508e 100644
+--- a/arch/arm64/core/fatal.c
++++ b/arch/arm64/core/fatal.c
+@@ -313,11 +313,13 @@ void z_arm64_fatal_error(unsigned int reason, z_arch_esf_t *esf)
+ 			far = read_far_el1();
+ 			elr = read_elr_el1();
+ 			break;
++#if !defined(CONFIG_ARMV8_R)
+ 		case MODE_EL3:
+ 			esr = read_esr_el3();
+ 			far = read_far_el3();
+ 			elr = read_elr_el3();
+ 			break;
++#endif /* CONFIG_ARMV8_R */
+ 		}
+
+ #ifdef CONFIG_ARM64_STACK_PROTECTION
+diff --git a/arch/arm64/core/reset.S b/arch/arm64/core/reset.S
+index cfcffec4ce7..5e406bea132 100644
+--- a/arch/arm64/core/reset.S
++++ b/arch/arm64/core/reset.S
+@@ -43,6 +43,7 @@ SECTION_SUBSEC_FUNC(TEXT,_reset_section,__reset_prep_c)
+
+ 	switch_el x0, 3f, 2f, 1f
+ 3:
++#if !defined(CONFIG_ARMV8_R)
+ 	/* Reinitialize SCTLR from scratch in EL3 */
+ 	ldr	w0, =(SCTLR_EL3_RES1 | SCTLR_I_BIT | SCTLR_SA_BIT)
+ 	msr	sctlr_el3, x0
+@@ -55,6 +56,7 @@ SECTION_SUBSEC_FUNC(TEXT,_reset_section,__reset_prep_c)
+ 	msr     sp_el1, x24
+
+ 	b	out
++#endif /* CONFIG_ARMV8_R */
+ 2:
+ 	/* Disable alignment fault checking */
+ 	mrs	x0, sctlr_el2
+@@ -216,7 +218,9 @@ stack_init_done:
+
+ switch_el:
+ 	switch_el x0, 3f, 2f, 1f
++
+ 3:
++#if !defined(CONFIG_ARMV8_R)
+ 	/* EL3 init */
+ 	bl	z_arm64_el3_init
+
+@@ -224,6 +228,7 @@ switch_el:
+ 	adr	x0, switch_el
+ 	bl	z_arm64_el3_get_next_el
+ 	eret
++#endif /* CONFIG_ARMV8_R */
+
+ 2:
+ 	/* EL2 init */
+diff --git a/arch/arm64/core/reset.c b/arch/arm64/core/reset.c
+index f96783318f4..03cf389007d 100644
+--- a/arch/arm64/core/reset.c
++++ b/arch/arm64/core/reset.c
+@@ -41,6 +41,8 @@ void z_arm64_el_highest_init(void)
+ 	barrier_isync_fence_full();
+ }
+
++
++#if !defined(CONFIG_ARMV8_R)
+ enum el3_next_el {
+ 	EL3_TO_EL2,
+ 	EL3_TO_EL1_NO_EL2,
+@@ -113,6 +115,7 @@ void z_arm64_el3_init(void)
+ 		z_arm64_el2_init();
+ 	}
+ }
++#endif /* CONFIG_ARMV8_R */
+
+ void z_arm64_el2_init(void)
+ {
+@@ -195,6 +198,7 @@ void z_arm64_el1_init(void)
+ 	barrier_isync_fence_full();
+ }
+
++#if !defined(CONFIG_ARMV8_R)
+ void z_arm64_el3_get_next_el(uint64_t switch_addr)
+ {
+ 	uint64_t spsr;
+@@ -214,3 +218,4 @@ void z_arm64_el3_get_next_el(uint64_t switch_addr)
+
+ 	write_spsr_el3(spsr);
+ }
++#endif /* CONFIG_ARMV8_R */
+diff --git a/cmake/gcc-m-cpu.cmake b/cmake/gcc-m-cpu.cmake
+index ae10132dfc0..8b02d7bee86 100644
+--- a/cmake/gcc-m-cpu.cmake
++++ b/cmake/gcc-m-cpu.cmake
+@@ -83,7 +83,7 @@ elseif("${ARCH}" STREQUAL "arm64")
+   elseif(CONFIG_CPU_CORTEX_A72)
+     set(GCC_M_CPU cortex-a72)
+   elseif(CONFIG_CPU_CORTEX_R82)
+-    set(GCC_M_ARCH armv8.4-a+nolse)
++    set(GCC_M_CPU cortex-r82)
+   endif()
+ elseif("${ARCH}" STREQUAL "arc")
+   if(CONFIG_CPU_EM4_FPUS)
+diff --git a/include/zephyr/arch/arm64/lib_helpers.h b/include/zephyr/arch/arm64/lib_helpers.h
+index 56dfa1f9365..0f3d9d563ab 100644
+--- a/include/zephyr/arch/arm64/lib_helpers.h
++++ b/include/zephyr/arch/arm64/lib_helpers.h
+@@ -70,8 +70,10 @@ MAKE_REG_HELPER(hcr_el2);
+ MAKE_REG_HELPER(id_aa64pfr0_el1);
+ MAKE_REG_HELPER(id_aa64mmfr0_el1);
+ MAKE_REG_HELPER(mpidr_el1);
+-MAKE_REG_HELPER(par_el1)
++MAKE_REG_HELPER(par_el1);
++#if !defined(CONFIG_ARMV8_R)
+ MAKE_REG_HELPER(scr_el3);
++#endif /* CONFIG_ARMV8_R */
+ MAKE_REG_HELPER(tpidrro_el0);
+ MAKE_REG_HELPER(vmpidr_el2);
+ MAKE_REG_HELPER(sp_el0);
+--
+2.25.1
+

@@ -128,7 +128,7 @@ Boot Loaders
 ============
 
 Refer to :ref:`design_boot_process_rss-oriented_boot_flow` for more details
-on the boot process. 
+on the boot process.
 
 Runtime
 =======
@@ -609,7 +609,7 @@ SVE2
 
 The Scalable Vector Extension version two (SVE2) is enabled in Xen. This feature
 is used as an extension to AArch64, to allow for flexible vector length
-implementations. 
+implementations.
 
 SVE vector length can be specified as an optional parameter along with enabling
 SVE2. The allowed values are from 128 to maximum 2048 limited by the hardware
@@ -678,7 +678,7 @@ SVE2
 
 The Scalable Vector Extension version two (SVE2) is enabled in Linux. This
 feature is used as an extension to AArch64, to allow for flexible vector length
-implementations. 
+implementations.
 
 For more information on SVE2, refer to `SVE2 guide`_.
 
@@ -779,3 +779,4 @@ related to:
  * Fixing gPTP message generation correctness
  * Fixing gPTP packet priority
  * Conforming to the gPTP VLAN rules
+ * Adding compiler tuning for Cortex-R82

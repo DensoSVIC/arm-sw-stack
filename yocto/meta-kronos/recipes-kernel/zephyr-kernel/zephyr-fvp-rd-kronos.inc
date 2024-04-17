@@ -21,6 +21,7 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0007-lib-posix-Support-realtime-timer.patch;patchdir=zephyr \
     file://zephyr/0008-mbedtls-Enable-missing-algorithms-for-psa-arch-tests.patch;patchdir=zephyr \
     file://zephyr/0009-mbedtls-Add-rss-driver-to-build.patch;patchdir=zephyr \
+    file://zephyr/0010-arch-arm-cortex-r-Add-compiler-tuning-for-Cortex-R82.patch;patchdir=zephyr \
     "
 # /* cSpell:enable */
 
