@@ -137,8 +137,9 @@ latex_elements = {
 yocto_version = "nanbield"
 
 kronos_version = os.environ.get(
-    'RTD_ENV_KRONOS_VERSION',
-    'main')
+    'READTHEDOCS_GIT_IDENTIFIER',
+    os.environ.get(
+    'CI_COMMIT_REF_NAME', 'main'))
 
 # The following variables are mostly used for pdf generation
 version = kronos_version
