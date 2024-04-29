@@ -139,7 +139,7 @@ yocto_version = "nanbield"
 kronos_version = os.environ.get(
     'READTHEDOCS_GIT_IDENTIFIER',
     os.environ.get(
-    'CI_COMMIT_REF_NAME', 'main'))
+        'CI_COMMIT_REF_NAME', 'main'))
 
 # The following variables are mostly used for pdf generation
 version = kronos_version
