@@ -16,13 +16,13 @@ header:
 
 defaults:
   repos:
-    branch: nanbield
+    branch: scarthgap
 
 repos:
   meta-cassini:
     url: https://gitlab.com/Linaro/cassini/meta-cassini
     path: layers/meta-cassini
-    branch: nanbield-dev
+    branch: scarthgap-dev
     layers:
       meta-cassini-distro:
       meta-cassini-bsp: excluded

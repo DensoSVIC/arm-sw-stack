@@ -603,6 +603,7 @@ rxlen
 SATA
 SBDF
 sbindir
+scarthgap
 sched
 SCMI
 securefirmwareupdate

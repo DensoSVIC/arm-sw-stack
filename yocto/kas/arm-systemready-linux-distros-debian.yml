@@ -15,14 +15,14 @@ header:
 
 defaults:
   repos:
-    branch: nanbield
+    branch: scarthgap
 
 repos:
   meta-arm:
     url: >-
       https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/meta-arm
     path: layers/meta-arm
-    branch: kronos-nanbield
+    branch: kronos-scarthgap
 
 local_conf_header:
   arm-systemready-linux-distros: |

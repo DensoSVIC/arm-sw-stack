@@ -134,7 +134,7 @@ latex_elements = {
 
 # The variable yocto_version needs to come first because
 # there are variables that refer to it later.
-yocto_version = "nanbield"
+yocto_version = "scarthgap"
 
 kronos_version = os.environ.get(
     'READTHEDOCS_GIT_IDENTIFIER',
@@ -151,7 +151,7 @@ meta_arm_version = os.environ.get(
 
 # Common variables for rst_prolog
 actuation_version = "v2.0"
-cassini_version = "nanbield-dev"
+cassini_version = "scarthgap-dev"
 critical_application_monitoring_version = "main"
 fvp_version = "11.25.3"
 kas_version = "4.2"
