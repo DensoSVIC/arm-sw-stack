@@ -4,6 +4,9 @@
 #
 # SPDX-License-Identifier: MIT
 
+# tag: RELEASE-4.18.0
+SRCREV = "d75f1e9b74314cea91ce435730d4e3539ecca77d"
+
 # These patches are applied to both xen and xen-tools on the
 # fvp-rd-kronos MACHINE
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
