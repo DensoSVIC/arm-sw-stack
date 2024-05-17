@@ -104,6 +104,7 @@ FEATURE_PACKAGES_virtualization = " \
     "
 
 FEATURE_PACKAGES_domu = " \
+    kernel-module-pci-host-generic \
     kronos-network-conf \
     packagegroup-core-boot \
     systemd-conf-kronos \

@@ -16,7 +16,7 @@ IMAGE_FSTYPES = "cpio.gz"
 inherit features_check
 REQUIRED_IMAGE_FEATURES = "domu"
 CONFLICT_IMAGE_FEATURES = "baremetal virtualization"
-COMPATIBLE_MACHINE = "generic-arm64"
+COMPATIBLE_MACHINE = "genericarm64"
 
 DOMU_HOSTNAME ?= "domu"
 

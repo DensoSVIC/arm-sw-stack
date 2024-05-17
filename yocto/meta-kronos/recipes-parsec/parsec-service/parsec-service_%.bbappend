@@ -10,4 +10,4 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 PACKAGECONFIG:cassini-parsec = "${@bb.utils.contains('IMAGE_FEATURES', 'baremetal', \
                                'TS', 'MBED-CRYPTO', d)}"
 
-PACKAGECONFIG:generic-arm64 = "MBED-CRYPTO"
+PACKAGECONFIG:genericarm64 = "MBED-CRYPTO"
