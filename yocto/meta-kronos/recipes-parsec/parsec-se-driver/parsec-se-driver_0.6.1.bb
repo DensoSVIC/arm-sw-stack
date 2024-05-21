@@ -21,19 +21,22 @@ DESCRIPTION = "An implementation of a PSA Secure Element using the Parsec \
 HOMEPAGE = "https://github.com/parallaxsecond/parsec-se-driver"
 LICENSE = "Apache-2.0"
 
-DEPENDS = "mbedtls"
-
 PV = "${PARSEC_version}+git${SRCPV}"
 
-SRC_URI = "git://github.com/parallaxsecond/parsec-se-driver.git;protocol=https;branch=main"
+SRC_URI = "\
+    git://github.com/parallaxsecond/parsec-se-driver.git;protocol=https;branch=main;name=parsec-se-driver \
+    git://github.com/ARMmbed/mbedtls.git;protocol=https;branch=development;name=mbedtls;destsuffix=git/mbedtls \
+    "
+SRCREV_FORMAT = "parsec-se-driver"
 SRCREV = "3cefcf9e527f998f4ad43b4ea807fc3ea44769eb"
+SRCREV_mbedtls = "1ec69067fa1351427f904362c1221b31538c8b57"
 S = "${WORKDIR}/git"
 
 inherit cargo
 
 PARSEC_version = "0.6.1"
 
-export MBEDTLS_INCLUDE_DIR = "${STAGING_INCDIR}"
+export MBEDTLS_INCLUDE_DIR = "${S}/mbedtls/include"
 
 TOOLCHAIN = "clang"
 
