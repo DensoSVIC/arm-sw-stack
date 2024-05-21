@@ -21,6 +21,7 @@ SRC_URI:append = " file://kronos-kmeta-extra;type=kmeta;name=kronos-kmeta-extra;
 
 KERNEL_FEATURES:append = "\
     features/arm-mhuv3/arm-mhuv3.scc \
+    features/bpf/bpf.scc \
     features/mailbox/mailbox.scc \
     features/remoteproc/remoteproc.scc \
     features/rpmsg-virtio/rpmsg-virtio.scc \
