@@ -48,6 +48,10 @@ repos:
         path: >-
           yocto/kas/patches/0001-python3-twisted-prepend-split-PACKAGES.patch
 
+  meta-security:
+    patches:
+      0001-parsec-Bump-trusted-services:
+
   meta-zephyr:
     url: https://git.yoctoproject.org/git/meta-zephyr
     path: layers/meta-zephyr
