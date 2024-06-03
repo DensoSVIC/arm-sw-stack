@@ -285,8 +285,8 @@ off-the-shelf operating systems and hypervisors. Refer to
 Linux Distribution Installation
 ===============================
 
-Demonstrates the installation of two unmodified generic UEFI distribution
-images, Debian and openSUSE, fulfilling Arm SystemReady requirements.
+Demonstrates the installation of three unmodified generic UEFI distribution
+images, Debian, openSUSE and Fedora, fulfilling Arm SystemReady requirements.
 
 Secure Firmware Update
 ======================

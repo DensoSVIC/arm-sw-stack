@@ -257,6 +257,8 @@ rst_prolog = f"""
 .. _Data Distribution Service: https://www.dds-foundation.org/what-is-dds-3
 .. _Debian GNU/Linux Installation Guide: https://www.debian.org/releases/bookworm/arm64/
 .. _Debian Stable: https://www.debian.org/releases/stable/
+.. _Fedora Server: https://fedoraproject.org/server/download/
+.. _Fedora Installation Guide: https://docs.fedoraproject.org/en-US/fedora/latest/getting-started/
 .. _Device Tree specification: https://www.devicetree.org/
 .. _EBBR Specification - Required Platform Specific Elements: https://arm-software.github.io/ebbr/index.html#required-platform-specific-elements
 .. _EBBR Specification - UEFI Runtime Services: https://arm-software.github.io/ebbr/index.html#uefi-runtime-services

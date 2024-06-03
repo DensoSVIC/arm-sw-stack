@@ -126,11 +126,6 @@ non-alignments:
 
   * Tests are not compatible with certain devices in the RD-Kronos model.
 
-* Distro installation
-
-  * Only two Linux distro installations are performed (Debian and openSUSE),
-    rather than the requisite three.
-
 ************************
 Arm SystemReady IR Tests
 ************************
@@ -165,7 +160,7 @@ To run the tests, refer to :ref:`user_guide_reproduce_sr_ir_acs`.
 Linux Distributions Installation Tests
 ======================================
 
-The Arm SystemReady IR requires that at least two Linux distros must be able
+The Arm SystemReady IR requires that at least three Linux distros must be able
 to boot and install using the UEFI boot flow.
 
 Recipes for testing the installation of Linux distributions are provided under

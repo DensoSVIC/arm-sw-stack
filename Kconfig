@@ -45,13 +45,16 @@ config USE_CASE_IR_FIRMWARE
 config USE_CASE_IR_ACS
     bool "Arm SystemReady IR Architecture Compliance Suite (ACS) Tests"
 
-comment "Linux Distribution Installation (Debian and openSUSE)"
+comment "Linux Distribution Installation (Debian, openSUSE and Fedora)"
 
 config USE_CASE_LINUX_DISTRO_DEBIAN
     bool "Debian Linux Distro Installation"
 
 config USE_CASE_LINUX_DISTRO_OPENSUSE
     bool "openSUSE Linux Distro Installation"
+
+config USE_CASE_LINUX_DISTRO_FEDORA
+    bool "Fedora Linux Distro Installation"
 
 endchoice
 
@@ -89,6 +92,7 @@ config KAS_INCLUDE_ARCHITECTURE
     default "yocto/kas/arm-systemready-ir-acs.yml" if USE_CASE_IR_ACS
     default "yocto/kas/arm-systemready-linux-distros-debian.yml" if USE_CASE_LINUX_DISTRO_DEBIAN
     default "yocto/kas/arm-systemready-linux-distros-opensuse.yml" if USE_CASE_LINUX_DISTRO_OPENSUSE
+    default "yocto/kas/arm-systemready-linux-distros-fedora.yml" if USE_CASE_LINUX_DISTRO_FEDORA
 
 config KAS_INCLUDE_APPLICATION
     string

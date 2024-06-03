@@ -2890,14 +2890,14 @@ ACS tests are set up and how they work in the Reference Software Stack.
 
 .. _user_guide_reproduce_arm_systemready_ir_linux:
 
-Linux Distribution Installation (Debian and openSUSE)
-=====================================================
+Linux Distribution Installation (Debian, openSUSE and Fedora)
+=============================================================
 
-The Arm SystemReady IR-aligned firmware must boot at least two unmodified
+The Arm SystemReady IR-aligned firmware must boot at least three unmodified
 generic UEFI distribution images from an ISO image.
 
-This Software Stack currently supports two Linux distributions: `Debian Stable`_
-and `openSUSE Leap`_.
+This Software Stack currently supports three Linux distributions: `Debian Stable`_,
+`openSUSE Leap`_ and `Fedora Server`_.
 
 .. note::
 
@@ -2933,7 +2933,7 @@ To run the configuration menu:
 To build the Arm SystemReady IR Linux distros installation tests:
 
 1. Select ``Debian Linux Distro Installation`` under
-   ``Linux Distribution Installation (Debian and openSUSE)`` from the
+   ``Linux Distribution Installation (Debian, openSUSE and Fedora)`` from the
    ``Use-Case`` menu.
 2. Select ``Build``.
 
@@ -3061,7 +3061,7 @@ To run the configuration menu:
 To build the Arm SystemReady IR Linux distros installation tests:
 
 1. Select ``openSUSE Linux Distro Installation`` under
-   ``Linux Distribution Installation (Debian and openSUSE)`` from the
+   ``Linux Distribution Installation (Debian, openSUSE and Fedora)`` from the
    ``Use-Case`` menu.
 2. Select ``Build``.
 
@@ -3142,6 +3142,200 @@ Select ``Installation`` to start the installation process.
          reboot: Power down
 
   Subsequently running the FVP will boot into openSUSE.
+
+Fedora
+------
+
+To install Fedora, you can refer to the `Fedora Installation Guide`_.
+
+Distro Installation Media Preparation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To run the configuration menu:
+
+.. code-block:: text
+
+  kas menu kronos/Kconfig
+
+To build the Arm SystemReady IR Linux distros installation tests:
+
+1. Select ``Fedora Linux Distro Installation`` under
+   ``Linux Distribution Installation (Debian, openSUSE and Fedora)`` from the
+   ``Use-Case`` menu.
+2. Select ``Build``.
+
+.. image:: ../images/kronos_reference_stack_build_config_sr_distro_fedora.*
+   :align: center
+   :width: 60 %
+   :alt: Kronos Reference Software Stack Build Configuration Menu - Fedora Linux Distro Installation
+
+|
+
+Distro Installation
+^^^^^^^^^^^^^^^^^^^
+
+Run the following command to start the installation:
+
+.. code-block:: text
+
+  kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
+
+The whole process of installing Fedora will probably take about 24 hours. The
+install process begins when you see the following:
+
+    .. image:: ../images/sr-ir-linux-distro-fedora-install-grub.*
+       :align: center
+       :width: 60 %
+       :alt: Grub Install Options Menu - Fedora Linux Distro Installation
+
+Select ``Install Fedora 39`` to start the installation process.
+
+Here are some tips for installing Fedora:
+
+1. It will take a few minutes for GRUB to load the installer, kernel and initrd.
+2. Once the installer has started, enter ``2`` to choose ``Use text mode``.
+
+   .. code-block:: console
+
+      Starting installer, one moment...
+      anaconda 38.23.4-2.fc38 for Fedora 38 started.
+       * installation log files are stored in /tmp during the installation
+       * shell is available on TTY2 and in second TMUX pane (ctrl+b, then press 2)
+       * when reporting a bug add logs from /tmp as separate text/plain attachments
+
+      X or window manager startup failed, falling back to text mode.
+      ================================================================================
+      ================================================================================
+      X was unable to start on your machine. Would you like to start VNC to connect to
+      this computer from another computer and perform a graphical installation or
+      continue with a text mode installation?
+
+      1) Start VNC
+      2) Use text mode
+
+      Please make a selection from the above ['c' to continue, 'h' to help, 'q' to
+      quit, 'r' to refresh]: 2
+
+3. When reaching the installation menu, you will see several items marked as ``!``
+   which indicates that the item needs to be configured before proceeding.
+
+   .. code-block:: console
+
+      ================================================================================
+      ================================================================================
+      Installation
+
+      1) [x] Language settings                 2) [x] Time settings
+             (English (United States))                (America/Chicago timezone)
+      3) [!] Installation source               4) [!] Software selection
+             (Setting up installation                 (Processing...)
+             source...)
+      5) [!] Installation Destination          6) [x] Network configuration
+             (Processing...)                          (Connected: eth0)
+      7) [!] Root password                     8) [!] User creation
+             (Root account is disabled)               (No user will be created)
+
+      Please make a selection from the above ['b' to begin installation, 'h' to help,
+      'q' to quit, 'r' to refresh]:
+
+   For ``3) [!] Installation source``, enter ``3``, then ``1`` to select
+   ``CD/DVD``.
+
+   .. code-block:: console
+
+      ================================================================================
+      ================================================================================
+      Installation source
+
+      Choose an installation source type.
+      1) CD/DVD
+      2) local ISO file
+      3) Network
+
+      Please make a selection from the above ['c' to continue, 'h' to help, 'q' to
+      quit, 'r' to refresh]: 1
+
+   For ``4) [!] Software selection``, enter ``4``, then ``c`` to continue.
+
+   For ``5) [!] Installation Destination``, enter ``5``, then ``c`` to select
+   the default options.
+
+   For ``6) [!] Network configuration``, it will automatically change to ``x``.
+
+   For ``7) [!] Root password``, follow the prompts to enter the password and
+   confirm.
+
+   After entering root password, ``8) [ ] User creation`` becomes optional and
+   can be skipped.
+
+   The final configuration should now appear as follows:
+
+   .. code-block:: console
+
+      ================================================================================
+      ================================================================================
+      Installation
+
+      1) [x] Language settings                 2) [x] Time settings
+             (English (United States))                (America/Chicago timezone)
+      3) [x] Installation source               4) [x] Software selection
+             (Local media)                            (Fedora Server Edition)
+      5) [x] Installation Destination          6) [x] Network configuration
+             (Automatic partitioning                  (Connected: eth0)
+             selected)
+      7) [x] Root password                     8) [ ] User creation
+             (Root password is set)                   (No user will be created)
+
+      Please make a selection from the above ['b' to begin installation, 'h' to help,
+      'q' to quit, 'r' to refresh]: 
+
+   Now enter ``b`` to start the installation.
+
+4. The installer is expected to stay at ``Configuring kernel-core.aarch64``
+   for several hours. The installer will then verify the installed packages
+   and continue to install the boot loader.
+5. The following error is expected while installing the boot loader. Ignore the
+   error by responding ``yes`` and continue.
+
+   .. code-block:: console
+
+      Installing boot loader
+      ================================================================================
+      ================================================================================
+      Question
+
+      The following error occurred while installing the boot loader. The system will
+      not be bootable. Would you like to ignore this and continue with installation?
+
+      Failed to set new efi boot target. This is most likely a kernel or firmware bug.
+
+      Please respond 'yes' or 'no': yes
+
+      [anaconda]1:main* 2:shell  3:log  4:storage-log >Switch tab: Alt+Tab | Help: F1
+
+* Log in
+
+  When the installation reaches the final ``Finishing the installation``
+  phase, you will need to wait some time to finish the remaining tasks,
+  and then it will automatically reboot into the installed OS. You can log into
+  the Linux shell with the user created during installation.
+
+* Terminate the FVP
+
+  To shut down the FVP and terminate the emulation automatically, log into the
+  Linux shell as the root user then run the following command.
+
+      .. code-block:: text
+
+         shutdown now
+
+  The below message indicates the shutdown process is complete.
+
+      .. code-block:: text
+
+         reboot: Power down
+
+  Subsequently running the FVP will boot into Fedora.
 
 .. _user_guide_reproduce_secure_firmware_update:
 
