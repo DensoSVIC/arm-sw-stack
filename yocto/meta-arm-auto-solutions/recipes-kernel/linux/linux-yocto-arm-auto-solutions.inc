@@ -17,7 +17,7 @@ SRC_URI_EXTRA_PATCHES = "\
     file://0005-xen-netback-add-software-timestamp-capabilities.patch \
     "
 SRC_URI += "${SRC_URI_EXTRA_PATCHES}"
-SRC_URI:append = " file://kronos-kmeta-extra;type=kmeta;name=kronos-kmeta-extra;destsuffix=kronos-kmeta-extra"
+SRC_URI:append = " file://arm-auto-solutions-kmeta-extra;type=kmeta;name=arm-auto-solutions-kmeta-extra;destsuffix=arm-auto-solutions-kmeta-extra"
 
 KERNEL_FEATURES:append = "\
     features/arm-mhuv3/arm-mhuv3.scc \

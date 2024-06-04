@@ -7,7 +7,7 @@
 
 SUMMARY = "Xen PCI Passthrough disk image"
 DESCRIPTION = "Deploy an empty disk image that can be used for Xen PCI Passthrough"
-HOMEPAGE = "https://kronos-ref-stack.docs.arm.com/"
+HOMEPAGE = "https://arm-auto-solutions.docs.arm.com/"
 LICENSE = "MIT"
 
 inherit deploy

@@ -5,16 +5,16 @@
 # SPDX-License-Identifier: MIT
 
 [Unit]
-Description=Kronos Open vSwitch network configuration
+Description=Arm Automotive Solutions Open vSwitch network configuration
 After=openvswitch.service
 PartOf=network.target
 Requires=openvswitch.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/sbin/kronos-ovs.sh start
-ExecReload=/usr/sbin/kronos-ovs.sh reload
-ExecStop=/usr/sbin/kronos-ovs.sh stop
+ExecStart=/usr/sbin/arm-auto-solutions-ovs.sh start
+ExecReload=/usr/sbin/arm-auto-solutions-ovs.sh reload
+ExecStop=/usr/sbin/arm-auto-solutions-ovs.sh stop
 RemainAfterExit=yes
 
 [Install]

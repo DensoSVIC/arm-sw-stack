@@ -6,7 +6,7 @@ Subject: [PATCH] program: ssl: Lower DEBUG_LEVEL for ssl_client1 program
 The 'ssl_client1' program was generating excessive output. This commit
 lowers the DEBUG_LEVEL to 0 to reduce verbosity.
 
-Upstream-Status: Inappropriate [Kronos-specific]
+Upstream-Status: Inappropriate [Arm Automotive Solutions-specific]
 Signed-off-by: Jiamei Xie <jiamei.xie@arm.com>
 ---
  programs/ssl/ssl_client1.c | 2 +-

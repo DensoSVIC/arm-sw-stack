@@ -72,15 +72,15 @@ FEATURE_PACKAGES_COMMON = " \
     arm-si-rproc-mod \
     iptables \
     kernel-module-openvswitch \
-    kronos-network-conf \
+    arm-auto-solutions-network-conf \
     openvswitch \
     packagegroup-core-boot \
     packagegroup-core-ssh-openssh \
     packagegroup-machine-base \
     packagegroup-security-parsec \
     rpmsg-net-mod \
-    systemd-conf-kronos \
-    systemd-ovs-kronos \
+    systemd-conf-arm-auto-solutions \
+    systemd-ovs-arm-auto-solutions \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 
@@ -105,9 +105,9 @@ FEATURE_PACKAGES_virtualization = " \
 
 FEATURE_PACKAGES_domu = " \
     kernel-module-pci-host-generic \
-    kronos-network-conf \
+    arm-auto-solutions-network-conf \
     packagegroup-core-boot \
-    systemd-conf-kronos \
+    systemd-conf-arm-auto-solutions \
     podman \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
@@ -120,11 +120,11 @@ CAM_PACKAGES ?= "cam-app-example cam-tool linuxptp"
 FEATURE_PACKAGES_cam = "${CAM_PACKAGES}"
 FEATURE_PACKAGES_cam:virtualization = "linuxptp"
 
-KRONOS_EXTRA_IMAGEDEPENDS = ""
-KRONOS_EXTRA_IMAGEDEPENDS:actuation = "packet-analyzer-native:do_addto_recipe_sysroot"
+ARM_AUTO_SOLUTIONS_EXTRA_IMAGEDEPENDS = ""
+ARM_AUTO_SOLUTIONS_EXTRA_IMAGEDEPENDS:actuation = "packet-analyzer-native:do_addto_recipe_sysroot"
 
-EXTRA_IMAGEDEPENDS:append:baremetal = " ${KRONOS_EXTRA_IMAGEDEPENDS}"
-EXTRA_IMAGEDEPENDS:append:virtualization = " ${KRONOS_EXTRA_IMAGEDEPENDS}"
+EXTRA_IMAGEDEPENDS:append:baremetal = " ${ARM_AUTO_SOLUTIONS_EXTRA_IMAGEDEPENDS}"
+EXTRA_IMAGEDEPENDS:append:virtualization = " ${ARM_AUTO_SOLUTIONS_EXTRA_IMAGEDEPENDS}"
 
 FEATURE_PACKAGES_hipc-validation = "iperf linuxptp"
 FEATURE_PACKAGES_hipc-validation:virtualization = "linuxptp"

@@ -9,7 +9,7 @@ injection.
 
 Signed-off-by: Penny Zheng <penny.zheng@arm.com>
 Signed-off-by: Luca Fancellu <luca.fancellu@arm.com>
-Upstream-Status: Inappropriate [Kronos-specific]
+Upstream-Status: Inappropriate [Arm Automotive Solutions-specific]
 ---
  tools/libs/light/libxl_arm.c           |   18 +
  tools/libs/light/libxl_types.idl       |    4 +-

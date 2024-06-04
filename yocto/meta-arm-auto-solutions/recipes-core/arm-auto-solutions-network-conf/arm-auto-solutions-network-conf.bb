@@ -4,10 +4,10 @@
 #
 # SPDX-License-Identifier: MIT
 
-SUMMARY = "Kronos network configuration"
+SUMMARY = "Arm Automotive Solutions network configuration"
 DESCRIPTION = "Systemd configuration files for network interfaces \
-for the Kronos stacks"
-HOMEPAGE = "https://kronos-ref-stack.docs.arm.com/"
+for Arm Automotive Solutions"
+HOMEPAGE = "https://arm-auto-solutions.docs.arm.com/"
 LICENSE = "MIT"
 # License file is in "layers/poky/meta/files/common-licenses".
 # nooelint: oelint.var.licenseremotefile

@@ -7,7 +7,7 @@
 SUMMARY = "Xen DomU package"
 DESCRIPTION = "A recipe to bundle a DomU image and configuration as a package \
 which can be installed in Dom0"
-HOMEPAGE = "https://kronos-ref-stack.docs.arm.com/"
+HOMEPAGE = "https://arm-auto-solutions.docs.arm.com/"
 
 LICENSE = "MIT"
 # License file is in "layers/poky/meta/files/common-licenses".

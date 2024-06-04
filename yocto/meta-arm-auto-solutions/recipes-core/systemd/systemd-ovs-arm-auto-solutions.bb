@@ -4,8 +4,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-SUMMARY = "Systemd Open vSwitch bridges Kronos configuration"
-DESCRIPTION = "Systemd service to setup the network switches for Kronos"
+SUMMARY = "Systemd Open vSwitch bridges Arm Automotive Solutions configuration"
+DESCRIPTION = "Systemd service to setup the network switches for Arm Automotive Solutions"
 HOMEPAGE = "http://www.freedesktop.org/wiki/Software/systemd"
 LICENSE = "MIT"
 # License file is in "layers/poky/meta/files/common-licenses".
@@ -15,8 +15,8 @@ LIC_FILES_CHKSUM = "\
     "
 
 SRC_URI = "\
-    file://ovs-kronos-ovsbr0.service;subdir=src \
-    file://kronos-ovs.sh;subdir=src \
+    file://ovs-arm-auto-solutions-ovsbr0.service;subdir=src \
+    file://arm-auto-solutions-ovs.sh;subdir=src \
     "
 
 SRC_URI:append:virtualization = " \
@@ -30,14 +30,14 @@ inherit features_check systemd
 REQUIRED_DISTRO_FEATURES = "systemd"
 
 SYSTEMD_PACKAGES = "${PN}"
-SYSTEMD_SERVICE:${PN} = "ovs-kronos-ovsbr0.service"
+SYSTEMD_SERVICE:${PN} = "ovs-arm-auto-solutions-ovsbr0.service"
 
 do_install() {
     install -d ${D}/${systemd_unitdir}/system/
-    install -m 644 ${S}/ovs-kronos-ovsbr0.service \
-        ${D}/${systemd_unitdir}/system/ovs-kronos-ovsbr0.service
+    install -m 644 ${S}/ovs-arm-auto-solutions-ovsbr0.service \
+        ${D}/${systemd_unitdir}/system/ovs-arm-auto-solutions-ovsbr0.service
     install -d ${D}${sbindir}
-    install -m 0755 ${S}/kronos-ovs.sh ${D}${sbindir}/kronos-ovs.sh
+    install -m 0755 ${S}/arm-auto-solutions-ovs.sh ${D}${sbindir}/arm-auto-solutions-ovs.sh
 }
 
 do_install:append:virtualization() {
@@ -47,8 +47,8 @@ do_install:append:virtualization() {
 }
 
 RECIPE_FILES = "\
-    ${systemd_unitdir}/system/ovs-kronos-ovsbr0.service \
-    ${sbindir}/kronos-ovs.sh \
+    ${systemd_unitdir}/system/ovs-arm-auto-solutions-ovsbr0.service \
+    ${sbindir}/arm-auto-solutions-ovs.sh \
     "
 
 RECIPE_FILES:append:virtualization = " \

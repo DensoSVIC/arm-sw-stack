@@ -7,7 +7,7 @@ Aim of this big patch is to introduce PCI support on ARM platform.
 
 Signed-off-by: Rahul Singh <rahul.singh@arm.com>
 Signed-off-by: Luca Fancellu <luca.fancellu@arm.com>
-Upstream-Status: Inappropriate [Kronos-specific]
+Upstream-Status: Inappropriate [Arm Automotive Solutions-specific]
 ---
  docs/misc/xen-command-line.pandoc           |   7 -
  tools/libs/ctrl/xc_domain.c                 |   9 +

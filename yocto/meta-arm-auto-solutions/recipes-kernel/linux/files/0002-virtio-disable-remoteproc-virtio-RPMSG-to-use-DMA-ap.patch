@@ -25,7 +25,7 @@ Xen guest, we will not force it to use DMA api.
 Issue-Id: SCM-5186
 Signed-off-by: Wei Chen <wei.chen@arm.com>
 Signed-off-by: Yanqin Wei <Yanqin.Wei@arm.com>
-Upstream-Status: Inappropriate [Kronos-specific]
+Upstream-Status: Inappropriate [Arm Automotive Solutions-specific]
   Community has no plan to support non-iommu device passthrough in DomU.
 ---
  drivers/virtio/virtio_ring.c | 3 ++-

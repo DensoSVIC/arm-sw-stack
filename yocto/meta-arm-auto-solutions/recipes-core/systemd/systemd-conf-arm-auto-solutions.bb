@@ -5,8 +5,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-SUMMARY = "Systemd configuration for Kronos"
-DESCRIPTION = "Additional systemd configuration for the Kronos stacks"
+SUMMARY = "Systemd configuration for Arm Automotive Solutions"
+DESCRIPTION = "Additional systemd configuration for the Arm Automotive Solutions stacks"
 HOMEPAGE = "http://www.freedesktop.org/wiki/Software/systemd"
 LICENSE = "MIT"
 
@@ -22,7 +22,7 @@ ALLOW_EMPTY:${PN} = "1"
 
 REQUIRED_DISTRO_FEATURES = "systemd"
 
-KRONOS_SYSTEMD_DISABLE_SERVICES = "\
+SYSTEMD_DISABLE_SERVICES = "\
     systemd-timesyncd.service \
     systemd-tmpfiles-clean.timer \
 "
@@ -31,7 +31,7 @@ pkg_postinst:${PN} () {
     if [ -n "$D" ]; then
         OPTS="--root=$D"
     fi
-    for service in ${KRONOS_SYSTEMD_DISABLE_SERVICES}; do
+    for service in ${SYSTEMD_DISABLE_SERVICES}; do
         systemctl $OPTS mask $service
     done
 }

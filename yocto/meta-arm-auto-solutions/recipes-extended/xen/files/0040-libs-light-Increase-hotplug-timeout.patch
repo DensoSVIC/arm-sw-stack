@@ -3,14 +3,14 @@ From: Peter Hoyes <Peter.Hoyes@arm.com>
 Date: Thu, 8 Jun 2023 14:17:57 +0100
 Subject: [PATCH] libs/light: Increase hotplug timeout
 
-On Kronos with systemd, where multiple network interfaces are
+On FVPs with systemd, where multiple network interfaces are
 initialized in parallel with other workloads, the hotplug script takes
 more than 40s to execute.
 
 Increase the timeout to 120s.
 
 Signed-off-by: Peter Hoyes <Peter.Hoyes@arm.com>
-Upstream-Status: Inappropriate [Kronos-specific]
+Upstream-Status: Inappropriate [Arm Automotive Solutions-specific]
 ---
  tools/libs/light/libxl_internal.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
