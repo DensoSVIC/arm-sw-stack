@@ -300,7 +300,7 @@ The following are only available if ``CONFIG_FAULT_MGMT_STORAGE`` is enabled:
  * ``fault count`` - Print the total count of reported faults.
  * ``fault clear`` - Reset all fault counts back to zero.
 
-The test suite at :kronos-repo:`yocto/meta-kronos/lib/oeqa/runtime/cases/test_10_fault_mgmt.py`
+The test suite at :kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_10_fault_mgmt.py`
 demonstrates usage of these sub-commands.
 
 .. _design_applications_fault_mgmt_limitations:

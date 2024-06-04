@@ -174,7 +174,7 @@ Downstream Changes
 ******************
 
 Patch files can be found at
-:kronos-repo:`yocto/meta-kronos/recipes-kernel/zephyr-kernel/files/psa-arch-tests`
+:kronos-repo:`yocto/meta-arm-auto-solutions/recipes-kernel/zephyr-kernel/files/psa-arch-tests`
 to:
 
 * Add PSA Arch Tests as a Zephyr module.

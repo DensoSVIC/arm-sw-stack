@@ -307,13 +307,13 @@ structured as follows:
 
     * ``yocto``
 
-      Directory implementing the ``meta-kronos`` Yocto layer as well as kas
-      build configuration files.
+      Directory implementing the ``meta-arm-auto-solutions`` Yocto layer as well as
+      kas build configuration files.
 
     * ``components``
 
       Directory containing source code for components which can either be used
-      directly or as part of the ``meta-kronos`` Yocto layer.
+      directly or as part of the ``meta-arm-auto-solutions`` Yocto layer.
 
     * ``documentation``
 

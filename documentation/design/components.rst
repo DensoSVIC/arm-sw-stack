@@ -616,8 +616,8 @@ SVE2. The allowed values are from 128 to maximum 2048 limited by the hardware
 supported maximum SVE vector length. Dom0 and guest SVE settings follow the
 Arm Kronos Reference Design's maximum vector length of 128. These settings
 are set in
-:kronos-repo:`yocto/meta-kronos/recipes-core/domu-package/domu-envs.inc` and
-:kronos-repo:`b/yocto/meta-kronos/recipes-extended/xen-cfg/xen-cfg.bb`.
+:kronos-repo:`yocto/meta-arm-auto-solutions/recipes-core/domu-package/domu-envs.inc` and
+:kronos-repo:`b/yocto/meta-arm-auto-solutions/recipes-extended/xen-cfg/xen-cfg.bb`.
 
 For more information on SVE2, refer to `SVE2 guide`_.  Xen command line
 options for SVE for dom0 can be found under `xen-command-line options`_ and
@@ -631,7 +631,7 @@ For SVE2 validation, refer to
 Downstream Changes
 ------------------
 Patches for the Xen MPAM extension support, PCI Device Passthrough, and GICv4.1
-Enablement at :kronos-repo:`yocto/meta-kronos/recipes-extended/xen/files/`
+Enablement at :kronos-repo:`yocto/meta-arm-auto-solutions/recipes-extended/xen/files/`
 to:
 
  * Discover MPAM CPU feature
@@ -691,7 +691,7 @@ The ``arm_si_rproc`` and ``rpmsg_net`` drivers can be found at
 :kronos-repo:`components/primary_compute/linux_drivers`.
 
 Additional patches are located at
-:kronos-repo:`yocto/meta-kronos/recipes-kernel/linux/files` related to:
+:kronos-repo:`yocto/meta-arm-auto-solutions/recipes-kernel/linux/files` related to:
 
  * Making virtio rpmsg buffer size configurable
  * Disable remoteproc virtio rpmsg to use DMA API in Xen guest
@@ -766,7 +766,7 @@ The out-of-tree driver for MHUv3 device is located at
 :kronos-repo:`components/safety_island/zephyr/src/drivers/mbox`.
 
 Additional patches are located at
-:kronos-repo:`yocto/meta-kronos/recipes-kernel/zephyr-kernel/files/zephyr`
+:kronos-repo:`yocto/meta-arm-auto-solutions/recipes-kernel/zephyr-kernel/files/zephyr`
 related to:
 
  * Configuring the MPU region
