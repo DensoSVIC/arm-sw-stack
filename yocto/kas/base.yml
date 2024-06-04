@@ -27,9 +27,9 @@ repos:
       meta-cassini-distro:
       meta-cassini-bsp: excluded
 
-  kronos:
+  sw-ref-stack:
     layers:
-      yocto/meta-kronos:
+      yocto/meta-arm-auto-solutions:
 
   meta-arm:
     url: >-
@@ -44,7 +44,7 @@ repos:
     commit: a72010b414ee3d73888ac9cb4e310e8f05e13aea
     patches:
       0001-python3-twisted-prepend-split-PACKAGES:
-        repo: kronos
+        repo: sw-ref-stack
         path: >-
           yocto/kas/patches/0001-python3-twisted-prepend-split-PACKAGES.patch
 
@@ -63,14 +63,14 @@ env:
   SVE_DISABLE_FLAG:
 
 local_conf_header:
-  meta-kronos-error-qa: |
-    ERROR_QA:layer-meta-kronos:append = " patch-status"
+  meta-arm-auto-solutions-error-qa: |
+    ERROR_QA:layer-meta-arm-auto-solutions:append = " patch-status"
   cassini: |
     CASSINI_GENERIC_ARM64_FILESYSTEM = "0"
     DISTRO_FEATURES:append = " ipv6"
     DISTRO_FEATURES:remove = "k3s"
     KERNEL_CLASSES:remove = "k3s_kernelcfg_check containers_kernelcfg_check"
-  kronos-extra-features: |
+  arm-auto-solutions-extra-features: |
     EXTRA_IMAGE_FEATURES:append = " actuation"
   diskmon: |
     BB_DISKMON_DIRS = "\

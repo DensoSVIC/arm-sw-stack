@@ -644,6 +644,7 @@ SOLIBS
 SOLIBSDEV
 sourceparams
 SOURCEPATH
+spdx
 sphinxheadercomma
 spinlock
 SPMC

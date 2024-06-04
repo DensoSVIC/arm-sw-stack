@@ -1,0 +1,21 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: MIT
+
+[Unit]
+Description=Kronos Open vSwitch network configuration
+After=openvswitch.service
+PartOf=network.target
+Requires=openvswitch.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/kronos-ovs.sh start
+ExecReload=/usr/sbin/kronos-ovs.sh reload
+ExecStop=/usr/sbin/kronos-ovs.sh stop
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

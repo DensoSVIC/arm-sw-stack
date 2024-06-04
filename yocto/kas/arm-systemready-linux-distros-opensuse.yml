@@ -20,7 +20,7 @@ defaults:
 repos:
   meta-arm:
     url: >-
-      https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/meta-arm
+      https://gitlab.arm.com/automotive-and-industrial/arm-auto-solutions/meta-arm
     path: layers/meta-arm
     branch: kronos-scarthgap
 
