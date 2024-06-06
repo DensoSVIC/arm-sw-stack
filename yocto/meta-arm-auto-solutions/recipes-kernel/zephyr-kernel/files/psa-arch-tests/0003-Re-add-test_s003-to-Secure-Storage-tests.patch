@@ -1,7 +1,7 @@
 From 416ac2f37225fefa56ac1749709ca54f92b1f8cb Mon Sep 17 00:00:00 2001
 From: Ziad Elhanafy <ziad.elhanafy@arm.com>
 Date: Mon, 20 Nov 2023 13:27:59 +0000
-Subject: [PATCH] kronos: Re-add test_s003 to Secure Storage tests
+Subject: [PATCH] Re-add test_s003 to Secure Storage tests
 
 test_s003 was previously removed as it saturates
 the RSS storage, this caused the linux boot to fail
@@ -12,7 +12,7 @@ Re-add this test but make it the final one to give
 the Primary Compute the time to finish the service
 request from RSS before reaching this test.
 
-Upstream-Status: Inappropriate [Kronos-specific]
+Upstream-Status: Inappropriate [Arm Automotive Solutions-specific]
 Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
 ---
  api-tests/dev_apis/storage/its_1.0-beta2_testsuite.db | 1 +

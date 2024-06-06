@@ -6,7 +6,7 @@ Subject: [PATCH] mbedtls: Add rss driver to build
 Add RSS driver code to build and link it to mbedtls library.
 Enable the related configs at the same time.
 
-Upstream-Status: Inappropriate [Kronos-specific]
+Upstream-Status: Inappropriate [Arm Automotive Solutions-specific]
 Signed-off-by: Jiamei Xie <jiamei.xie@arm.com>
 ---
  modules/mbedtls/CMakeLists.txt               | 12 ++++++++++++

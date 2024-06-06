@@ -9,9 +9,9 @@ ZEPHYR_PSA_ARCH_TESTS_PATCHDIR = "modules/tee/tf-m/psa-arch-tests"
 
 # /* cSpell:disable */
 ZEPHYR_PSA_ARCH_TESTS_PATCHES ?= "\
-    file://0001-kronos-Add-zephyr-module-file.patch;patchdir=${ZEPHYR_PSA_ARCH_TESTS_PATCHDIR} \
-    file://0002-kronos-Remove-test_s003-from-Secure-Storage-tests.patch;patchdir=${ZEPHYR_PSA_ARCH_TESTS_PATCHDIR} \
-    file://0003-kronos-Re-add-test_s003-to-Secure-Storage-tests.patch;patchdir=${ZEPHYR_PSA_ARCH_TESTS_PATCHDIR} \
+    file://0001-Add-zephyr-module-file.patch;patchdir=${ZEPHYR_PSA_ARCH_TESTS_PATCHDIR} \
+    file://0002-Remove-test_s003-from-Secure-Storage-tests.patch;patchdir=${ZEPHYR_PSA_ARCH_TESTS_PATCHDIR} \
+    file://0003-Re-add-test_s003-to-Secure-Storage-tests.patch;patchdir=${ZEPHYR_PSA_ARCH_TESTS_PATCHDIR} \
     file://0004-tests-zephyr-mbedtls-disable-failing-tests.patch;patchdir=${ZEPHYR_PSA_ARCH_TESTS_PATCHDIR} \
     file://0005-tests-zephyr-mbedtls-Make-asymmetric-operations-to-c.patch;patchdir=${ZEPHYR_PSA_ARCH_TESTS_PATCHDIR} \
     file://0006-Move-generate-key-to-end.patch;patchdir=${ZEPHYR_PSA_ARCH_TESTS_PATCHDIR} \

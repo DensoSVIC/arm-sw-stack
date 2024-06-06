@@ -7,11 +7,11 @@
 OVERLAY_DIR ?= "hipc"
 
 OVERLAY_BASENAME ?= \
-    "${ZEPHYR_SAFETY_ISLAND_MODULE}/overlays/${OVERLAY_DIR}/${ZEPHYR_BOARD}"
+    "${ZEPHYR_SAFETY_ISLAND_MODULE}/overlays/${OVERLAY_DIR}/${BOARD}"
 OVERLAY_BRIDGE_BASENAME ?= \
-    "${ZEPHYR_SAFETY_ISLAND_MODULE}/overlays/bridge/${ZEPHYR_BOARD}"
+    "${ZEPHYR_SAFETY_ISLAND_MODULE}/overlays/bridge/${BOARD}"
 OVERLAY_GPTP_BASENAME ?= \
-    "${ZEPHYR_SAFETY_ISLAND_MODULE}/overlays/gptp/${ZEPHYR_BOARD}"
+    "${ZEPHYR_SAFETY_ISLAND_MODULE}/overlays/gptp/${BOARD}"
 
 python __anonymous() {
     ovrl_basename = d.getVar('OVERLAY_BASENAME')

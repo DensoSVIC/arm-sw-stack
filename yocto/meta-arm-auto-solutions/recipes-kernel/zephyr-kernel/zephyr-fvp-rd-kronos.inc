@@ -28,6 +28,6 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
 SRC_URI += "${SRC_URI_ZEPHYR_EXTRA_PATCHES}"
 
 # Add the safety_island Zephyr module
-ZEPHYR_SAFETY_ISLAND_MODULE = "${KRONOS_REPO_DIRECTORY}/components/safety_island/zephyr/src"
+ZEPHYR_SAFETY_ISLAND_MODULE = "${ARM_AUTO_SOLUTIONS_REPO_DIRECTORY}/components/safety_island/zephyr/src"
 ZEPHYR_MODULES:append = "${ZEPHYR_SAFETY_ISLAND_MODULE}\;"
 do_configure[file-checksums] += "${ZEPHYR_SAFETY_ISLAND_MODULE}:True"

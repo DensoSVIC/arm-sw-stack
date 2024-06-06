@@ -1,7 +1,7 @@
 From 8bb7b7e9f4e6588c8f6b654fea95a7effd181d81 Mon Sep 17 00:00:00 2001
 From: Ziad Elhanafy <ziad.elhanafy@arm.com>
 Date: Tue, 7 Nov 2023 15:39:37 +0000
-Subject: [PATCH] kronos: Remove test_s003 from Secure Storage tests
+Subject: [PATCH] Remove test_s003 from Secure Storage tests
 
 test_s003 saturates the RSS storage, this causes the
 tests running on other Safety Island clusters to fail
@@ -15,7 +15,7 @@ This should not be a problem when TF-M is updated
 to support a separate partition for each of the
 Application Processor, SI CL0, SI CL1 and SI CL2.
 
-Upstream-Status: Inappropriate [Kronos-specific]
+Upstream-Status: Inappropriate [Arm Automotive Solutions-specific]
 Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
 ---
  api-tests/dev_apis/storage/its_1.0-beta2_testsuite.db | 1 -

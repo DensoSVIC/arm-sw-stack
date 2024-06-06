@@ -10,7 +10,7 @@ output length matches the expected length, on test psa_cipher_finish.
 Related issue is already tracked in
 https://github.com/Mbed-TLS/mbedtls/issues/5145
 
-Upstream-Status: Inappropriate [Kronos-specific]
+Upstream-Status: Inappropriate [Arm Automotive Solutions-specific]
 Signed-off-by: Penny Zheng <penny.zheng@arm.com>
 ---
  api-tests/dev_apis/crypto/test_c037/test_data.h               | 4 ++++

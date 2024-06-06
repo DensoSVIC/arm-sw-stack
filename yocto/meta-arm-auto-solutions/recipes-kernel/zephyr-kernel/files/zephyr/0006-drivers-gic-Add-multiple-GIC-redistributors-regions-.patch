@@ -13,7 +13,7 @@ So the GIC driver should cope with multiple sets of redistributors
 like multi-chip scenarios. In this patch we add multiple GIC
 redistributor regions support in GIC redistributor iteration.
 
-Upstream-Status: Inappropriate [Kronos-specific]
+Upstream-Status: Inappropriate [Arm Automotive Solutions-specific]
 Signed-off-by: Wei Chen <wei.chen@arm.com>
 Signed-off-by: Robbie Cao <robbie.cao@arm.com>
 Signed-off-by: Divin Raj <divin.raj@arm.com>

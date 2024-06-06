@@ -1,12 +1,12 @@
 From aed8d3573463d92bd11309b74504a065c7affe8a Mon Sep 17 00:00:00 2001
 From: Ziad Elhanafy <ziad.elhanafy@arm.com>
 Date: Mon, 6 Nov 2023 10:31:33 +0000
-Subject: [PATCH] kronos: Add zephyr module file
+Subject: [PATCH] Add zephyr module file
 
 Add zephyr module file to include CMakeLists.txt and Kconfig
-located in Kronos repository.
+located in the Arm Automotive Solutions repository.
 
-Upstream-Status: Inappropriate [Kronos-specific]
+Upstream-Status: Inappropriate [Arm Automotive Solutions-specific]
 Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
 ---
  zephyr/module.yml | 5 +++++

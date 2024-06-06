@@ -17,7 +17,7 @@ require recipes-kernel/zephyr-kernel/zephyr-sample.inc
 
 ZEPHYR_SRC_DIR = "${ZEPHYR_SAFETY_ISLAND_MODULE}/apps/psa-crypto-tests"
 
-OVERLAYS_PSA_BASENAME = "${ZEPHYR_SAFETY_ISLAND_MODULE}/overlays/psa/${ZEPHYR_BOARD}"
+OVERLAYS_PSA_BASENAME = "${ZEPHYR_SAFETY_ISLAND_MODULE}/overlays/psa/${BOARD}"
 EXTRA_OECMAKE:append = "\
     -DDTC_OVERLAY_FILE='${OVERLAYS_PSA_BASENAME}.overlay' \
     -DOVERLAY_CONFIG='${OVERLAYS_PSA_BASENAME}.conf' \

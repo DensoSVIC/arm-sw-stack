@@ -7,7 +7,7 @@ The psa_generate_key with RSA 2048 Keypair takes a lot of time and
 occupies the RSS, which defer the primary compute to boot. Move
 this test case to end.
 
-Upstream-Status: Inappropriate [Kronos-specific]
+Upstream-Status: Inappropriate [Arm Automotive Solutions-specific]
 Signed-off-by: Jiamei Xie <jiamei.xie@arm.com>
 ---
  api-tests/dev_apis/crypto/testsuite.db | 2 +-

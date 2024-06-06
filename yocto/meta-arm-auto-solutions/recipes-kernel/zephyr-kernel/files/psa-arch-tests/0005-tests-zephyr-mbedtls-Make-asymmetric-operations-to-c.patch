@@ -17,7 +17,7 @@ test_c042 (psa_verify_hash)
 test_c039 (psa_asymmetric_encrypt)
 test_c040 (psa_asymmetric_decrypt)
 
-Upstream-Status: Inappropriate [Kronos-specific]
+Upstream-Status: Inappropriate [Arm Automotive Solutions-specific]
 Signed-off-by: Jiamei Xie <jiamei.xie@arm.com>
 ---
  api-tests/dev_apis/crypto/test_c016/test_c016.c | 11 +++++++++++
