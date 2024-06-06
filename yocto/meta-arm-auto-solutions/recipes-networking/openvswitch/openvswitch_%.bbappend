@@ -5,4 +5,6 @@
 # SPDX-License-Identifier: MIT
 
 # nooelint: oelint.vars.insaneskip
-INSANE_SKIP:${PN}-ptest:fvp-rd-kronos += "buildpaths"
+INSANE_SKIP:${PN}-ptest:baremetal += "buildpaths"
+# nooelint: oelint.vars.insaneskip
+INSANE_SKIP:${PN}-ptest:virtualization += "buildpaths"

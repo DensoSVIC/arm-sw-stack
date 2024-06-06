@@ -21,7 +21,6 @@ inherit ptest
 RDEPENDS:${PN} += "bats"
 
 TESTS_PATH = "${libdir}/${BPN}"
-COMPATIBLE_MACHINE = "fvp-rd-kronos"
 
 # A set of tags to restrict the tests that run based on the current
 # stack/machine

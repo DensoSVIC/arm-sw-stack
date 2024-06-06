@@ -19,7 +19,6 @@ IMAGE_OVERHEAD_FACTOR = "1.5"
 inherit features_check
 REQUIRED_IMAGE_FEATURES = "virtualization"
 CONFLICT_IMAGE_FEATURES = "baremetal domu"
-COMPATIBLE_MACHINE = "fvp-rd-kronos"
 
 GRUB_CFG_FILE = "virtualization-grub.cfg"
 

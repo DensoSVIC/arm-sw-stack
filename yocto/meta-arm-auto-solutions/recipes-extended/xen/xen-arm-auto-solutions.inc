@@ -8,7 +8,7 @@
 SRCREV = "d75f1e9b74314cea91ce435730d4e3539ecca77d"
 
 # These patches are applied to both xen and xen-tools on the
-# fvp-rd-kronos MACHINE
+# virtualization EXTRA_IMAGE_FEATURE
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 # /* cSpell:disable */
@@ -58,4 +58,4 @@ SRC_URI += "\
     "
 # /* cSpell:enable */
 
-SRC_URI:append = " file://rd-kronos.cfg"
+SRC_URI:append = " file://arm-auto-solutions.cfg"

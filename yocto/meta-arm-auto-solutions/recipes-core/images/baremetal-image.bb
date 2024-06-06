@@ -18,7 +18,6 @@ IMAGE_OVERHEAD_FACTOR = "1.5"
 inherit features_check
 REQUIRED_IMAGE_FEATURES = "baremetal"
 CONFLICT_IMAGE_FEATURES = "virtualization domu"
-COMPATIBLE_MACHINE = "fvp-rd-kronos"
 
 BAREMETAL_IMAGE_NUM_CPUS ?= "4"
 # The total RAM size is 2G and 32M of it has been allocated to OP-TEE. The

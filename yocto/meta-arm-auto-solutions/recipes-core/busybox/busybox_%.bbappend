@@ -8,4 +8,4 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 # As Bats requires the nl utility, configure CONFIG_NL=y for busybox if we are
 # using Bats
-SRC_URI:append:fvp-rd-kronos = " file://nl.cfg"
+SRC_URI:append:virtualization = " file://nl.cfg"

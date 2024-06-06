@@ -5,5 +5,5 @@
 # SPDX-License-Identifier: MIT
 
 ARM_TSTEE_REQUIRE ?= ""
-ARM_TSTEE_REQUIRE:fvp-rd-kronos = "arm-tstee-fvp-rd-kronos.inc"
+ARM_TSTEE_REQUIRE:baremetal = "arm-tstee-arm-auto-solutions.inc"
 require ${ARM_TSTEE_REQUIRE}

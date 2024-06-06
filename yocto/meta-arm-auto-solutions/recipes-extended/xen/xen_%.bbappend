@@ -5,5 +5,5 @@
 # SPDX-License-Identifier: MIT
 
 MACHINE_XEN_REQUIRE ?= ""
-MACHINE_XEN_REQUIRE:fvp-rd-kronos = "xen-fvp-rd-kronos.inc"
+MACHINE_XEN_REQUIRE:virtualization = "xen-arm-auto-solutions.inc"
 require ${MACHINE_XEN_REQUIRE}
