@@ -49,7 +49,7 @@ In Zephyr, the device tree overlays the MHUv3 transmission and reception devices
 defines the shared SRAM memory between the Safety Island cluster and RSS.
 
 The Zephyr overlay device tree for FVP the Kronos board is located at
-:kronos-repo:`components/safety_island/zephyr/src/overlays/psa`.
+:repo:`components/safety_island/zephyr/src/overlays/psa`.
 
 .. _design_applications_psa_arch_tests_secure_storage:
 
@@ -174,7 +174,7 @@ Downstream Changes
 ******************
 
 Patch files can be found at
-:kronos-repo:`yocto/meta-arm-auto-solutions/recipes-kernel/zephyr-kernel/files/psa-arch-tests`
+:repo:`yocto/meta-arm-auto-solutions/recipes-kernel/zephyr-kernel/files/psa-arch-tests`
 to:
 
 * Add PSA Arch Tests as a Zephyr module.

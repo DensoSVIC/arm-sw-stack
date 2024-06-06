@@ -21,7 +21,7 @@ import sys
 
 # -- Project information -----------------------------------------------------
 
-project = 'Arm Kronos Reference Software Stack'
+project = 'Arm Automotive Solutions'
 copyright = '2023-2024, Arm Ltd.'
 author = 'Arm Ltd.'
 
@@ -136,14 +136,14 @@ latex_elements = {
 # there are variables that refer to it later.
 yocto_version = "scarthgap"
 
-kronos_version = os.environ.get(
+arm_auto_solutions_version = os.environ.get(
     'READTHEDOCS_GIT_IDENTIFIER',
     os.environ.get(
         'CI_COMMIT_REF_NAME', 'main'))
 
 # The following variables are mostly used for pdf generation
-version = kronos_version
-release = kronos_version
+version = arm_auto_solutions_version
+release = arm_auto_solutions_version
 
 meta_arm_version = os.environ.get(
     'RTD_ENV_META_ARM_VERSION',
@@ -203,12 +203,12 @@ rst_prolog = f"""
 .. |Xen version| replace:: {xen_version}
 .. |Zephyr version| replace:: {zephyr_version}
 .. |kas version| replace:: {kas_version}
-.. |kronos remote| replace:: https://git.gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/kronos.git
-.. |kronos repository| replace:: https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/kronos
-.. |kronos version| replace:: {kronos_version}
-.. |layer dependency statement| replace:: {kronos_version} branch
+.. |arm auto solutions remote| replace:: https://git.gitlab.arm.com/automotive-and-industrial/arm-auto-solutions/sw-ref-stack.git
+.. |arm auto solutions repository| replace:: https://gitlab.arm.com/automotive-and-industrial/arm-auto-solutions/sw-ref-stack
+.. |arm auto solutions version| replace:: {arm_auto_solutions_version}
+.. |layer dependency statement| replace:: {arm_auto_solutions_version} branch
 .. |meta-arm branch| replace:: kronos-{yocto_version}
-.. |meta-arm repository| replace:: https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/meta-arm
+.. |meta-arm repository| replace:: https://gitlab.arm.com/automotive-and-industrial/meta-arm
 .. |meta-arm revision| replace:: HEAD
 .. |meta-cassini branch| replace:: {cassini_version}
 .. |meta-cassini repository| replace:: https://gitlab.com/Linaro/cassini/meta-cassini
@@ -265,7 +265,7 @@ rst_prolog = f"""
 .. _Ethernet Bridging API: https://docs.zephyrproject.org/apidoc/{zephyr_version}/group__eth__bridge.html
 .. _Fast Models FVP Reference Guide: https://developer.arm.com/documentation/100966/latest
 .. _GICv4.1 - Direct injection of virtual interrupts: https://developer.arm.com/documentation/107627/0101/GICv4-1---Direct-injection-of-virtual-interrupts
-.. _GitLab Issues: https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/kronos/-/issues
+.. _GitLab Issues: https://gitlab.arm.com/automotive-and-industrial/arm-automotive-solutions/sw-ref-stack/-/issues
 .. _IEEE 802.1AS: https://ieeexplore.ieee.org/document/9121845
 .. _IEEE 802.1Q: https://ieeexplore.ieee.org/document/10004498
 .. _IPC service: https://docs.zephyrproject.org/{zephyr_version}/services/ipc/ipc_service/ipc_service.html
@@ -350,17 +350,17 @@ rst_prolog = f"""
 # URL to use for references to repository paths
 repo_url_pattern = os.environ.get(
     'REPO_URL_PATTERN',
-    'https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/kronos/-/tree/{ref}/{path}')  # noqa
+    'https://gitlab.arm.com/automotive-and-industrial/arm-auto-solutions/sw-ref-stack/-/tree/{ref}/{path}')  # noqa
 # Read the Docs sometimes adds extra quotes to environment variables
 repo_url_pattern = repo_url_pattern.strip("'")
 
 meta_arm_url_repo_pattern = os.environ.get(
     'META_ARM_REPO_URL_PATTERN',
-    'https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/meta-arm/-/tree/{ref}/{path}')  # noqa
+    'https://gitlab.arm.com/automotive-and-industrial/arm-auto-solutions/sw-ref-stack/-/tree/{ref}/{path}')  # noqa
 # Read the Docs sometimes adds extra quotes to environment variables
 meta_arm_url_repo_pattern = meta_arm_url_repo_pattern.strip("'")
 
 extlinks = {
             'meta-arm-repo': (meta_arm_url_repo_pattern.format(path='%s', ref=meta_arm_version), '%s'),  # noqa
-            'kronos-repo': (repo_url_pattern.format(path='%s', ref=kronos_version), '%s'),  # noqa
+            'repo': (repo_url_pattern.format(path='%s', ref=arm_auto_solutions_version), '%s'),  # noqa
             }

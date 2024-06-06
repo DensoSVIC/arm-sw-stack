@@ -136,10 +136,10 @@ Specific driver implementations with devicetree bindings are provided for the
 Arm FMU and Arm SSU.
 
 The public driver interfaces are described under
-:kronos-repo:`components/safety_island/zephyr/src/include/zephyr/drivers/fault_mgmt`
+:repo:`components/safety_island/zephyr/src/include/zephyr/drivers/fault_mgmt`
 
 The drivers are instantiated in the devicetree using bindings under
-:kronos-repo:`components/safety_island/zephyr/src/dts/bindings/fault_mgmt`
+:repo:`components/safety_island/zephyr/src/dts/bindings/fault_mgmt`
 
 Fault Management Unit
 ---------------------
@@ -195,7 +195,7 @@ deployment requirements. Specifically, more complex custom handlers may require
 more stack space as they are called on the subsystem threads.
 
 The public interface for the subsystem and its components is described under
-:kronos-repo:`components/safety_island/zephyr/src/include/zephyr/subsys/fault_mgmt`
+:repo:`components/safety_island/zephyr/src/include/zephyr/subsys/fault_mgmt`
 
 Safety component
 ----------------
@@ -241,7 +241,7 @@ The Kronos FVP models:
    :alt: Kronos Fault Device Tree
 
 The Kronos Fault Management application
-(:kronos-repo:`components/safety_island/zephyr/src/apps/fault_mgmt`)
+(:repo:`components/safety_island/zephyr/src/apps/fault_mgmt`)
 provides Kconfig and devicetree overlays for a sample deployment using these
 devices on Safety Island Cluster 1. The functionality can be evaluated using
 the Zephyr shell on this cluster. Additionally, this application serves as the
@@ -300,7 +300,7 @@ The following are only available if ``CONFIG_FAULT_MGMT_STORAGE`` is enabled:
  * ``fault count`` - Print the total count of reported faults.
  * ``fault clear`` - Reset all fault counts back to zero.
 
-The test suite at :kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_10_fault_mgmt.py`
+The test suite at :repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_10_fault_mgmt.py`
 demonstrates usage of these sub-commands.
 
 .. _design_applications_fault_mgmt_limitations:

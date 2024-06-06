@@ -300,7 +300,7 @@ the Primary Compute and follows the
 Repository Structure
 ********************
 
-The ``kronos`` repository (|kronos repository|) is
+The ``kronos`` repository (|arm auto solutions repository|) is
 structured as follows:
 
   * ``kronos``:

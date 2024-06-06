@@ -30,12 +30,12 @@ integrate, and validate the :ref:`overview_use_cases` with either or both the
 as described in :ref:`Reference Software Stack Overview
 <overview_reference_software_stack_overview>`.
 
-The layer source code can be found at :kronos-repo:`yocto/meta-arm-auto-solutions`.
+The layer source code can be found at :repo:`yocto/meta-arm-auto-solutions`.
 
 Yocto Build Configuration
 =========================
 
-A set of ``yaml`` configuration files (found at :kronos-repo:`yocto/kas`) for
+A set of ``yaml`` configuration files (found at :repo:`yocto/kas`) for
 the `kas build tool`_ is provided to support bitbake layer fetching, project
 configuration and executing the build and validation.
 
@@ -57,7 +57,7 @@ the Reference Software Stack.
 for the Arm SystemReady IR ACS tests.
 
 The layer dependency sources and their revisions for the ``kronos`` repository
-(|kronos repository|) |layer dependency statement| are:
+(|arm auto solutions repository|) |layer dependency statement| are:
 
   .. code-block:: yaml
     :substitutions:

@@ -59,7 +59,7 @@ The following components are involved in the demo:
     ``program/ssl/ssl_client1.c`` of `Mbed TLS repository`_, with some
     modifications to handle a server IP address parameter and to work with
     Parsec. The code for modifications can be found at
-    :kronos-repo:`yocto/meta-arm-auto-solutions/recipes-demos/parsec/files`.
+    :repo:`yocto/meta-arm-auto-solutions/recipes-demos/parsec/files`.
 
 * Mbed TLS
 

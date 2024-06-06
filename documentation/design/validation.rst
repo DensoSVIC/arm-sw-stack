@@ -135,24 +135,24 @@ Before running integration tests, some basic tests will be run firstly:
 * test_linux_login
    The test logs in the Linux with root. If it fails, the tests that depend
    on it will be cancelled. The test is implemented in
-   :kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_10_linuxlogin.py`.
+   :repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_10_linuxlogin.py`.
 
 * test_cluster{N}
    The test verifies the output when Zephyr boots on Safety Island Cluster N.
    The N is the Safety Island clusters number. Those tests are implemented in:
 
-   :kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_10_safety_island_c0.py`
+   :repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_10_safety_island_c0.py`
 
-   :kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_10_safety_island_c1.py`
+   :repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_10_safety_island_c1.py`
 
-   :kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_10_safety_island_c2.py`
+   :repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_10_safety_island_c2.py`
 
 After running all the integration tests, the following test is run:
 
 * test_linux_shutdown
    The test verifies that the FVP can be terminated using a ``shutdown now``
    command in the linux console. The test is implemented in
-   :kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_99_linuxshutdown.py`.
+   :repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_99_linuxshutdown.py`.
 
 .. _validation_actuation_demo:
 
@@ -160,7 +160,7 @@ Integration Tests Validating the Safety Island Actuation Demo
 =============================================================
 
 The ``test_player_to_analyzer`` integration test in
-:kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_30_actuation.py`
+:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_30_actuation.py`
 does a full Player to Packet Analyzer functionality test.
 
 This test invokes the Actuation Player that plays a recorded driving scenario
@@ -175,7 +175,7 @@ Integration Tests Validating the Critical Application Monitoring Demo
 =====================================================================
 
 The script that implements the tests is
-:kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_40_cam.py`.
+:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_40_cam.py`.
 
 The tests verify:
 
@@ -196,8 +196,8 @@ Integration Tests Validating the Safety Island Communication Demo
 =================================================================
 
 The scripts that implement the tests are
-:kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_30_hipc.py` and
-:kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_30_hipc_virtualization.py`.
+:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_30_hipc.py` and
+:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_30_hipc_virtualization.py`.
 The tests below are run for each Safety Island cluster for Baremetal and
 Virtualization Architectures. For the Virtualization Architecture, tests
 are run for each Xen guests created.
@@ -231,8 +231,8 @@ Integration Tests Validating gPTP
 =================================
 
 The scripts that implement the tests are
-:kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_30_ptp_base.py` and
-:kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_30_ptp.py`.
+:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_30_ptp_base.py` and
+:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_30_ptp.py`.
 
 * test_ptp_linux_services
       The test ensures the ``ptp4l`` services are running.
@@ -257,7 +257,7 @@ Integration Tests Validating the Safety Island Cluster 0 Bridge
 ===============================================================
 
 The ``test_si{N}_bridge_ethernet0`` integration tests in
-:kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_30_si0_bridge_ethernet0.py`
+:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_30_si0_bridge_ethernet0.py`
 verify the connection between the Host and the bridged Safety Island clusters.
 The tested configuration is:
 
@@ -272,7 +272,7 @@ Integration Tests Validating the Parsec-enabled TLS Demo
 ========================================================
 
 The ``test_parsec_demo`` integration test in
-:kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_40_parsec.py`
+:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_40_parsec.py`
 verifies the functionality of the crypto service provided by Parsec and the
 RSS. The test is only enabled when the use case is ``Safety Island Actuation
 Demo`` and the "Baremetal Architecture" is selected.
@@ -294,10 +294,10 @@ Integration Tests Validating Xen
 ================================
 
 The ``test_ptestrunner`` integration test in
-:kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_40_virtualization.py`
+:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_40_virtualization.py`
 uses ``ptest-runner`` to execute ``01-xendomains.bats`` BATS
 (Bash Automated Test System) tests in
-:kronos-repo:`yocto/meta-arm-auto-solutions/recipes-test/xen/files/tests/01-xendomains.bats`,
+:repo:`yocto/meta-arm-auto-solutions/recipes-test/xen/files/tests/01-xendomains.bats`,
 
 DomUs lifecycle management
 --------------------------
@@ -327,7 +327,7 @@ The ``01-xendomains.bats`` BATS test verifies GICv4.1 feature enablement,
 through pre-set keyword capture in Xen and Dom0 Linux boot log.
 
 The ``test_gicv4_1`` integration test in
-:kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_40_gicv4_1.py`
+:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_40_gicv4_1.py`
 verifies the functionality of GICv4.1 vLPI/vSGI direct injection. The test is
 only enabled when the use case is ``Safety Island Actuation Demo`` and the
 "Virtualization Architecture" is selected.
@@ -375,7 +375,7 @@ Integration Tests Validating Safety Island PSA APIs Architecture Test Suite
 ===========================================================================
 
 The ``test_psa_si_cluster{N}`` integration tests in
-:kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_10_si_psa_arch_tests.py`
+:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_10_si_psa_arch_tests.py`
 verify that the psa-arch-tests suite report is as expected.
 
 This test waits until the ``psa-arch-tests`` finish successfully
@@ -387,7 +387,7 @@ Integration Tests Validating the Fault Management Subsystem
 ===========================================================
 
 The Fault Management test suite at
-:kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_10_fault_mgmt.py`
+:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_10_fault_mgmt.py`
 contains a test class to validate the FMUs and another to validate the SSUs
 using the Zephyr shell commands described in the
 :ref:`design_applications_fault_mgmt_shell_reference`.
@@ -424,7 +424,7 @@ Integration Tests Validating SVE2
 =================================
 
 The script that implements the tests is
-:kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_40_sve.py`
+:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_40_sve.py`
 
  * test_sve_enabled
       The test ensures the ``sve2`` feature is enabled.
@@ -439,7 +439,7 @@ Integration Tests Validating Secure Firmware Update
 ===================================================
 
 The script that implements the tests is
-:kronos-repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_00_fwu.py`
+:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_00_fwu.py`
 
  * test_securefirmwareupdate
       The test waits for U-Boot to start, starts the ``Secure Firmware

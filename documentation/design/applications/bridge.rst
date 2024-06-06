@@ -18,7 +18,7 @@ The Safety Island Cluster 0 Bridge is a software application running on the
 Safety Island Cluster 0 that acts as a network bridge connecting together the
 network interfaces with the other Safety Island clusters and the network
 interface with the Host. The code for the application can be found at
-:kronos-repo:`components/safety_island/zephyr/src/apps/bridge`.
+:repo:`components/safety_island/zephyr/src/apps/bridge`.
 
 ************
 Architecture

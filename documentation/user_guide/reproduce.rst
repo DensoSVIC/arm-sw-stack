@@ -105,7 +105,7 @@ via:
 
   mkdir -p ~/kronos
   cd ~/kronos
-  git clone |kronos remote| --branch |kronos version|
+  git clone |arm auto solutions remote| --branch |arm auto solutions version|
 
 Upgrading from a previous version
 =================================

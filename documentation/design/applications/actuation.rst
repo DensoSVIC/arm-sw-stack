@@ -67,7 +67,7 @@ The Actuation Demo on Kronos has 3 components:
     Actuation Demo
 
   * Recipe at
-    :kronos-repo:`yocto/meta-arm-auto-solutions/recipes-demos/actuation/actuation-player_2.0.0.bb`
+    :repo:`yocto/meta-arm-auto-solutions/recipes-demos/actuation/actuation-player_2.0.0.bb`
 
 * Actuation Service
 
@@ -76,22 +76,22 @@ The Actuation Demo on Kronos has 3 components:
     BSD socket instead of a DDS connection
 
   * Recipe at
-    :kronos-repo:`yocto/meta-arm-auto-solutions/recipes-kernel/zephyr-kernel/zephyr-actuation.bb`
+    :repo:`yocto/meta-arm-auto-solutions/recipes-kernel/zephyr-kernel/zephyr-actuation.bb`
 
   * Zephyr overlays at:
 
-    * :kronos-repo:`components/safety_island/zephyr/src/overlays/hipc/fvp_rd_kronos_safety_island_c2.conf`
+    * :repo:`components/safety_island/zephyr/src/overlays/hipc/fvp_rd_kronos_safety_island_c2.conf`
 
-    * :kronos-repo:`components/safety_island/zephyr/src/overlays/hipc/fvp_rd_kronos_safety_island_c2.overlay`
+    * :repo:`components/safety_island/zephyr/src/overlays/hipc/fvp_rd_kronos_safety_island_c2.overlay`
 
-    * :kronos-repo:`components/safety_island/zephyr/src/apps/actuation/boards/fvp_rd_kronos_safety_island_c2_actuation.conf`
+    * :repo:`components/safety_island/zephyr/src/apps/actuation/boards/fvp_rd_kronos_safety_island_c2_actuation.conf`
 
 * Packet Analyzer
 
   * Checks for correctness of the "Actuation Service" output
 
   * Recipe at
-    :kronos-repo:`yocto/meta-arm-auto-solutions/recipes-demos/actuation/packet-analyzer-native_2.0.0.bb`
+    :repo:`yocto/meta-arm-auto-solutions/recipes-demos/actuation/packet-analyzer-native_2.0.0.bb`
 
 Communication Interfaces
 ========================
@@ -100,7 +100,7 @@ Actuation Player <> Actuation Service
 -------------------------------------
 
 `CycloneDDS`_ (Using a specific upstream commit located at
-:kronos-repo:`yocto/meta-arm-auto-solutions/recipes-demos/actuation/cyclonedds_0.10.3.inc`)
+:repo:`yocto/meta-arm-auto-solutions/recipes-demos/actuation/cyclonedds_0.10.3.inc`)
 is used for the communication between the "Actuation Player" and the "Actuation
 Service".
 

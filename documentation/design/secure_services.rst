@@ -258,7 +258,7 @@ Safety Island side:
     Refer to the device tree overlay below for more information about the memory
     addresses and region sizes.
 
-     * :kronos-repo:`components/safety_island/zephyr/src/overlays/psa/fvp_rd_kronos_safety_island_c0.overlay`.
+     * :repo:`components/safety_island/zephyr/src/overlays/psa/fvp_rd_kronos_safety_island_c0.overlay`.
 
  Cluster 1:
 
@@ -267,7 +267,7 @@ Safety Island side:
     Refer to the device tree overlay below for more information about the memory
     addresses and region sizes.
 
-     * :kronos-repo:`components/safety_island/zephyr/src/overlays/psa/fvp_rd_kronos_safety_island_c1.overlay`.
+     * :repo:`components/safety_island/zephyr/src/overlays/psa/fvp_rd_kronos_safety_island_c1.overlay`.
 
  Cluster 2:
 
@@ -276,7 +276,7 @@ Safety Island side:
     Refer to the device tree overlay below for more information about the memory
     addresses and region sizes.
 
-     * :kronos-repo:`components/safety_island/zephyr/src/overlays/psa/fvp_rd_kronos_safety_island_c2.overlay`.
+     * :repo:`components/safety_island/zephyr/src/overlays/psa/fvp_rd_kronos_safety_island_c2.overlay`.
 
 Primary Compute side:
 

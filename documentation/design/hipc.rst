@@ -196,7 +196,7 @@ Safety Island side:
   Refer to the device tree overlay below for more information about the memory
   addresses and region sizes.
 
-   * :kronos-repo:`components/safety_island/zephyr/src/overlays/hipc/fvp_rd_kronos_safety_island_c0.overlay`.
+   * :repo:`components/safety_island/zephyr/src/overlays/hipc/fvp_rd_kronos_safety_island_c0.overlay`.
 
  Cluster 1:
 
@@ -217,7 +217,7 @@ Safety Island side:
   Refer to the device tree overlay below for more information about the memory
   addresses and region sizes.
 
-   * :kronos-repo:`components/safety_island/zephyr/src/overlays/hipc/fvp_rd_kronos_safety_island_c1.overlay`.
+   * :repo:`components/safety_island/zephyr/src/overlays/hipc/fvp_rd_kronos_safety_island_c1.overlay`.
 
  Cluster 2:
 
@@ -238,7 +238,7 @@ Safety Island side:
   Refer to the device tree overlay below for more information about the memory
   addresses and region sizes.
 
-   * :kronos-repo:`components/safety_island/zephyr/src/overlays/hipc/fvp_rd_kronos_safety_island_c2.overlay`.
+   * :repo:`components/safety_island/zephyr/src/overlays/hipc/fvp_rd_kronos_safety_island_c2.overlay`.
 
 Primary Compute side:
 =====================
@@ -329,7 +329,7 @@ make use of gPTP have a dedicated service to handle the network messages:
 
 * On Zephyr, the kernel provides a `Zephyr gPTP subsystem`_. Enabling it is done
   per application, by including the appropriate configuration file from
-  :kronos-repo:`components/safety_island/zephyr/src/overlays/gptp`. They disable
+  :repo:`components/safety_island/zephyr/src/overlays/gptp`. They disable
   the Grandmaster capability and create a single PTP Port, on the first network
   interface. When the client is not synchronized with the server, the gPTP
   subsystem prints a warning-level logging message (``<wrn> net_gptp: Reset
@@ -415,4 +415,4 @@ In Zephyr, there is an overlay device tree for the network over RPMsg applicatio
 which also defines the MHUv3 channels and device memory regions.
 
 The Zephyr overlay device tree for FVP the Kronos board is located at
-:kronos-repo:`components/safety_island/zephyr/src/overlays/hipc`.
+:repo:`components/safety_island/zephyr/src/overlays/hipc`.
