@@ -209,8 +209,8 @@ Two use cases are addressed by `PSA Secure Storage API`_:
   values, monotonic counter values, or firmware image hashes — will also need
   trusted storage.
 
-  The following PSA Internal Trusted Storage APIs are supported in Kronos
-  Reference Software Stack:
+  The following PSA Internal Trusted Storage APIs are supported in Arm
+  Automotive Solutions:
 
     * ``psa_its_set``
     * ``psa_its_get``
@@ -226,8 +226,8 @@ Two use cases are addressed by `PSA Secure Storage API`_:
   example, encryption only, or integrity only, or both — depending on the
   threat model of the device and the nature of its deployment.
 
-  The following PSA Protected Storage APIs are supported in Kronos
-  Reference Software Stack:
+  The following PSA Protected Storage APIs are supported in Arm Automotive
+  Solutions:
 
     * ``psa_ps_set``
     * ``psa_ps_get``

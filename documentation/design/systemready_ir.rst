@@ -59,9 +59,9 @@ Requirements (BBSR)`_ rules are still required:
  * R150_BBSR: Before updates to system firmware are applied, images must be
    verified using digital signatures
 
-******************************************
-Support on Kronos Reference Software Stack
-******************************************
+***********************************
+Support in Arm Automotive Solutions
+***********************************
 
 This Reference Software Stack aims to be aligned with Arm SystemReady IR
 version |SystemReady IR ACS version| by implementing most of its requirements.
@@ -78,9 +78,9 @@ non-alignments which are further described in the
 
 .. _boot_process_systemready-non_alignments:
 
-*************************
-Identified Non-Alignments
-*************************
+**************************************
+Identified Non-Alignments on RD-Kronos
+**************************************
 
 The Reference Software Stack is currently known to have the following
 non-alignments:

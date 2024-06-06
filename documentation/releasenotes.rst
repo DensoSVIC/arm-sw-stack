@@ -173,8 +173,8 @@ Limitations
    Trusted Storage (ITS) API and Protected Storage (PS) API. For now the
    Reference Software Stack supports the ITS API on Safety Island only.
  * PSA Protected Storage Optional APIs ``psa_ps_create`` and ``psa_ps_extended``
-   are not supported by Kronos Reference Software Stack as they are not
-   implemented in the Protected Storage Service provided by Trusted Firmware-M.
+   are not supported by Arm Automotive Solutions as they are not implemented in
+   the Protected Storage Service provided by Trusted Firmware-M.
  * PSA Secure Storage APIs Architecture Test Suite only runs on
    Cluster 2 in the Safety Island due to the following limitations:
 

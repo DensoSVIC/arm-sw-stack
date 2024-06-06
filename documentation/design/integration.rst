@@ -20,7 +20,7 @@ meta-arm-auto-solutions Yocto Layer
 
 The ``meta-arm-auto-solutions`` layer primarily depends on the ``meta-arm-bsp``
 layer which implements the ``fvp-rd-kronos`` bitbake ``MACHINE`` definition to
-enable the Reference Software Stack to run on the Arm Kronos Reference Design
+enable the Arm Automotive Solutions to run on the Arm Kronos Reference Design
 FVP (FVP_RD_Kronos).
 
 The layer ``meta-arm-auto-solutions`` is based on the `Cassini`_ distribution.

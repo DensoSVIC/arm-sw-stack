@@ -4,9 +4,9 @@
  #
  # SPDX-License-Identifier: MIT
 
-###################################################
-|Arm| Kronos Reference Software Stack Documentation
-###################################################
+########################################
+|Arm| Automotive Solutions Documentation
+########################################
 
 .. toctree::
    :maxdepth: 3

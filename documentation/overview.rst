@@ -12,17 +12,17 @@ Overview
 Introduction
 ************
 
-A Reference Design (RD) is a collection of resources to provide a representative
-view of typical compute subsystems that can be designed and implemented using
-specific generations of Arm IP.
+The Arm Automotive Solutions Software Reference Stack contains a collection
+of resources to provide a representative view of typical compute subsystems
+that can be designed and implemented using specific generations of Arm
+Reference Designs, targeting the automotive sector.
 
-
-The **Arm Reference Design-1 AE**, or **RD-1 AE**, targets the Automotive
-segment and introduces the concept of a high-performance |Neoverse| V3AE
-Application Processor (Primary Compute) system augmented with an |Cortex|-R82AE
-based Safety Island for scenarios where additional system safety monitoring is
-required. The system additionally includes a Runtime Security Engine (RSE)
-used for the secure boot of the system elements and the runtime Secure Services.
+The **Arm Reference Design-1 AE**, or **RD-1 AE** introduces the concept of a
+high-performance |Neoverse| V3AE Application Processor (Primary Compute) system
+augmented with an |Cortex|-R82AE based Safety Island for scenarios where
+additional system safety monitoring is required. The system additionally
+includes a Runtime Security Engine (RSE) used for the secure boot of the system
+elements and the runtime Secure Services.
 
 Throughout the following documentation, the alias "Kronos Reference Design"
 is used in place of Arm Reference Design-1 AE. For more information,
@@ -33,25 +33,24 @@ A Fixed Virtual Platform (FVP) is available as part of the Reference Design.
 Further information on FVPs, including expected runtime performance and other
 capabilities, can be found at `Arm Ecosystem FVPs`_.
 
-This documentation covers the Kronos Reference Software Stack which together
-with the FVP allow for the exploration of baremetal and Xen hypervisor hosted
-Linux instances, Primary Compute to/from Safety Island communication mechanisms
-(for both baremetal and virtualized scenarios), and boot flows coordinated via a
-system root of trust. The Primary Compute firmware stack of Trusted Firmware-A,
-U-Boot, OP-TEE and Trusted Services is also aligned with the technologies and
-goals of the |Arm SystemReadyTM| IR program.
+This documentation, together with the RD-1 AE FVP, allow for the exploration of
+baremetal and Xen hypervisor hosted Linux instances, Primary Compute to/from
+Safety Island communication mechanisms (for both baremetal and virtualized
+scenarios), and boot flows coordinated via a system root of trust. The Primary
+Compute firmware stack of Trusted Firmware-A, U-Boot, OP-TEE and Trusted
+Services is also aligned with the technologies and goals of the
+|Arm SystemReadyTM| IR program.
 
 ********
 Audience
 ********
 
 The intended target audience of this document are software, hardware, and system
-engineers who are planning to evaluate and use the Arm Kronos Reference
-Software Stack.
+engineers who are planning to evaluate and use Arm Automotive Solutions.
 
-It describes how to build and run images for the Arm Kronos Reference Design
-FVP (FVP_RD_Kronos) using the Yocto Project build framework. Basic instructions
-about the Yocto Project can be found in the `Yocto Project Quick Start`_.
+It describes how to build and run images for Arm automotive reference designs
+using the Yocto Project build framework. Basic instructions about the Yocto
+Project can be found in the `Yocto Project Quick Start`_.
 
 In addition to having Yocto related knowledge, the target audience also needs
 to have a certain understanding of the following technologies:
@@ -82,34 +81,31 @@ Documentation Structure
 
   * :ref:`User Guide <user_guide/index:User Guide>`
 
-    Provides guidance for configuring, building, and deploying the Reference
-    Software Stack on the FVP and running and validating the supported
-    functionalities.
+    Provides guidance for configuring, building, and deploying the solutions
+    on the FVP and running and validating the supported functionalities.
 
   * :ref:`Solution Design <design/index:Solution Design>`
 
-    Provides more advanced developer-focused details of the Reference Software
-    Stack, its implementation, and dependencies.
+    Provides more advanced developer-focused details of the solutions, its
+    implementation, and dependencies.
 
   * :ref:`License <license_link:License>`
 
-    Defines the license under which the Reference Software Stack is provided.
+    Defines the license under which Arm Automotive Solutions is provided.
 
   * :ref:`Release Notes <releasenotes:Release Notes>`
 
     Documents new features, bug fixes, limitations, and any other changes
-    provided under each Reference Software Stack release.
+    provided under each Arm Automotive Solutions release.
 
 .. _overview_reference_software_stack_overview:
 
 *********************************
-Reference Software Stack Overview
+Arm Automotive Solutions Overview
 *********************************
 
-This Reference Software Stack is made available as part of the Arm Kronos
-Reference Design and is composed of multiple Open Source components which
-together form the proposed solution, including:
-
+Arm Automotive Solutions is composed of multiple Open Source components,
+including:
 
   * The `Runtime Security Engine (RSE)`_ - referred to in this document as
     the Runtime Security Subsystem (RSS) - running an instance of Trusted
@@ -122,6 +118,22 @@ together form the proposed solution, including:
     OP-TEE and Trusted Services. These are configured to be aligned with `Arm
     SystemReady IR`_.
 
+The platform consists of the following hardware IP:
+
+.. table:: Arm Automotive Solutions platform hardware IP
+   :widths: auto
+   :align: center
+
+   =================== ======================================
+   Component           RD-1 AE Reference Design
+   =================== ======================================
+   Primary Compute     Neoverse-V3AE Armv9.2-A (16 clusters)
+   Safety Island       Cortex-R82AE Armv8-R64
+   RSE                 Cortex-M55 Armv8.1-M
+   SCP                 Cortex-M7 Armv7-M
+   LCP                 Cortex-M55 Armv8.1-M
+   =================== ======================================
+
 The remaining software in the Primary Compute subsystem, based on the
 `Cassini`_ distribution, is available in two main architectures:
 baremetal and virtualization.
@@ -131,9 +143,9 @@ baremetal and virtualization.
   The Primary Compute boots a single rich operating system (real-time Linux with
   PREEMPT_RT patches).
 
-.. image:: images/kronos_baremetal_high_level_arch.*
+.. image:: images/baremetal_high_level_arch.*
    :align: center
-   :alt: Arm Kronos Reference Software Stack High-Level Diagram - Baremetal Architecture
+   :alt: Arm Automotive Solutions High-Level Diagram - Baremetal Architecture
 
 |
 
@@ -144,9 +156,9 @@ baremetal and virtualization.
     virtual machines: Dom0 (privileged domain) and DomU1 and DomU2 (unprivileged
     domains).
 
-.. image:: images/kronos_virtualization_high_level_arch.*
+.. image:: images/virtualization_high_level_arch.*
    :align: center
-   :alt: Arm Kronos Reference Software Stack High-Level Diagram - Virtualization Architecture
+   :alt: Arm Automotive Solutions High-Level Diagram - Virtualization Architecture
 
 |
 
@@ -154,9 +166,9 @@ baremetal and virtualization.
 Safety and Security Considerations
 **********************************
 
-Kronos Reference Design software solutions are public example software projects
-that track and pull upstream components, incorporating their respective security
-fixes published over time. Arm partners are responsible for ensuring that the
+Arm Automotive Solutions is a public example software project that tracks and
+pulls upstream components, incorporating their respective security fixes
+published over time. Arm partners are responsible for ensuring that the
 components they use contain all the required security fixes, if and when they
 deploy a product derived from Arm reference solutions.
 
@@ -166,7 +178,7 @@ deploy a product derived from Arm reference solutions.
 Use-Cases
 *********
 
-The Reference Software Stack demonstrates how the following features can be
+Arm Automotive Solutions demonstrates how the following features can be
 used to enhance the overall functional safety level of a high-performance
 compute platform:
 
@@ -182,7 +194,7 @@ compute platform:
 
 The :ref:`Reproduce <user_guide/reproduce:Reproduce>` section of the User Guide
 contains all the instructions necessary to fetch and build the source as well
-as to download the required FVP and launch the Use-Cases.
+as to download the required RD-1 AE FVP and launch the Use-Cases.
 
 Following are the main Use-Cases implemented by the Reference Software Stack.
 
@@ -191,8 +203,8 @@ Critical Application Monitoring Demo
 
 Critical Application Monitoring (CAM) is a project that implements a solution
 for monitoring critical applications using a service running on a higher safety
-level system. This demo deploys CAM components on the Kronos FVP to demonstrate
-the feasibility of the Safety Island monitoring solution.
+level system. This demo deploys CAM components on an FVP to demonstrate the
+feasibility of the Safety Island monitoring solution.
 
 Refer to :ref:`design_applications_cam` for more information.
 
@@ -300,10 +312,10 @@ the Primary Compute and follows the
 Repository Structure
 ********************
 
-The ``kronos`` repository (|arm auto solutions repository|) is
+The Arm Automotive Solutions repository (|arm auto solutions repository|) is
 structured as follows:
 
-  * ``kronos``:
+  * ``arm-auto-solutions``:
 
     * ``yocto``
 

@@ -16,8 +16,8 @@ Validation
 Run-Time Integration Tests
 **************************
 
-The run-time integration tests are a mechanism for validating the Reference
-Software Stack's core functionalities.
+The run-time integration tests are a mechanism for validating the Arm Auto
+Solutions' core functionalities.
 
 The tests are run on the image using the oeqa test framework. Refer to
 `OEQA FVP`_ for more information on this framework.

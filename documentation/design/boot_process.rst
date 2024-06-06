@@ -49,7 +49,7 @@ A RSA private key is stored in TF-M's source code repository (the
 ``bl2/ext/mcuboot/root-RSA-3072.pem`` file) for testing. The private key is used
 to sign the images listed above that RSS BL2 loads.
 
-In the Yocto build stage of the Kronos platform, a shell function
+In the Yocto build stage of the platform, a shell function
 ``sign_host_image()`` is used to sign the images, which can be found at
 :meta-arm-repo:`meta-arm/classes/tfm_sign_image.bbclass`.
 Then the signed images are written to the NVM flash.
@@ -75,9 +75,9 @@ authenticate the images.
 Key Customization
 =================
 
-The default private key used in the Kronos platform should only be used for test
-purposes. Since this private key is widely distributed, it should never be used
-for production. To replace the default key, the user needs to:
+The default private key used platform should only be used for test purposes.
+Since this private key is widely distributed, it should never be used for
+production. To replace the default key, the user needs to:
 
 * Generate a new RSA key pair
 * Replace the default private key ``bl2/ext/mcuboot/root-RSA-3072.pem`` with
@@ -144,11 +144,11 @@ Primary Compute Boot Flow
 *************************
 
 The Application Processor (AP) refers to the cores in the Primary Compute of
-the Kronos Reference Design. The purpose of its firmware is to provide an
-Arm SystemReady IR-aligned interface to Linux. Arm SystemReady IR
-compatible systems are required to follow the `Device Tree specification`_, so
-the :ref:`design_components_u-boot` bootloader is used in the Normal world,
-which provides the UEFI implementation and exposes the device tree to Linux.
+the Reference Design. The purpose of its firmware is to provide an Arm
+SystemReady IR-aligned interface to Linux. Arm SystemReady IR compatible systems
+are required to follow the `Device Tree specification`_, so the
+:ref:`design_components_u-boot` bootloader is used in the Normal world, which
+provides the UEFI implementation and exposes the device tree to Linux.
 
 :ref:`design_components_trusted-firmware-a` provides the initial, Secure world
 firmware, which consists of BL2 and BL31. BL32 is provided by OP-TEE.

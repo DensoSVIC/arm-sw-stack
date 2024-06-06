@@ -29,14 +29,14 @@ classified into:
   * Temporal issues: Events arriving outside the expected frequency.
   * Logical issues: Events arriving out of order.
 
-The CAM project is integrated into the Kronos Reference Software Stack to
-demonstrate the feasibility of monitoring Primary Compute applications from the
-Safety Island. Refer to `Critical Application Monitoring Documentation`_ for
-more information on CAM project and its implementation details.
+The CAM project is integrated into Arm Automotive Solutions to demonstrate the
+feasibility of monitoring Primary Compute applications from the Safety Island.
+Refer to `Critical Application Monitoring Documentation`_ for more information
+on CAM project and its implementation details.
 
-*****************************************
-Critical Application Monitoring on Kronos
-*****************************************
+***********************************************************
+Critical Application Monitoring in Arm Automotive Solutions
+***********************************************************
 
 The Critical Application Monitoring demo can be run on both Baremetal and
 Virtualization Architectures.
@@ -82,9 +82,9 @@ The Primary Compute components are deployed on the baremetal Linux root
 filesystem in the Baremetal Architecture build and on the DomU1 and DomU2 Linux
 root filesystem in the Virtualization Architecture.
 
-In the Kronos Reference Software Stack, ``cam-service`` is deployed on the
-Safety Island Cluster 1 in order to provide applications on the Primary Compute
-with a high safety level of monitoring services.
+In Arm Automotive Solutions, ``cam-service`` is deployed on the Safety Island
+Cluster 1 in order to provide applications on the Primary Compute with a high
+safety level of monitoring services.
 
 The following are platform requirements to support the ``cam-service``
 deployment on the Safety Island:

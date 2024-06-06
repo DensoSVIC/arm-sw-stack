@@ -28,15 +28,15 @@ software running on the Primary Compute is an `Autoware`_ pipeline and the
 Pursuit`_ algorithm from Autoware.Auto. The two communicate via `Data Distribution
 Service`_ (DDS) messages over a network interface.
 
-**************************************
-Safety Island Actuation Demo on Kronos
-**************************************
+********************************************************
+Safety Island Actuation Demo in Arm Automotive Solutions
+********************************************************
 
 Compared to the default deployment of the `Safety Island Actuation Demo`_, the
-Kronos deployment has, on the Primary Compute, an "Actuation Player" component
-instead of the Autoware pipeline and, on the Host, a "Packet Analyzer" instead
-of a visualization software. This is done in order to minimize the load for an
-FVP target.
+Arm Automotive Solutions deployment has, on the Primary Compute, an
+"Actuation Player" component instead of the Autoware pipeline and, on the Host,
+a "Packet Analyzer" instead of a visualization software. This is done in order
+to minimize the load for an FVP target.
 
 This demo can run on both the Baremetal and Virtualization Architectures. In
 case of the Virtualization Architecture, the "Actuation Player" is deployed on
@@ -59,7 +59,7 @@ the :ref:`hipc_network_topology` section.
 Main Components
 ===============
 
-The Actuation Demo on Kronos has 3 components:
+The Actuation Demo has 3 components:
 
 * Actuation Player
 

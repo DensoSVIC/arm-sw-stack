@@ -8,15 +8,15 @@
 Borrow
 ######
 
-To reuse the components and patches of the Reference Software Stack, refer to
-each of the individual components mentioned in :ref:`design_components`.
+To reuse the components and patches from Arm Automotive Solutions, refer to each
+of the individual components mentioned in :ref:`design_components`.
 
 ******************
 Downstream Changes
 ******************
 
-Detailed below is a table linking each component of the Reference Software Stack
-to its Downstream Changes section. Each section contains the component's patch
+Detailed below is a table linking each component of Arm Automotive Solutions to
+its Downstream Changes section. Each section contains the component's patch
 files and a high level overview of their purpose/functionality as a group:
 
 .. list-table::

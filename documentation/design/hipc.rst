@@ -14,7 +14,7 @@ Heterogeneous Inter-Processor Communication (HIPC)
 Introduction
 ************
 
-The Kronos FVP contains Armv9-A (Primary Compute) and Armv8-R64 (Safety Island)
+The FVP contains Armv9-A (Primary Compute) and Armv8-R64 (Safety Island)
 heterogeneous processing elements which share data via the Message Handling
 Unit (MHUv3) and shared Static Random Access Memory (SRAM). The MHUv3 is a
 mailbox controller used for signal transmission and the shared memory is used
@@ -34,7 +34,7 @@ Communication between Primary Compute and Safety Island clusters
 
 .. image:: ../images/hipc_baremetal_design.*
    :align: center
-   :alt: Arm Kronos Reference Software Stack HIPC - Baremetal Architecture
+   :alt: Arm Automotive Solutions HIPC - Baremetal Architecture
 
 |
 
@@ -99,13 +99,13 @@ Safety Island Remoteproc Driver
 The Remoteproc framework allows different platforms/architectures to control
 (power on/off, load firmware) remote processors while abstracting the hardware
 differences, so the entire driver doesn't need to be duplicated. The Remoteproc
-platform driver is added to the RD-Kronos Stack to provide support for
+platform driver is added to the software stack to provide support for
 communication between Primary Compute and Safety Island clusters.
 
-In the Kronos FVP, Linux running in the Primary Compute, regards the Safety
-Island clusters as its remote processors. The Kronos FVP Safety Island has
-three clusters. Each cluster behaves as an independent entity and has its
-own resources to establish the connection to the Primary Compute.
+In the FVP, Linux running in the Primary Compute, regards the Safety Island
+clusters as its remote processors. The Safety Island has three clusters. Each
+cluster behaves as an independent entity and has its own resources to establish
+the connection to the Primary Compute.
 
 These clusters cannot be booted by the Primary Compute processor because they
 need to monitor the other hardware, including the Primary Compute. Therefore,
@@ -137,7 +137,7 @@ the Baremetal Architecture.
 
 .. image:: ../images/hipc_virtualization_design.*
    :align: center
-   :alt: Arm Kronos Reference Software Stack HIPC - Virtualization Architecture
+   :alt: Arm Automotive Solutions HIPC - Virtualization Architecture
 
 |
 
@@ -308,8 +308,8 @@ have one or more logical access point to the network (a "PTP Port"). The source
 of the synchronized time in a domain is a single PTP Instance, the "Grandmaster
 PTP Instance", which always act as a server.
 
-In the Kronos Reference Software Stack, Grandmaster PTP Instances are deployed
-on the Primary Compute (in Dom0 in case of the Virtualization Architecture),
+In Arm Automotive Solutions, Grandmaster PTP Instances are deployed on the
+Primary Compute (in Dom0 in case of the Virtualization Architecture),
 advertizing a single source of time to the other PTP Instances (on the Safety
 Island clusters and the DomUs) acting as clients. The Grandmaster PTP Instances
 each have one PTP Port per remote PTP Instance. All the Operating Systems that
@@ -335,22 +335,22 @@ make use of gPTP have a dedicated service to handle the network messages:
   subsystem prints a warning-level logging message (``<wrn> net_gptp: Reset
   Pdelay requests``) at each tick of its state machine (about once per second).
 
-In the Kronos Reference Software Stack, all of the PTP Instances use software
-timestamping. This limits the maximum achievable precision of the clock
-synchronization and it makes the stability of the clock vulnerable to software
-activity on either side of the gPTP link.
+In Arm Automotive Solutions, all of the PTP Instances use software timestamping.
+This limits the maximum achievable precision of the clock synchronization and it
+makes the stability of the clock vulnerable to software activity on either
+side of the gPTP link.
 
 See :ref:`validation_gptp` for details on how the functionality is validated.
 
 External Connection
 ===================
 
-The Safety Island has a single network interface leading outside the Kronos
-FVP system located on Cluster 0.
+The Safety Island has a single network interface leading outside the FVP system
+located on Cluster 0.
 
 A software-based network bridge deployed on Cluster 0 bridges this external
 interface with the IPC channels to the other Safety Island clusters so Cluster
-1 and 2 can reach outside Kronos FVP.
+1 and 2 can reach outside FVP.
 
 See :ref:`design_applications_bridge` for more information.
 
@@ -375,7 +375,7 @@ Island Cluster N via brsi{N}.
 
 .. image:: ../images/hipc_network_topology_baremetal.*
    :align: center
-   :alt: Arm Kronos Reference Software Stack Network Topology - Baremetal Architecture
+   :alt: Arm Automotive Solutions Network Topology - Baremetal Architecture
 
 |
 
@@ -395,7 +395,7 @@ Island Cluster N.
 
 .. image:: ../images/hipc_network_topology_virtualization.*
    :align: center
-   :alt: Arm Kronos Reference Software Stack Network Topology - Virtualization Architecture
+   :alt: Arm Automotive Solutions Network Topology - Virtualization Architecture
 
 |
 
@@ -414,5 +414,5 @@ The Linux device tree with the appropriate nodes for HIPC is located at
 In Zephyr, there is an overlay device tree for the network over RPMsg application,
 which also defines the MHUv3 channels and device memory regions.
 
-The Zephyr overlay device tree for FVP the Kronos board is located at
+The Zephyr overlay device tree for HIPC is located at
 :repo:`components/safety_island/zephyr/src/overlays/hipc`.

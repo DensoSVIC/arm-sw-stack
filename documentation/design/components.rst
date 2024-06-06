@@ -10,7 +10,7 @@
 Components
 ##########
 
-The Reference Software Stack comprises of the following main components:
+Arm Automotive Solutions comprises of the following main components:
 
 .. list-table::
   :header-rows: 1
@@ -153,7 +153,7 @@ can be used by multiple operating systems.
 
 |
 
-For the RD-Kronos platform, Safety Island GIC provides 4 programming views:
+The Safety Island GIC provides 4 programming views:
 
 * View-0: Used by RSS to configure View-1/2/3 for Safety Island Cluster-0/1/2.
 * View-1: Used by Operating System on Safety Island Cluster-0.
@@ -186,8 +186,8 @@ normal boot process.
 
 .. _design_components_rss_downstream_changes:
 
-Downstream Changes
-==================
+Downstream Changes - RD-Kronos
+==============================
 
 Patches for the RSS are included at
 :meta-arm-repo:`meta-arm-bsp/recipes-bsp/trusted-firmware-m/files/fvp-rd-kronos/`
@@ -287,8 +287,8 @@ the RSS and SCP.
 
 .. _design_components_scp-firmware_downstream_changes:
 
-Downstream Changes
-==================
+Downstream Changes - RD-Kronos
+==============================
 
 Patches for the SCP are included at
 :meta-arm-repo:`meta-arm-bsp/recipes-bsp/scp-firmware/files/fvp-rd-kronos/` to:
@@ -341,8 +341,8 @@ the FIP image, which contains:
 
 .. _design_components_trusted-firmware-a_downstream_changes:
 
-Downstream Changes
-------------------
+Downstream Changes - RD-Kronos
+------------------------------
 
 Patch files can be found at
 :meta-arm-repo:`meta-arm-bsp/recipes-bsp/trusted-firmware-a/files/fvp-rd-kronos/`
@@ -377,8 +377,8 @@ found in the `OP-TEE API Specification`_.
 
 .. _design_components_op-tee_downstream_changes:
 
-Downstream Changes
-------------------
+Downstream Changes - RD-Kronos
+------------------------------
 
 Patch files can be found at
 :meta-arm-repo:`meta-arm-bsp/recipes-security/optee/files/optee-os/fvp-rd-kronos/`
@@ -408,8 +408,8 @@ See :ref:`design_secure_services` for more information.
 
 .. _design_components_trusted-services_downstream_changes:
 
-Downstream Changes
-------------------
+Downstream Changes - RD-Kronos
+------------------------------
 
 Patch files can be found at
 :meta-arm-repo:`meta-arm-bsp/recipes-security/trusted-services/fvp-rd-kronos/`
@@ -440,8 +440,8 @@ RSS.
 
 .. _design_components_u-boot_downstream_changes:
 
-Downstream Changes
-------------------
+Downstream Changes - RD-Kronos
+------------------------------
 
 The implementation is based on the VExpress64 board family. Patch
 files can be found at
@@ -578,7 +578,7 @@ the need to first enter the Xen hypervisor. This can reduce the overhead
 associated with virtualized interrupts, by reducing the number of times the
 hypervisor is entered.
 
-With Xen Kconfig ``CONFIG_GICV4=y``, the Kronos platform will be automatically
+With Xen Kconfig ``CONFIG_GICV4=y``, the platform will be automatically
 equipped with the capability of all GICv4.1 features.
 
 .. image:: ../images/xen_gicv4_1_structure.*
@@ -747,9 +747,9 @@ Zperf sample
 ------------
 
 The `zperf sample`_ can be used to stress test inter-processor communication
-over a virtual network on the Kronos FVP. The board overlay dts and
-configuration file are added to this sample. This sample needs to be used
-together with iperf on the Armv9-A side for network performance testing.
+over a virtual network on the FVP. The board overlay dts and configuration
+file are added to this sample. This sample needs to be used together with
+iperf on the Armv9-A side for network performance testing.
 
 .. _design_components_zephyr_downstream_changes:
 

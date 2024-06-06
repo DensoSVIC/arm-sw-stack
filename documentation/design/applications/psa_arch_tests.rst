@@ -48,7 +48,7 @@ Device Tree
 In Zephyr, the device tree overlays the MHUv3 transmission and reception devices and
 defines the shared SRAM memory between the Safety Island cluster and RSS.
 
-The Zephyr overlay device tree for FVP the Kronos board is located at
+The Zephyr overlay device tree is located at
 :repo:`components/safety_island/zephyr/src/overlays/psa`.
 
 .. _design_applications_psa_arch_tests_secure_storage:
@@ -121,9 +121,9 @@ PSA Secure Storage APIs
 =======================
 
 The PSA Secure Storage APIs are provided by the Trusted Firmware-M interfaces
-instead of duplicating code in Kronos Reference Software Stack. They are linked
-into Zephyr and use the provided ``psa_call()`` in order to communicate with
-the RSS to use the Secure Storage Service provided by Trusted Firmware-M.
+instead of duplicating code in Arm Automotive Solutions. They are linked into
+Zephyr and use the provided ``psa_call()`` in order to communicate with the
+RSS to use the Secure Storage Service provided by Trusted Firmware-M.
 
 Refer to `Trusted Firmware-M PSA Protected Storage Interfaces`_ and
 `Trusted Firmware-M PSA Internal Trusted Storage Interfaces`_ for more
