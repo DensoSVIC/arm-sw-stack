@@ -6,7 +6,7 @@
 
 # Validate layers are Yocto Project Compatible
 check-layers:
-  extends: .kas_build_kronos
+  extends: .kas_build_arm_auto_solutions
   script:
     - echo "Validate layer $LAYER is Yocto Project compatible"
     # There is bug in Python 3.9.2 which is causing yocto-check-layer to fail

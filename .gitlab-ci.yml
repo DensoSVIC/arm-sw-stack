@@ -25,6 +25,6 @@ include:
       - gitlab-ci/kas-build-base_gitlab-ci.yml
   - local: '.gitlab/ci/rules.yml'
   - local: '.gitlab/ci/docs-build.yml'
-  - local: '.gitlab/ci/kronos-build.yml'
+  - local: '.gitlab/ci/arm-auto-solutions-build.yml'
   - local: '.gitlab/ci/yocto-qa.yml'
   - local: '.gitlab/ci/static-analysis.yml'
