@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-mainmenu "Kronos Reference Software Stack Build Config"
+mainmenu "Arm Automotive Solutions Build Config"
 
 #############################
 # User-facing configuration #
