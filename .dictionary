@@ -576,6 +576,7 @@ rbuf
 RDEPENDS
 rdkronos
 readl
+readme
 readreg
 releasename
 releasenotes

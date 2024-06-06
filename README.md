@@ -5,11 +5,11 @@
 # SPDX-License-Identifier: MIT
 -->
 
-# Arm® Kronos Reference Software Stack
+# Arm® Automotive Solutions
 
-The Arm Kronos Reference Software Stack is made available as part of the
-Arm Kronos Reference Design and is composed of multiple Open Source components
-which together form the proposed solution, including:
+The Arm Automotive Solutions Software Reference Stack is composed of multiple
+Open Source components which together demonstrate use cases for the automotive
+sector, including:
 
 - The [Runtime Security Engine (RSE)][1] running an instance of Trusted
   Firmware-M, which offers boot, cryptography, and secure storage services.
@@ -25,10 +25,10 @@ The remaining software in the Primary Compute subsystem, based on the
 [Cassini][3] distribution, is available in two main architectures:
 baremetal and virtualization.
 
-## Arm Kronos Reference Software Stack Documentation
+## Arm Automotive Solutions Documentation
 
 The project's documentation can be browsed at
-<https://kronos-ref-stack.docs.arm.com>.
+<https://arm-auto-solutions.docs.arm.com>.
 
 To build a local version of the documentation, you will need [Sphinx][4]
 installed in your work environment.
