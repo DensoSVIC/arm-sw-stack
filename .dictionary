@@ -52,6 +52,7 @@ BBPATH
 BBSR
 beginline
 behaviour
+bindgen
 bindir
 bitbake
 bitbang

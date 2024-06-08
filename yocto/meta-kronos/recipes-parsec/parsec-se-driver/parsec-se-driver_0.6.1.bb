@@ -36,6 +36,7 @@ inherit cargo
 
 PARSEC_version = "0.6.1"
 
+export BINDGEN_EXTRA_CLANG_ARGS="--sysroot=${RECIPE_SYSROOT}"
 export MBEDTLS_INCLUDE_DIR = "${S}/mbedtls/include"
 
 TOOLCHAIN = "clang"
