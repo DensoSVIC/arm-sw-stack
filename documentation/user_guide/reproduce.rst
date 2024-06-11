@@ -107,6 +107,18 @@ via:
   cd ~/kronos
   git clone |kronos remote| --branch |kronos version|
 
+Upgrading from a previous version
+=================================
+
+When upgrading from a previous version of the Kronos stack, which may use a
+different version of Yocto, you should run the following command to clean
+the build directory before rebuilding the Use-Cases:
+
+.. code-block:: text
+  :substitutions:
+
+  rm -rf build/cache build/tmp*
+
 *************************
 Reproducing the Use-Cases
 *************************
