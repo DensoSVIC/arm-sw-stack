@@ -7,5 +7,5 @@
 from oeqa.runtime.cases.trusted_services import TrustedServicesTest
 
 
-class KronosTrustedServices(TrustedServicesTest):
+class ArmAutoSolutionsTrustedServices(TrustedServicesTest):
     pass

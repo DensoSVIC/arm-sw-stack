@@ -11,7 +11,7 @@ from oeqa.core.decorator.data import skipIfFeature
 from oeqa.utils.linux_terminal_utils import LinuxTermUtils, LinuxMultiTermUtils
 from oeqa.utils.zephyr_shell import Shell
 from oeqa.utils.xen_utils import XenUtils
-from oeqa.utils.kronos_config import KronosConfig
+from oeqa.utils.arm_auto_solutions_config import ArmAutoSolutionsConfig
 from time import sleep
 import unittest
 
@@ -31,16 +31,17 @@ class Baremetal:
 
 
 class DomU1(Baremetal):
-    domu_hostname = KronosConfig.domu1_hostname
+    domu_hostname = ArmAutoSolutionsConfig.domu1_hostname
 
     def __init__(self, tc):
         self.linux_prompt = rf'root@{self.domu_hostname}:~#'
         self.tc = tc
-        linux_console = XenUtils.spawn_console_domu(self.linux_prompt,
-                                                    KronosConfig.dom0_prompt,
-                                                    self.domu_hostname,
-                                                    self.tc.target,
-                                                    self.tc.logger)
+        linux_console = XenUtils.spawn_console_domu(
+            self.linux_prompt,
+            ArmAutoSolutionsConfig.dom0_prompt,
+            self.domu_hostname,
+            self.tc.target,
+            self.tc.logger)
         self.lt_utils = LinuxTermUtils(self.tc, linux_console,
                                        self.linux_prompt)
 
@@ -51,12 +52,12 @@ class DomU1(Baremetal):
 
     def shut_down(self):
         XenUtils.close_console_domu(self.lt_utils, self.linux_prompt,
-                                    KronosConfig.dom0_prompt,
+                                    ArmAutoSolutionsConfig.dom0_prompt,
                                     self.domu_hostname, self.tc.logger)
 
 
 class DomU2(DomU1):
-    domu_hostname = KronosConfig.domu2_hostname
+    domu_hostname = ArmAutoSolutionsConfig.domu2_hostname
     uuid_base = '22085ddc-bc10-11ed-9a44-7ef9696e'
     streams = 2
     processing_count = 4
@@ -69,11 +70,12 @@ class DomU2(DomU1):
 
 class CAMServiceTest(OERuntimeTestCase):
     def test_cam_service_boot_on_si(self):
-        self.target.expect(KronosConfig.si_cl1_console_name,
+        self.target.expect(ArmAutoSolutionsConfig.si_cl1_console_name,
                            r'Cam service configuration:',
                            timeout=270)
-        self.target.expect(KronosConfig.si_cl1_console_name, r'uart:~\$',
-                           timeout=270)
+        self.target.expect(
+            ArmAutoSolutionsConfig.si_cl1_console_name, r'uart:~\$',
+            timeout=270)
 
 
 class CAMTest(OERuntimeTestCase):
@@ -86,10 +88,11 @@ class CAMTest(OERuntimeTestCase):
     def setUpClass(cls):
         super(CAMTest, cls).setUpClass()
         cls.si1_shell = Shell(
-            cls.tc.target, KronosConfig.si_cl1_console_name, cls.tc.logger)
+            cls.tc.target,
+            ArmAutoSolutionsConfig.si_cl1_console_name, cls.tc.logger)
 
         if not ('virtualization' in cls.td.get('IMAGE_FEATURES', '').split()):
-            cls.linux_prompt = KronosConfig.baremetal_prompt
+            cls.linux_prompt = ArmAutoSolutionsConfig.baremetal_prompt
             linux_console = cls.tc.target._get_terminal('default')
             cls.lt_utils = LinuxTermUtils(cls.tc, linux_console,
                                           cls.linux_prompt)
@@ -144,7 +147,7 @@ class CAMTest(OERuntimeTestCase):
             # Deploy deployment files to Safety Island
             csd = f"{uuid}.csd"
             st = (f'cam-tool deploy -i {csd}'
-                  f' -a {KronosConfig.si_cl1_ipaddr} -o')
+                  f' -a {ArmAutoSolutionsConfig.si_cl1_ipaddr} -o')
             status, _ = self.lt_utils.run(st)
             self.assertEqual(status, 0,
                              msg=f'cam-tool failed to deploy {csd}')
@@ -173,7 +176,7 @@ class CAMTest(OERuntimeTestCase):
     @OETestDepends(['test_40_cam.CAMTest.test_cam_tool_deploy_to_si'])
     def test_cam_app_example_to_service_on_si(self):
         st = (f'cam-app-example -u {self.dom.uuid_base}'
-              f' -a {KronosConfig.si_cl1_ipaddr}'
+              f' -a {ArmAutoSolutionsConfig.si_cl1_ipaddr}'
               f' --processing-count {self.dom.processing_count}'
               f' --stream-count {self.dom.streams}')
         status, _ = self.run_check_errors(st, timeout=90*self.dom.streams)
@@ -183,7 +186,7 @@ class CAMTest(OERuntimeTestCase):
         'test_40_cam.CAMTest.test_cam_app_example_to_service_on_si'])
     def test_cam_app_example_to_service_on_si_with_multiple_connections(self):
         st = (f'cam-app-example -u {self.dom.uuid_base}'
-              f' -a {KronosConfig.si_cl1_ipaddr}'
+              f' -a {ArmAutoSolutionsConfig.si_cl1_ipaddr}'
               f' --processing-count {self.dom.processing_count}'
               f' --stream-count {self.dom.streams}'
               ' --enable-multiple-connection')
@@ -197,26 +200,26 @@ class CAMTest(OERuntimeTestCase):
         event_interval = "0,100"
 
         st = (f'cam-app-example -u {self.dom.uuid_base}'
-              f' -a {KronosConfig.si_cl1_ipaddr}'
+              f' -a {ArmAutoSolutionsConfig.si_cl1_ipaddr}'
               f' --event-interval={event_interval}')
         status, _ = self.lt_utils.run(st)
         self.assertEqual(status, 0,
                          msg='cam-app-example failed.')
-        self.target.expect(KronosConfig.si_cl1_console_name,
+        self.target.expect(ArmAutoSolutionsConfig.si_cl1_console_name,
                            r'Stream logical error',
                            timeout=450)
 
     @OETestDepends(['test_40_cam.CAMTest.test_logical_check_on_si'])
     def test_temporal_check_on_si(self):
         st = (f'cam-app-example -u {self.dom.uuid_base}'
-              f' -a {KronosConfig.si_cl1_ipaddr}'
+              f' -a {ArmAutoSolutionsConfig.si_cl1_ipaddr}'
               ' --enable-fault-injection'
               ' --fault-injection-time=8000'
               f' --processing-count={self.dom.processing_count}')
         status, _ = self.lt_utils.run(st, timeout=180)
         self.assertEqual(status, 0,
                          msg='cam-app-example failed.')
-        self.target.expect(KronosConfig.si_cl1_console_name,
+        self.target.expect(ArmAutoSolutionsConfig.si_cl1_console_name,
                            r'Stream temporal error',
                            timeout=450)
 
@@ -288,7 +291,8 @@ class CAMTestDomU2(CAMTest):
                                     "DomU2 is not generated in this build")
 
         cls.si1_shell = Shell(
-            cls.tc.target, KronosConfig.si_cl1_console_name, cls.tc.logger)
+            cls.tc.target,
+            ArmAutoSolutionsConfig.si_cl1_console_name, cls.tc.logger)
 
         cls.dom = DomU2(cls.tc)
         cls.lt_utils = cls.dom.get_lt_utils()
@@ -369,7 +373,7 @@ class CAMTestMultiDom(OERuntimeTestCase):
         for domu in (self.domu1, self.domu2):
             multi_term.add_cmd(
                 (f'cam-app-example -u {domu.uuid_base}'
-                 f' -a {KronosConfig.si_cl1_ipaddr}'
+                 f' -a {ArmAutoSolutionsConfig.si_cl1_ipaddr}'
                  f' --processing-count {domu.processing_count}'
                  f' --stream-count {domu.streams}'),
                 domu.get_lt_utils(),

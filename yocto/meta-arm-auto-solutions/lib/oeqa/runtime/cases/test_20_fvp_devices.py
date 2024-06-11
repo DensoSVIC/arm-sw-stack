@@ -7,5 +7,5 @@
 from oeqa.runtime.cases.fvp_devices import FvpDevicesTest
 
 
-class KronosFvpDevicesTest(FvpDevicesTest):
+class ArmAutoSolutionsFvpDevicesTest(FvpDevicesTest):
     pass

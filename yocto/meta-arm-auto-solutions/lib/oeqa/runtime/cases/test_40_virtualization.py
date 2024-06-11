@@ -14,7 +14,7 @@ from oeqa.runtime.cases.test_40_gicv4_1 import GICv4Test
 from oeqa.runtime.cases.test_40_parsec import ParsecTest
 from oeqa.utils.xen_utils import XenUtils
 from oeqa.utils.linux_terminal_utils import LinuxTermUtils
-from oeqa.utils.kronos_config import KronosConfig
+from oeqa.utils.arm_auto_solutions_config import ArmAutoSolutionsConfig
 
 
 class DomUTest(OERuntimeTestCase):
@@ -25,11 +25,12 @@ class DomUTest(OERuntimeTestCase):
         super().setUpClass()
 
         cls.linux_prompt = rf'root@{cls.domu_hostname}:~#'
-        linux_console = XenUtils.spawn_console_domu(cls.linux_prompt,
-                                                    KronosConfig.dom0_prompt,
-                                                    cls.domu_hostname,
-                                                    cls.tc.target,
-                                                    cls.tc.logger)
+        linux_console = XenUtils.spawn_console_domu(
+            cls.linux_prompt,
+            ArmAutoSolutionsConfig.dom0_prompt,
+            cls.domu_hostname,
+            cls.tc.target,
+            cls.tc.logger)
         cls.lt_utils = LinuxTermUtils(cls.tc, linux_console,
                                       cls.linux_prompt)
 
@@ -44,7 +45,7 @@ class DomUTest(OERuntimeTestCase):
     @classmethod
     def tearDownClass(cls):
         XenUtils.close_console_domu(cls.lt_utils, cls.linux_prompt,
-                                    KronosConfig.dom0_prompt,
+                                    ArmAutoSolutionsConfig.dom0_prompt,
                                     cls.domu_hostname, cls.tc.logger)
         super().tearDownClass()
 

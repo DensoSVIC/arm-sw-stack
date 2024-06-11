@@ -4,10 +4,10 @@
 #
 # SPDX-License-Identifier: MIT
 
-class KronosConfig:
+class ArmAutoSolutionsConfig:
     si_cl1_ipaddr = '192.168.1.1'
     si_cl1_console_name = 'safety_island_c1'
     domu1_hostname = r'domu1'
     domu2_hostname = r'domu2'
-    dom0_prompt = r'root@fvp-rd-kronos:~#'
-    baremetal_prompt = r'root@fvp-rd-kronos:~#'
+    dom0_prompt = r'root@[\w\-]+:~#'
+    baremetal_prompt = r'root@[\w\-]+:~#'

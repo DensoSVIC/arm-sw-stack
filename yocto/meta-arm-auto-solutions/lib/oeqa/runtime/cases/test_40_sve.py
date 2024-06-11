@@ -9,16 +9,15 @@ import unittest
 from oeqa.core.decorator.depends import OETestDepends
 from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.utils.linux_terminal_utils import LinuxTermUtils
+from oeqa.utils.arm_auto_solutions_config import ArmAutoSolutionsConfig
 from oeqa.utils.xen_utils import XenUtils
 
 
 class SVETestBase(OERuntimeTestCase):
-    hostname = "fvp-rd-kronos"
-
     @classmethod
     def setUpClass(cls):
         super(SVETestBase, cls).setUpClass()
-        cls.prompt = "root@{}:~#".format(cls.hostname)
+        cls.prompt = ArmAutoSolutionsConfig.baremetal_prompt
         cls.linux_console = cls.tc.target._get_terminal("default")
         cls.lt_utils = LinuxTermUtils(cls.tc, cls.linux_console, cls.prompt)
 
@@ -80,7 +79,7 @@ class SVETestBase(OERuntimeTestCase):
 
 
 class SVETestDomU1(SVETestBase):
-    domu_hostname = "domu1"
+    domu_hostname = ArmAutoSolutionsConfig.domu1_hostname
 
     @classmethod
     def setUpClass(cls):
@@ -151,7 +150,7 @@ class SVETestDomU1(SVETestBase):
 
 
 class SVETestDomU2(SVETestDomU1):
-    domu_hostname = "domu2"
+    domu_hostname = ArmAutoSolutionsConfig.domu2_hostname
 
     @classmethod
     def setUpClass(cls):
