@@ -129,7 +129,7 @@ EXTRA_IMAGEDEPENDS:append:virtualization = " ${ARM_AUTO_SOLUTIONS_EXTRA_IMAGEDEP
 FEATURE_PACKAGES_hipc-validation = "iperf linuxptp"
 FEATURE_PACKAGES_hipc-validation:virtualization = "linuxptp"
 
-require ${@bb.utils.contains('MACHINE', 'fvp-rd-kronos', 'conf/machine/include/fvp-rd-kronos-extras.inc', '', d)}
+require ${@bb.utils.contains('EXTRA_IMAGE_FEATURES', 'virtualization', "conf/distro/include/arm-auto-solutions-virtualization.inc", '', d)}
 
 ZEPHYR_APP_SAFETY_ISLAND_CL0 = "bridge"
 ZEPHYR_APP_SAFETY_ISLAND_CL0:hipc-validation = "zperf"

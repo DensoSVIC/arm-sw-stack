@@ -30,6 +30,7 @@ FVP_CONFIG[css.sysctrl.si.hostbridge0.userNetPorts] ?= "\
         ${FVP_ACTUATION_HOST_ANALYZER_PORT}=192.168.10.2:49152 \
 "
 
-TEST_FVP_LINUX_BOOT_TIMEOUT = "${@60*60}"
+AHCI_IMAGE_PATH ?= ""
+FVP_CONFIG[pcie_group_0.pcie4.pcie_rc.ahci0.ahci.image_path] = "${AHCI_IMAGE_PATH}"
 
-require ${@bb.utils.contains('EXTRA_IMAGE_FEATURES', 'virtualization', "conf/machine/include/fvp-rd-kronos-virtualization.inc", '', d)}
+TEST_FVP_LINUX_BOOT_TIMEOUT = "${@60*60}"
