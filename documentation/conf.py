@@ -311,13 +311,13 @@ rst_prolog = f"""
 .. _Tmux Documentation: https://man7.org/linux/man-pages/man1/tmux.1.html
 .. _TrustZone: https://www.arm.com/technologies/trustzone-for-cortex-a/tee-reference-documentation
 .. _Trusted Firmware-A (TF-A): https://trustedfirmware-a.readthedocs.io
-.. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/tree/?h=v{trusted_firmware_a_version}
+.. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/+/v{trusted_firmware_a_version}
 .. _Trusted Firmware-M (TF-M): https://tf-m-user-guide.trustedfirmware.org
 .. _Trusted Firmware-M PSA Protected Storage Interfaces: https://tf-m-user-guide.trustedfirmware.org/integration_guide/services/tfm_its_integration_guide.html#psa-internal-trusted-storage-interfaces
 .. _Trusted Firmware-M PSA Internal Trusted Storage Interfaces: https://tf-m-user-guide.trustedfirmware.org/integration_guide/services/tfm_ps_integration_guide.html#psa-protected-storage-interfaces
-.. _Trusted Firmware-M repository: https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git/tree/?h={trusted_firmware_m_version}
+.. _Trusted Firmware-M repository: https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git/+/{trusted_firmware_m_version}
 .. _Trusted Services Test Executables: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/test-executables.html
-.. _Trusted Services repository: https://git.trustedfirmware.org/TS/trusted-services.git/tree/?h={trusted_services_version}
+.. _Trusted Services repository: https://git.trustedfirmware.org/TS/trusted-services/+/{trusted_services_version}
 .. _Trusted Services: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/index.html
 .. _U-Boot repository: https://source.denx.de/u-boot/u-boot/-/tree/v{uboot_version}
 .. _U-boot: https://u-boot.readthedocs.io
