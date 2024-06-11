@@ -23,6 +23,7 @@ Changed
 * Updated support from Debian 11.7 to 12.4
 * Added Fedora 39.1.5 distribution to comply with the SystemReady IR v2.1 requirements.
 * Added compiler tuning for Cortex-R82 to the Zephyr toolchain
+* Upgraded from Yocto nanbield to scarthgap
 
 ****
 v1.0
