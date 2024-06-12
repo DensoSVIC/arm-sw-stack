@@ -9,13 +9,13 @@ Reproduce
 #########
 
 This section of the User Guide describes how to download, configure, build and
-execute this Reference Software Stack.
+execute the solutions in this repository.
 
 ************
 Introduction
 ************
 
-This Reference Software Stack uses the `kas menu tool`_ to configure and
+This repository uses the `kas menu tool`_ to configure and
 customize the different :ref:`Use-Cases <overview_use_cases>` via a set of
 configuration options provided in the configuration menu.
 
@@ -36,7 +36,7 @@ Build Host Environment Setup
 System Requirements
 ===================
 
-  * x86_64 or aarch64 host to build the stack and execute the Kronos FVP
+  * x86_64 or aarch64 host to build the stack and execute the FVP
   * Ubuntu Desktop or Server 20.04 Linux distribution
   * At least 500GiB of free disk for the download and builds
   * At least 32GiB of RAM memory
@@ -75,8 +75,8 @@ Download
 
 .. note::
   Performing the builds and FVP execution in **a tmux session is mandatory** for
-  Kronos because the ``runfvp`` tool that invokes the Kronos FVP expects the
-  presence of a tmux session to attach its spawned tmux windows for console
+  Arm Automotive Solutions because the ``runfvp`` tool that invokes the FVP expects
+  the presence of a tmux session to attach its spawned tmux windows for console
   access to the processing elements. Refer to
   `Tmux Documentation`_ for more information on the usage of tmux. It is
   recommended to change the default ``history-limit`` by adding
@@ -88,29 +88,29 @@ Start a new tmux session, via:
 .. code-block:: text
   :substitutions:
 
-  tmux new-session -s kronos
+  tmux new-session -s arm-auto-solutions
 
 To reconnect to an existing tmux session:
 
 .. code-block:: text
   :substitutions:
 
-  tmux attach -t kronos
+  tmux attach -t arm-auto-solutions
 
-Download the ``kronos`` repository using Git and checkout on the kronos branch,
-via:
+Download the Arm Automotive Solutions repository using Git and checkout a
+release, via:
 
 .. code-block:: text
   :substitutions:
 
-  mkdir -p ~/kronos
-  cd ~/kronos
+  mkdir -p ~/arm-auto-solutions
+  cd ~/arm-auto-solutions
   git clone |arm auto solutions remote| --branch |arm auto solutions version|
 
 Upgrading from a previous version
 =================================
 
-When upgrading from a previous version of the Kronos stack, which may use a
+When upgrading from a previous version of Arm Automotive Solutions, which may use a
 different version of Yocto, you should run the following command to clean
 the build directory before rebuilding the Use-Cases:
 
@@ -129,8 +129,8 @@ General
 Kas Build
 ---------
 
-The Kronos stack has a kas configuration menu that can be used to build the
-:ref:`overview_use_cases`. It can also apply customizable parameters to build
+Arm Automotive Solutions has a kas configuration menu that can be used to build
+the :ref:`overview_use_cases`. It can also apply customizable parameters to build
 different Reference Software Stack Architecture types.
 
 .. note::
@@ -140,10 +140,10 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 .. note::
-  To build and run any image for the Kronos FVP the user has to accept its
+  To build and run any image for an Arms FVP the user has to accept its
   `EULA`_, which can be done by selecting the corresponding configuration
   option in the build setup. The Safety Island Actuation Demo is built as
   part of the default deployment.
@@ -152,17 +152,17 @@ To run the configuration menu:
   saved. Ensure to only select the options mentioned in the use-case reproduce
   steps and deselect any other non-relevant ones.
 
-.. image:: ../images/kronos_reference_stack_build_config.*
+.. image:: ../images/build_config.*
    :align: center
    :width: 60 %
-   :alt: Kronos Reference Software Stack Build Configuration Menu
+   :alt: Arm Auto Solutions Build Configuration Menu
 
 |
 
 FVP
 ---
 
-The ``runfvp`` tool that invokes the Kronos FVP creates one tmux terminal
+The ``runfvp`` tool that invokes the FVP creates one tmux terminal
 window per processing element. The default window displayed will be that of the
 Primary Compute terminal titled as ``terminal_ns_uart0``. User may press
 ``Ctrl-b w`` to see the list of tmux windows and use arrow keys to navigate
@@ -196,7 +196,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To build a Baremetal Architecture image:
 
@@ -587,7 +587,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To run the validation tests:
 
@@ -629,7 +629,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To build a Virtualization Architecture image:
 
@@ -1276,7 +1276,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To run the validation tests:
 
@@ -1335,7 +1335,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To build a Baremetal Architecture image:
 
@@ -1356,9 +1356,9 @@ The user should wait for the system to boot and for the Linux prompt to appear.
 The following image shows an example on how the terminal should look after the
 fvp invocation.
 
-  .. image:: ../images/kronos_reference_stack_fvp_run.*
+  .. image:: ../images/actuation_fvp_run.*
    :align: center
-   :alt: Kronos Reference Software Stack Linux Login Prompt
+   :alt: Arm Auto Solutions Linux Login Prompt
 
 |
 
@@ -1382,9 +1382,9 @@ Follow the steps below to achieve the same:
 Refer to the following image of the tmux panes rearrangement. Panes can
 be navigated using ``Ctrl-b`` followed by the arrow keys.
 
-  .. image:: ../images/kronos_reference_stack_fvp_rearrange_windows.*
+  .. image:: ../images/actuation_fvp_rearrange_windows.*
     :align: center
-    :alt: Kronos Reference Software Stack FVP Rearrange Windows
+    :alt: Arm Auto Solutions FVP Rearrange Windows
 
 |
 
@@ -1421,7 +1421,7 @@ Run the Demo
 
    .. code-block:: text
 
-      cd ~/kronos/
+      cd ~/arm-auto-solutions/
       kas shell -c "oe-run-native packet-analyzer-native start_analyzer -L debug -a localhost -c ./data"
 
    The following messages are expected from the host terminal:
@@ -1443,9 +1443,9 @@ Run the Demo
    Refer to the following image for an invocation example of the Packet
    Analyzer.
 
-     .. image:: ../images/kronos_reference_stack_packet_analyzer_baremetal.*
+     .. image:: ../images/actuation_packet_analyzer_baremetal.*
        :align: center
-       :alt: Kronos Reference Software Stack Packet Analyzer - Baremetal Architecture
+       :alt: Arm Auto Solutions Packet Analyzer - Baremetal Architecture
 
 |
 
@@ -1531,7 +1531,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To run the validation tests:
 
@@ -1567,7 +1567,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To build a Virtualization Architecture image:
 
@@ -1590,9 +1590,9 @@ On a Virtualization Architecture image, this will access the Dom0 terminal.
 The following image shows an example on how the terminal should look after the
 fvp invocation.
 
-  .. image:: ../images/kronos_reference_stack_fvp_run.*
+  .. image:: ../images/actuation_fvp_run.*
    :align: center
-   :alt: Kronos Reference Software Stack Linux Login Prompt
+   :alt: Arm Auto Solutions Linux Login Prompt
 
 |
 
@@ -1616,9 +1616,9 @@ Follow the steps below to achieve the same:
 Refer to the following image of the tmux panes rearrangement. Panes can
 be navigated using ``Ctrl-b`` followed by the arrow keys.
 
-  .. image:: ../images/kronos_reference_stack_fvp_rearrange_windows.*
+  .. image:: ../images/actuation_fvp_rearrange_windows.*
     :align: center
-    :alt: Kronos Reference Software Stack FVP Rearrange Windows
+    :alt: Arm Auto Solutions FVP Rearrange Windows
 
 |
 
@@ -1672,7 +1672,7 @@ Run the Demo
 
    .. code-block:: text
 
-      cd ~/kronos/
+      cd ~/arm-auto-solutions/
       kas shell -c "oe-run-native packet-analyzer-native start_analyzer -L debug -a localhost -c ./data"
 
    The following messages are expected from the host terminal:
@@ -1694,9 +1694,9 @@ Run the Demo
    Refer to the following image for an invocation example of the Packet
    Analyzer.
 
-     .. image:: ../images/kronos_reference_stack_packet_analyzer_virtualization.*
+     .. image:: ../images/actuation_packet_analyzer_virtualization.*
        :align: center
-       :alt: Kronos Reference Software Stack Packet Analyzer - Virtualization Architecture
+       :alt: Arm Auto Solutions Packet Analyzer - Virtualization Architecture
 
 |
 
@@ -1783,7 +1783,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To run the validation tests:
 
@@ -1829,7 +1829,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To build a Baremetal Architecture image:
 
@@ -1846,7 +1846,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To run the validation tests:
 
@@ -1893,7 +1893,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To build a Virtualization Architecture image:
 
@@ -1910,7 +1910,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To run the validation tests:
 
@@ -1973,7 +1973,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To build a Baremetal Architecture image:
 
@@ -2091,7 +2091,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To run the validation tests:
 
@@ -2135,7 +2135,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To build a Baremetal Architecture image:
 
@@ -2238,7 +2238,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To run the validation tests:
 
@@ -2255,8 +2255,8 @@ The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
-   RESULTS - test_50_trusted_services.KronosTrustedServices.test_03_psa_crypto_api_test: PASSED (298.70s)
-   RESULTS - test_50_trusted_services.KronosTrustedServices.test_05_psa_ps_api_test: PASSED (68.88s)
+   RESULTS - test_50_trusted_services.ArmAutoSolutionsTrustedServices.test_03_psa_crypto_api_test: PASSED (298.70s)
+   RESULTS - test_50_trusted_services.ArmAutoSolutionsTrustedServices.test_05_psa_ps_api_test: PASSED (68.88s)
 
 .. note::
     There is a rare known failure where a timeout might occur during test execution. Refer to
@@ -2280,7 +2280,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To build a Baremetal Architecture image:
 
@@ -2368,7 +2368,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To run the validation tests:
 
@@ -2409,7 +2409,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To build a Baremetal Architecture image:
 
@@ -2467,7 +2467,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To run the validation tests:
 
@@ -2511,7 +2511,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To build the Baremetal Architecture image:
 
@@ -2709,7 +2709,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To run the validation tests:
 
@@ -2755,10 +2755,10 @@ The Arm SystemReady IR Firmware Build option just builds the
 Arm SystemReady IR-aligned firmware. Refer to :ref:`design_systemready_ir`
 for more details.
 
-.. image:: ../images/kronos_reference_stack_build_config_sr_ir.*
+.. image:: ../images/build_config_sr_ir.*
    :align: center
    :width: 60 %
-   :alt: Kronos Reference Software Stack Build Configuration Menu - Arm SystemReady IR Firmware Build
+   :alt: Arm Auto Solutions Build Configuration Menu - Arm SystemReady IR Firmware Build
 
 |
 
@@ -2769,7 +2769,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To build the Arm SystemReady IR-aligned firmware image:
 
@@ -2806,7 +2806,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To build and run the Arm SystemReady IR ACS tests:
 
@@ -2940,7 +2940,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To build the Arm SystemReady IR Linux distros installation tests:
 
@@ -2949,10 +2949,10 @@ To build the Arm SystemReady IR Linux distros installation tests:
    ``Use-Case`` menu.
 2. Select ``Build``.
 
-.. image:: ../images/kronos_reference_stack_build_config_sr_distro_debian.*
+.. image:: ../images/build_config_sr_distro_debian.*
    :align: center
    :width: 60 %
-   :alt: Kronos Reference Software Stack Build Configuration Menu - Debian Linux Distro Installation
+   :alt: Arm Auto Solutions Build Configuration Menu - Debian Linux Distro Installation
 
 |
 
@@ -3068,7 +3068,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To build the Arm SystemReady IR Linux distros installation tests:
 
@@ -3077,10 +3077,10 @@ To build the Arm SystemReady IR Linux distros installation tests:
    ``Use-Case`` menu.
 2. Select ``Build``.
 
-.. image:: ../images/kronos_reference_stack_build_config_sr_distro_opensuse.*
+.. image:: ../images/build_config_sr_distro_opensuse.*
    :align: center
    :width: 60 %
-   :alt: Kronos Reference Software Stack Build Configuration Menu - openSUSE Linux Distro Installation
+   :alt: Arm Auto Solutions Build Configuration Menu - openSUSE Linux Distro Installation
 
 |
 
@@ -3167,7 +3167,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To build the Arm SystemReady IR Linux distros installation tests:
 
@@ -3176,10 +3176,10 @@ To build the Arm SystemReady IR Linux distros installation tests:
    ``Use-Case`` menu.
 2. Select ``Build``.
 
-.. image:: ../images/kronos_reference_stack_build_config_sr_distro_fedora.*
+.. image:: ../images/build_config_sr_distro_fedora.*
    :align: center
    :width: 60 %
-   :alt: Kronos Reference Software Stack Build Configuration Menu - Fedora Linux Distro Installation
+   :alt: Arm Auto Solutions Build Configuration Menu - Fedora Linux Distro Installation
 
 |
 
@@ -3365,8 +3365,7 @@ Build
 
 The to be updated firmware capsule for testing will be generated together with
 the image for the software stack when building. The firmware capsule is placed
-on a removable storage device (in the case of Kronos, an MMC card implementation
-in the FVP).
+on a removable storage device (in the case of Arm FVPs, an MMC card implementation).
 
 Ensure the creation of the initial firmware flash images because previously updated
 firmware will lead to failure of the secure firmware update tests.
@@ -3379,7 +3378,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To build a Baremetal Architecture image:
 
@@ -3415,9 +3414,9 @@ Follow the steps below to achieve the same:
 Refer to the following image of the tmux panes rearrangement. Panes can
 be navigated using ``Ctrl-b`` followed by the arrow keys.
 
-  .. image:: ../images/kronos_reference_stack_secure_firmware_update.*
+  .. image:: ../images/secure_firmware_update_fvp.*
     :align: center
-    :alt: Kronos Reference Software Stack Secure Firmware Update FVP Windows
+    :alt: Arm Auto Solutions Secure Firmware Update FVP Windows
 
 |
 
@@ -3511,7 +3510,7 @@ To run the configuration menu:
 
 .. code-block:: text
 
-  kas menu kronos/Kconfig
+  kas menu sw-ref-stack/Kconfig
 
 To run the validation tests:
 
