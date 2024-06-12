@@ -47,6 +47,8 @@
           <td bgcolor= "#D3494E"><a href="{{ build_data.image_build_url }}">{{ build_data.build_id }}</a></td>
         {% elif build_data.pass == "Pending" %}
           <td bgcolor= "#999999"><a href="{{ build_data.image_build_url }}">{{ build_data.build_id }}</a></td>
+        {% elif build_data.pass == "Unknown" %}
+          <td bgcolor= "#FFFFFF"><a href="{{ build_data.image_build_url }}">{{ build_data.build_id }}</a></td>
         {% endif %}
         <td><a href="{{  build_data.fvp_build_url }}">{{ build_data.fvp_pv }}</a></td>
         {% if build_data.override %}

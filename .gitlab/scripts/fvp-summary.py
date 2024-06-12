@@ -81,7 +81,11 @@ class ArtifactoryHandler(object):
             f"pipelines/{pipeline_id}/jobs?"
             "pagination=keyset&per_page=20&order_by=id&sort=asc"
         )
-        pages = int(requests.head(url).headers["X-Total-Pages"])
+        response = requests.head(url)
+        if response.status_code != requests.codes.ok:
+            return "Unknown"
+
+        pages = int(response.headers["X-Total-Pages"])
         for page in range(1, pages+1):
             jobs = requests.get(f"{url}&page={page}").json()
             if any(
@@ -101,7 +105,11 @@ class ArtifactoryHandler(object):
                 f"{api_url}/projects/{parent_project_id}/"
                 f"pipelines/{parent_pipeline_id}/bridges"
             )
-            bridges = requests.get(bridges_url).json()
+            response = requests.get(bridges_url)
+            if response.status_code != requests.codes.ok:
+                return "Unknown"
+
+            bridges = response.json()
             for bridge in (
                     b for b in bridges if b["name"] == "trigger-meta-arm"):
                 status = bridge["status"]
