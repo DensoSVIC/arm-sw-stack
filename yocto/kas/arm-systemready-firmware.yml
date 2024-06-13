@@ -7,22 +7,10 @@
 header:
   version: 16
   includes:
-    - repo: meta-arm
-      file: kas/fvp-rd-kronos.yml
+    - yocto/kas/arm-bsp-extras.yml
     - repo: meta-arm
       file: kas/arm-systemready-firmware.yml
     - yocto/kas/bsp-pinned-repos.yml
-
-defaults:
-  repos:
-    branch: scarthgap
-
-repos:
-  meta-arm:
-    url: >-
-      https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/meta-arm
-    path: layers/meta-arm
-    branch: kronos-scarthgap
 
 local_conf_header:
   arm-systemready-firmware: |

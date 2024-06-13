@@ -1,0 +1,60 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2024 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: MIT
+
+---
+header:
+  version: 16
+
+defaults:
+  repos:
+    branch: scarthgap
+
+repos:
+  sw-ref-stack:
+    layers:
+      yocto/meta-arm-bsp-extras:
+
+  poky:
+    url: https://git.yoctoproject.org/git/poky
+    path: layers/poky
+    layers:
+      meta:
+
+  meta-arm:
+    url: https://git.yoctoproject.org/meta-arm
+    path: layers/meta-arm
+    layers:
+      meta-arm:
+      meta-arm-toolchain:
+
+  meta-openembedded:
+    url: https://git.openembedded.org/meta-openembedded
+    path: layers/meta-openembedded
+    layers:
+      meta-oe:
+      meta-python:
+
+  meta-ptx:
+    url: https://github.com/pengutronix/meta-ptx
+    path: layers/meta-ptx
+
+env:
+  ARM_FVP_EULA_ACCEPT:
+  DISPLAY:
+  FVP_BUILD_NUMBER:
+  SVE_DISABLE_FLAG: "0"
+  WAYLAND_DISPLAY:
+  XAUTHORITY:
+
+local_conf_header:
+  base: |
+    EXTRA_IMAGE_FEATURES:append = " debug-tweaks ssh-server-openssh"
+    CORE_IMAGE_EXTRA_INSTALL:append = " ssh-pregen-hostkeys"
+    LICENSE_FLAGS_ACCEPTED:append = " \
+      ${@oe.utils.vartrue('ARM_FVP_EULA_ACCEPT', 'Arm-FVP-EULA', '', d)}"
+    IMAGE_CLASSES += "testimage"
+
+distro: nodistro

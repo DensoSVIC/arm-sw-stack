@@ -289,6 +289,7 @@ hipc
 HMAC
 homepageping
 hostbridge
+hostkeys
 hostnames
 hotplug
 htons
@@ -467,6 +468,7 @@ nobranch
 NOCACHE
 nocpuid
 NODELABEL
+nodistro
 noexec
 noncache
 nonterm
@@ -544,6 +546,7 @@ postinst
 POSTPROCESS
 postsmp
 prefuncs
+pregen
 premaster
 presmp
 printstats
@@ -773,6 +776,7 @@ WORKQ
 WORKQUEUE
 writel
 writereg
+XAUTHORITY
 xenboot
 xencmd
 xenctrl
