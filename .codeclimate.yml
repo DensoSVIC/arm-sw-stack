@@ -62,14 +62,12 @@ plugins:
       - "MIT"
     exclude_patterns:
       - GITIGNORE_CONTENTS
-      - "*.cfg"
       - "*.css"
       - "*.git"
       - "*.gitignore"
       - "*.log"
       - "*.patch"
       - "*.png"
-      - "*.scc"
       - "*__init__.py"
       - ".csslintrc"
       - ".eslintignore"
