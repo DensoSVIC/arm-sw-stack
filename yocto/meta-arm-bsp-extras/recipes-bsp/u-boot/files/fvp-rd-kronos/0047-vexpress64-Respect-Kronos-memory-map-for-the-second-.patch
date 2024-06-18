@@ -1,0 +1,38 @@
+From dc18d91e4f9268887b893de591ecccb0b9427279 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Fri, 1 Dec 2023 21:16:02 +0800
+Subject: [PATCH] vexpress64: Respect Kronos memory map for the second memory
+ bank
+
+Compared to the FVP_Base model, Kronos has a different memory range
+for the second memory bank. Use the memory range of this memory
+bank when mapping the DRAM.
+
+Upstream-Status: Inappropriate
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ board/armltd/vexpress64/vexpress64.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/board/armltd/vexpress64/vexpress64.c b/board/armltd/vexpress64/vexpress64.c
+index 33728f63aa..cc2c445abc 100644
+--- a/board/armltd/vexpress64/vexpress64.c
++++ b/board/armltd/vexpress64/vexpress64.c
+@@ -57,9 +57,11 @@ static struct mm_region vexpress64_mem_map[] = {
+ 		 * DRAM beyond 2 GiB is located high. Let's map just some
+ 		 * of it, although U-Boot won't realistically use it, and
+ 		 * the actual available amount might be smaller on the model.
++		 * On Kronos, the second memory bank is different from the
++		 * FVP_Base model, respect the Kronos memory map.
+ 		 */
+-		.virt = 0x880000000UL,		/* 32 + 2 GiB */
+-		.phys = 0x880000000UL,
++		.virt = 0x8080000000UL,
++		.phys = 0x8080000000UL,
+ 		.size = 6UL * SZ_1G,
+ 		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
+ 			 PTE_BLOCK_INNER_SHARE
+-- 
+2.25.1
+

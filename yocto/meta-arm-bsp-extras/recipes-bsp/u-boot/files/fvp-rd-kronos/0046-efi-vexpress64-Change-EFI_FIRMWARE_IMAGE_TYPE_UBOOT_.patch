@@ -1,0 +1,35 @@
+From 73139516c686518571d4619c408593e03a30a320 Mon Sep 17 00:00:00 2001
+From: Robbie Cao <robbie.cao@arm.com>
+Date: Wed, 29 Nov 2023 07:36:48 +0800
+Subject: [PATCH] efi: vexpress64: Change
+ EFI_FIRMWARE_IMAGE_TYPE_UBOOT_RAW_GUID
+
+In the SystemReady IR ACS tests, the check on the CapsuleApp ESRT table
+case detects that this GUID is known and reports a WARNING.
+
+So change to use a new GUID to dismiss the warning.
+
+Upstream-Status: Inappropriate
+Signed-off-by: Robbie Cao <robbie.cao@arm.com>
+---
+ lib/efi_loader/efi_firmware.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/efi_loader/efi_firmware.c b/lib/efi_loader/efi_firmware.c
+index 9d6c475f1d..654273db9f 100644
+--- a/lib/efi_loader/efi_firmware.c
++++ b/lib/efi_loader/efi_firmware.c
+@@ -21,8 +21,8 @@
+ 
+ #if IS_ENABLED(CONFIG_TARGET_VEXPRESS64_BASE_FVP)
+ #define EFI_FIRMWARE_IMAGE_TYPE_UBOOT_RAW_GUID \
+-	EFI_GUID(0xe2bb9c06, 0x70e9, 0x4b14, 0x97, 0xa3, \
+-		 0x5a, 0x79, 0x13, 0x17, 0x6e, 0x3f)
++	EFI_GUID(0xbcac8ebe, 0x1128, 0x40b3, 0xa4, 0x65, \
++		 0x9e, 0x35, 0xf2, 0x30, 0x32, 0x4b)
+ 
+  const efi_guid_t efi_firmware_image_type_uboot_raw =
+ 				EFI_FIRMWARE_IMAGE_TYPE_UBOOT_RAW_GUID;
+-- 
+2.25.1
+

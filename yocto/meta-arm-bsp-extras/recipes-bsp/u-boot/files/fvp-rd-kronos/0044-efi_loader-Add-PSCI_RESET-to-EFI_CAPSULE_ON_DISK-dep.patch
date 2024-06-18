@@ -1,0 +1,28 @@
+From f36fc7220942f46d1a962e27679e283b4c39bc63 Mon Sep 17 00:00:00 2001
+From: Wei Chen <wei.chen@arm.com>
+Date: Fri, 24 Nov 2023 18:06:31 +0800
+Subject: [PATCH] efi_loader: Add PSCI_RESET to EFI_CAPSULE_ON_DISK depends
+ list
+
+Upstream-Status: Pending
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ lib/efi_loader/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/efi_loader/Kconfig b/lib/efi_loader/Kconfig
+index 852f9671d8..5c303c01aa 100644
+--- a/lib/efi_loader/Kconfig
++++ b/lib/efi_loader/Kconfig
+@@ -182,7 +182,7 @@ config EFI_RUNTIME_UPDATE_CAPSULE
+ 
+ config EFI_CAPSULE_ON_DISK
+ 	bool "Enable capsule-on-disk support"
+-	depends on SYSRESET
++	depends on SYSRESET || PSCI_RESET
+ 	select EFI_HAVE_CAPSULE_SUPPORT
+ 	help
+ 	  Select this option if you want to use capsule-on-disk feature,
+-- 
+2.25.1
+

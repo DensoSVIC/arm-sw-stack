@@ -1,0 +1,48 @@
+From 6af2fdbf098fd5f557707bfae29b0d78bc651e5d Mon Sep 17 00:00:00 2001
+From: Wei Chen <wei.chen@arm.com>
+Date: Tue, 18 Apr 2023 16:22:16 +0800
+Subject: [PATCH] vexpress64: Add MMC card to the BOOT_TARGET_DEVICES of
+ FVP
+
+Add MMC disk to FVP's BOOT_TARGET_DEVICES to support the
+scenarios like Linux/FreeBSD Distros installation. These
+scenarios need MMC card to act as Distro installer ISO/USB
+disks.
+
+As the device memory map is not needed for FVP, we remove
+it from BOOT_TARGET_DEVICES in this patch.
+
+Upstream-Status: Backport [https://source.denx.de/u-boot/u-boot/-/commit/86a5741c340f14bdd2f202019e2b7f093c7a64de]
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ include/configs/vexpress_aemv8.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/include/configs/vexpress_aemv8.h b/include/configs/vexpress_aemv8.h
+index 23b66373d9..a27bde8444 100644
+--- a/include/configs/vexpress_aemv8.h
++++ b/include/configs/vexpress_aemv8.h
+@@ -150,6 +150,12 @@
+ #define FUNC_VIRTIO(func)
+ #endif
+ 
++#ifdef CONFIG_CMD_MMC
++#define FUNC_MMC(func)	func(MMC, mmc, 0)
++#else
++#define FUNC_MMC(func)
++#endif
++
+ /*
+  * Boot by loading an Android image, or kernel, initrd and FDT through
+  * semihosting into DRAM.
+@@ -206,6 +212,7 @@
+ 	func(SMH, smh, na)		\
+ 	func(MEM, mem, na)		\
+ 	FUNC_VIRTIO(func)		\
++	FUNC_MMC(func)			\
+ 	func(PXE, pxe, na)		\
+ 	func(DHCP, dhcp, na)
+ 
+-- 
+2.25.1
+

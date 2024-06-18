@@ -1,0 +1,48 @@
+From dcd22620d5ed0895ffe857699fd8e35c536ed6c5 Mon Sep 17 00:00:00 2001
+From: Qi Feng <qi.feng@arm.com>
+Date: Tue, 29 Aug 2023 17:21:06 +0800
+Subject: [PATCH] vexpress64: Add SMMU and PCIe memory map regions
+
+This patch adds the regions for SMMU and PCIe according to the memory
+map. The bsa-acs test suite[1] accesses all the memory that are
+registered in device tree. If the SMMU and PCIe memory regions are not
+mapped, the SMMU and PCIe related test cases will cause data abort.
+
+[1]: https://github.com/ARM-software/bsa-acs/
+
+Upstream-Status: Inappropriate
+Signed-off-by: Qi Feng <qi.feng@arm.com>
+---
+ board/armltd/vexpress64/vexpress64.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/board/armltd/vexpress64/vexpress64.c b/board/armltd/vexpress64/vexpress64.c
+index 2658e3c0b9..9b84dd8c7c 100644
+--- a/board/armltd/vexpress64/vexpress64.c
++++ b/board/armltd/vexpress64/vexpress64.c
+@@ -63,6 +63,22 @@ static struct mm_region vexpress64_mem_map[] = {
+ 		.size = 6UL * SZ_1G,
+ 		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
+ 			 PTE_BLOCK_INNER_SHARE
++	}, {
++		/* SMMU */
++		.virt = 0x280000000UL,
++		.phys = 0x280000000UL,
++		.size = SZ_1M,
++		.attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
++			 PTE_BLOCK_NON_SHARE |
++			 PTE_BLOCK_PXN | PTE_BLOCK_UXN
++	}, {
++		/* PCIe */
++		.virt = 0x4000000000UL,
++		.phys = 0x4000000000UL,
++		.size = SZ_1G,
++		.attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
++			 PTE_BLOCK_NON_SHARE |
++			 PTE_BLOCK_PXN | PTE_BLOCK_UXN
+ 	}, {
+ 		/* List terminator */
+ 		0,
+-- 
+2.25.1
+

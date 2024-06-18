@@ -1,0 +1,41 @@
+From 7296fd110e2279a22fc9ab04846e65d68a0048f5 Mon Sep 17 00:00:00 2001
+From: Qi Feng <qi.feng@arm.com>
+Date: Tue, 21 Nov 2023 14:42:14 +0800
+Subject: [PATCH] efi: Do not pack struct efi_firmware_image_descriptor
+
+The struct efi_firmware_image_descriptor having __packed attribute
+causes the below error when invoking GetImageInfo in the UEFI runtime
+services.
+
+    "Synchronous Abort" handler, esr 0x96000004, far 0xb8e7d80000000000
+    elr: 000000006735710c lr : 0000000067357780 (reloc)
+    elr: 00000000dee8410c lr : 00000000dee84780
+
+This is because the equivalent structure in UEFI does not have a
+__packed attribute.
+
+So remove the __packed attribute of struct efi_firmware_image_descriptor
+to fix this problem.
+
+Upstream-Status: Inappropriate [Introduced by the previous Inappropriate patch]
+Signed-off-by: Qi Feng <qi.feng@arm.com>
+---
+ include/efi_api.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/efi_api.h b/include/efi_api.h
+index f267ab5110..55a4c989fc 100644
+--- a/include/efi_api.h
++++ b/include/efi_api.h
+@@ -2086,7 +2086,7 @@ struct efi_firmware_image_descriptor {
+ 	u32 last_attempt_status;
+ 	u64 hardware_instance;
+ 	efi_firmware_image_dep_t *dependencies;
+-} __packed;
++};
+ 
+ struct efi_firmware_management_protocol {
+ 	efi_status_t (EFIAPI *get_image_info)(
+-- 
+2.25.1
+

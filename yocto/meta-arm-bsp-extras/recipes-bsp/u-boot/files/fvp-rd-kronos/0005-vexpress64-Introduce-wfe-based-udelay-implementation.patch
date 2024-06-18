@@ -1,0 +1,81 @@
+From 4bab3c249728b41c4eb44f677fa021b2b463a96e Mon Sep 17 00:00:00 2001
+From: Peter Hoyes <Peter.Hoyes@arm.com>
+Date: Tue, 25 Apr 2023 13:09:16 +0100
+Subject: [PATCH] vexpress64: Introduce wfe-based udelay implementation
+
+On Arm FVPs with higher CPU frequencies, polling cntpct_el0 in a tight
+loop is inefficient, such that a simulated 1s sleep takes a couple of
+orders of magnitude longer to execute in wall time.
+
+Introduce a wfe() macro in asm/system.h for Arm64.
+
+If running at EL2, add a workaround which enables the cntpct_el0 event
+stream and uses the generated events to avoid polling the register so
+often.
+
+This optimization is implemented only for the VEXPRESS64_BASE_MODEL.
+
+Upstream-Status: Pending
+Signed-off-by: Peter Hoyes <Peter.Hoyes@arm.com>
+---
+ arch/arm/include/asm/system.h        |  3 +++
+ board/armltd/vexpress64/vexpress64.c | 25 +++++++++++++++++++++++++
+ 2 files changed, 28 insertions(+)
+
+diff --git a/arch/arm/include/asm/system.h b/arch/arm/include/asm/system.h
+index c0d9d226d4..70bec6ee81 100644
+--- a/arch/arm/include/asm/system.h
++++ b/arch/arm/include/asm/system.h
+@@ -69,6 +69,9 @@
+ /*
+  * CNTHCTL_EL2 bits definitions
+  */
++#define CNTHCTL_EL2_EVNT_EN		BIT(2)	/* Enable the event stream */
++#define CNTHCTL_EL2_EVENT_I_SHIFT	(4)	/* Event stream trigger bits */
++#define CNTHCTL_EL2_EVENT_I(val)	((val) << CNTHCTL_EL2_EVENT_I_SHIFT)
+ #define CNTHCTL_EL2_EL1PCEN_EN	(1 << 1)  /* Physical timer regs accessible   */
+ #define CNTHCTL_EL2_EL1PCTEN_EN	(1 << 0)  /* Physical counter accessible      */
+ 
+diff --git a/board/armltd/vexpress64/vexpress64.c b/board/armltd/vexpress64/vexpress64.c
+index b91a3c2d00..4960710fed 100644
+--- a/board/armltd/vexpress64/vexpress64.c
++++ b/board/armltd/vexpress64/vexpress64.c
+@@ -19,6 +19,7 @@
+ #include <dm/platform_data/serial_pl01x.h>
+ #include "pcie.h"
+ #include <asm/armv8/mmu.h>
++#include <asm/system.h>
+ #ifdef CONFIG_VIRTIO_NET
+ #include <virtio_types.h>
+ #include <virtio.h>
+@@ -225,3 +226,27 @@ int board_eth_init(struct bd_info *bis)
+ #endif
+ 	return rc;
+ }
++
++#if (IS_ENABLED(CONFIG_VEXPRESS64_BASE_MODEL))
++void __udelay(unsigned long usec)
++{
++	u64 target;
++	u32 cnthctl_val;
++
++	target = get_ticks() + usec_to_tick(usec);
++
++	if (current_el() >= 2) {
++		/* At EL2, use the event stream to avoid polling CNTPCT_EL0 so often */
++		cnthctl_val = CNTHCTL_EL2_EVNT_EN | CNTHCTL_EL2_EVENT_I(0x7);
++
++		while (get_ticks() + 128 <= target) {
++			asm volatile("msr cnthctl_el2, %0" : : "r" (cnthctl_val) : "cc");
++			wfe();
++		}
++	}
++
++	/* Fall back to polling CNTPCT_EL0 */
++	while (get_ticks() <= target)
++		;
++}
++#endif
+-- 
+2.34.1
+

@@ -167,6 +167,7 @@ DEFUN
 delaybeforesend
 delbr
 DENABLE
+denx
 dependsordered
 DEPLOYDIR
 destdir
@@ -241,6 +242,7 @@ erriidr
 ERRN
 errno
 errupdate
+ESRT
 etherdev
 ethpc
 ethsi
@@ -301,6 +303,7 @@ HARDLIM
 headrulewidth
 helloworld
 heredocs
+hexdump
 HIGHDMA
 hipc
 HMAC
@@ -507,6 +510,7 @@ nouppercase
 NRDY
 nspe
 numpy
+NVEDIT
 NVRAM
 objcopy
 OBJS
@@ -524,6 +528,7 @@ OPENMAP
 openvswitch
 oper
 optee
+OSINDICATIONS
 outband
 outdir
 outorder
@@ -721,6 +726,7 @@ subvolume
 sufix
 suggestedvar
 swiotlb
+SWRITE
 symvers
 sysconfdir
 sysctls

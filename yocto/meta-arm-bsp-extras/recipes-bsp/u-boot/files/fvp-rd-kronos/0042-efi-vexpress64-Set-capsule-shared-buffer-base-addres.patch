@@ -1,0 +1,56 @@
+From 78fad984c981f1fa1250690732d837144a6ca164 Mon Sep 17 00:00:00 2001
+From: Qi Feng <qi.feng@arm.com>
+Date: Wed, 1 Nov 2023 17:03:19 +0800
+Subject: [PATCH] efi: vexpress64: Set capsule shared buffer base address
+
+This buffer is used as shared memory between u-boot and secure
+world. The capsule is passed to secure world through this buffer.
+
+Upstream-Status: Pending
+Signed-off-by: Qi Feng <qi.feng@arm.com>
+---
+ include/configs/corstone1000.h   | 1 +
+ include/configs/vexpress_aemv8.h | 1 +
+ lib/efi_loader/efi_capsule.c     | 2 +-
+ 3 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/include/configs/corstone1000.h b/include/configs/corstone1000.h
+index 1c01a07067..b0b4dc825a 100644
+--- a/include/configs/corstone1000.h
++++ b/include/configs/corstone1000.h
+@@ -47,6 +47,7 @@
+ #define PHYS_SDRAM_1_SIZE	0x80000000
+ 
+ #define CFG_SYS_SDRAM_BASE	PHYS_SDRAM_1
++#define FVP_CAPSULE_BUFFER_BASE	CFG_SYS_SDRAM_BASE
+ 
+ #define BOOT_TARGET_DEVICES(func) \
+ 	func(USB, usb, 0) \
+diff --git a/include/configs/vexpress_aemv8.h b/include/configs/vexpress_aemv8.h
+index c1100d257d..91c925fe57 100644
+--- a/include/configs/vexpress_aemv8.h
++++ b/include/configs/vexpress_aemv8.h
+@@ -117,6 +117,7 @@
+ #define DRAM_SEC_SIZE		0x01000000
+ #define PHYS_SDRAM_1_SIZE	0x80000000 - DRAM_SEC_SIZE
+ #define CFG_SYS_SDRAM_BASE	PHYS_SDRAM_1
++#define FVP_CAPSULE_BUFFER_BASE	(CFG_SYS_SDRAM_BASE + 0x01000000)
+ 
+ #ifdef CONFIG_TARGET_VEXPRESS64_JUNO
+ #define PHYS_SDRAM_2			(0x880000000)
+diff --git a/lib/efi_loader/efi_capsule.c b/lib/efi_loader/efi_capsule.c
+index 577c64926d..30892b77d1 100644
+--- a/lib/efi_loader/efi_capsule.c
++++ b/lib/efi_loader/efi_capsule.c
+@@ -736,7 +736,7 @@ static efi_status_t efi_capsule_update_firmware(
+ efi_status_t efi_fvp_alloc_capsule_shared_buf(void)
+ {
+ 	efi_status_t efi_ret;
+-	u64 ram_base = CFG_SYS_SDRAM_BASE;
++	u64 ram_base = FVP_CAPSULE_BUFFER_BASE;
+ 
+ 	log_debug("[%s]\n", __func__);
+ 
+-- 
+2.25.1
+

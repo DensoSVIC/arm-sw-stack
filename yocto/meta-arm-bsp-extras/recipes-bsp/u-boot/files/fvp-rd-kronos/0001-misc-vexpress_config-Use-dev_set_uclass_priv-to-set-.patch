@@ -1,0 +1,47 @@
+From 6b6fa0505d055626df5a6101a7ba48c73f1521cb Mon Sep 17 00:00:00 2001
+From: Wei Chen <wei.chen@arm.com>
+Date: Tue, 18 Apr 2023 15:04:27 +0800
+Subject: [PATCH] misc: vexpress_config: Use dev_set_uclass_priv to set the
+ private data
+
+In current vexpress_config_probe code, it sets the uclass private data
+directly. This will cause one compilation error:
+drivers/misc/vexpress_config.c:114:27: error: lvalue required as left operand of assignment
+  114 |  dev_get_uclass_priv(dev) = priv;
+      |                           ^
+make[2]: *** [scripts/Makefile.build:258: drivers/misc/vexpress_config.o] Error 1
+make[1]: *** [scripts/Makefile.build:398: drivers/misc] Error 2
+
+So in this patch we use dev_set_uclass_priv to set the uclass private
+data, and this compilation error is disappeared.
+
+Upstream-Status: Backport [https://source.denx.de/u-boot/u-boot/-/commit/ffdb85bfcfd79a432a9379a9a13680699eb686fb]
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ drivers/misc/vexpress_config.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/misc/vexpress_config.c b/drivers/misc/vexpress_config.c
+index 2baca48109..796b436cd8 100644
+--- a/drivers/misc/vexpress_config.c
++++ b/drivers/misc/vexpress_config.c
+@@ -7,6 +7,7 @@
+ #include <common.h>
+ #include <dm.h>
+ #include <malloc.h>
++#include <dm/device-internal.h>
+ #include <dm/read.h>
+ #include <asm/io.h>
+ #include <linux/bitops.h>
+@@ -109,7 +110,7 @@ static int vexpress_config_probe(struct udevice *dev)
+ 	if (!priv)
+ 		return -ENOMEM;
+ 
+-	dev_get_uclass_priv(dev) = priv;
++	dev_set_uclass_priv(dev, priv);
+ 	priv->addr = ofnode_get_addr(args.node);
+ 
+ 	return dev_read_u32(dev, "arm,vexpress,site", &priv->site);
+-- 
+2.25.1
+

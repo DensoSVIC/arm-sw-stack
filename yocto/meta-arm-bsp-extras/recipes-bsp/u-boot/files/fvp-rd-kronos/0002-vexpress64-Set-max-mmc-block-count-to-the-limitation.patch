@@ -1,0 +1,39 @@
+From d7c1bda2271a4a6837edcf67e8c7aaf0df601b2d Mon Sep 17 00:00:00 2001
+From: Wei Chen <wei.chen@arm.com>
+Date: Tue, 18 Apr 2023 15:44:47 +0800
+Subject: [PATCH] vexpress64: Set max mmc block count to the limitation of
+ PL180
+
+u-boot provides CONFIG_SYS_MMC_MAX_BLK_COUNT for users to specify
+the MMC max block count of each transfer command. If users do not
+set this value, u-boot will use 65535 as max block counter by default.
+This is far greater than the PL180's implementation. PL180 MMC
+implements 128 as the maximum block count. Therefore, on the vexpress64
+platforms, when the PL180 MMC controller transfers 128 blocks, no more
+data will be generated, but the caller of the MMC transfer command
+thinks that the command still has subsequent data to be completed.
+This causes the system to hang when MMC reads large blocks of data.
+
+So in this patch, we set the CONFIG_SYS_MMC_MAX_BLK_COUNT to 127
+(maximum block count register of PL180 - 1). This will allow the caller
+of the MMC transfer command to divide the request for a large blocks
+into 128 smaller data blocks for transmission to avoid system hangup.
+
+Upstream-Status: Inappropriate
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ configs/vexpress_fvp_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/configs/vexpress_fvp_defconfig b/configs/vexpress_fvp_defconfig
+index 4055d29638..407a952d9b 100644
+--- a/configs/vexpress_fvp_defconfig
++++ b/configs/vexpress_fvp_defconfig
+@@ -3,3 +3,4 @@ CONFIG_ARCH_VEXPRESS64=y
+ CONFIG_DEFAULT_DEVICE_TREE="arm_fvp"
+ CONFIG_IDENT_STRING=" arm_fvp"
+ # CONFIG_DISPLAY_CPUINFO is not set
++CONFIG_SYS_MMC_MAX_BLK_COUNT=127
+-- 
+2.25.1
+

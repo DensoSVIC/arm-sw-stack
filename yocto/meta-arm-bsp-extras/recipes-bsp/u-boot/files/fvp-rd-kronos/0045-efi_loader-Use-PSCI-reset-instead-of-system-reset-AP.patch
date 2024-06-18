@@ -1,0 +1,33 @@
+From 40b21e33c8d990785d14c94a776b8c7bfc9139cc Mon Sep 17 00:00:00 2001
+From: Wei Chen <wei.chen@arm.com>
+Date: Fri, 24 Nov 2023 18:13:50 +0800
+Subject: [PATCH] efi_loader: Use PSCI reset instead of system reset API
+
+Use PSCI reset instead of system reset API for capsule update.
+
+Upstream-Status: Pending
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+Signed-off-by: Qi Feng <qi.feng@arm.com>
+---
+ lib/efi_loader/efi_capsule.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/lib/efi_loader/efi_capsule.c b/lib/efi_loader/efi_capsule.c
+index 30892b77d1..9bd748d406 100644
+--- a/lib/efi_loader/efi_capsule.c
++++ b/lib/efi_loader/efi_capsule.c
+@@ -1512,7 +1512,11 @@ efi_status_t efi_launch_capsules(void)
+ 	 */
+ 	log_info("Reboot after firmware update.\n");
+ 	/* Cold reset is required for loading the new firmware. */
++#if IS_ENABLED(CONFIG_ARCH_VEXPRESS64)
++	reset_misc();
++#else
+ 	sysreset_walk_halt(SYSRESET_COLD);
++#endif
+ 	hang();
+ 	/* not reach here */
+ 
+-- 
+2.25.1
+

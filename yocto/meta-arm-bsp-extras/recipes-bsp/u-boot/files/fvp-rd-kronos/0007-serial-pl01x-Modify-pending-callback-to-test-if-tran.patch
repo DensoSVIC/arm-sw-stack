@@ -1,0 +1,39 @@
+From a21789194873d768ba829eb0169c7f0e3ceb85ef Mon Sep 17 00:00:00 2001
+From: Lukasz Majewski <lukma@denx.de>
+Date: Fri, 19 May 2023 12:43:53 +0200
+Subject: [PATCH] serial: pl01x: Modify pending callback to test if transmit
+ FIFO is empty
+
+Before this change the FR_TXFF (Transmit FIFO full) bit (5 in
+HW_UARTDBG_FR) has been used to assess if there is still data pending
+to be sent via UART.
+
+This approach is problematic, as it may happen that serial is in the
+middle of transmission (so the TX FIFO is NOT full anymore) and this
+test returns true infinitely. As a result, for example in _serial_flush()
+DM serial function we are locked in endless while().
+
+The fix here is to test explicitly if the TX FIFO is empty.
+
+Upstream-Status: Backport [https://source.denx.de/u-boot/u-boot/-/commit/a21789194873d768ba829eb0169c7f0e3ceb85ef]
+Signed-off-by: Lukasz Majewski <lukma@denx.de>
+---
+ drivers/serial/serial_pl01x.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/serial/serial_pl01x.c b/drivers/serial/serial_pl01x.c
+index dbf2b2df34..428a4d210d 100644
+--- a/drivers/serial/serial_pl01x.c
++++ b/drivers/serial/serial_pl01x.c
+@@ -329,7 +329,7 @@ int pl01x_serial_pending(struct udevice *dev, bool input)
+ 	if (input)
+ 		return pl01x_tstc(priv->regs);
+ 	else
+-		return fr & UART_PL01x_FR_TXFF ? 0 : 1;
++		return fr & UART_PL01x_FR_TXFE ? 0 : 1;
+ }
+ 
+ static const struct dm_serial_ops pl01x_serial_ops = {
+-- 
+2.25.1
+
