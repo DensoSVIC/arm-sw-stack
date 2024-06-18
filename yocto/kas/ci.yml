@@ -22,8 +22,8 @@ env:
   SRCREV_CAM:
   TESTIMAGE_AUTO: "${@ '1' if '${BUILD_ARCH}' == 'x86_64' \
     or '${FREQUENCY}' != 'adhoc' \
-    or bb.utils.contains('EXTRA_IMAGE_FEATURES', 'baremetal', True, False, d) \
-    else ''}"
+    or bb.utils.contains('EXTRA_IMAGE_FEATURES', 'virtualization', \
+    False, True, d) else ''}"
   FREQUENCY:
 
 local_conf_header:

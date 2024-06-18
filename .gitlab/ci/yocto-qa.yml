@@ -10,11 +10,12 @@ check-layers:
   script:
     - echo "Validate layer $LAYER is Yocto Project compatible"
     - kas shell --update --force-checkout
-        yocto/kas/virtualization.yml:yocto/kas/ci.yml
+        yocto/kas/arm-bsp-extras.yml:yocto/kas/virtualization.yml:yocto/kas/ci.yml
         --command
           "yocto-check-layer-wrapper
             $CI_PROJECT_DIR/yocto/$LAYER
             --dependency
+              $CI_PROJECT_DIR/yocto/meta-arm-bsp-extras
               $CI_PROJECT_DIR/yocto/meta-arm-safety-island
               $KAS_WORK_DIR/layers/meta-arm/meta-arm
               $KAS_WORK_DIR/layers/meta-arm/meta-arm-bsp
@@ -25,6 +26,7 @@ check-layers:
               $KAS_WORK_DIR/layers/meta-openembedded/meta-networking
               $KAS_WORK_DIR/layers/meta-openembedded/meta-oe
               $KAS_WORK_DIR/layers/meta-openembedded/meta-python
+              $KAS_WORK_DIR/layers/meta-ptx
               $KAS_WORK_DIR/layers/meta-security/meta-parsec
               $KAS_WORK_DIR/layers/meta-virtualization
               $KAS_WORK_DIR/layers/meta-zephyr/meta-zephyr-core
@@ -34,7 +36,10 @@ check-layers:
   parallel:
     matrix:
       - MACHINE: fvp-rd-kronos
-        LAYER: [meta-arm-auto-solutions, meta-arm-safety-island]
+        LAYER:
+          - meta-arm-auto-solutions
+          - meta-arm-bsp-extras
+          - meta-arm-safety-island
 
   variables:
     TESTIMAGE_AUTO: "0"

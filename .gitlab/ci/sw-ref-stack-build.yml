@@ -25,10 +25,6 @@
     - .kas_build
   variables:
     IMAGE_DIR: $CACHE_DIR/$PROJECT_VERSION/images
-    KUBERNETES_CPU_REQUEST: '16'
-    KUBERNETES_MEMORY_LIMIT: 33Gi
-    KUBERNETES_MEMORY_REQUEST: 32Gi
-    KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 100Gi
   before_script:
     - KASFILE_CI=yocto/kas/ci.yml
     # Set the url and branch for the specific repos
@@ -78,6 +74,7 @@
   parallel:
     matrix:
       - BUILD_HOST_ARCH: [arm64, x86_64]
+        KAS_MACHINE: fvp-rd-kronos
   tags:
     - ${BUILD_HOST_ARCH}
   # Store the build artifacts from the job.
@@ -129,38 +126,69 @@ build-retention:
       --delete-artifacts=true \
       --async=true ${FVP_SERVER_IMAGE_BUILD_PATH}
 
-Image-Build-baremetal:
+.kas_image_build_arm_bsp_extras:
   extends: .kas_image_build_sw_ref_stack
   variables:
-    KAS_CONFIGS: baremetal
+    KUBERNETES_CPU_REQUEST: '16'
+    KUBERNETES_MEMORY_LIMIT: 17Gi
+    KUBERNETES_MEMORY_REQUEST: 16Gi
+    KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 30Gi
+
+Bsp-Image-Build-base:
+  extends: .kas_image_build_arm_bsp_extras
+  variables:
+    KAS_CONFIGS: arm-bsp-extras
+
+Bsp-Image-Build-linux-rt:
+  extends: .kas_image_build_arm_bsp_extras
+  variables:
+    KAS_CONFIGS: arm-bsp-extras/linux-yocto-rt
+
+Bsp-Image-Build-firmware:
+  extends: .kas_image_build_arm_bsp_extras
+  variables:
+    KAS_CONFIGS: arm-systemready-firmware
+
+.kas_image_build_arm_auto_solutions:
+  extends: .kas_image_build_sw_ref_stack
+  variables:
+    KUBERNETES_CPU_REQUEST: '16'
+    KUBERNETES_MEMORY_LIMIT: 33Gi
+    KUBERNETES_MEMORY_REQUEST: 32Gi
+    KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 100Gi
+
+Image-Build-baremetal:
+  extends: .kas_image_build_arm_auto_solutions
+  variables:
+    KAS_CONFIGS: arm-bsp-extras/baremetal
 
 Image-Build-baremetal-si0-bridge-ethernet0:
-  extends: .kas_image_build_sw_ref_stack
+  extends: .kas_image_build_arm_auto_solutions
   variables:
-    KAS_CONFIGS: baremetal/si0-bridge-ethernet0
+    KAS_CONFIGS: arm-bsp-extras/baremetal/si0-bridge-ethernet0
 
 Image-Build-baremetal-cam:
-  extends: .kas_image_build_sw_ref_stack
+  extends: .kas_image_build_arm_auto_solutions
   variables:
-    KAS_CONFIGS: baremetal/cam
+    KAS_CONFIGS: arm-bsp-extras/baremetal/cam
 
 Image-Build-baremetal-hipc-validation:
-  extends: .kas_image_build_sw_ref_stack
+  extends: .kas_image_build_arm_auto_solutions
   variables:
-    KAS_CONFIGS: baremetal/hipc-validation
+    KAS_CONFIGS: arm-bsp-extras/baremetal/hipc-validation
     DEPLOY_DIR: $CI_PROJECT_DIR/work/build/tmp_baremetal/deploy
     IMAGE_TARFILE_NAME: "baremetal-hipc-images"
     GENERATE_BUILD_INFO_JOB: "true"
 
 Image-Build-baremetal-si-psa-storage-tests:
-  extends: .kas_image_build_sw_ref_stack
+  extends: .kas_image_build_arm_auto_solutions
   variables:
-    KAS_CONFIGS: baremetal/si-psa-storage-tests
+    KAS_CONFIGS: arm-bsp-extras/baremetal/si-psa-storage-tests
 
 Image-Build-baremetal-si-psa-crypto-tests:
-  extends: .kas_image_build_sw_ref_stack
+  extends: .kas_image_build_arm_auto_solutions
   variables:
-    KAS_CONFIGS: baremetal/si-psa-crypto-tests
+    KAS_CONFIGS: arm-bsp-extras/baremetal/si-psa-crypto-tests
 
 fvp-summary-render:
   image: ${MIRROR_DOCKER}/python:3.8
@@ -180,24 +208,24 @@ fvp-summary-render:
   when: always
 
 Image-Build-virtualization:
-  extends: .kas_image_build_sw_ref_stack
+  extends: .kas_image_build_arm_auto_solutions
   variables:
-    KAS_CONFIGS: virtualization
+    KAS_CONFIGS: arm-bsp-extras/virtualization
 
 Image-Build-virtualization-hipc-validation:
-  extends: .kas_image_build_sw_ref_stack
+  extends: .kas_image_build_arm_auto_solutions
   variables:
-    KAS_CONFIGS: virtualization/hipc-validation
+    KAS_CONFIGS: arm-bsp-extras/virtualization/hipc-validation
 
 Image-Build-virtualization-cam:
-  extends: .kas_image_build_sw_ref_stack
+  extends: .kas_image_build_arm_auto_solutions
   variables:
-    KAS_CONFIGS: virtualization/cam
+    KAS_CONFIGS: arm-bsp-extras/virtualization/cam
 
 Image-Build-virtualization-nosve:
-  extends: .kas_image_build_sw_ref_stack
+  extends: .kas_image_build_arm_auto_solutions
   variables:
-    KAS_CONFIGS: virtualization/nosve
+    KAS_CONFIGS: arm-bsp-extras/virtualization/nosve
 
 # Override deletion jobs so they only run manually
 Delete-DL-Dir:

@@ -1,0 +1,13 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2021-2024 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: MIT
+
+---
+header:
+  version: 16
+
+local_conf_header:
+  kernel: |
+    PREFERRED_PROVIDER_virtual/kernel = "linux-yocto-rt"
