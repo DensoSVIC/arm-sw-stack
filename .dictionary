@@ -568,6 +568,7 @@ ptestrunner
 pver
 pwroff
 pycache
+pyhsslms
 pyparsing
 pypi
 pytest
@@ -744,6 +745,7 @@ userspace
 userspaces
 validitems
 vardeps
+varflags
 vbuffer
 VCPU
 vcpus
