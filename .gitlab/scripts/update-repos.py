@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -33,7 +33,9 @@ repositories = (
     "https://git.yoctoproject.org/git/meta-zephyr",
     "https://git.yoctoproject.org/git/poky",
     "https://github.com/kraj/meta-clang",
-    "https://gitlab.com/Linaro/cassini/meta-cassini"
+    "https://gitlab.com/Linaro/cassini/meta-cassini",
+    "https://github.com/pengutronix/meta-ptx",
+    "https://git.yoctoproject.org/git/meta-security",
 )
 
 
