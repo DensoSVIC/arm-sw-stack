@@ -1,0 +1,268 @@
+From af41b1f683f779cdae1ceed74d95acd64b65ec28 Mon Sep 17 00:00:00 2001
+From: Xinxu Chen <Xinxu.Chen@arm.com>
+Date: Wed, 18 Oct 2023 16:44:29 +0800
+Subject: [PATCH] product/rdkronos: Add MHU3 configuration for SCP to RSS
+
+Add additional MHU3 channel3 for RSS to SCP doorbell interrupt.
+Add serveral interfaces to power on SI cluster in the platform
+module.
+
+Upstream-Status: Pending
+Signed-off-by: Xinxu Chen <xinxu.chen@arm.com>
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Signed-off-by: Robbie Cao <robbie.cao@arm.com>
+---
+ .../scp_platform/include/mod_scp_platform.h   |  6 ++
+ .../scp_platform/src/mod_scp_platform.c       | 81 +++++++++++++++++++
+ product/rdkronos/scp_ramfw/config_mhu3.c      |  6 ++
+ product/rdkronos/scp_ramfw/config_transport.c | 66 +++++++++++++++
+ .../scp_ramfw/include/scp_cfgd_transport.h    |  3 +
+ 5 files changed, 162 insertions(+)
+
+diff --git a/product/rdkronos/module/scp_platform/include/mod_scp_platform.h b/product/rdkronos/module/scp_platform/include/mod_scp_platform.h
+index 414f612a..4ab9edef 100644
+--- a/product/rdkronos/module/scp_platform/include/mod_scp_platform.h
++++ b/product/rdkronos/module/scp_platform/include/mod_scp_platform.h
+@@ -52,6 +52,12 @@ enum mod_scp_platform_api_idx {
+     /*! Interface for Transport module */
+     MOD_SCP_PLATFORM_API_IDX_TRANSPORT_SIGNAL,
+
++    MOD_SCP_PLATFORM_API_IDX_BOOT_SI_CLUS0,
++
++    MOD_SCP_PLATFORM_API_IDX_BOOT_SI_CLUS1,
++
++    MOD_SCP_PLATFORM_API_IDX_BOOT_SI_CLUS2,
++
+     /*! Number of exposed interfaces */
+     MOD_SCP_PLATFORM_API_COUNT
+ };
+diff --git a/product/rdkronos/module/scp_platform/src/mod_scp_platform.c b/product/rdkronos/module/scp_platform/src/mod_scp_platform.c
+index f6c9a81b..8998e034 100644
+--- a/product/rdkronos/module/scp_platform/src/mod_scp_platform.c
++++ b/product/rdkronos/module/scp_platform/src/mod_scp_platform.c
+@@ -72,6 +72,15 @@ fwk_id_t pd_transition_notification_id =
+ static fwk_id_t reset_ch_transport_id = FWK_ID_ELEMENT_INIT(
+     FWK_MODULE_IDX_TRANSPORT, SCP_CFGD_MOD_TRANSPORT_EIDX_RESET);
+
++static fwk_id_t transport_id_clus0 = FWK_ID_ELEMENT_INIT(
++    FWK_MODULE_IDX_TRANSPORT, SCP_CFGD_MOD_TRANSPORT_EIDX_BOOT_SI_CLUS0);
++
++static fwk_id_t transport_id_clus1 = FWK_ID_ELEMENT_INIT(
++    FWK_MODULE_IDX_TRANSPORT, SCP_CFGD_MOD_TRANSPORT_EIDX_BOOT_SI_CLUS1);
++
++static fwk_id_t transport_id_clus2 = FWK_ID_ELEMENT_INIT(
++    FWK_MODULE_IDX_TRANSPORT, SCP_CFGD_MOD_TRANSPORT_EIDX_BOOT_SI_CLUS2);
++
+ /* SCMI services required to enable the messaging stack */
+ static unsigned int scmi_notification_table[] = {
+     SCP_CFGD_MOD_SCMI_EIDX_PSCI,
+@@ -301,11 +310,47 @@ static int signal_message(fwk_id_t unused)
+     return FWK_SUCCESS;
+ }
+
++static int signal_message_boot_si_cl0(fwk_id_t unused)
++{
++    FWK_LOG_INFO("[PLATFORM_SYSTEM] Received si cl0 doorbell event!\n");
++
++    return FWK_SUCCESS;
++}
++
++static int signal_message_boot_si_cl1(fwk_id_t unused)
++{
++    FWK_LOG_INFO("[PLATFORM_SYSTEM] Received si cl1 doorbell event!\n");
++
++    return FWK_SUCCESS;
++}
++
++static int signal_message_boot_si_cl2(fwk_id_t unused)
++{
++    FWK_LOG_INFO("[PLATFORM_SYSTEM] Received si cl2 doorbell event!\n");
++
++    return FWK_SUCCESS;
++}
++
+ static const struct mod_transport_firmware_signal_api transport_signal_api = {
+     .signal_error = signal_error,
+     .signal_message = signal_message,
+ };
+
++static const struct mod_transport_firmware_signal_api transport_boot_si_cl0 = {
++    .signal_error = signal_error,
++    .signal_message = signal_message_boot_si_cl0,
++};
++
++static const struct mod_transport_firmware_signal_api transport_boot_si_cl1 = {
++    .signal_error = signal_error,
++    .signal_message = signal_message_boot_si_cl1,
++};
++
++static const struct mod_transport_firmware_signal_api transport_boot_si_cl2 = {
++    .signal_error = signal_error,
++    .signal_message = signal_message_boot_si_cl2,
++};
++
+ /*
+  * Framework handlers
+  */
+@@ -369,6 +414,30 @@ static int scp_platform_bind(fwk_id_t id, unsigned int round)
+         return status;
+     }
+
++    status = fwk_module_bind(
++        transport_id_clus0,
++        FWK_ID_API(FWK_MODULE_IDX_TRANSPORT, MOD_TRANSPORT_API_IDX_FIRMWARE),
++        &scp_platform_ctx.transport_api);
++    if (status != FWK_SUCCESS) {
++        return status;
++    }
++
++    status = fwk_module_bind(
++        transport_id_clus1,
++        FWK_ID_API(FWK_MODULE_IDX_TRANSPORT, MOD_TRANSPORT_API_IDX_FIRMWARE),
++        &scp_platform_ctx.transport_api);
++    if (status != FWK_SUCCESS) {
++        return status;
++    }
++
++    status = fwk_module_bind(
++        transport_id_clus2,
++        FWK_ID_API(FWK_MODULE_IDX_TRANSPORT, MOD_TRANSPORT_API_IDX_FIRMWARE),
++        &scp_platform_ctx.transport_api);
++    if (status != FWK_SUCCESS) {
++        return status;
++    }
++
+     /* Bind to Power Domain module restricted API */
+     status = fwk_module_bind(
+         FWK_ID_MODULE(FWK_MODULE_IDX_POWER_DOMAIN),
+@@ -422,6 +491,18 @@ static int scp_platform_process_bind_request(
+         *api = &transport_signal_api;
+         break;
+
++    case MOD_SCP_PLATFORM_API_IDX_BOOT_SI_CLUS0:
++        *api = &transport_boot_si_cl0;
++        break;
++
++    case MOD_SCP_PLATFORM_API_IDX_BOOT_SI_CLUS1:
++        *api = &transport_boot_si_cl1;
++        break;
++
++    case MOD_SCP_PLATFORM_API_IDX_BOOT_SI_CLUS2:
++        *api = &transport_boot_si_cl2;
++        break;
++
+     default:
+         return FWK_E_PARAM;
+     }
+diff --git a/product/rdkronos/scp_ramfw/config_mhu3.c b/product/rdkronos/scp_ramfw/config_mhu3.c
+index ad136d42..e512b966 100644
+--- a/product/rdkronos/scp_ramfw/config_mhu3.c
++++ b/product/rdkronos/scp_ramfw/config_mhu3.c
+@@ -36,6 +36,12 @@ struct mod_mhu3_channel_config
+         MOD_MHU3_INIT_DBCH(1, 0, 1, 0),
+         /* PBX CH 2, FLAG 0, MBX CH 2, FLAG 0 */
+         MOD_MHU3_INIT_DBCH(2, 0, 2, 0),
++        /* PBX CH 3, FLAG 0, MBX CH 3, FLAG 0 */
++        MOD_MHU3_INIT_DBCH(3, 0, 3, 0),
++        /* PBX CH 4, FLAG 0, MBX CH 4, FLAG 0 */
++        MOD_MHU3_INIT_DBCH(4, 0, 4, 0),
++        /* PBX CH 5, FLAG 0, MBX CH 5, FLAG 0 */
++        MOD_MHU3_INIT_DBCH(5, 0, 5, 0),
+     };
+
+ /* Module element table */
+diff --git a/product/rdkronos/scp_ramfw/config_transport.c b/product/rdkronos/scp_ramfw/config_transport.c
+index 3adeaf8a..8535db0e 100644
+--- a/product/rdkronos/scp_ramfw/config_transport.c
++++ b/product/rdkronos/scp_ramfw/config_transport.c
+@@ -119,6 +119,72 @@ static const struct fwk_element transport_element_table[] = {
+                     MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
+         }),
+     },
++    [SCP_CFGD_MOD_TRANSPORT_EIDX_BOOT_SI_CLUS0] = {
++        .name = "ATU_TRANSPORT",
++        .data = &((
++            struct mod_transport_channel_config) {
++                .transport_type = MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_NONE,
++                .policies = MOD_TRANSPORT_POLICY_NONE,
++                .channel_type = MOD_TRANSPORT_CHANNEL_TYPE_COMPLETER,
++                .signal_api_id =
++                    FWK_ID_API_INIT(
++                        FWK_MODULE_IDX_SCP_PLATFORM,
++                        MOD_SCP_PLATFORM_API_IDX_BOOT_SI_CLUS0),
++                .driver_id =
++                    FWK_ID_SUB_ELEMENT_INIT(
++                        FWK_MODULE_IDX_MHU3,
++                        SCP_CFGD_MOD_MHU3_EIDX_SCP_RSS_S,
++                        3),
++                .driver_api_id =
++                    FWK_ID_API_INIT(
++                        FWK_MODULE_IDX_MHU3,
++                        MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
++        }),
++    },
++    [SCP_CFGD_MOD_TRANSPORT_EIDX_BOOT_SI_CLUS1] = {
++        .name = "ATU_TRANSPORT",
++        .data = &((
++            struct mod_transport_channel_config) {
++                .transport_type = MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_NONE,
++                .policies = MOD_TRANSPORT_POLICY_NONE,
++                .channel_type = MOD_TRANSPORT_CHANNEL_TYPE_COMPLETER,
++                .signal_api_id =
++                    FWK_ID_API_INIT(
++                        FWK_MODULE_IDX_SCP_PLATFORM,
++                        MOD_SCP_PLATFORM_API_IDX_BOOT_SI_CLUS1),
++                .driver_id =
++                    FWK_ID_SUB_ELEMENT_INIT(
++                        FWK_MODULE_IDX_MHU3,
++                        SCP_CFGD_MOD_MHU3_EIDX_SCP_RSS_S,
++                        4),
++                .driver_api_id =
++                    FWK_ID_API_INIT(
++                        FWK_MODULE_IDX_MHU3,
++                        MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
++        }),
++    },
++    [SCP_CFGD_MOD_TRANSPORT_EIDX_BOOT_SI_CLUS2] = {
++        .name = "ATU_TRANSPORT",
++        .data = &((
++            struct mod_transport_channel_config) {
++                .transport_type = MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_NONE,
++                .policies = MOD_TRANSPORT_POLICY_NONE,
++                .channel_type = MOD_TRANSPORT_CHANNEL_TYPE_COMPLETER,
++                .signal_api_id =
++                    FWK_ID_API_INIT(
++                        FWK_MODULE_IDX_SCP_PLATFORM,
++                        MOD_SCP_PLATFORM_API_IDX_BOOT_SI_CLUS2),
++                .driver_id =
++                    FWK_ID_SUB_ELEMENT_INIT(
++                        FWK_MODULE_IDX_MHU3,
++                        SCP_CFGD_MOD_MHU3_EIDX_SCP_RSS_S,
++                        5),
++                .driver_api_id =
++                    FWK_ID_API_INIT(
++                        FWK_MODULE_IDX_MHU3,
++                        MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
++        }),
++    },
+     [SCP_CFGD_MOD_TRANSPORT_EIDX_COUNT] = { 0 },
+ };
+
+diff --git a/product/rdkronos/scp_ramfw/include/scp_cfgd_transport.h b/product/rdkronos/scp_ramfw/include/scp_cfgd_transport.h
+index 2642b594..40c85f91 100644
+--- a/product/rdkronos/scp_ramfw/include/scp_cfgd_transport.h
++++ b/product/rdkronos/scp_ramfw/include/scp_cfgd_transport.h
+@@ -18,6 +18,9 @@ enum scp_cfgd_mod_transport_element_idx {
+     SCP_CFGD_MOD_TRANSPORT_EIDX_ATU,
+     SCP_CFGD_MOD_TRANSPORT_EIDX_SYSTEM,
+     SCP_CFGD_MOD_TRANSPORT_EIDX_RESET,
++    SCP_CFGD_MOD_TRANSPORT_EIDX_BOOT_SI_CLUS0,
++    SCP_CFGD_MOD_TRANSPORT_EIDX_BOOT_SI_CLUS1,
++    SCP_CFGD_MOD_TRANSPORT_EIDX_BOOT_SI_CLUS2,
+     SCP_CFGD_MOD_TRANSPORT_EIDX_COUNT,
+ };
+
+--
+2.25.1
+

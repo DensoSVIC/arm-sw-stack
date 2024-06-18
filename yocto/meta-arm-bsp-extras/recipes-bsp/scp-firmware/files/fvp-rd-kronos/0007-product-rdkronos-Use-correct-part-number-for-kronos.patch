@@ -1,0 +1,31 @@
+From d62748deebb457a25d426334aaf172483d39c942 Mon Sep 17 00:00:00 2001
+From: Robbie Cao <robbie.cao@arm.com>
+Date: Thu, 19 Oct 2023 19:57:50 +0800
+Subject: [PATCH] product/rdkronos: Use correct part number for kronos
+
+The correct part number for kronos is 0x73E. Correct this
+number will make system_get_info work properly
+
+Upstream-Status: Pending
+Signed-off-by: Robbie Cao <Robbie.Cao@arm.com>
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ product/rdkronos/scp_ramfw/config_sid.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/product/rdkronos/scp_ramfw/config_sid.c b/product/rdkronos/scp_ramfw/config_sid.c
+index f3b0f87d..156ac323 100644
+--- a/product/rdkronos/scp_ramfw/config_sid.c
++++ b/product/rdkronos/scp_ramfw/config_sid.c
+@@ -16,7 +16,7 @@
+ #include <fwk_id.h>
+ #include <fwk_module.h>
+
+-#define RD_KRONOS_PART_NUMBER 0x7EE
++#define RD_KRONOS_PART_NUMBER 0x73E
+
+ static const struct fwk_element subsystem_table[] = {
+     {
+--
+2.25.1
+

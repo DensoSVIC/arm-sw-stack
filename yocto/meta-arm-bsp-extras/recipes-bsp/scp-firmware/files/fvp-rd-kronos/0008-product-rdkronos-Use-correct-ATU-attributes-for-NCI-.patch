@@ -1,0 +1,31 @@
+From 891b44f26a71dc54704a5af4fff07aeabf7ed732 Mon Sep 17 00:00:00 2001
+From: Wei Chen <wei.chen@arm.com>
+Date: Thu, 19 Oct 2023 20:07:01 +0800
+Subject: [PATCH] product/rdkronos: Use correct ATU attributes for NCI GVP
+
+The original code was using ROOT PAS for NCI GVP ATU attributes.
+But on Kronos, we don't have RME, and do not support ROOT PAS.
+In this case, we use SECURE PAS for NCI GVP ATY attributes.
+
+Upstream-Status: Pending
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ product/rdkronos/module/pcie_setup/src/mod_pcie_setup.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/product/rdkronos/module/pcie_setup/src/mod_pcie_setup.c b/product/rdkronos/module/pcie_setup/src/mod_pcie_setup.c
+index f071c0ee..8fba8129 100644
+--- a/product/rdkronos/module/pcie_setup/src/mod_pcie_setup.c
++++ b/product/rdkronos/module/pcie_setup/src/mod_pcie_setup.c
+@@ -481,7 +481,7 @@ static int pcie_setup_configure_pcie_controller(
+
+     atu_api = pcie_setup_context.atu_api;
+     atu_map.region_owner_id = FWK_ID_MODULE(FWK_MODULE_IDX_PCIE_SETUP);
+-    atu_map.attributes = ATU_ENCODE_ATTRIBUTES_ROOT_PAS;
++    atu_map.attributes = ATU_ENCODE_ATTRIBUTES_SECURE_PAS;
+     atu_map.log_addr_base = res_info->mapped_nci_gvp_base;
+     atu_map.region_size = res_info->mapped_nci_gvp_size;
+     atu_map.phy_addr_base = config->reg_base;
+--
+2.25.1
+

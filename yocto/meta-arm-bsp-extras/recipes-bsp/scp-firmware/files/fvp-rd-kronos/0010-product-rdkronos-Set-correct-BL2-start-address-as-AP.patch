@@ -1,0 +1,61 @@
+From 35e046e889087a31b510544a5e7b24be39a7ad67 Mon Sep 17 00:00:00 2001
+From: Wei Chen <wei.chen@arm.com>
+Date: Fri, 20 Oct 2023 14:15:54 +0800
+Subject: [PATCH] product/rdkronos: Set correct BL2 start address as AP core
+ VBAR
+
+On Kronos, the AP reset entry is in RAM, so in this commit, introduce
+a helper to set the BL2 start address as AP core VBAR.
+
+Upstream-Status: Pending
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ .../module/scp_platform/src/mod_scp_platform.c | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/product/rdkronos/module/scp_platform/src/mod_scp_platform.c b/product/rdkronos/module/scp_platform/src/mod_scp_platform.c
+index 1135d62f..121b585b 100644
+--- a/product/rdkronos/module/scp_platform/src/mod_scp_platform.c
++++ b/product/rdkronos/module/scp_platform/src/mod_scp_platform.c
+@@ -49,8 +49,8 @@
+ /* Timeout value for the timer API wait function */
+ #define RSS_DOORBELL_WAIT_TIMEOUT_US (500 * 1000)
+
+-/* DRAM address where TF-A BL31 binary will be preloaded in the FVP */
+-#define ARM_TF_BL31_DRAM_ADDR (0xFFA00000)
++/* SRAM address where TF-A BL2 binary will be preloaded in the FVP */
++#define ARM_TF_BL2_SRAM_ADDR (0x00042000)
+
+ static const struct mod_system_info *system_info;
+
+@@ -136,6 +136,18 @@ bool check_rss_init_status(void *unused)
+     return rss_init_done;
+ }
+
++/* Helper function to program the AP Core RVBAR */
++void program_ap_rvbar()
++{
++    uint8_t core_idx;
++
++    for (core_idx = 0; core_idx < platform_get_core_count(); core_idx++) {
++        /* Set RVBAR to TF-A BL2 SRAM address */
++        SCP_CLUSTER_UTILITY_CORE_MANAGER_PTR(core_idx)->PE_RVBARADDR_LW = ARM_TF_BL2_SRAM_ADDR;
++        SCP_CLUSTER_UTILITY_CORE_MANAGER_PTR(core_idx)->PE_RVBARADDR_UP = 0;
++    }
++}
++
+ /* Helper function to program the LCP UART access */
+ void enable_lcp_uart(uint8_t lcp_idx)
+ {
+@@ -653,6 +665,8 @@ int scp_platform_process_notification(
+     } else if (fwk_id_is_equal(event->id, mod_clock_notification_id_state_changed)) {
+         params = (struct clock_notification_params *)event->params;
+
++        program_ap_rvbar();
++
+         /*
+          * Initialize primary core and LCPs
+          */
+--
+2.25.1
+

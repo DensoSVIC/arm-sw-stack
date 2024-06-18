@@ -1,0 +1,32 @@
+From a1442906f729a5606b810be33a915ef097757ebf Mon Sep 17 00:00:00 2001
+From: Divin Raj <divin.raj@arm.com>
+Date: Wed, 21 Feb 2024 18:48:29 +0000
+Subject: [PATCH] product/rdkronos: Remove unused PCIe configuration
+
+The unused PCIe configurations lead to unnecessary traffic between
+RSS and SCP. Since Kronos utilizes only one chip, so removing
+unwanted PCIe configurations.
+
+Upstream-Status: Pending
+Signed-off-by: Divin Raj <divin.raj@arm.com>
+---
+ product/rdkronos/scp_ramfw/config_pcie_setup.c | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/product/rdkronos/scp_ramfw/config_pcie_setup.c b/product/rdkronos/scp_ramfw/config_pcie_setup.c
+index 1b6a9aad3..2e54b0549 100644
+--- a/product/rdkronos/scp_ramfw/config_pcie_setup.c
++++ b/product/rdkronos/scp_ramfw/config_pcie_setup.c
+@@ -105,9 +105,6 @@
+ 
+ static const struct fwk_element pcie_setup_element_table[] = {
+     IO_MACRO_PCIE_ELEMENT_CONFIG(0, true, true, true, true, true),
+-    IO_MACRO_PCIE_ELEMENT_CONFIG(1, false, false, false, false, true),
+-    IO_MACRO_PCIE_ELEMENT_CONFIG(2, false, false, false, false, true),
+-    IO_MACRO_PCIE_ELEMENT_CONFIG(3, false, false, false, false, true),
+     { 0 }
+ };
+ 
+-- 
+2.25.1
+

@@ -1,0 +1,40 @@
+From aeb9ea1c303ce1dd277c7f29fd9f1aed1b575fe0 Mon Sep 17 00:00:00 2001
+From: Divin Raj <divin.raj@arm.com>
+Date: Thu, 22 Feb 2024 10:53:41 +0000
+Subject: [PATCH] product/rdkronos: Increase the ATU request timeout
+
+This commit increases the ATU request timeout. Occasionally,
+timeouts occur before receiving a response from RSS. By extending
+the timeout, we mitigate the risk of timing out before receiving
+a response from RSS.
+
+Upstream-Status: Pending
+Signed-off-by: Divin Raj <divin.raj@arm.com>
+---
+ module/atu/src/atu_transport.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/module/atu/src/atu_transport.c b/module/atu/src/atu_transport.c
+index 446d9077f..b4a6af6e5 100644
+--- a/module/atu/src/atu_transport.c
++++ b/module/atu/src/atu_transport.c
+@@ -1,6 +1,6 @@
+ /*
+  * Arm SCP/MCP Software
+- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
++ * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -21,7 +21,7 @@
+ #include <fwk_string.h>
+ 
+ /*! Timeout value for response message in microseconds */
+-#define ATU_RESPONSE_WAIT_TIMEOUT_US (100 * 1000)
++#define ATU_RESPONSE_WAIT_TIMEOUT_US (500 * 1000)
+ 
+ const char *atu_response_error_name[ATU_MSG_RESPONSE_COUNT] = {
+     [ATU_MSG_RESPONSE_GENERAL_ERROR] = "Request failed",
+-- 
+2.25.1
+

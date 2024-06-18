@@ -1,0 +1,30 @@
+From 8b21351c17e669dce422ab8a6e84c5e5a306a0a2 Mon Sep 17 00:00:00 2001
+From: Wei Chen <wei.chen@arm.com>
+Date: Sat, 21 Oct 2023 23:14:21 +0800
+Subject: [PATCH] product/rdkronos: Remove the reserved AP Trusted SRAM region
+
+Kronos doesn't support RME, so we don't need this reserved
+Trusted SRAM region.
+
+Upstream-Status: Pending
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ product/rdkronos/scp_ramfw/include/scp_fw_mmap.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/product/rdkronos/scp_ramfw/include/scp_fw_mmap.h b/product/rdkronos/scp_ramfw/include/scp_fw_mmap.h
+index 50499f0c..2c252c42 100644
+--- a/product/rdkronos/scp_ramfw/include/scp_fw_mmap.h
++++ b/product/rdkronos/scp_ramfw/include/scp_fw_mmap.h
+@@ -25,7 +25,7 @@
+  */
+
+ /* Secure SRAM size reserved by AP */
+-#define SCP_AP_PERIPHERAL_SRAM_TRUSTED_RESERVED (0x1E000)
++#define SCP_AP_PERIPHERAL_SRAM_TRUSTED_RESERVED 0
+
+ /* AP Peripheral trusted SRAM base in SCP's memory map */
+ #define SCP_AP_PERIPHERAL_SRAM_TRUSTED_BASE \
+--
+2.25.1
+

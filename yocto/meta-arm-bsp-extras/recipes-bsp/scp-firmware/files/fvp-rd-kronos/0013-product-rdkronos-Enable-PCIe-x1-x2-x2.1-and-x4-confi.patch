@@ -1,0 +1,31 @@
+From b830e80da400ad481af17315613b1f0fba049ee0 Mon Sep 17 00:00:00 2001
+From: Wei Chen <wei.chen@arm.com>
+Date: Sun, 12 Nov 2023 17:24:56 +0800
+Subject: [PATCH] product/rdkronos: Enable PCIe x1/x2/x2.1 and x4 configuration
+
+Unlike RD-Fremont variant 0, we can not only enable x8 PCIe for
+Kronos. Because Kronos only has one CHIP. So we have to enable
+PCIe x1/x2/x2.1 and x4 for Kronos.
+
+Upstream-Status: Pending
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ product/rdkronos/scp_ramfw/config_pcie_setup.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/product/rdkronos/scp_ramfw/config_pcie_setup.c b/product/rdkronos/scp_ramfw/config_pcie_setup.c
+index 237f4505..1b6a9aad 100644
+--- a/product/rdkronos/scp_ramfw/config_pcie_setup.c
++++ b/product/rdkronos/scp_ramfw/config_pcie_setup.c
+@@ -104,7 +104,7 @@
+     }
+
+ static const struct fwk_element pcie_setup_element_table[] = {
+-    IO_MACRO_PCIE_ELEMENT_CONFIG(0, false, false, false, false, true),
++    IO_MACRO_PCIE_ELEMENT_CONFIG(0, true, true, true, true, true),
+     IO_MACRO_PCIE_ELEMENT_CONFIG(1, false, false, false, false, true),
+     IO_MACRO_PCIE_ELEMENT_CONFIG(2, false, false, false, false, true),
+     IO_MACRO_PCIE_ELEMENT_CONFIG(3, false, false, false, false, true),
+--
+2.25.1
+

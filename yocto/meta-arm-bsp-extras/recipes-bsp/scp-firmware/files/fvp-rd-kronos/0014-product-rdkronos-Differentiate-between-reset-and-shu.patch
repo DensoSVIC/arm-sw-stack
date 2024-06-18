@@ -1,0 +1,181 @@
+From 3be4c9632b98dc1cd2f50d315e649c212eaabb15 Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Sun, 11 Feb 2024 15:02:45 +0000
+Subject: [PATCH] product/rdkronos: Differentiate between reset and shutdown
+ request
+
+In Kronos, There is no differentiation between a reset and
+a shutdown request. A shutdown request results in a system
+reset which is an incorrect behavior.
+
+Update the scp platform to send the shutdown request to RSS
+over MHU doorbell channel.
+
+Upstream-Status: Pending
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ .../scp_platform/src/mod_scp_platform.c       | 36 +++++++++++++++----
+ product/rdkronos/scp_ramfw/config_mhu3.c      |  4 ++-
+ product/rdkronos/scp_ramfw/config_transport.c | 24 ++++++++++++-
+ .../scp_ramfw/include/scp_cfgd_transport.h    |  3 +-
+ 4 files changed, 58 insertions(+), 9 deletions(-)
+
+diff --git a/product/rdkronos/module/scp_platform/src/mod_scp_platform.c b/product/rdkronos/module/scp_platform/src/mod_scp_platform.c
+index 121b585b6..0f5c908ad 100644
+--- a/product/rdkronos/module/scp_platform/src/mod_scp_platform.c
++++ b/product/rdkronos/module/scp_platform/src/mod_scp_platform.c
+@@ -1,6 +1,6 @@
+ /*
+  * Arm SCP/MCP Software
+- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
++ * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -81,6 +81,9 @@ static fwk_id_t transport_id_clus1 = FWK_ID_ELEMENT_INIT(
+ static fwk_id_t transport_id_clus2 = FWK_ID_ELEMENT_INIT(
+     FWK_MODULE_IDX_TRANSPORT, SCP_CFGD_MOD_TRANSPORT_EIDX_BOOT_SI_CLUS2);
+ 
++static fwk_id_t shutdown_ch_transport_id = FWK_ID_ELEMENT_INIT(
++    FWK_MODULE_IDX_TRANSPORT, SCP_CFGD_MOD_TRANSPORT_EIDX_SHUTDOWN);
++
+ /* SCMI services required to enable the messaging stack */
+ static unsigned int scmi_notification_table[] = {
+     SCP_CFGD_MOD_SCMI_EIDX_PSCI,
+@@ -277,18 +280,31 @@ static int scp_platform_shutdown(enum mod_pd_system_shutdown system_shutdown)
+ {
+     int status;
+ 
+-    status = scp_platform_ctx.transport_api->trigger_interrupt(
+-            reset_ch_transport_id);
++    switch (system_shutdown) {
++    case MOD_PD_SYSTEM_SHUTDOWN:
++        status = scp_platform_ctx.transport_api->trigger_interrupt(
++                shutdown_ch_transport_id);
++        break;
++
++    case MOD_PD_SYSTEM_COLD_RESET:
++        status = scp_platform_ctx.transport_api->trigger_interrupt(
++                reset_ch_transport_id);
++        break;
++    default:
++        FWK_LOG_INFO("[PLATFORM_SYSTEM] Unknown shutdown command!");
++        status = FWK_E_PARAM;
++        break;
++    }
++
+     if (status != FWK_SUCCESS) {
+-        FWK_LOG_ERR("[PLATFORM_SYSTEM] FATAL ERROR! Unable to trigger"
+-                "RSS doorbell for reset event\n");
++        FWK_LOG_ERR("[PLATFORM SYSTEM] Shutdown/Reboot request failed");
+         return FWK_E_PANIC;
+     }
+ 
+     /* wait for RSS to complete the system wide reset */
+     __WFI();
+ 
+-    return FWK_E_DEVICE;
++    return status;
+ }
+ 
+ static const struct mod_system_power_driver_api
+@@ -483,6 +499,14 @@ static int scp_platform_bind(fwk_id_t id, unsigned int round)
+         return status;
+     }
+ 
++    status = fwk_module_bind(
++        shutdown_ch_transport_id,
++        FWK_ID_API(FWK_MODULE_IDX_TRANSPORT, MOD_TRANSPORT_API_IDX_FIRMWARE),
++        &scp_platform_ctx.transport_api);
++    if (status != FWK_SUCCESS) {
++        return status;
++    }
++
+     /* Bind to Power Domain module restricted API */
+     status = fwk_module_bind(
+         FWK_ID_MODULE(FWK_MODULE_IDX_POWER_DOMAIN),
+diff --git a/product/rdkronos/scp_ramfw/config_mhu3.c b/product/rdkronos/scp_ramfw/config_mhu3.c
+index e512b966b..4d4bb0461 100644
+--- a/product/rdkronos/scp_ramfw/config_mhu3.c
++++ b/product/rdkronos/scp_ramfw/config_mhu3.c
+@@ -1,6 +1,6 @@
+ /*
+  * Arm SCP/MCP Software
+- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
++ * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -42,6 +42,8 @@ struct mod_mhu3_channel_config
+         MOD_MHU3_INIT_DBCH(4, 0, 4, 0),
+         /* PBX CH 5, FLAG 0, MBX CH 5, FLAG 0 */
+         MOD_MHU3_INIT_DBCH(5, 0, 5, 0),
++        /* PBX CH 6, FLAG 0, MBX CH 6, FLAG 0 */
++        MOD_MHU3_INIT_DBCH(6, 0, 6, 0),
+     };
+ 
+ /* Module element table */
+diff --git a/product/rdkronos/scp_ramfw/config_transport.c b/product/rdkronos/scp_ramfw/config_transport.c
+index 8535db0e6..36b841733 100644
+--- a/product/rdkronos/scp_ramfw/config_transport.c
++++ b/product/rdkronos/scp_ramfw/config_transport.c
+@@ -1,6 +1,6 @@
+ /*
+  * Arm SCP/MCP Software
+- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
++ * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -185,6 +185,28 @@ static const struct fwk_element transport_element_table[] = {
+                         MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
+         }),
+     },
++    [SCP_CFGD_MOD_TRANSPORT_EIDX_SHUTDOWN] = {
++        .name = "SCP_PLATFORM_TRANSPORT_SHUTDOWN",
++        .data = &((
++            struct mod_transport_channel_config) {
++            .transport_type = MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_NONE,
++            .policies = MOD_TRANSPORT_POLICY_NONE,
++            .channel_type = MOD_TRANSPORT_CHANNEL_TYPE_REQUESTER,
++            .signal_api_id =
++                FWK_ID_API_INIT(
++                    FWK_MODULE_IDX_SCP_PLATFORM,
++                    MOD_SCP_PLATFORM_API_IDX_TRANSPORT_SIGNAL),
++            .driver_id =
++                FWK_ID_SUB_ELEMENT_INIT(
++                    FWK_MODULE_IDX_MHU3,
++                    SCP_CFGD_MOD_MHU3_EIDX_SCP_RSS_S,
++                    6),
++            .driver_api_id =
++                FWK_ID_API_INIT(
++                    FWK_MODULE_IDX_MHU3,
++                    MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
++        }),
++    },
+     [SCP_CFGD_MOD_TRANSPORT_EIDX_COUNT] = { 0 },
+ };
+ 
+diff --git a/product/rdkronos/scp_ramfw/include/scp_cfgd_transport.h b/product/rdkronos/scp_ramfw/include/scp_cfgd_transport.h
+index 40c85f910..d29c0d3e7 100644
+--- a/product/rdkronos/scp_ramfw/include/scp_cfgd_transport.h
++++ b/product/rdkronos/scp_ramfw/include/scp_cfgd_transport.h
+@@ -1,6 +1,6 @@
+ /*
+  * Arm SCP/MCP Software
+- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
++ * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -21,6 +21,7 @@ enum scp_cfgd_mod_transport_element_idx {
+     SCP_CFGD_MOD_TRANSPORT_EIDX_BOOT_SI_CLUS0,
+     SCP_CFGD_MOD_TRANSPORT_EIDX_BOOT_SI_CLUS1,
+     SCP_CFGD_MOD_TRANSPORT_EIDX_BOOT_SI_CLUS2,
++    SCP_CFGD_MOD_TRANSPORT_EIDX_SHUTDOWN,
+     SCP_CFGD_MOD_TRANSPORT_EIDX_COUNT,
+ };
+ 
+-- 
+2.25.1
+

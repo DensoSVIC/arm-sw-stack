@@ -1,0 +1,57 @@
+From 9a019cec1a3f393867418d21e3f4c7db1b93bc12 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Wed, 18 Oct 2023 14:24:00 +0800
+Subject: [PATCH] cmn_cyprus: Add cmn_hns_cfg_ctl to HN-S register layout
+
+cmn_hns_cfg_ctl is the register functioning as the configuration
+control register for HN-F(S). It contains several fields that
+related to the MPAM system level cache configurations.
+
+For the structure defining the register layout of HNS, cmn_hns_cfg_ctl
+is included within the "RESERVED2" region. Define it as a separate
+register. Additionally, rename the RESERVED regions as a new split is
+introduced.
+
+Upstream-Status: Pending
+Suggested-by: Rohit Mathew <rohit.mathew@arm.com>
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Signed-off-by: Rohit Mathew <rohit.mathew@arm.com>
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ .../cmn_cyprus/include/internal/cmn_cyprus_reg.h   | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/module/cmn_cyprus/include/internal/cmn_cyprus_reg.h b/module/cmn_cyprus/include/internal/cmn_cyprus_reg.h
+index 8be74e10..64fa1766 100644
+--- a/module/cmn_cyprus/include/internal/cmn_cyprus_reg.h
++++ b/module/cmn_cyprus/include/internal/cmn_cyprus_reg.h
+@@ -72,18 +72,20 @@ struct cmn_cyprus_hns_reg {
+     FWK_R   uint64_t  CHILD_INFO;
+             uint8_t   RESERVED1[0x900 - 0x88];
+     FWK_R   uint64_t  UNIT_INFO[2];
+-            uint8_t   RESERVED2[0xD00 - 0x910];
++            uint8_t   RESERVED2[0xA00 - 0x910];
++    FWK_RW  uint64_t  CFG_CTL;
++            uint8_t   RESERVED3[0xD00 - 0xA08];
+     FWK_RW  uint64_t  SAM_CONTROL;
+     FWK_RW  uint64_t  SAM_MEMREGION[2];
+-            uint8_t   RESERVED3[0xD28 - 0xD18];
++            uint8_t   RESERVED4[0xD28 - 0xD18];
+     FWK_RW  uint64_t  SAM_CONTROL_2;
+-            uint8_t   RESERVED4[0xD38 - 0xD30];
++            uint8_t   RESERVED5[0xD38 - 0xD30];
+     FWK_RW  uint64_t  SAM_MEMREGION_END_ADDR[2];
+-            uint8_t   RESERVED5[0xFB0 - 0xD48];
++            uint8_t   RESERVED6[0xFB0 - 0xD48];
+     FWK_RW  uint64_t  CML_PORT_AGGR_GRP_REG[2];
+-            uint8_t   RESERVED6[0x1900 - 0xFC0];
++            uint8_t   RESERVED7[0x1900 - 0xFC0];
+     FWK_RW  uint64_t  PPU_PWPR;
+-            uint8_t   RESERVED7[0x3C00 - 0x1908];
++            uint8_t   RESERVED8[0x3C00 - 0x1908];
+     FWK_RW  uint64_t
+         HNS_RN_CLUSTER_PHYSID[HNS_RN_CLUSTER_MAX][HNS_RN_PHYIDS_REG_MAX];
+ };
+--
+2.25.1
+

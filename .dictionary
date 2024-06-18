@@ -29,6 +29,7 @@ armffa
 armlmd
 armv
 Artifactory
+asmflags
 Asym
 Audrow
 autoboot
@@ -49,6 +50,7 @@ BBCLASSEXTEND
 BBFILE
 BBFILES
 bbmulticonfig
+bbnote
 BBPATH
 BBSR
 beginline
@@ -98,6 +100,7 @@ chans
 chinfo
 CHKSUM
 Ciphersuite
+cleandirs
 clks
 cmath
 CMAX
@@ -105,6 +108,7 @@ cmdline
 CMDQ
 CMDS
 cmdtable
+cmsis
 commandline
 comms
 COMPAT
@@ -121,6 +125,7 @@ cpak
 CPBM
 cpio
 CPOR
+cppcheck
 cprops
 cpufeature
 cpuid
@@ -248,6 +253,7 @@ fasteoi
 fatfs
 fatload
 fbaa
+fcanon
 ffch
 fileextrapaths
 FILESEXTRAPATHS
@@ -275,6 +281,7 @@ gicr
 gicv
 GICv4
 GICv4.1
+gitsm
 gntalloc
 gntdev
 gnueabi
@@ -368,6 +375,7 @@ LAYERDEPENDS
 LAYERDIR
 LAYERNAME
 LAYERSERIES
+ldflags
 leftmark
 libahci
 libc
@@ -601,6 +609,7 @@ requirenotfound
 resm
 rightmark
 rmem
+romfw
 ROOTFS
 rootwait
 ROTPK

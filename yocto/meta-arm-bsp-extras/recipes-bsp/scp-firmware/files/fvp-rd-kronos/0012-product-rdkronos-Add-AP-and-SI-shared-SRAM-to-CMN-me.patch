@@ -1,0 +1,78 @@
+From 25f7dfb7b22498ed6b6a911c6d5a19ec59fdac4a Mon Sep 17 00:00:00 2001
+From: Wei Chen <wei.chen@arm.com>
+Date: Thu, 26 Oct 2023 14:27:32 +0800
+Subject: [PATCH] product/rdkronos: Add AP and SI shared SRAM to CMN memory
+ region map
+
+To improve FFI and determinism, in recent update of the Kronos, we moved
+the shared memory between SI and Primary Compute from primary compute
+to safety island subsystem.
+
+We created a dedicated SRAM region in safety island and added an extra
+HN-I on CMN-Cyprus for AP cores in Primary compute to access the memory
+via Safety Island interconnect.
+
+In this patch we add a new entry in the Kronos' cmn_cyprus memory region
+map to cover the address region of the new HN-I as described in the spec.
+
+Upstream-Status: Pending
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ product/rdkronos/scp_ramfw/cmn_node_id.h      |  3 +++
+ .../rdkronos/scp_ramfw/config_cmn_cyprus.c    | 24 +++++++++++++++++--
+ 2 files changed, 25 insertions(+), 2 deletions(-)
+
+diff --git a/product/rdkronos/scp_ramfw/cmn_node_id.h b/product/rdkronos/scp_ramfw/cmn_node_id.h
+index b60097bf..f121f67c 100644
+--- a/product/rdkronos/scp_ramfw/cmn_node_id.h
++++ b/product/rdkronos/scp_ramfw/cmn_node_id.h
+@@ -24,6 +24,9 @@
+ #define MEM_CNTRL7_ID 296
+
+ #define NODE_ID_HND  300
++#define NODE_ID_HND1 360
++
++#define NODE_ID_SHM_PC_SI NODE_ID_HND1
+
+ #define NODE_ID_HNT0 4
+ #define NODE_ID_HNT1 260
+diff --git a/product/rdkronos/scp_ramfw/config_cmn_cyprus.c b/product/rdkronos/scp_ramfw/config_cmn_cyprus.c
+index 4fd94d9c..d99934d1 100644
+--- a/product/rdkronos/scp_ramfw/config_cmn_cyprus.c
++++ b/product/rdkronos/scp_ramfw/config_cmn_cyprus.c
+@@ -115,10 +115,30 @@ static const struct mod_cmn_cyprus_mem_region_map mmap[] = {
+     {
+         /*
+          * Peripherals
+-         * Map: 0x00_2F40_0000 - 0x00_5FFF_FFFF (780 MB)
++         * Map: 0x00_2F40_0000 - 0x00_3FFF_FFFF (268 MB)
+          */
+         .base = UINT64_C(0x002F400000),
+-        .size = UINT64_C(780) * FWK_MIB,
++        .size = UINT64_C(268) * FWK_MIB,
++        .type = MOD_CMN_CYPRUS_MEM_REGION_TYPE_IO,
++        .node_id = NODE_ID_HND,
++    },
++    {
++        /*
++         * Shared SRAM between AP and Safety Island
++         * Map: 0x00_4000_0000 - 0x00_47FF_FFFF (128 MB including reserved area)
++         */
++        .base = UINT64_C(0x0040000000),
++        .size = UINT64_C(128) * FWK_MIB,
++        .type = MOD_CMN_CYPRUS_MEM_REGION_TYPE_IO,
++        .node_id = NODE_ID_SHM_PC_SI,
++    },
++    {
++        /*
++         * Peripherals
++         * Map: 0x00_4800_0000 - 0x00_5FFF_FFFF (384 MB)
++         */
++        .base = UINT64_C(0x0048000000),
++        .size = UINT64_C(384) * FWK_MIB,
+         .type = MOD_CMN_CYPRUS_MEM_REGION_TYPE_IO,
+         .node_id = NODE_ID_HND,
+     },
+--
+2.25.1
+

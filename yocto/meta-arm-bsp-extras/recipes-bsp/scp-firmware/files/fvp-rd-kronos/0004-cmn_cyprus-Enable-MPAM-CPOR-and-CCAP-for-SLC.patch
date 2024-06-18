@@ -1,0 +1,50 @@
+From 501b3cac659d6b73436a87a14901da6ecc3936a1 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Wed, 18 Oct 2023 14:25:36 +0800
+Subject: [PATCH] cmn_cyprus: Enable MPAM CPOR and CCAP for SLC
+
+Each HNS node within the CMN Cyprus mesh network supports control
+registers for enabling cache capacity partitioning (CCAP) and cache
+portion partitioning (CPOR). Enable these partition schemes on each
+HNS node by default. Enabling these schemes by default shouldn't
+be a concern if MPAM is not enabled on other firmware components or
+the operating system.
+
+Upstream-Status: Pending
+Suggested-by: Rohit Mathew <rohit.mathew@arm.com>
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Signed-off-by: Rohit Mathew <rohit.mathew@arm.com>
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ module/cmn_cyprus/src/cmn_cyprus_hnsam.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/module/cmn_cyprus/src/cmn_cyprus_hnsam.c b/module/cmn_cyprus/src/cmn_cyprus_hnsam.c
+index d72f822e..cb91baba 100644
+--- a/module/cmn_cyprus/src/cmn_cyprus_hnsam.c
++++ b/module/cmn_cyprus/src/cmn_cyprus_hnsam.c
+@@ -40,6 +40,10 @@
+ #define CMN_CYPRUS_PPU_PWPR_OPMODE_FAM UINT64_C(0x0000000000000030)
+ #define CMN_CYPRUS_PPU_PWPR_DYN_EN     UINT64_C(0x0000000000000100)
+
++/* CCAP and CPOR fields for configuring MPAM, used by HN-S CFG_CTL register */
++#define CMN_CYPRUS_HNS_CFG_SLC_MPAM_CPOR_EN_BIT (UINT64_C(1) << 17)
++#define CMN_CYPRUS_HNS_CFG_SLC_MPAM_CCAP_EN_BIT (UINT64_C(1) << 18)
++
+ /* Shared driver context pointer */
+ static struct cmn_cyprus_ctx *shared_ctx;
+
+@@ -207,6 +211,10 @@ static void configure_syscache_sub_regions(struct cmn_cyprus_hns_reg *hns)
+
+ static void configure_hns_pwpr(struct cmn_cyprus_hns_reg *hns)
+ {
++    /* Enable CPOR and CCAP for MPAM */
++    hns->CFG_CTL |= CMN_CYPRUS_HNS_CFG_SLC_MPAM_CPOR_EN_BIT |
++        CMN_CYPRUS_HNS_CFG_SLC_MPAM_CCAP_EN_BIT;
++
+     /* Configure the system cache RAM PPU */
+     hns->PPU_PWPR = CMN_CYPRUS_PPU_PWPR_POLICY_ON |
+         CMN_CYPRUS_PPU_PWPR_OPMODE_FAM | CMN_CYPRUS_PPU_PWPR_DYN_EN;
+--
+2.25.1
+

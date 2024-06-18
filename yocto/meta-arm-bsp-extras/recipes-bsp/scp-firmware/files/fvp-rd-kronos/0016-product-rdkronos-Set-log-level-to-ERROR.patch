@@ -1,0 +1,129 @@
+From 47720c5ae30df089021eb18867d49c632b86b282 Mon Sep 17 00:00:00 2001
+From: Divin Raj <divin.raj@arm.com>
+Date: Thu, 22 Feb 2024 09:43:56 +0000
+Subject: [PATCH] product/rdkronos: Set log level to ERROR
+
+This commit adjusts the FWK_LOG_LEVEL to ERROR for the
+Kronos platform. Previously, it was set to DEBUG, which
+occasionally resulted in the discard of potential ERROR logs,
+especially during periods of high log volume.
+
+Upstream-Status: Inappropriate
+Signed-off-by: Divin Raj <divin.raj@arm.com>
+---
+ module/cmn_cyprus/src/cmn_cyprus_discovery.c | 8 +++++++-
+ module/tower_nci/src/mod_tower_nci.c         | 4 +++-
+ product/rdkronos/scp_ramfw/CMakeLists.txt    | 4 ++--
+ 3 files changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/module/cmn_cyprus/src/cmn_cyprus_discovery.c b/module/cmn_cyprus/src/cmn_cyprus_discovery.c
+index 911d44b42..4526d597e 100644
+--- a/module/cmn_cyprus/src/cmn_cyprus_discovery.c
++++ b/module/cmn_cyprus/src/cmn_cyprus_discovery.c
+@@ -1,6 +1,6 @@
+ /*
+  * Arm SCP/MCP Software
+- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
++ * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -118,6 +118,7 @@ static unsigned int encoding_bits;
+ /* Mask to get the x and y coordinates from node position */
+ static unsigned int mask_bits;
+ 
++#if FWK_LOG_LEVEL <= FWK_LOG_LEVEL_INFO
+ /* CMN Cyprus revision names */
+ static const char *const cmn_cyprus_rev_to_name[] = {
+     [CMN_CYPRUS_PERIPH_ID_2_REV_R0_P0] = "r0p0",
+@@ -126,6 +127,7 @@ static const char *const cmn_cyprus_rev_to_name[] = {
+     [CMN_CYPRUS_PERIPH_ID_2_REV_R3_P0] = "r3p0",
+     [CMN_CYPRUS_PERIPH_ID_UNKNOWN_REV] = "Unknown!",
+ };
++#endif
+ 
+ static void set_encoding_and_masking_bits(struct cmn_cyprus_ctx *ctx)
+ {
+@@ -158,6 +160,7 @@ static unsigned int get_node_pos_y(unsigned int node_id)
+     return (node_id >> CMN_CYPRUS_NODE_ID_Y_POS) & mask_bits;
+ }
+ 
++#if FWK_LOG_LEVEL <= FWK_LOG_LEVEL_INFO
+ static unsigned int get_cmn_cyprus_revision(struct cmn_cyprus_cfgm_reg *root)
+ {
+     return (root->PERIPH_ID[1] & CMN_CYPRUS_PERIPH_ID_2_MASK) >>
+@@ -178,6 +181,7 @@ static const char *get_cmn_cyprus_revision_name(
+ 
+     return cmn_cyprus_rev_to_name[revision];
+ }
++#endif
+ 
+ static enum node_type get_node_type(void *node_base)
+ {
+@@ -208,6 +212,7 @@ static void *get_child_node(
+     return child_node;
+ }
+ 
++#if FWK_LOG_LEVEL <= FWK_LOG_LEVEL_INFO
+ const char *const type_to_name[] = {
+     [NODE_TYPE_INVALID] = "<Invalid>",
+     [NODE_TYPE_DVM] = "DVM",
+@@ -241,6 +246,7 @@ static const char *get_node_type_name(enum node_type node_type)
+     /* Invalid node IDs */
+     return type_to_name[NODE_TYPE_INVALID];
+ }
++#endif
+ 
+ static bool is_child_external(void *node_base, unsigned int child_index)
+ {
+diff --git a/module/tower_nci/src/mod_tower_nci.c b/module/tower_nci/src/mod_tower_nci.c
+index 44a52909d..20fefb7da 100644
+--- a/module/tower_nci/src/mod_tower_nci.c
++++ b/module/tower_nci/src/mod_tower_nci.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2023, Arm Limited. All rights reserved.
++ * Copyright (c) 2023-2024, Arm Limited. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -38,6 +38,7 @@ struct mod_tower_nci_ctx {
+ 
+ struct mod_tower_nci_ctx tower_nci_ctx;
+ 
++#if FWK_LOG_LEVEL <= FWK_LOG_LEVEL_INFO
+ static char *node_type_str[TOWER_NCI_NODE_TYPE_MAX] = {
+     "CFGNI",
+     "VD",
+@@ -50,6 +51,7 @@ static char *node_type_str[TOWER_NCI_NODE_TYPE_MAX] = {
+     "HMNI",
+     "PMNI",
+ };
++#endif
+ 
+ /*
+  * PSAM Programming
+diff --git a/product/rdkronos/scp_ramfw/CMakeLists.txt b/product/rdkronos/scp_ramfw/CMakeLists.txt
+index 409ee0846..a62bdd577 100644
+--- a/product/rdkronos/scp_ramfw/CMakeLists.txt
++++ b/product/rdkronos/scp_ramfw/CMakeLists.txt
+@@ -1,6 +1,6 @@
+ #
+ # Arm SCP/MCP Software
+-# Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
++# Copyright (c) 2022-2024, Arm Limited and Contributors. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ #
+@@ -11,7 +11,7 @@
+ 
+ add_executable(rdkronos-bl2)
+ 
+-set(SCP_LOG_LEVEL "DEBUG" PARENT_SCOPE)
++set(SCP_LOG_LEVEL "ERROR" PARENT_SCOPE)
+ 
+ target_include_directories(
+     rdkronos-bl2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../include"
+-- 
+2.25.1
+

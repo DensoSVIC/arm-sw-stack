@@ -1,0 +1,98 @@
+From 4c1e8c16e56ffe7ae9bcddd4c5ba744d07ae3de6 Mon Sep 17 00:00:00 2001
+From: Wei Chen <wei.chen@arm.com>
+Date: Thu, 19 Oct 2023 20:21:43 +0800
+Subject: [PATCH] product/rdkronos: Fix unaligned access to NCI nodes
+
+The data structure of NCI like:
+    struct {
+        volatile uint32_t type:16;
+        volatile uint32_t id:16;
+    };
+some compilers will generate 16-bit access to the NCI IO spaces.
+This will cause FVP Error like:
+  ERROR: RD_Kronos.css.io_macro_0.io_nci.RegisterInterface:
+  read must be 32 bit aligned to offset 0x3f0108
+
+Now we introduce a 32-bit union to force compiler generate 32-bits
+access code these IO spaces by 32-bits.
+
+Upstream-Status: Pending
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ module/tower_nci/src/mod_tower_nci.c | 17 ++++++++++++-----
+ module/tower_nci/src/tower_nci_reg.h |  9 ++++++---
+ 2 files changed, 18 insertions(+), 8 deletions(-)
+
+diff --git a/module/tower_nci/src/mod_tower_nci.c b/module/tower_nci/src/mod_tower_nci.c
+index 9c2d5db5..44a52909 100644
+--- a/module/tower_nci/src/mod_tower_nci.c
++++ b/module/tower_nci/src/mod_tower_nci.c
+@@ -167,11 +167,13 @@ uintptr_t mod_tower_nci_process_subfeatures(uintptr_t base, uintptr_t offset,
+     struct tower_nci_component_cfg_hdr *cfg_hdr;
+     uint32_t count;
+     uint32_t num_sub_features;
++    uint32_t node_type;
+
+     cfg_hdr = (struct tower_nci_component_cfg_hdr *)(base + offset);
+     num_sub_features = cfg_hdr->num_sub_features;
+     for(count = 0; count < num_sub_features; count++) {
+-        if (cfg_hdr->sub_feature[count].type == sub_feature_type) {
++        node_type = cfg_hdr->sub_feature[count].node_type & 0xFF;
++        if (node_type == sub_feature_type) {
+             return base + cfg_hdr->sub_feature[count].pointer;
+         }
+     }
+@@ -188,21 +190,26 @@ uint32_t mod_tower_nci_get_subfeature_address(
+     uintptr_t subfeature_address;
+     uint32_t child_count;
+     uint32_t idx;
++    uint32_t hdr_type;
++    uint16_t hdr_id;
+
+     cfg_hdr = (struct tower_nci_domain_cfg_hdr *)(base + offset);
+-    if ((cfg_hdr->type == node_type) && (cfg_hdr->id == id)) {
++    hdr_type = cfg_hdr->node_type;
++    hdr_id = (hdr_type >> 16) & 0xFF;
++    hdr_type &= 0xFF;
++    if ((hdr_type == node_type) && (hdr_id == id)) {
+         if (node_type < TOWER_NCI_NODE_TYPE_ASNI) {
+             FWK_LOG_ERR("Invalid node type: %d", node_type);
+             return 0;
+         }
+-        FWK_LOG_INFO("Found Node: %s ID: %d", node_type_str[cfg_hdr->type],
+-                     cfg_hdr->id);
++        FWK_LOG_INFO("Found Node: %s ID: %d", node_type_str[hdr_type],
++                     hdr_id);
+         return mod_tower_nci_process_subfeatures(base, offset,
+                                                  sub_feature_type);
+     }
+
+     subfeature_address = 0;
+-    if (cfg_hdr->type < TOWER_NCI_NODE_TYPE_ASNI) {
++    if (hdr_type < TOWER_NCI_NODE_TYPE_ASNI) {
+         child_count = cfg_hdr->child_node_info;
+         for (idx = 0; idx < child_count; idx++) {
+             subfeature_address =
+diff --git a/module/tower_nci/src/tower_nci_reg.h b/module/tower_nci/src/tower_nci_reg.h
+index 8538ba6a..710c92cc 100644
+--- a/module/tower_nci/src/tower_nci_reg.h
++++ b/module/tower_nci/src/tower_nci_reg.h
+@@ -33,9 +33,12 @@ struct tower_nci_domain_cfg_hdr {
+
+ /* Tower NCI Sub-feature register set. Found in component domain */
+ struct tower_nci_sub_feature_cfg_attr {
+-    struct {
+-        volatile uint32_t type:16;
+-        volatile uint32_t reserved:16;
++    union {
++        volatile uint32_t node_type;
++        struct {
++            volatile uint32_t type:16;
++            volatile uint32_t reserved:16;
++        };
+     };
+     volatile uint32_t pointer;
+ };
+--
+2.25.1
+

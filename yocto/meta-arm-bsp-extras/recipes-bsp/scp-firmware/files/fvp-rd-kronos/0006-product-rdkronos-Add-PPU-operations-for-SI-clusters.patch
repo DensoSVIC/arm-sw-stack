@@ -1,0 +1,518 @@
+From dc8944da7dde5fb739a52cfef3180c33354af35d Mon Sep 17 00:00:00 2001
+From: Xinxu Chen <Xinxu.Chen@arm.com>
+Date: Wed, 18 Oct 2023 18:12:42 +0800
+Subject: [PATCH] product/rdkronos: Add PPU operations for SI clusters
+
+Implement PPU operations for SI clusters.
+Add SI PPU elements in PPU and powerdomain config file.
+Add interrupt function to power on SI cores in platform module.
+Add SI core reg addr in scp_css_mmap.h for PPU operation.
+
+Upstream-Status: Pending
+Signed-off-by: Xinxu Chen <xinxu.chen@arm.com>
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ .../scp_platform/src/mod_scp_platform.c       |  39 ++-
+ .../rdkronos/scp_ramfw/config_power_domain.c  | 226 +++++++++++++++++-
+ product/rdkronos/scp_ramfw/config_ppu_v1.c    | 114 ++++++++-
+ .../rdkronos/scp_ramfw/include/scp_css_mmap.h |  23 ++
+ 4 files changed, 397 insertions(+), 5 deletions(-)
+
+diff --git a/product/rdkronos/module/scp_platform/src/mod_scp_platform.c b/product/rdkronos/module/scp_platform/src/mod_scp_platform.c
+index 8998e034..1135d62f 100644
+--- a/product/rdkronos/module/scp_platform/src/mod_scp_platform.c
++++ b/product/rdkronos/module/scp_platform/src/mod_scp_platform.c
+@@ -310,25 +310,58 @@ static int signal_message(fwk_id_t unused)
+     return FWK_SUCCESS;
+ }
+
++static int si_power_on_cluster_cores(uint32_t id, uint32_t num, uint32_t offset)
++{
++    int status;
++    uint32_t core;
++    struct mod_pd_restricted_api *mod_pd_restricted_api =
++                            scp_platform_ctx.mod_pd_restricted_api;
++    uint32_t start_id = platform_get_core_count() +
++                        platform_get_cluster_count() + offset;
++
++    for(core = 0; core < num; core++){
++        status = mod_pd_restricted_api->set_state(
++        FWK_ID_ELEMENT(FWK_MODULE_IDX_POWER_DOMAIN, start_id + core),
++        false,
++        MOD_PD_COMPOSITE_STATE(
++        MOD_PD_LEVEL_1,
++        0,
++        MOD_PD_STATE_ON,
++        MOD_PD_STATE_ON,
++        MOD_PD_STATE_ON));
++
++        if (status != FWK_SUCCESS) {
++            FWK_LOG_ERR(
++                "[PLATFORM SYSTEM] Failed to intialize the SI cluster%ld core%ld", id, core);
++            return status;
++        }
++    }
++
++    return FWK_SUCCESS;
++}
++
+ static int signal_message_boot_si_cl0(fwk_id_t unused)
+ {
+     FWK_LOG_INFO("[PLATFORM_SYSTEM] Received si cl0 doorbell event!\n");
+
+-    return FWK_SUCCESS;
++    return si_power_on_cluster_cores(SCP_SI_CL0_ID, SCP_SI_CL0_CORE_NUM,
++                                     SCP_SI_CL0_CORE_OFS);
+ }
+
+ static int signal_message_boot_si_cl1(fwk_id_t unused)
+ {
+     FWK_LOG_INFO("[PLATFORM_SYSTEM] Received si cl1 doorbell event!\n");
+
+-    return FWK_SUCCESS;
++    return si_power_on_cluster_cores(SCP_SI_CL1_ID, SCP_SI_CL1_CORE_NUM,
++                                     SCP_SI_CL1_CORE_OFS);
+ }
+
+ static int signal_message_boot_si_cl2(fwk_id_t unused)
+ {
+     FWK_LOG_INFO("[PLATFORM_SYSTEM] Received si cl2 doorbell event!\n");
+
+-    return FWK_SUCCESS;
++    return si_power_on_cluster_cores(SCP_SI_CL2_ID, SCP_SI_CL2_CORE_NUM,
++                                     SCP_SI_CL2_CORE_OFS);
+ }
+
+ static const struct mod_transport_firmware_signal_api transport_signal_api = {
+diff --git a/product/rdkronos/scp_ramfw/config_power_domain.c b/product/rdkronos/scp_ramfw/config_power_domain.c
+index ae6abbf7..c5274a9b 100644
+--- a/product/rdkronos/scp_ramfw/config_power_domain.c
++++ b/product/rdkronos/scp_ramfw/config_power_domain.c
+@@ -23,6 +23,7 @@
+ #include <fwk_mm.h>
+ #include <fwk_module.h>
+ #include <fwk_module_idx.h>
++#include <fwk_string.h>
+
+ #include <stdint.h>
+ #include <stdio.h>
+@@ -79,10 +80,40 @@ static struct fwk_element platform_power_domain_static_element_table[] = {
+     },
+ };
+
++/*
++ * Function definitions with internal linkage
++ *
++ * Build the power domain element arrays for both SYSTOP and SI, and concatenate
++ * them together in a new array.
++ * In the new array, the SYSTOP elements are on the top, the SI elements are to
++ * the bottom.
++ *
++ * The size of the new array is (count in the terminator):
++ * SIZE_OF_SYSTOP(33) + SIZE_OF_SI(10) + 1 (terminator) = 44
++ *
++ * The structure of the new array is like:
++ * [Cores of SYSTOP] + [Clusters of SYSTOP] + [SYSTOP] +
++ * [Cluster0Core0 of SI] + [Cluster0 of SI] +
++ * [Cluster1Core0,1 of SI] + [Cluster1 of SI] +
++ * [Cluster2Core0-3 of SI] + [Cluster2 of SI] +
++ * 0 (terminator)
++ */
+ static const struct fwk_element *platform_power_domain_get_element_table(
+     fwk_id_t module_id)
+ {
+-    return create_power_domain_element_table(
++    const struct fwk_element * systop_elements = NULL;
++    const struct fwk_element * si_clus0_elements = NULL;
++    const struct fwk_element * si_clus1_elements = NULL;
++    const struct fwk_element * si_clus2_elements = NULL;
++    struct fwk_element * all_elements = NULL;
++    struct fwk_element tmp_table[] = {0};
++    unsigned int element_idx;
++    struct mod_power_domain_element_config *pd_config;
++    unsigned int systop_elements_count, si_clus0_elements_count,
++                 si_clus1_elements_count, si_clus2_elements_count;
++
++    /* Create power doamin elements for SYSTOP */
++    systop_elements = create_power_domain_element_table(
+         platform_get_core_count(),
+         platform_get_cluster_count(),
+         FWK_MODULE_IDX_PPU_V1,
+@@ -93,6 +124,199 @@ static const struct fwk_element *platform_power_domain_get_element_table(
+         FWK_ARRAY_SIZE(cluster_pd_allowed_state_mask_table),
+         platform_power_domain_static_element_table,
+         FWK_ARRAY_SIZE(platform_power_domain_static_element_table));
++
++    if (systop_elements == NULL) {
++        return NULL;
++    }
++
++    /* Create power doamin elements for SYSTOP_SI.
++     * Now 7 core in 3 cluster is supported.
++     */
++    si_clus0_elements = create_power_domain_element_table(
++        1,
++        1,
++        FWK_MODULE_IDX_PPU_V1,
++        MOD_PPU_V1_API_IDX_POWER_DOMAIN_DRIVER,
++        core_pd_allowed_state_mask_table,
++        FWK_ARRAY_SIZE(core_pd_allowed_state_mask_table),
++        cluster_pd_allowed_state_mask_table,
++        FWK_ARRAY_SIZE(cluster_pd_allowed_state_mask_table),
++        tmp_table,
++        0);
++
++    if (si_clus0_elements == NULL) {
++        return NULL;
++    }
++
++    si_clus1_elements = create_power_domain_element_table(
++        2,
++        1,
++        FWK_MODULE_IDX_PPU_V1,
++        MOD_PPU_V1_API_IDX_POWER_DOMAIN_DRIVER,
++        core_pd_allowed_state_mask_table,
++        FWK_ARRAY_SIZE(core_pd_allowed_state_mask_table),
++        cluster_pd_allowed_state_mask_table,
++        FWK_ARRAY_SIZE(cluster_pd_allowed_state_mask_table),
++        tmp_table,
++        0);
++
++    if (si_clus1_elements == NULL) {
++        return NULL;
++    }
++
++    si_clus2_elements = create_power_domain_element_table(
++        4,
++        1,
++        FWK_MODULE_IDX_PPU_V1,
++        MOD_PPU_V1_API_IDX_POWER_DOMAIN_DRIVER,
++        core_pd_allowed_state_mask_table,
++        FWK_ARRAY_SIZE(core_pd_allowed_state_mask_table),
++        cluster_pd_allowed_state_mask_table,
++        FWK_ARRAY_SIZE(cluster_pd_allowed_state_mask_table),
++        tmp_table,
++        0);
++
++    if (si_clus2_elements == NULL) {
++        return NULL;
++    }
++
++    systop_elements_count = platform_get_core_count()
++        + platform_get_cluster_count()
++        + FWK_ARRAY_SIZE(platform_power_domain_static_element_table);
++
++    si_clus0_elements_count = 2;
++    si_clus1_elements_count = 3;
++    si_clus2_elements_count = 5;
++    /* Create an array for all elements */
++    all_elements = fwk_mm_calloc(systop_elements_count +
++                                 si_clus0_elements_count +
++                                 si_clus1_elements_count +
++                                 si_clus2_elements_count + 1,
++                                 sizeof(struct fwk_element));
++
++    if (all_elements == NULL) {
++        return NULL;
++    }
++
++    /* Copy SYSTOP elements to the new array */
++    fwk_str_memcpy(
++        all_elements,
++        systop_elements,
++        systop_elements_count * sizeof(struct fwk_element));
++    /* Copy the SI_clus0 elements to the new array.
++     * SI elements follow SYSTOP elements. */
++    fwk_str_memcpy(
++        all_elements + systop_elements_count,
++        si_clus0_elements,
++        si_clus0_elements_count * sizeof(struct fwk_element));
++    /* Copy the SI_clus1 elements to the new array.
++     * SI elements follow SYSTOP elements. */
++    fwk_str_memcpy(
++        all_elements + systop_elements_count + si_clus0_elements_count,
++        si_clus1_elements,
++        si_clus1_elements_count * sizeof(struct fwk_element));
++    /* Copy the SI_clus2 elements to the new array.
++     * SI elements follow SYSTOP elements. */
++    fwk_str_memcpy(
++        all_elements + systop_elements_count + si_clus0_elements_count +
++        si_clus1_elements_count,
++        si_clus2_elements,
++        si_clus2_elements_count * sizeof(struct fwk_element));
++
++    /* The parent indices of SI elements need to be updated
++     * because they are in a new array, their indices are not zero based. */
++
++    /* Update CL0CORE0 */
++    element_idx = systop_elements_count;
++    pd_config =
++        (struct mod_power_domain_element_config *)all_elements[element_idx]
++        .data;
++    pd_config->parent_idx = element_idx + 1;
++    pd_config->driver_id =
++        FWK_ID_ELEMENT(FWK_MODULE_IDX_PPU_V1, element_idx);
++
++    /* Update CL0 */
++    element_idx = element_idx + 1;
++    pd_config =
++        (struct mod_power_domain_element_config *)all_elements[element_idx]
++        .data;
++    pd_config->parent_idx = PD_STATIC_DEV_IDX_NONE;
++    pd_config->driver_id =
++        FWK_ID_ELEMENT(FWK_MODULE_IDX_PPU_V1, element_idx);
++
++    /* Update CL1CORE0 */
++    element_idx = systop_elements_count + 2;
++    pd_config =
++        (struct mod_power_domain_element_config *)all_elements[element_idx]
++        .data;
++    pd_config->parent_idx = systop_elements_count + 4;
++    pd_config->driver_id =
++        FWK_ID_ELEMENT(FWK_MODULE_IDX_PPU_V1, element_idx);
++
++    /* Update CL1CORE1 */
++    element_idx = systop_elements_count + 3;
++    pd_config =
++        (struct mod_power_domain_element_config *)all_elements[element_idx]
++        .data;
++    pd_config->parent_idx = systop_elements_count + 4;
++    pd_config->driver_id =
++        FWK_ID_ELEMENT(FWK_MODULE_IDX_PPU_V1, element_idx);
++
++    /* Update CL1 */
++    element_idx = systop_elements_count + 4;
++    pd_config =
++        (struct mod_power_domain_element_config *)all_elements[element_idx]
++        .data;
++    pd_config->parent_idx = PD_STATIC_DEV_IDX_NONE;
++    pd_config->driver_id =
++        FWK_ID_ELEMENT(FWK_MODULE_IDX_PPU_V1, element_idx);
++
++    /* Update CL2CORE0 */
++    element_idx = systop_elements_count + 5;
++    pd_config =
++        (struct mod_power_domain_element_config *)all_elements[element_idx]
++        .data;
++    pd_config->parent_idx = systop_elements_count + 9;
++    pd_config->driver_id =
++        FWK_ID_ELEMENT(FWK_MODULE_IDX_PPU_V1, element_idx);
++
++    /* Update CL2CORE1 */
++    element_idx = systop_elements_count + 6;
++    pd_config =
++        (struct mod_power_domain_element_config *)all_elements[element_idx]
++        .data;
++    pd_config->parent_idx = systop_elements_count + 9;
++    pd_config->driver_id =
++        FWK_ID_ELEMENT(FWK_MODULE_IDX_PPU_V1, element_idx);
++
++    /* Update CL2CORE2 */
++    element_idx = systop_elements_count + 7;
++    pd_config =
++        (struct mod_power_domain_element_config *)all_elements[element_idx]
++        .data;
++    pd_config->parent_idx = systop_elements_count + 9;
++    pd_config->driver_id =
++        FWK_ID_ELEMENT(FWK_MODULE_IDX_PPU_V1, element_idx);
++
++    /* Update CL2CORE3 */
++    element_idx = systop_elements_count + 8;
++    pd_config =
++        (struct mod_power_domain_element_config *)all_elements[element_idx]
++        .data;
++    pd_config->parent_idx = systop_elements_count + 9;
++    pd_config->driver_id =
++        FWK_ID_ELEMENT(FWK_MODULE_IDX_PPU_V1, element_idx);
++
++    /* Update CL2 */
++    element_idx = systop_elements_count + 9;
++    pd_config =
++        (struct mod_power_domain_element_config *)all_elements[element_idx]
++        .data;
++    pd_config->parent_idx = PD_STATIC_DEV_IDX_NONE;
++    pd_config->driver_id =
++        FWK_ID_ELEMENT(FWK_MODULE_IDX_PPU_V1, element_idx);
++
++    return all_elements;
+ }
+
+ const struct fwk_module_config config_power_domain = {
+diff --git a/product/rdkronos/scp_ramfw/config_ppu_v1.c b/product/rdkronos/scp_ramfw/config_ppu_v1.c
+index a58b4eb2..08d7e24d 100644
+--- a/product/rdkronos/scp_ramfw/config_ppu_v1.c
++++ b/product/rdkronos/scp_ramfw/config_ppu_v1.c
+@@ -32,6 +32,11 @@
+ /* Maximum PPU cluster name size including the null terminator */
+ #define PPU_CLUS_NAME_SIZE 7
+
++/* Temporary used reg address to ensure the reg operator will
++ * not affect other code section. This fake address will be
++ * deleted until new fvp is ready.
++ */
++
+ /* Module configuration data */
+ static struct mod_ppu_v1_config ppu_v1_config_data = {
+     .pd_notification_id = FWK_ID_NOTIFICATION_INIT(
+@@ -68,11 +73,16 @@ static const struct fwk_element *ppu_v1_get_element_table(fwk_id_t module_id)
+      *   Number of cores
+      *   + Number of cluster descriptors
+      *   + Number of system power domain descriptors
++     *   + Number of SI power domain descriptors
++     *     (10 for now: cluster0-core0, cluster0
++     *                  cluster1-core0,1, cluster1
++     *                  cluster2-core0-3, cluster2)
+      *   + 1 terminator descriptor
+      */
+     element_table = fwk_mm_calloc(
+         core_count + cluster_count +
+-            FWK_ARRAY_SIZE(ppu_v1_system_element_table) + 1,
++            FWK_ARRAY_SIZE(ppu_v1_system_element_table) +
++            10 + 1,
+         sizeof(struct fwk_element));
+
+     pd_config_table = fwk_mm_calloc(
+@@ -129,6 +139,108 @@ static const struct fwk_element *ppu_v1_get_element_table(fwk_id_t module_id)
+         ppu_v1_system_element_table,
+         sizeof(ppu_v1_system_element_table));
+
++    /* Setting SI elements */
++    /* Allocate pd_config for SI elements */
++    pd_config_table = fwk_mm_calloc(10, sizeof(struct mod_ppu_v1_pd_config));
++
++    /* SI Cluster 0 Core 0 */
++    pd_config_table[0].pd_type = MOD_PD_TYPE_CORE;
++    pd_config_table[0].ppu.reg_base = SCP_PPU_SI_CLUS0CORE0;
++    pd_config_table[0].ppu.irq = FWK_INTERRUPT_NONE;
++    /* 8 cores + 8 clusters + 1 systop + 1 si-core */
++    pd_config_table[0].cluster_id = FWK_ID_ELEMENT(
++        FWK_MODULE_IDX_PPU_V1, (core_count + cluster_count + 1 + 1));
++    pd_config_table[0].observer_id = FWK_ID_NONE;
++    element_table[core_count + cluster_count + 1].name = "CLUS0CORE0";
++    element_table[core_count + cluster_count + 1].data = &pd_config_table[0];
++
++    /* SI Cluster 0 */
++    pd_config_table[1].pd_type = MOD_PD_TYPE_CLUSTER;
++    pd_config_table[1].ppu.reg_base = SCP_PPU_SI_CLUS0;
++    pd_config_table[1].ppu.irq = FWK_INTERRUPT_NONE;
++    pd_config_table[1].observer_id = FWK_ID_NONE;
++    pd_config_table[1].observer_api = FWK_ID_NONE;
++    element_table[core_count + cluster_count + 2].name = "CLUS0";
++    element_table[core_count + cluster_count + 2].data = &pd_config_table[1];
++
++    /* SI Cluster 1 Core 0 */
++    pd_config_table[2].pd_type = MOD_PD_TYPE_CORE;
++    pd_config_table[2].ppu.reg_base = SCP_PPU_SI_CLUS1CORE0;
++    pd_config_table[2].ppu.irq = FWK_INTERRUPT_NONE;
++    pd_config_table[2].cluster_id = FWK_ID_ELEMENT(
++        FWK_MODULE_IDX_PPU_V1, (core_count + cluster_count + 1 + 2 + 2));
++    pd_config_table[2].observer_id = FWK_ID_NONE;
++    element_table[core_count + cluster_count + 3].name = "CLUS1CORE0";
++    element_table[core_count + cluster_count + 3].data = &pd_config_table[2];
++
++    /* SI Cluster 1 Core 1 */
++    pd_config_table[3].pd_type = MOD_PD_TYPE_CORE;
++    pd_config_table[3].ppu.reg_base = SCP_PPU_SI_CLUS1CORE1;
++    pd_config_table[3].ppu.irq = FWK_INTERRUPT_NONE;
++    pd_config_table[3].cluster_id = FWK_ID_ELEMENT(
++        FWK_MODULE_IDX_PPU_V1, (core_count + cluster_count + 1 + 2 + 2));
++    pd_config_table[3].observer_id = FWK_ID_NONE;
++    element_table[core_count + cluster_count + 4].name = "CLUS1CORE1";
++    element_table[core_count + cluster_count + 4].data = &pd_config_table[3];
++
++    /* SI Cluster 1 */
++    pd_config_table[4].pd_type = MOD_PD_TYPE_CLUSTER;
++    pd_config_table[4].ppu.reg_base = SCP_PPU_SI_CLUS1;
++    pd_config_table[4].ppu.irq = FWK_INTERRUPT_NONE;
++    pd_config_table[4].observer_id = FWK_ID_NONE;
++    pd_config_table[4].observer_api = FWK_ID_NONE;
++    element_table[core_count + cluster_count + 5].name = "CLUS1";
++    element_table[core_count + cluster_count + 5].data = &pd_config_table[4];
++
++    /* SI Cluster 2 Core 0 */
++    pd_config_table[5].pd_type = MOD_PD_TYPE_CORE;
++    pd_config_table[5].ppu.reg_base = SCP_PPU_SI_CLUS2CORE0;
++    pd_config_table[5].ppu.irq = FWK_INTERRUPT_NONE;
++    pd_config_table[5].cluster_id = FWK_ID_ELEMENT(
++        FWK_MODULE_IDX_PPU_V1, (core_count + cluster_count + 1 + 2 + 3 + 4));
++    pd_config_table[5].observer_id = FWK_ID_NONE;
++    element_table[core_count + cluster_count + 6].name = "CLUS2CORE0";
++    element_table[core_count + cluster_count + 6].data = &pd_config_table[5];
++
++    /* SI Cluster 2 Core 1 */
++    pd_config_table[6].pd_type = MOD_PD_TYPE_CORE;
++    pd_config_table[6].ppu.reg_base = SCP_PPU_SI_CLUS2CORE1;
++    pd_config_table[6].ppu.irq = FWK_INTERRUPT_NONE;
++    pd_config_table[6].cluster_id = FWK_ID_ELEMENT(
++        FWK_MODULE_IDX_PPU_V1, (core_count + cluster_count + 1 + 2 + 3 + 4));
++    pd_config_table[6].observer_id = FWK_ID_NONE;
++    element_table[core_count + cluster_count + 7].name = "CLUS2CORE1";
++    element_table[core_count + cluster_count + 7].data = &pd_config_table[6];
++
++    /* SI Cluster 2 Core 2 */
++    pd_config_table[7].pd_type = MOD_PD_TYPE_CORE;
++    pd_config_table[7].ppu.reg_base = SCP_PPU_SI_CLUS2CORE2;
++    pd_config_table[7].ppu.irq = FWK_INTERRUPT_NONE;
++    pd_config_table[7].cluster_id = FWK_ID_ELEMENT(
++        FWK_MODULE_IDX_PPU_V1, (core_count + cluster_count + 1 + 2 + 3 + 4));
++    pd_config_table[7].observer_id = FWK_ID_NONE;
++    element_table[core_count + cluster_count + 8].name = "CLUS2CORE2";
++    element_table[core_count + cluster_count + 8].data = &pd_config_table[7];
++
++    /* SI Cluster 2 Core 3 */
++    pd_config_table[8].pd_type = MOD_PD_TYPE_CORE;
++    pd_config_table[8].ppu.reg_base = SCP_PPU_SI_CLUS2CORE3;
++    pd_config_table[8].ppu.irq = FWK_INTERRUPT_NONE;
++    pd_config_table[8].cluster_id = FWK_ID_ELEMENT(
++        FWK_MODULE_IDX_PPU_V1, (core_count + cluster_count + 1 + 2 + 3 + 4));
++    pd_config_table[8].observer_id = FWK_ID_NONE;
++    element_table[core_count + cluster_count + 9].name = "CLUS2CORE3";
++    element_table[core_count + cluster_count + 9].data = &pd_config_table[8];
++
++    /* SI Cluster 2 */
++    pd_config_table[9].pd_type = MOD_PD_TYPE_CLUSTER;
++    pd_config_table[9].ppu.reg_base = SCP_PPU_SI_CLUS2;
++    pd_config_table[9].ppu.irq = FWK_INTERRUPT_NONE;
++    pd_config_table[9].observer_id = FWK_ID_NONE;
++    pd_config_table[9].observer_api = FWK_ID_NONE;
++    element_table[core_count + cluster_count + 10].name = "CLUS2";
++    element_table[core_count + cluster_count + 10].data = &pd_config_table[9];
++
+     /*
+      * Configure pd_source_id with the SYSTOP identifier from the power domain
+      * module which is dynamically defined based on the number of cores.
+diff --git a/product/rdkronos/scp_ramfw/include/scp_css_mmap.h b/product/rdkronos/scp_ramfw/include/scp_css_mmap.h
+index 9ac37a97..2a7f6630 100644
+--- a/product/rdkronos/scp_ramfw/include/scp_css_mmap.h
++++ b/product/rdkronos/scp_ramfw/include/scp_css_mmap.h
+@@ -120,4 +120,27 @@
+ #define SCP_CMN_BASE (SCP_ADDRESS_TRANSLATION_WINDOW1_BASE + \
+     SCP_ATW1_CMN_OFFSET)
+
++/* Safety Island CPU layout */
++#define SCP_SI_CL0_ID 0
++#define SCP_SI_CL0_CORE_NUM 1
++#define SCP_SI_CL0_CORE_OFS 1
++#define SCP_SI_CL1_ID 1
++#define SCP_SI_CL1_CORE_NUM 2
++#define SCP_SI_CL1_CORE_OFS 3
++#define SCP_SI_CL2_ID 2
++#define SCP_SI_CL2_CORE_NUM 4
++#define SCP_SI_CL2_CORE_OFS 6
++
++/* Safety Island CPU PPU base addresses */
++#define SCP_PPU_SI_CLUS0 (0x56010000)
++#define SCP_PPU_SI_CLUS0CORE0 (0x56040000)
++#define SCP_PPU_SI_CLUS1 (0x56410000)
++#define SCP_PPU_SI_CLUS1CORE0 (0x56440000)
++#define SCP_PPU_SI_CLUS1CORE1 (0x56540000)
++#define SCP_PPU_SI_CLUS2 (0x56810000)
++#define SCP_PPU_SI_CLUS2CORE0 (0x56840000)
++#define SCP_PPU_SI_CLUS2CORE1 (0x56940000)
++#define SCP_PPU_SI_CLUS2CORE2 (0x56A40000)
++#define SCP_PPU_SI_CLUS2CORE3 (0x56B40000)
++
+ #endif /* SCP_CSS_MMAP_H */
+--
+2.25.1
+
