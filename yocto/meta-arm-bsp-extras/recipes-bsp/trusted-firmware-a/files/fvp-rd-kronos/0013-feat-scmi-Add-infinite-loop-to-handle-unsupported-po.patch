@@ -1,0 +1,34 @@
+From d05112f8d061d38b69c96753a86f8901d7d8349c Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Mon, 26 Feb 2024 13:00:22 +0000
+Subject: [PATCH] feat(scmi): Add infinite loop to handle unsupported powerdown
+
+Kronos does not support a real shutdown, which leads to an
+unwanted TF-A panic. Handle this by adding an infinite loop
+that waits indefinitely until the FVP gets terminated.
+
+Upstream-Status: Inappropriate [kronos-specific]
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ drivers/arm/css/scp/css_pm_scmi.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/arm/css/scp/css_pm_scmi.c b/drivers/arm/css/scp/css_pm_scmi.c
+index 9fe8b3759..f5e48a858 100644
+--- a/drivers/arm/css/scp/css_pm_scmi.c
++++ b/drivers/arm/css/scp/css_pm_scmi.c
+@@ -340,7 +340,10 @@ void __dead2 css_scp_system_off(int state)
+ 
+ 	/* Powerdown of primary core */
+ 	psci_pwrdown_cpu(PLAT_MAX_PWR_LVL);
+-	wfi();
++
++	while (true) {
++		wfi();
++	}
+ 	ERROR("CSS set power state: operation not handled.\n");
+ 	panic();
+ }
+-- 
+2.25.1
+

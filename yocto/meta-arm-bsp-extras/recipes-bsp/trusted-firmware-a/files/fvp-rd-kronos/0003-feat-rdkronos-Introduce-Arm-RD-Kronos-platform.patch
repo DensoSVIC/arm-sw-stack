@@ -1,0 +1,602 @@
+From 24485f28fb977a849468bd830d96c97e027af327 Mon Sep 17 00:00:00 2001
+From: Peter Hoyes <Peter.Hoyes@arm.com>
+Date: Mon, 20 Feb 2023 12:08:43 +0000
+Subject: [PATCH] feat(rdkronos): Introduce Arm RD-Kronos platform
+
+Create a new platform for the RD-Kronos automotive FVP. This
+platform contains:
+ * A GICv4-compatible GIC-700
+ * An SCP for CPU power control
+ * A secure watchdog
+ * 128 MB of SRAM, of which 1 MB is reserved for TF-A
+
+Add FW_CONFIG and TB_FW_CONFIG device trees for a minimal boot.
+
+This platform only supports the BL2_AT_EL3 boot flow.
+
+Upstream-Status: Pending
+Signed-off-by: Peter Hoyes <Peter.Hoyes@arm.com>
+---
+ .../rdkronos/fdts/rdkronos_fw_config.dts      |  21 +++
+ .../rdkronos/fdts/rdkronos_tb_fw_config.dts   |  28 ++++
+ plat/arm/board/rdkronos/include/plat_macros.S |  24 +++
+ .../arm/board/rdkronos/include/platform_def.h | 144 ++++++++++++++++++
+ .../board/rdkronos/include/rdkronos_helpers.S |  45 ++++++
+ plat/arm/board/rdkronos/platform.mk           |  63 ++++++++
+ plat/arm/board/rdkronos/rdkronos_bl31_setup.c |  28 ++++
+ plat/arm/board/rdkronos/rdkronos_err.c        |  17 +++
+ plat/arm/board/rdkronos/rdkronos_plat.c       |  61 ++++++++
+ plat/arm/board/rdkronos/rdkronos_topology.c   |  67 ++++++++
+ 10 files changed, 498 insertions(+)
+ create mode 100644 plat/arm/board/rdkronos/fdts/rdkronos_fw_config.dts
+ create mode 100644 plat/arm/board/rdkronos/fdts/rdkronos_tb_fw_config.dts
+ create mode 100644 plat/arm/board/rdkronos/include/plat_macros.S
+ create mode 100644 plat/arm/board/rdkronos/include/platform_def.h
+ create mode 100644 plat/arm/board/rdkronos/include/rdkronos_helpers.S
+ create mode 100644 plat/arm/board/rdkronos/platform.mk
+ create mode 100644 plat/arm/board/rdkronos/rdkronos_bl31_setup.c
+ create mode 100644 plat/arm/board/rdkronos/rdkronos_err.c
+ create mode 100644 plat/arm/board/rdkronos/rdkronos_plat.c
+ create mode 100644 plat/arm/board/rdkronos/rdkronos_topology.c
+
+diff --git a/plat/arm/board/rdkronos/fdts/rdkronos_fw_config.dts b/plat/arm/board/rdkronos/fdts/rdkronos_fw_config.dts
+new file mode 100644
+index 000000000..3921c7d68
+--- /dev/null
++++ b/plat/arm/board/rdkronos/fdts/rdkronos_fw_config.dts
+@@ -0,0 +1,21 @@
++/*
++ * Copyright (c) 2023, ARM Limited and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++#include <common/tbbr/tbbr_img_def.h>
++
++/dts-v1/;
++
++/ {
++	dtb-registry {
++		compatible = "fconf,dyn_cfg-dtb_registry";
++
++		tb_fw-config {
++			load-address = <0x0 0x0060000>;
++			max-size = <0x200>;
++			id = <TB_FW_CONFIG_ID>;
++		};
++	};
++};
+diff --git a/plat/arm/board/rdkronos/fdts/rdkronos_tb_fw_config.dts b/plat/arm/board/rdkronos/fdts/rdkronos_tb_fw_config.dts
+new file mode 100644
+index 000000000..c5890beed
+--- /dev/null
++++ b/plat/arm/board/rdkronos/fdts/rdkronos_tb_fw_config.dts
+@@ -0,0 +1,28 @@
++/*
++ * Copyright (c) 2023, ARM Limited and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++/dts-v1/;
++
++/ {
++	tb_fw-config {
++		compatible = "arm,tb_fw";
++
++		/* Disable authentication for development */
++		disable_auth = <0x0>;
++
++		/*
++		 * The following two entries are placeholders for Mbed TLS
++		 * heap information. The default values don't matter since
++		 * they will be overwritten by BL1.
++		 * In case of having shared Mbed TLS heap between BL1 and BL2,
++		 * BL1 will populate these two properties with the respective
++		 * info about the shared heap. This info will be available for
++		 * BL2 in order to locate and re-use the heap.
++		 */
++		mbedtls_heap_addr = <0x0 0x0>;
++		mbedtls_heap_size = <0x0>;
++	};
++};
+diff --git a/plat/arm/board/rdkronos/include/plat_macros.S b/plat/arm/board/rdkronos/include/plat_macros.S
+new file mode 100644
+index 000000000..5d251a19f
+--- /dev/null
++++ b/plat/arm/board/rdkronos/include/plat_macros.S
+@@ -0,0 +1,24 @@
++/*
++ * Copyright (c) 2023, ARM Limited and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++#ifndef PLAT_MACROS_S
++#define PLAT_MACROS_S
++
++#include <arm_macros.S>
++
++/* ---------------------------------------------
++ * The below required platform porting macro
++ * prints out relevant platform registers
++ * whenever an unhandled exception is taken in
++ * BL31.
++ *
++ * There are currently no platform specific regs
++ * to print.
++ * ---------------------------------------------
++ */
++	.macro plat_crash_print_regs
++	.endm
++
++#endif /* PLAT_MACROS_S */
+diff --git a/plat/arm/board/rdkronos/include/platform_def.h b/plat/arm/board/rdkronos/include/platform_def.h
+new file mode 100644
+index 000000000..bf3163a93
+--- /dev/null
++++ b/plat/arm/board/rdkronos/include/platform_def.h
+@@ -0,0 +1,144 @@
++/*
++ * Copyright (c) 2023, ARM Limited and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++#ifndef PLATFORM_DEF_H
++#define PLATFORM_DEF_H
++
++#define PLATFORM_CORE_COUNT		U(16)
++#define PLAT_ARM_CLUSTER_COUNT		U(16)
++#define PLAT_MAX_CPUS_PER_CLUSTER	U(1)
++#define PLAT_MAX_PE_PER_CPU		U(1)
++
++#define PLATFORM_STACK_SIZE		UL(0x1000)
++
++/* BL1 is not supported */
++#define PLAT_ARM_TRUSTED_ROM_BASE	UL(0x0)
++#define PLAT_ARM_TRUSTED_ROM_SIZE	UL(0x0)
++#define	PLAT_ARM_TRUSTED_SRAM_BASE	UL(0x0)
++#define	PLAT_ARM_TRUSTED_SRAM_SIZE	UL(0x00080000)	/* 512 KB */
++
++/* USE_ROMLIB is not supported */
++#define PLAT_ARM_MAX_ROMLIB_RW_SIZE	U(0)
++#define PLAT_ARM_MAX_ROMLIB_RO_SIZE	U(0)
++
++/* Defined based on actual binary sizes */
++#define PLAT_ARM_MAX_BL1_RW_SIZE	0xD000
++#define PLAT_ARM_MAX_BL2_SIZE		0x20000
++#define PLAT_ARM_MAX_BL31_SIZE		0x70000
++
++#define PLAT_ARM_DRAM2_BASE		ULL(0x8080000000)
++#define PLAT_ARM_DRAM2_SIZE		ULL(0x180000000)
++
++#define PLAT_CSS_MHU_BASE		UL(0x2A920000)
++#define PLAT_ARM_NSTIMER_FRAME_ID	U(0)
++
++#define SOC_CSS_SEC_UART_BASE		UL(0x2A410000)
++#define SOC_CSS_NSEC_UART_BASE		UL(0x2A400000)
++#define SOC_CSS_UART_SIZE		UL(0x10000)
++#define SOC_CSS_UART_CLK_IN_HZ		UL(7372800)
++#define PLAT_ARM_BOOT_UART_BASE		SOC_CSS_SEC_UART_BASE
++#define PLAT_ARM_BOOT_UART_CLK_IN_HZ	SOC_CSS_UART_CLK_IN_HZ
++#define PLAT_ARM_RUN_UART_BASE		SOC_CSS_SEC_UART_BASE
++#define PLAT_ARM_RUN_UART_CLK_IN_HZ	SOC_CSS_UART_CLK_IN_HZ
++#define PLAT_ARM_CRASH_UART_BASE	SOC_CSS_SEC_UART_BASE
++#define PLAT_ARM_CRASH_UART_CLK_IN_HZ	SOC_CSS_UART_CLK_IN_HZ
++
++/* Physical and virtual address space limits for MMU */
++#define PLAT_PHY_ADDR_SPACE_SIZE	(1ULL << 42)
++#define PLAT_VIRT_ADDR_SPACE_SIZE	(1ULL << 42)
++
++/* GIC related constants */
++#define PLAT_ARM_GICD_BASE		UL(0x30000000)
++#define PLAT_ARM_GICR_BASE		UL(0x301C0000)
++#define PLAT_ARM_GICC_BASE		UL(0x2C000000)
++#define PLAT_ARM_G1S_IRQ_PROPS(grp)	CSS_G1S_IRQ_PROPS(grp)
++#define PLAT_ARM_G0_IRQ_PROPS(grp)	ARM_G0_IRQ_PROPS(grp)
++
++/* Virtual address used by dynamic mem_protect for chunk_base */
++#define PLAT_ARM_MEM_PROTEC_VA_FRAME	UL(0xC0000000)
++
++/* Secure Watchdog Constants */
++#define SBSA_SECURE_WDOG_BASE		UL(0x2A480000)
++#define SBSA_SECURE_WDOG_TIMEOUT	UL(100)
++
++#define V2M_SYS_LED_SS_SHIFT		U(0)
++#define V2M_SYS_LED_EL_SHIFT		U(1)
++#define V2M_SYS_LED_EC_SHIFT		U(3)
++
++#define V2M_SYS_LED_SS_MASK		U(0x01)
++#define V2M_SYS_LED_EL_MASK		U(0x03)
++#define V2M_SYS_LED_EC_MASK		U(0x1f)
++
++#define V2M_SYSREGS_BASE		UL(0x0C010000)
++#define V2M_SYS_LED			U(0x8)
++
++#define PLAT_ARM_SCMI_CHANNEL_COUNT	U(1)
++#define CSS_SYSTEM_PWR_DMN_LVL		ARM_PWR_LVL2
++#define PLAT_MAX_PWR_LVL		ARM_PWR_LVL1
++
++#define MAX_IO_DEVICES			U(3)
++#define MAX_IO_HANDLES			U(4)
++
++#ifdef IMAGE_BL2
++#define PLAT_ARM_MMAP_ENTRIES		U(5)
++#else
++#define PLAT_ARM_MMAP_ENTRIES		U(6)
++#endif
++#define MAX_XLAT_TABLES			U(6)
++
++#define V2M_FLASH0_BASE			UL(0x08000000)
++#define V2M_FLASH0_SIZE			UL(0x04000000)
++#define V2M_FLASH_BLOCK_SIZE		UL(0x00040000)	/* 256 KB */
++#define PLAT_ARM_FLASH_IMAGE_BASE	V2M_FLASH0_BASE
++#define PLAT_ARM_FLASH_IMAGE_MAX_SIZE	(V2M_FLASH0_SIZE - V2M_FLASH_BLOCK_SIZE)
++
++/* Kronos-specific memory mappings */
++#define KRONOS_EXTERNAL_FLASH	MAP_REGION_FLAT(V2M_FLASH0_BASE,\
++						V2M_FLASH0_SIZE,	\
++						MT_DEVICE | MT_RO | MT_SECURE)
++
++#define KRONOS_MAP_NS_DRAM1	MAP_REGION_FLAT(ARM_DRAM1_BASE,	\
++						ARM_DRAM1_SIZE,	\
++						MT_MEMORY | MT_RW | MT_NS)
++
++#define KRONOS_DEVICE_BASE	(0x20000000)
++#define KRONOS_DEVICE_SIZE	(0x20000000)
++#define KRONOS_MAP_DEVICE	MAP_REGION_FLAT(KRONOS_DEVICE_BASE, \
++						KRONOS_DEVICE_SIZE, \
++						MT_DEVICE | MT_RW | MT_SECURE)
++
++#define SOC_SYSTEM_PERIPH_BASE		UL(0x0C000000)
++#define SOC_SYSTEM_PERIPH_SIZE		UL(0x02000000)
++#define SOC_PLATFORM_PERIPH_MAP_DEVICE	MAP_REGION_FLAT(\
++						SOC_PLATFORM_PERIPH_BASE,\
++						SOC_PLATFORM_PERIPH_SIZE,\
++						MT_DEVICE | MT_RW | MT_SECURE)
++
++#define SOC_PLATFORM_PERIPH_BASE	UL(0x0E000000)
++#define SOC_PLATFORM_PERIPH_SIZE	UL(0x02000000)
++#define SOC_SYSTEM_PERIPH_MAP_DEVICE	MAP_REGION_FLAT(\
++						SOC_SYSTEM_PERIPH_BASE,\
++						SOC_SYSTEM_PERIPH_SIZE,\
++						MT_DEVICE | MT_RW | MT_SECURE)
++
++/*******************************************************************************
++ * Memprotect definitions
++ ******************************************************************************/
++/* PSCI memory protect definitions:
++ * This variable is stored in a non-secure flash because some ARM reference
++ * platforms do not have secure NVRAM. Real systems that provided MEM_PROTECT
++ * support must use a secure NVRAM to store the PSCI MEM_PROTECT definitions.
++ */
++#define PLAT_ARM_MEM_PROT_ADDR		(V2M_FLASH0_BASE + \
++					 V2M_FLASH0_SIZE - V2M_FLASH_BLOCK_SIZE)
++
++#include <lib/utils_def.h>
++#include <lib/xlat_tables/xlat_tables_defs.h>
++#include <plat/arm/common/arm_def.h>
++#include <plat/arm/css/common/css_def.h>
++#include <plat/common/common_def.h>
++
++#endif /* PLATFORM_DEF_H */
+diff --git a/plat/arm/board/rdkronos/include/rdkronos_helpers.S b/plat/arm/board/rdkronos/include/rdkronos_helpers.S
+new file mode 100644
+index 000000000..f8a9656a8
+--- /dev/null
++++ b/plat/arm/board/rdkronos/include/rdkronos_helpers.S
+@@ -0,0 +1,45 @@
++/*
++ * Copyright (c) 2023, ARM Limited and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++#include <arch.h>
++#include <asm_macros.S>
++#include <platform_def.h>
++
++	.globl	plat_arm_calc_core_pos
++
++	/* ---------------------------------------------------------------------
++	 * unsigned int plat_arm_calc_core_pos(u_register_t mpidr)
++	 *
++	 * Function to calculate the core position on TC.
++	 *
++	 * (ClusterId * PLAT_MAX_CPUS_PER_CLUSTER * PLAT_MAX_PE_PER_CPU) +
++	 * (CPUId * PLAT_MAX_PE_PER_CPU) +
++	 * ThreadId
++	 *
++	 * which can be simplified as:
++	 *
++	 * ((ClusterId * PLAT_MAX_CPUS_PER_CLUSTER + CPUId) * PLAT_MAX_PE_PER_CPU)
++	 * + ThreadId
++	 * ---------------------------------------------------------------------
++	 */
++func plat_arm_calc_core_pos
++	mov	x4, x0
++
++	/* Extract individual affinity fields from MPIDR */
++	ubfx    x0, x4, #MPIDR_AFF0_SHIFT, #MPIDR_AFFINITY_BITS
++	ubfx    x1, x4, #MPIDR_AFF1_SHIFT, #MPIDR_AFFINITY_BITS
++	ubfx    x2, x4, #MPIDR_AFF2_SHIFT, #MPIDR_AFFINITY_BITS
++	ubfx    x3, x4, #MPIDR_AFF3_SHIFT, #MPIDR_AFFINITY_BITS
++
++	/* Compute linear position */
++	mov     x4, #PLAT_ARM_CLUSTER_COUNT
++	madd    x2, x3, x4, x2
++	mov     x4, #PLAT_MAX_CPUS_PER_CLUSTER
++	madd    x1, x2, x4, x1
++	mov     x4, #PLAT_MAX_PE_PER_CPU
++	madd    x0, x1, x4, x0
++	ret
++endfunc plat_arm_calc_core_pos
+diff --git a/plat/arm/board/rdkronos/platform.mk b/plat/arm/board/rdkronos/platform.mk
+new file mode 100644
+index 000000000..17daec265
+--- /dev/null
++++ b/plat/arm/board/rdkronos/platform.mk
+@@ -0,0 +1,63 @@
++# Copyright (c) 2023, ARM Limited and Contributors. All rights reserved.
++#
++# SPDX-License-Identifier: BSD-3-Clause
++#
++
++RDKRONOS_BASE		=	plat/arm/board/rdkronos
++
++PLAT_INCLUDES		+=	-I${RDKRONOS_BASE}/include/
++
++override ARM_PLAT_MT			:= 1
++override ARM_RECOM_STATE_ID_ENC		:= 1
++override CSS_LOAD_SCP_IMAGES		:= 0
++override CTX_INCLUDE_AARCH32_REGS	:= 0
++override ENABLE_AMU			:= 1
++override NEED_BL1			:= 0
++override NEED_BL2U			:= 0
++override PSCI_EXTENDED_STATE_ID		:= 1
++
++BL2_AT_EL3				:= 1
++CSS_USE_SCMI_SDS_DRIVER			:= 1
++ENABLE_FEAT_FGT				:= 1
++ENABLE_FEAT_ECV				:= 1
++HW_ASSISTED_COHERENCY			:= 1
++NEED_BL32				:= 0
++USE_COHERENT_MEM			:= 0
++
++GIC_ENABLE_V4_EXTN	:= 1
++include drivers/arm/gic/v3/gicv3.mk
++RDKRONOS_GIC_SOURCES	:=	${GICV3_SOURCES}			\
++				plat/common/plat_gicv3.c		\
++				plat/arm/common/arm_gicv3.c
++
++RDKRONOS_CPU_SOURCES	:=	lib/cpus/aarch64/neoverse_poseidon.S
++
++PLAT_BL_COMMON_SOURCES	+=	${RDKRONOS_BASE}/rdkronos_plat.c	\
++				${RDKRONOS_BASE}/include/rdkronos_helpers.S
++
++BL2_SOURCES		+=	${RDKRONOS_BASE}/rdkronos_err.c		\
++				lib/utils/mem_region.c			\
++				plat/arm/common/arm_nor_psci_mem_protect.c
++
++BL31_SOURCES		+=	${RDKRONOS_CPU_SOURCES}			\
++				${RDKRONOS_GIC_SOURCES}			\
++				${RDKRONOS_BASE}/rdkronos_bl31_setup.c	\
++				${RDKRONOS_BASE}/rdkronos_topology.c	\
++				drivers/cfi/v2m/v2m_flash.c		\
++				lib/utils/mem_region.c			\
++				plat/arm/common/arm_nor_psci_mem_protect.c
++
++# Add the FDT_SOURCES and options for Dynamic Config
++FDT_SOURCES		+=	${RDKRONOS_BASE}/fdts/${PLAT}_fw_config.dts \
++				${RDKRONOS_BASE}/fdts/${PLAT}_tb_fw_config.dts
++FW_CONFIG		:=	${BUILD_PLAT}/fdts/${PLAT}_fw_config.dtb
++TB_FW_CONFIG		:=	${BUILD_PLAT}/fdts/${PLAT}_tb_fw_config.dtb
++
++# Add the FW_CONFIG to FIP and specify the same to certtool
++$(eval $(call TOOL_ADD_PAYLOAD,${FW_CONFIG},--fw-config,${FW_CONFIG}))
++# Add the TB_FW_CONFIG to FIP and specify the same to certtool
++$(eval $(call TOOL_ADD_PAYLOAD,${TB_FW_CONFIG},--tb-fw-config,${TB_FW_CONFIG}))
++
++include plat/arm/common/arm_common.mk
++include plat/arm/css/common/css_common.mk
++include plat/arm/board/common/board_common.mk
+diff --git a/plat/arm/board/rdkronos/rdkronos_bl31_setup.c b/plat/arm/board/rdkronos/rdkronos_bl31_setup.c
+new file mode 100644
+index 000000000..fe91cb69e
+--- /dev/null
++++ b/plat/arm/board/rdkronos/rdkronos_bl31_setup.c
+@@ -0,0 +1,28 @@
++/*
++ * Copyright (c) 2023, ARM Limited and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++#include <drivers/arm/css/css_mhu_doorbell.h>
++#include <drivers/arm/css/scmi.h>
++
++static scmi_channel_plat_info_t plat_rd_scmi_info[] = {
++	{
++		.scmi_mbx_mem = CSS_SCMI_PAYLOAD_BASE,
++		.db_reg_addr = PLAT_CSS_MHU_BASE + MHU3_SENDER_REG_SET(0),
++		.db_preserve_mask = 0xfffffffe,
++		.db_modify_mask = 0x1,
++		.ring_doorbell = &mhuv3_ring_doorbell,
++	},
++};
++
++scmi_channel_plat_info_t *plat_css_get_scmi_info(int channel_id)
++{
++	return &plat_rd_scmi_info[channel_id];
++}
++
++const plat_psci_ops_t *plat_arm_psci_override_pm_ops(plat_psci_ops_t *ops)
++{
++	return css_scmi_override_pm_ops(ops);
++}
+diff --git a/plat/arm/board/rdkronos/rdkronos_err.c b/plat/arm/board/rdkronos/rdkronos_err.c
+new file mode 100644
+index 000000000..f6eec1f98
+--- /dev/null
++++ b/plat/arm/board/rdkronos/rdkronos_err.c
+@@ -0,0 +1,17 @@
++/*
++ * Copyright (c) 2023, ARM Limited and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++#include <plat/arm/common/plat_arm.h>
++
++/*
++ * rdkronos error handler
++ */
++void __dead2 plat_arm_error_handler(int err)
++{
++	while (1) {
++		wfi();
++	}
++}
+diff --git a/plat/arm/board/rdkronos/rdkronos_plat.c b/plat/arm/board/rdkronos/rdkronos_plat.c
+new file mode 100644
+index 000000000..1b8dd8a37
+--- /dev/null
++++ b/plat/arm/board/rdkronos/rdkronos_plat.c
+@@ -0,0 +1,61 @@
++/*
++ * Copyright (c) 2023, ARM Limited and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++#include <common/debug.h>
++#include <drivers/arm/sbsa.h>
++#include <lib/fconf/fconf.h>
++#include <lib/fconf/fconf_dyn_cfg_getter.h>
++#include <plat/arm/common/plat_arm.h>
++#include <plat/common/platform.h>
++
++const mmap_region_t plat_arm_mmap[] = {
++	ARM_MAP_SHARED_RAM,
++	KRONOS_MAP_DEVICE,
++	KRONOS_EXTERNAL_FLASH,
++	SOC_PLATFORM_PERIPH_MAP_DEVICE,
++	SOC_SYSTEM_PERIPH_MAP_DEVICE,
++#if IMAGE_BL2
++	KRONOS_MAP_NS_DRAM1,
++#endif
++	{0}
++};
++
++void plat_arm_secure_wdt_start(void)
++{
++	sbsa_wdog_start(SBSA_SECURE_WDOG_BASE, SBSA_SECURE_WDOG_TIMEOUT);
++}
++
++void plat_arm_secure_wdt_stop(void)
++{
++	sbsa_wdog_stop(SBSA_SECURE_WDOG_BASE);
++}
++
++/*
++ * For Kronos we do not do anything in these interface functions.
++ */
++void plat_arm_security_setup(void)
++{
++}
++
++void __init plat_arm_interconnect_init(void)
++{
++}
++
++void plat_arm_interconnect_enter_coherency(void)
++{
++}
++
++void plat_arm_interconnect_exit_coherency(void)
++{
++}
++
++void soc_css_init_nic400(void)
++{
++}
++
++void soc_css_init_pcie(void)
++{
++}
+diff --git a/plat/arm/board/rdkronos/rdkronos_topology.c b/plat/arm/board/rdkronos/rdkronos_topology.c
+new file mode 100644
+index 000000000..311edf730
+--- /dev/null
++++ b/plat/arm/board/rdkronos/rdkronos_topology.c
+@@ -0,0 +1,67 @@
++/*
++ * Copyright (c) 2023, ARM Limited and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++#include <plat/arm/common/plat_arm.h>
++#include <plat/arm/css/common/css_pm.h>
++
++/******************************************************************************
++ * The power domain tree descriptor.
++ ******************************************************************************/
++const unsigned char rd_kronos_pd_tree_desc[] = {
++	(PLAT_ARM_CLUSTER_COUNT),
++	PLAT_MAX_CPUS_PER_CLUSTER,
++	PLAT_MAX_CPUS_PER_CLUSTER,
++	PLAT_MAX_CPUS_PER_CLUSTER,
++	PLAT_MAX_CPUS_PER_CLUSTER,
++	PLAT_MAX_CPUS_PER_CLUSTER,
++	PLAT_MAX_CPUS_PER_CLUSTER,
++	PLAT_MAX_CPUS_PER_CLUSTER,
++	PLAT_MAX_CPUS_PER_CLUSTER,
++	PLAT_MAX_CPUS_PER_CLUSTER,
++	PLAT_MAX_CPUS_PER_CLUSTER,
++	PLAT_MAX_CPUS_PER_CLUSTER,
++	PLAT_MAX_CPUS_PER_CLUSTER,
++	PLAT_MAX_CPUS_PER_CLUSTER,
++	PLAT_MAX_CPUS_PER_CLUSTER,
++	PLAT_MAX_CPUS_PER_CLUSTER,
++	PLAT_MAX_CPUS_PER_CLUSTER,
++};
++
++/*******************************************************************************
++ * This function returns the topology tree information.
++ ******************************************************************************/
++const unsigned char *plat_get_power_domain_tree_desc(void)
++{
++	return rd_kronos_pd_tree_desc;
++}
++
++/*******************************************************************************
++ * The array mapping platform core position (implemented by plat_my_core_pos())
++ * to the SCMI power domain ID implemented by SCP.
++ ******************************************************************************/
++const uint32_t plat_css_core_pos_to_scmi_dmn_id_map[] = {
++	(SET_SCMI_CHANNEL_ID(0x0) | SET_SCMI_DOMAIN_ID(0x0)),
++	(SET_SCMI_CHANNEL_ID(0x0) | SET_SCMI_DOMAIN_ID(0x1)),
++	(SET_SCMI_CHANNEL_ID(0x0) | SET_SCMI_DOMAIN_ID(0x2)),
++	(SET_SCMI_CHANNEL_ID(0x0) | SET_SCMI_DOMAIN_ID(0x3)),
++	(SET_SCMI_CHANNEL_ID(0x0) | SET_SCMI_DOMAIN_ID(0x4)),
++	(SET_SCMI_CHANNEL_ID(0x0) | SET_SCMI_DOMAIN_ID(0x5)),
++	(SET_SCMI_CHANNEL_ID(0x0) | SET_SCMI_DOMAIN_ID(0x6)),
++	(SET_SCMI_CHANNEL_ID(0x0) | SET_SCMI_DOMAIN_ID(0x7)),
++	(SET_SCMI_CHANNEL_ID(0x0) | SET_SCMI_DOMAIN_ID(0x8)),
++	(SET_SCMI_CHANNEL_ID(0x0) | SET_SCMI_DOMAIN_ID(0x9)),
++	(SET_SCMI_CHANNEL_ID(0x0) | SET_SCMI_DOMAIN_ID(0xA)),
++	(SET_SCMI_CHANNEL_ID(0x0) | SET_SCMI_DOMAIN_ID(0xB)),
++	(SET_SCMI_CHANNEL_ID(0x0) | SET_SCMI_DOMAIN_ID(0xC)),
++	(SET_SCMI_CHANNEL_ID(0x0) | SET_SCMI_DOMAIN_ID(0xD)),
++	(SET_SCMI_CHANNEL_ID(0x0) | SET_SCMI_DOMAIN_ID(0xE)),
++	(SET_SCMI_CHANNEL_ID(0x0) | SET_SCMI_DOMAIN_ID(0xF)),
++};
++
++unsigned int plat_arm_get_cluster_core_count(u_register_t mpidr)
++{
++	return PLAT_MAX_CPUS_PER_CLUSTER;
++}
+-- 
+2.34.1
+

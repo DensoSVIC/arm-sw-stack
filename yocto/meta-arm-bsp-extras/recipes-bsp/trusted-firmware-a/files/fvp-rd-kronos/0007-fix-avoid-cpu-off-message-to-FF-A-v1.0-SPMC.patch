@@ -1,0 +1,121 @@
+From 04b0e344a20ca97f94089fe1b82ea89e3f251c2c Mon Sep 17 00:00:00 2001
+From: J-Alves <joao.alves@arm.com>
+Date: Mon, 17 Jul 2023 17:05:52 +0100
+Subject: [PATCH] fix: avoid cpu off message to FF-A v1.0 SPMC
+
+The framework messages specified in FF-A v1.1 REL0,
+section 18.3.4 are not compliant with an SPMC whose
+version is FF-A v1.0.
+The handling of power management in FF-A v1.0 was left
+implementation defined.
+As such, this patch skips sending the CPU OFF framework
+message.
+
+Upstream-Status: Inappropriate [kronos-specific]
+Signed-off-by: J-Alves <joao.alves@arm.com>
+Change-Id: I3e2ff42cc746affd2eb17d7d918c8c5274d200e9
+---
+ services/std_svc/spmd/spmd_main.c    |  9 ++++++--
+ services/std_svc/spmd/spmd_pm.c      | 31 +++++++++++++++-------------
+ services/std_svc/spmd/spmd_private.h |  1 +
+ 3 files changed, 25 insertions(+), 16 deletions(-)
+
+diff --git a/services/std_svc/spmd/spmd_main.c b/services/std_svc/spmd/spmd_main.c
+index 7e6c89df3..c35cef061 100644
+--- a/services/std_svc/spmd/spmd_main.c
++++ b/services/std_svc/spmd/spmd_main.c
+@@ -61,6 +61,12 @@ spmd_spm_core_context_t *spmd_get_context_by_mpidr(uint64_t mpidr)
+ 	return &spm_core_context[core_idx];
+ }
+ 
++uint32_t spmd_get_spmc_ffa_version(void)
++{
++	return MAKE_FFA_VERSION(spmc_attrs.major_version,
++				spmc_attrs.minor_version);
++}
++
+ /*******************************************************************************
+  * SPM Core context on current CPU get helper.
+  ******************************************************************************/
+@@ -650,8 +656,7 @@ uint64_t spmd_smc_handler(uint32_t smc_fid,
+ 			gp_regs_t *gpregs = get_gpregs_ctx(&ctx->cpu_ctx);
+ 			uint64_t rc;
+ 
+-			if (spmc_attrs.major_version == 1 &&
+-			    spmc_attrs.minor_version == 0) {
++			if (spmd_get_spmc_ffa_version() == MAKE_FFA_VERSION(1, 0)) {
+ 				ret = MAKE_FFA_VERSION(spmc_attrs.major_version,
+ 						       spmc_attrs.minor_version);
+ 				SMC_RET8(handle, (uint32_t)ret,
+diff --git a/services/std_svc/spmd/spmd_pm.c b/services/std_svc/spmd/spmd_pm.c
+index a2704dd81..686a3da52 100644
+--- a/services/std_svc/spmd/spmd_pm.c
++++ b/services/std_svc/spmd/spmd_pm.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2020-2022, ARM Limited and Contributors. All rights reserved.
++ * Copyright (c) 2020-2023, ARM Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  */
+@@ -11,6 +11,7 @@
+ 
+ #include <lib/el3_runtime/context_mgmt.h>
+ #include <lib/spinlock.h>
++#include <services/ffa_svc.h>
+ #include "spmd_private.h"
+ 
+ static struct {
+@@ -121,22 +122,24 @@ static int32_t spmd_cpu_off_handler(u_register_t unused)
+ 	assert(ctx != NULL);
+ 	assert(ctx->state != SPMC_STATE_OFF);
+ 
+-	/* Build an SPMD to SPMC direct message request. */
+-	spmd_build_spmc_message(get_gpregs_ctx(&ctx->cpu_ctx),
+-				FFA_FWK_MSG_PSCI, PSCI_CPU_OFF);
++	if (spmd_get_spmc_ffa_version() > MAKE_FFA_VERSION(1, 0)) {
++		/* Build an SPMD to SPMC direct message request. */
++		spmd_build_spmc_message(get_gpregs_ctx(&ctx->cpu_ctx),
++					FFA_FWK_MSG_PSCI, PSCI_CPU_OFF);
+ 
+-	rc = spmd_spm_core_sync_entry(ctx);
+-	if (rc != 0ULL) {
+-		ERROR("%s failed (%" PRIu64 ") on CPU%u\n", __func__, rc, linear_id);
+-	}
++		rc = spmd_spm_core_sync_entry(ctx);
++		if (rc != 0ULL) {
++			ERROR("%s failed (%" PRIu64 ") on CPU%u\n", __func__, rc, linear_id);
++		}
+ 
+-	/* Expect a direct message response from the SPMC. */
+-	u_register_t ffa_resp_func = read_ctx_reg(get_gpregs_ctx(&ctx->cpu_ctx),
++		/* Expect a direct message response from the SPMC. */
++		u_register_t ffa_resp_func = read_ctx_reg(get_gpregs_ctx(&ctx->cpu_ctx),
+ 						  CTX_GPREG_X0);
+-	if (ffa_resp_func != FFA_MSG_SEND_DIRECT_RESP_SMC32) {
+-		ERROR("%s invalid SPMC response (%lx).\n",
+-			__func__, ffa_resp_func);
+-		return -EINVAL;
++		if (ffa_resp_func != FFA_MSG_SEND_DIRECT_RESP_SMC32) {
++			ERROR("%s invalid SPMC response (%lx).\n",
++				__func__, ffa_resp_func);
++			return -EINVAL;
++		}
+ 	}
+ 
+ 	ctx->state = SPMC_STATE_OFF;
+diff --git a/services/std_svc/spmd/spmd_private.h b/services/std_svc/spmd/spmd_private.h
+index d21a622fd..03de19b89 100644
+--- a/services/std_svc/spmd/spmd_private.h
++++ b/services/std_svc/spmd/spmd_private.h
+@@ -83,6 +83,7 @@ entry_point_info_t *spmd_spmc_ep_info_get(void);
+ 
+ /* SPMC ID getter */
+ uint16_t spmd_spmc_id_get(void);
++uint32_t spmd_get_spmc_ffa_version(void);
+ 
+ /* SPMC context on CPU based on mpidr */
+ spmd_spm_core_context_t *spmd_get_context_by_mpidr(uint64_t mpidr);
+-- 
+2.17.1
+

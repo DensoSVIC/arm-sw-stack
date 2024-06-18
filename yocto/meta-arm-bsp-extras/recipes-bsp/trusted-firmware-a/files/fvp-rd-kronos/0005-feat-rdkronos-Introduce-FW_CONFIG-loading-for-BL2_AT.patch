@@ -1,0 +1,110 @@
+From a4325da283ef653ffc56b3668d9cb8b572c8f04c Mon Sep 17 00:00:00 2001
+From: Peter Hoyes <Peter.Hoyes@arm.com>
+Date: Sat, 11 Mar 2023 21:19:19 +0000
+Subject: [PATCH] feat(rdkronos): Introduce FW_CONFIG loading for
+ BL2_AT_EL3
+
+The FW_CONFIG is typically loaded by BL1 and passed as an argument to
+BL2. When using BL2_AT_EL3, there is no BL1 so it is assumed that all
+configuration is provided at compile time.
+
+For the rdkronos platform, introduce the ability to load the FW_CONFIG
+from the FIP as part of BL2 (at EL3) by overriding
+bl2_el3_plat_arch_setup.
+
+Upstream-Status: Pending
+Signed-off-by: Peter Hoyes <Peter.Hoyes@arm.com>
+---
+ plat/arm/board/rdkronos/platform.mk           |  7 ++-
+ .../board/rdkronos/rdkronos_bl2_el3_setup.c   | 54 +++++++++++++++++++
+ 2 files changed, 60 insertions(+), 1 deletion(-)
+ create mode 100644 plat/arm/board/rdkronos/rdkronos_bl2_el3_setup.c
+
+diff --git a/plat/arm/board/rdkronos/platform.mk b/plat/arm/board/rdkronos/platform.mk
+index 42870278e..11d1e3906 100644
+--- a/plat/arm/board/rdkronos/platform.mk
++++ b/plat/arm/board/rdkronos/platform.mk
+@@ -47,6 +47,12 @@ BL31_SOURCES		+=	${RDKRONOS_CPU_SOURCES}			\
+ 				lib/utils/mem_region.c			\
+ 				plat/arm/common/arm_nor_psci_mem_protect.c
+ 
++
++ifeq (${BL2_AT_EL3},1)
++BL2_SOURCES		+=	${RDKRONOS_CPU_SOURCES} \
++				${RDKRONOS_BASE}/rdkronos_bl2_el3_setup.c
++endif
++
+ # Add the FDT_SOURCES and options for Dynamic Config
+ FDT_SOURCES		+=	${RDKRONOS_BASE}/fdts/${PLAT}_fw_config.dts \
+ 				${RDKRONOS_BASE}/fdts/${PLAT}_tb_fw_config.dts \
+@@ -62,7 +68,6 @@ $(eval $(call TOOL_ADD_PAYLOAD,${TB_FW_CONFIG},--tb-fw-config,${TB_FW_CONFIG}))
+ # Add the HW_CONFIG to FIP and specify the same to certtool
+ $(eval $(call TOOL_ADD_PAYLOAD,${HW_CONFIG},--hw-config,${HW_CONFIG}))
+ 
+-
+ include plat/arm/common/arm_common.mk
+ include plat/arm/css/common/css_common.mk
+ include plat/arm/board/common/board_common.mk
+diff --git a/plat/arm/board/rdkronos/rdkronos_bl2_el3_setup.c b/plat/arm/board/rdkronos/rdkronos_bl2_el3_setup.c
+new file mode 100644
+index 000000000..d2aa69fb2
+--- /dev/null
++++ b/plat/arm/board/rdkronos/rdkronos_bl2_el3_setup.c
+@@ -0,0 +1,54 @@
++/*
++ * Copyright (c) 2023, ARM Limited and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++#include <common/debug.h>
++#include <lib/fconf/fconf.h>
++#include <lib/fconf/fconf_dyn_cfg_getter.h>
++#include <plat/arm/common/plat_arm.h>
++#include <plat/common/platform.h>
++#include <platform_def.h>
++
++void bl2_el3_plat_arch_setup(void)
++{
++	const struct dyn_cfg_dtb_info_t *fw_config_info;
++	uint32_t fw_config_max_size;
++	int err = -1;
++
++	arm_bl2_el3_plat_arch_setup();
++
++	/* Set global DTB info for fixed fw_config information */
++	fw_config_max_size = ARM_FW_CONFIG_LIMIT - ARM_FW_CONFIG_BASE;
++	set_config_info(ARM_FW_CONFIG_BASE, ~0UL, fw_config_max_size, FW_CONFIG_ID);
++
++	/* Fill the device tree information struct with the info from the config dtb */
++	err = fconf_load_config(FW_CONFIG_ID);
++	if (err < 0) {
++		ERROR("Loading of FW_CONFIG failed %d\n", err);
++		plat_error_handler(err);
++	}
++
++	/*
++	 * FW_CONFIG loaded successfully. If FW_CONFIG device tree parsing
++	 * is successful then load TB_FW_CONFIG device tree.
++	 */
++	fw_config_info = FCONF_GET_PROPERTY(dyn_cfg, dtb, FW_CONFIG_ID);
++	if (fw_config_info != NULL) {
++		err = fconf_populate_dtb_registry(fw_config_info->config_addr);
++		if (err < 0) {
++			ERROR("Parsing of FW_CONFIG failed %d\n", err);
++			plat_error_handler(err);
++		}
++		/* load TB_FW_CONFIG */
++		err = fconf_load_config(TB_FW_CONFIG_ID);
++		if (err < 0) {
++			ERROR("Loading of TB_FW_CONFIG failed %d\n", err);
++			plat_error_handler(err);
++		}
++	} else {
++		ERROR("Invalid FW_CONFIG address\n");
++		plat_error_handler(err);
++	}
++}
+-- 
+2.34.1
+

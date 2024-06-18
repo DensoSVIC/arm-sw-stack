@@ -1,0 +1,32 @@
+From c9b55e272a21d5d6912c7ec861ef383ebe21aed6 Mon Sep 17 00:00:00 2001
+From: Peter Hoyes <Peter.Hoyes@arm.com>
+Date: Tue, 3 Oct 2023 22:27:53 +0100
+Subject: [PATCH] bug(rdkronos): Enable "GIC600" support
+
+The GIC-700AE, used in the Kronos FVP, has individually-powered
+redistributors which require explicit initialization at EL3.
+
+TF-A will perform this initialization, but only if GICV3_SUPPORT_GIC600
+is defined, so add this to the rdkronos platform.mk
+
+Upstream-Status: Pending
+Signed-off-by: Peter Hoyes <Peter.Hoyes@arm.com>
+---
+ plat/arm/board/rdkronos/platform.mk | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/plat/arm/board/rdkronos/platform.mk b/plat/arm/board/rdkronos/platform.mk
+index 1c7999a7a..91e7252d8 100644
+--- a/plat/arm/board/rdkronos/platform.mk
++++ b/plat/arm/board/rdkronos/platform.mk
+@@ -22,6 +22,7 @@ BL2_AT_EL3				:= 1
+ CSS_USE_SCMI_SDS_DRIVER			:= 1
+ ENABLE_FEAT_FGT				:= 1
+ ENABLE_FEAT_ECV				:= 1
++GICV3_SUPPORT_GIC600		        := 1
+ HW_ASSISTED_COHERENCY			:= 1
+ NEED_BL32				:= yes
+ USE_COHERENT_MEM			:= 0
+-- 
+2.34.1
+

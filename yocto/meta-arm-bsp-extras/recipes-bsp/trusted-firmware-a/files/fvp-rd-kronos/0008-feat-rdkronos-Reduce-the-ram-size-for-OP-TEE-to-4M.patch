@@ -1,0 +1,49 @@
+From 2e29dd9ed4562bb6afb257ddad09541fc0110c66 Mon Sep 17 00:00:00 2001
+From: Jiamei Xie <jiamei.xie@arm.com>
+Date: Wed, 16 Aug 2023 15:50:37 +0800
+Subject: [PATCH 1/2] feat(rdkronos): Reduce the ram size for OP-TEE to 4M
+
+32M is too large. Reduce it to 4M.
+
+Upstream-Status: Pending
+Signed-off-by: Jiamei Xie <jiamei.xie@arm.com>
+---
+ .../board/rdkronos/fdts/rdkronos_optee_spmc_manifest.dts    | 6 +++---
+ plat/arm/board/rdkronos/include/platform_def.h              | 4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/plat/arm/board/rdkronos/fdts/rdkronos_optee_spmc_manifest.dts b/plat/arm/board/rdkronos/fdts/rdkronos_optee_spmc_manifest.dts
+index 0b7f18d1d..671fdc3c4 100644
+--- a/plat/arm/board/rdkronos/fdts/rdkronos_optee_spmc_manifest.dts
++++ b/plat/arm/board/rdkronos/fdts/rdkronos_optee_spmc_manifest.dts
+@@ -22,9 +22,9 @@
+ 		maj_ver = <0x1>;
+ 		min_ver = <0x0>;
+ 		exec_state = <0x0>;
+-		load_address = <0x0 0xfe000000>;
+-		entrypoint = <0x0 0xfe000000>;
+-		binary_size = <0x02000000>;
++		load_address = <0x0 0xffc00000>;
++		entrypoint = <0x0 0xffc00000>;
++		binary_size = <0x00400000>;
+ 	};
+ };
+ 
+diff --git a/plat/arm/board/rdkronos/include/platform_def.h b/plat/arm/board/rdkronos/include/platform_def.h
+index c9bc27e2a..06026c361 100644
+--- a/plat/arm/board/rdkronos/include/platform_def.h
++++ b/plat/arm/board/rdkronos/include/platform_def.h
+@@ -35,8 +35,8 @@
+ #define PLAT_CSS_MHU_BASE		UL(0x2A920000)
+ #define PLAT_ARM_NSTIMER_FRAME_ID	U(0)
+ 
+-#define PLAT_ARM_SPMC_BASE		UL(0xfe000000)
+-#define PLAT_ARM_SPMC_SIZE		UL(0x02000000)
++#define PLAT_ARM_SPMC_BASE		UL(0xffc00000)
++#define PLAT_ARM_SPMC_SIZE		UL(0x00400000)
+ 
+ #define SOC_CSS_SEC_UART_BASE		UL(0x2A410000)
+ #define SOC_CSS_NSEC_UART_BASE		UL(0x2A400000)
+-- 
+2.25.1
+

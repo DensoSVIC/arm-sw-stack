@@ -120,6 +120,7 @@ configu
 constprop
 contex
 copybutton
+corstone
 cortexa
 cpak
 CPBM
@@ -206,6 +207,7 @@ earlycon
 earlyprintk
 EBBR
 EBUSY
+ecam
 ECDH
 ECJPAKE
 EFAULT
@@ -242,6 +244,7 @@ errupdate
 etherdev
 ethpc
 ethsi
+eventq
 EVNT
 extlinks
 Fancellu
@@ -275,6 +278,7 @@ genid
 genimage
 GENMASK
 gentimer
+gerror
 gettext
 gicd
 gicr
@@ -286,10 +290,13 @@ gntalloc
 gntdev
 gnueabi
 googletest
+gpio
+gpios
 GPTP
 grubaa
 gtest
 GUUID
+gwdt
 HARDLIM
 headrulewidth
 helloworld
@@ -376,6 +383,7 @@ LAYERDIR
 LAYERNAME
 LAYERSERIES
 ldflags
+ldlibs
 leftmark
 libahci
 libc
@@ -448,6 +456,7 @@ Mitigations
 mkdirhier
 mmaa
 mmcblk
+mmci
 MMFR
 mmio
 MMUCR
@@ -483,6 +492,7 @@ nocpuid
 NODELABEL
 nodistro
 noexec
+nonarch
 noncache
 nonterm
 nonterminating
@@ -564,8 +574,10 @@ prefuncs
 pregen
 premaster
 presmp
+primecell
 printstats
 PRIO
+priq
 PRMS
 procinfo
 PRODUCTID
@@ -598,6 +610,7 @@ rdkronos
 readl
 readme
 readreg
+refclk
 releasename
 releasenotes
 remoteproc
@@ -613,6 +626,7 @@ romfw
 ROOTFS
 rootwait
 ROTPK
+rpath
 rpcr
 rpdev
 rpmsg
@@ -631,6 +645,7 @@ rxlen
 SATA
 SBDF
 sbindir
+sbsa
 scarthgap
 sched
 SCMI
@@ -672,6 +687,7 @@ spdx
 sphinxheadercomma
 spinlock
 SPMC
+spmd
 sram
 srcbranch
 srcdir
@@ -782,6 +798,7 @@ VLAN
 vLPI
 vmap
 vmid
+vmmc
 VMPIDR
 vpmu
 vqid

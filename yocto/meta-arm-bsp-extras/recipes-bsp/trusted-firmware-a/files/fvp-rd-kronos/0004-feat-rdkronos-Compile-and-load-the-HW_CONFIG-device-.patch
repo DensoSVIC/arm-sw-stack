@@ -1,0 +1,64 @@
+From a67cb3ff1feb1f9bd66ffc39c153f75194acac33 Mon Sep 17 00:00:00 2001
+From: Peter Hoyes <Peter.Hoyes@arm.com>
+Date: Mon, 6 Mar 2023 15:27:24 +0000
+Subject: [PATCH] feat(rdkronos): Compile and load the HW_CONFIG device
+ tree
+
+The RD-Kronos platform is targeting SystemReady-IR, for which later boot
+stages and Linux are configured dynamically using the HW_CONFIG device
+tree.
+
+Add support to build this device tree, add it to the FIP image and load
+it at runtime.
+
+Upstream-Status: Pending
+Signed-off-by: Peter Hoyes <Peter.Hoyes@arm.com>
+---
+ plat/arm/board/rdkronos/fdts/rdkronos_fw_config.dts | 6 ++++++
+ plat/arm/board/rdkronos/platform.mk                 | 7 ++++++-
+ 2 files changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/plat/arm/board/rdkronos/fdts/rdkronos_fw_config.dts b/plat/arm/board/rdkronos/fdts/rdkronos_fw_config.dts
+index 3921c7d68..7190c484e 100644
+--- a/plat/arm/board/rdkronos/fdts/rdkronos_fw_config.dts
++++ b/plat/arm/board/rdkronos/fdts/rdkronos_fw_config.dts
+@@ -17,5 +17,11 @@
+ 			max-size = <0x200>;
+ 			id = <TB_FW_CONFIG_ID>;
+ 		};
++
++		hw-config {
++			load-address = <0x0 0x83000000>;
++			max-size = <0x8000>;
++			id = <HW_CONFIG_ID>;
++		};
+ 	};
+ };
+diff --git a/plat/arm/board/rdkronos/platform.mk b/plat/arm/board/rdkronos/platform.mk
+index 17daec265..42870278e 100644
+--- a/plat/arm/board/rdkronos/platform.mk
++++ b/plat/arm/board/rdkronos/platform.mk
+@@ -49,14 +49,19 @@ BL31_SOURCES		+=	${RDKRONOS_CPU_SOURCES}			\
+ 
+ # Add the FDT_SOURCES and options for Dynamic Config
+ FDT_SOURCES		+=	${RDKRONOS_BASE}/fdts/${PLAT}_fw_config.dts \
+-				${RDKRONOS_BASE}/fdts/${PLAT}_tb_fw_config.dts
++				${RDKRONOS_BASE}/fdts/${PLAT}_tb_fw_config.dts \
++				fdts/${PLAT}.dts
+ FW_CONFIG		:=	${BUILD_PLAT}/fdts/${PLAT}_fw_config.dtb
+ TB_FW_CONFIG		:=	${BUILD_PLAT}/fdts/${PLAT}_tb_fw_config.dtb
++HW_CONFIG		:=	${BUILD_PLAT}/fdts/${PLAT}.dtb
+ 
+ # Add the FW_CONFIG to FIP and specify the same to certtool
+ $(eval $(call TOOL_ADD_PAYLOAD,${FW_CONFIG},--fw-config,${FW_CONFIG}))
+ # Add the TB_FW_CONFIG to FIP and specify the same to certtool
+ $(eval $(call TOOL_ADD_PAYLOAD,${TB_FW_CONFIG},--tb-fw-config,${TB_FW_CONFIG}))
++# Add the HW_CONFIG to FIP and specify the same to certtool
++$(eval $(call TOOL_ADD_PAYLOAD,${HW_CONFIG},--hw-config,${HW_CONFIG}))
++
+ 
+ include plat/arm/common/arm_common.mk
+ include plat/arm/css/common/css_common.mk
+-- 
+2.34.1
+

@@ -1,0 +1,43 @@
+From 731ecfa016a57b34759347334ab9d0ec461872b3 Mon Sep 17 00:00:00 2001
+From: Robbie Cao <robbie.cao@arm.com>
+Date: Tue, 7 Nov 2023 14:00:09 +0800
+Subject: [PATCH] feat(rdkronos): Enable SVE_FOR_NS and SVE_FOR_SWD flags
+
+Enable support for SVE on RD-Kronos platforms.
+
+SVE has been built into the Kronos FVP, but the TF-A disable the SVE
+support for Secure and Non-Secure world by default. This will cause
+the SVE, SMID and Float-Point access code in S-EL1/EL0 enter unexcepted
+trap.
+
+    Unhandled Exception in EL3
+    x30 = 0x0000000000011888
+    x0 = 0x0000000000300000
+    x1 = 0x0000000000000001
+    ...
+
+This patch enables the SVE support for Kronos by default in TF-A.
+
+Upstream-Status: Pending
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+Signed-off-by: Robbie Cao <robbie.cao@arm.com>
+---
+ plat/arm/board/rdkronos/platform.mk | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/plat/arm/board/rdkronos/platform.mk b/plat/arm/board/rdkronos/platform.mk
+index e3bb2075d..1c7999a7a 100644
+--- a/plat/arm/board/rdkronos/platform.mk
++++ b/plat/arm/board/rdkronos/platform.mk
+@@ -15,6 +15,8 @@ override ENABLE_AMU			:= 1
+ override NEED_BL1			:= 0
+ override NEED_BL2U			:= 0
+ override PSCI_EXTENDED_STATE_ID		:= 1
++override ENABLE_SVE_FOR_SWD		:= 1
++override ENABLE_SVE_FOR_NS		:= 1
+
+ BL2_AT_EL3				:= 1
+ CSS_USE_SCMI_SDS_DRIVER			:= 1
+--
+2.25.1
+

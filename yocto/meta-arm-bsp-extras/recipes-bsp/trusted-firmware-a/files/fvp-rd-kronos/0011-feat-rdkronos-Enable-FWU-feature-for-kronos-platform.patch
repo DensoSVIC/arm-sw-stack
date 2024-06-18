@@ -1,0 +1,92 @@
+From 1deb83af85d6c2cbf3dca6e6404543b39852fba9 Mon Sep 17 00:00:00 2001
+From: Jun Zhang <jun.zhang@arm.com>
+Date: Mon, 13 Nov 2023 13:39:50 +0800
+Subject: [PATCH] feat(rdkronos): Enable FWU feature for kronos platform
+
+BL2 is a part of FIP and FIP is placed in AP secure flash.
+BL2 reads metadata from AP secure flash to choose the correct
+bank(Bank-0/Bank-1) to load other images from FIP.
+
+Upstream-Status: Pending
+Signed-off-by: Jun Zhang <jun.zhang@arm.com>
+---
+ plat/arm/board/rdkronos/include/platform_def.h |  4 ++++
+ plat/arm/board/rdkronos/rdkronos_plat.c        | 18 ++++++++++++++++++
+ plat/arm/common/arm_bl2_el3_setup.c            |  6 ++++++
+ 3 files changed, 28 insertions(+)
+
+diff --git a/plat/arm/board/rdkronos/include/platform_def.h b/plat/arm/board/rdkronos/include/platform_def.h
+index 06026c361..912ae69fb 100644
+--- a/plat/arm/board/rdkronos/include/platform_def.h
++++ b/plat/arm/board/rdkronos/include/platform_def.h
+@@ -131,6 +131,10 @@
+ 						SOC_SYSTEM_PERIPH_SIZE,\
+ 						MT_DEVICE | MT_RW | MT_SECURE)
+
++#define FIP_BANK0_OFFSET		0x7000
++#define FIP_SIGNATURE_HEADER		0x400
++#define PLAT_ARM_FIP_OFFSET_IN_GPT	(FIP_BANK0_OFFSET + FIP_SIGNATURE_HEADER)
++
+ /*******************************************************************************
+  * Memprotect definitions
+  ******************************************************************************/
+diff --git a/plat/arm/board/rdkronos/rdkronos_plat.c b/plat/arm/board/rdkronos/rdkronos_plat.c
+index db3ab9e84..cbbc694f2 100644
+--- a/plat/arm/board/rdkronos/rdkronos_plat.c
++++ b/plat/arm/board/rdkronos/rdkronos_plat.c
+@@ -10,6 +10,9 @@
+ #include <lib/fconf/fconf_dyn_cfg_getter.h>
+ #include <plat/arm/common/plat_arm.h>
+ #include <plat/common/platform.h>
++#include <plat/arm/common/arm_fconf_getter.h>
++#include <plat/arm/common/arm_fconf_io_storage.h>
++#include <drivers/io/io_storage.h>
+
+ const mmap_region_t plat_arm_mmap[] = {
+ 	ARM_MAP_SHARED_RAM,
+@@ -60,3 +63,18 @@ void soc_css_init_nic400(void)
+ void soc_css_init_pcie(void)
+ {
+ }
++
++void bl2_platform_setup(void)
++{
++	arm_bl2_platform_setup();
++
++	const struct plat_io_policy *policy;
++	policy = FCONF_GET_PROPERTY(arm, io_policies, FIP_IMAGE_ID);
++
++	assert(policy != NULL);
++	assert(policy->image_spec != 0UL);
++
++	io_block_spec_t *spec = (io_block_spec_t *)policy->image_spec;
++	spec->offset += FIP_SIGNATURE_HEADER;
++	spec->length -= FIP_SIGNATURE_HEADER;
++}
+diff --git a/plat/arm/common/arm_bl2_el3_setup.c b/plat/arm/common/arm_bl2_el3_setup.c
+index 97b5a8880..3d6e10185 100644
+--- a/plat/arm/common/arm_bl2_el3_setup.c
++++ b/plat/arm/common/arm_bl2_el3_setup.c
+@@ -7,6 +7,7 @@
+ #include <assert.h>
+
+ #include <drivers/generic_delay_timer.h>
++#include <drivers/partition/partition.h>
+ #include <plat/arm/common/plat_arm.h>
+ #include <plat/common/platform.h>
+ #include <platform_def.h>
+@@ -41,6 +42,11 @@ void arm_bl2_el3_early_platform_setup(void)
+
+ 	/* Initialise the IO layer and register platform IO devices */
+ 	plat_arm_io_setup();
++
++	/* Load partition table */
++#if ARM_GPT_SUPPORT
++	partition_init(GPT_IMAGE_ID);
++#endif /* ARM_GPT_SUPPORT */
+ }
+
+ void bl2_el3_early_platform_setup(u_register_t arg0 __unused,
+--
+2.25.1
+
