@@ -64,6 +64,7 @@ bitbake
 bitbang
 bitfield
 BITMASK
+bkup
 blkid
 bmca
 BOOTAA
@@ -303,6 +304,7 @@ gtest
 GUUID
 gwdt
 HARDLIM
+hdimage
 headrulewidth
 helloworld
 heredocs
@@ -465,6 +467,7 @@ miibus
 mispell
 Mitigations
 mkdirhier
+mkeficapsule
 mmaa
 mmcblk
 mmci
