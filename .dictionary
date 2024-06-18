@@ -28,6 +28,7 @@ apitest
 ArmAutoSolutions
 armffa
 armlmd
+ARMMMCI
 armv
 Artifactory
 asmflags
@@ -218,6 +219,7 @@ eigen
 EINVAL
 elfutils
 elif
+emmc
 enablement
 endchoice
 endcond
@@ -368,6 +370,7 @@ Izuma
 Jeronimo
 journalctl
 jsonschema
+karch
 kbuild
 kcalloc
 kconf
@@ -377,10 +380,14 @@ Keypair
 KFEATURE
 kfree
 kinfo
+kmachine
 kmeta
 knownissues
 kronos
+ktype
+ktypes
 kzalloc
+latencytop
 laurencelundblade
 LAYERDEPENDS
 LAYERDIR
@@ -569,6 +576,7 @@ PKCS
 pkgconfig
 pkgs
 pkill
+PLTFM
 POLLERR
 pollfd
 POLLIN
@@ -601,6 +609,7 @@ ptest
 ptestrunner
 pver
 pwroff
+pwrseq
 pycache
 pyhsslms
 pyparsing
@@ -660,6 +669,7 @@ sbsa
 scarthgap
 sched
 SCMI
+sdhci
 securefirmwareupdate
 sendbits
 sendcontrol

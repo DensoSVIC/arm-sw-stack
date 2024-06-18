@@ -1,0 +1,11 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: MIT
+
+kconf hardware arm64.cfg
+kconf hardware fvp-common-peripherals.cfg
+kconf hardware fvp-rd-kronos.cfg
+include cfg/virtio.scc
+include features/mmc/mmc-block.scc
