@@ -1,0 +1,96 @@
+From 63fa595d51875c952434e1742aa01affb28497df Mon Sep 17 00:00:00 2001
+From: Divin Raj <divin.raj@arm.com>
+Date: Wed, 21 Feb 2024 22:19:28 +0000
+Subject: [PATCH] rss/kronos: Remove unused PCIe address mapping
+
+Since Kronos utilizes only one address map, removing the
+unused address map from the allowed list
+
+Upstream-Status: Pending
+Signed-off-by: Divin Raj <divin.raj@arm.com>
+---
+ .../kronos/device/host_device_definition.c    | 38 +------------------
+ .../kronos/device/host_device_definition.h    |  8 +---
+ 2 files changed, 2 insertions(+), 44 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/kronos/device/host_device_definition.c b/platform/ext/target/arm/rss/kronos/device/host_device_definition.c
+index 413860b4f..c7c1d6e63 100644
+--- a/platform/ext/target/arm/rss/kronos/device/host_device_definition.c
++++ b/platform/ext/target/arm/rss/kronos/device/host_device_definition.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2023 Arm Limited. All rights reserved.
++ * Copyright (c) 2023-2024 Arm Limited. All rights reserved.
+  *
+  * Licensed under the Apache License Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+@@ -83,42 +83,6 @@ static const struct atu_region scp_regions[] = {
+         .end_addr = (uint64_t)ECAM_END_ADDRESS(0),
+         .allowed_pas = ATU_REGION_PAS_NON_SECURE,
+     },
+-    [NCI_GVP_ATU_PERM_REGION_1] = {
+-        /* GVP registers region */
+-        .start_addr = (uint64_t)IOVB_NCI_GVP_START_ADDRESS(1),
+-        .end_addr = (uint64_t)IOVB_NCI_GVP_END_ADDRESS(1),
+-        .allowed_pas = ATU_REGION_PAS_SECURE,
+-    },
+-    [ECAM_ATU_PERM_REGION_1] = {
+-        /* ECAM region */
+-        .start_addr = (uint64_t)ECAM_START_ADDRESS(1),
+-        .end_addr = (uint64_t)ECAM_END_ADDRESS(1),
+-        .allowed_pas = ATU_REGION_PAS_NON_SECURE,
+-    },
+-    [NCI_GVP_ATU_PERM_REGION_2] = {
+-        /* GVP registers region */
+-        .start_addr = (uint64_t)IOVB_NCI_GVP_START_ADDRESS(2),
+-        .end_addr = (uint64_t)IOVB_NCI_GVP_END_ADDRESS(2),
+-        .allowed_pas = ATU_REGION_PAS_SECURE,
+-    },
+-    [ECAM_ATU_PERM_REGION_2] = {
+-        /* ECAM region */
+-        .start_addr = (uint64_t)ECAM_START_ADDRESS(2),
+-        .end_addr = (uint64_t)ECAM_END_ADDRESS(2),
+-        .allowed_pas = ATU_REGION_PAS_NON_SECURE,
+-    },
+-    [NCI_GVP_ATU_PERM_REGION_3] = {
+-        /* GVP registers region */
+-        .start_addr = (uint64_t)IOVB_NCI_GVP_START_ADDRESS(3),
+-        .end_addr = (uint64_t)IOVB_NCI_GVP_END_ADDRESS(3),
+-        .allowed_pas = ATU_REGION_PAS_SECURE,
+-    },
+-    [ECAM_ATU_PERM_REGION_3] = {
+-        /* ECAM region */
+-        .start_addr = (uint64_t)ECAM_START_ADDRESS(3),
+-        .end_addr = (uint64_t)ECAM_END_ADDRESS(3),
+-        .allowed_pas = ATU_REGION_PAS_NON_SECURE,
+-    },
+ };
+ 
+ /* List of ATU regions to be configured in SCP's ATU */
+diff --git a/platform/ext/target/arm/rss/kronos/device/host_device_definition.h b/platform/ext/target/arm/rss/kronos/device/host_device_definition.h
+index b1bb2efab..c83cc2a7e 100644
+--- a/platform/ext/target/arm/rss/kronos/device/host_device_definition.h
++++ b/platform/ext/target/arm/rss/kronos/device/host_device_definition.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2023 Arm Limited. All rights reserved.
++ * Copyright (c) 2023-2024 Arm Limited. All rights reserved.
+  *
+  * Licensed under the Apache License Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+@@ -66,12 +66,6 @@ enum SCP_ATU_PERM_REGIONS {
+ 	AP_PERIPH_SCP_ATU_PERM_REGION,
+     NCI_GVP_ATU_PERM_REGION,
+     ECAM_ATU_PERM_REGION,
+-    NCI_GVP_ATU_PERM_REGION_1,
+-    ECAM_ATU_PERM_REGION_1,
+-    NCI_GVP_ATU_PERM_REGION_2,
+-    ECAM_ATU_PERM_REGION_2,
+-    NCI_GVP_ATU_PERM_REGION_3,
+-    ECAM_ATU_PERM_REGION_3,
+     SCP_ATU_PERM_REGION_COUNT,
+ };
+ 
+-- 
+2.25.1
+

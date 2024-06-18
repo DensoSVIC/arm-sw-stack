@@ -1,0 +1,285 @@
+From 19adaa82fa194633fe6443b98bd29f01172135f2 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Wed, 11 Oct 2023 11:16:04 +0800
+Subject: [PATCH] rss/kronos: Use RSS flash instead of SI flash to store images
+
+Now the RSS has a 64MB flash, also with latest Tower-NCI, we
+cannot access the SI before the initialization of the Tower-NCI.
+
+Change BL2 flash from SI flash to RSS flash by reverting the majority
+of the original commit "kronos: Replace RSS flash with SI NVM flash"
+and related ATU translation for signed images, protected storage and
+internal trusted storage.
+
+Also, shrink the signed image size from 64MB to 48MB, because SI
+flash is 128MB, but the RSS flash is just 64MB, so to store the
+protected storage, we need to shrink the signed image size and
+leave 16MB for protected storage and internal trusted storage.
+
+Upstream-Status: Pending
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ .../ext/target/arm/rss/common/CMakeLists.txt  |  1 -
+ .../arm/rss/common/bl1/boot_hal_bl1_2.c       | 12 -------
+ .../ext/target/arm/rss/common/config.cmake    |  1 -
+ .../target/arm/rss/common/tfm_hal_platform.c  | 26 ---------------
+ .../target/arm/rss/kronos/bl2/boot_hal_bl2.c  | 11 -------
+ .../rss/kronos/cmsis_drivers/Driver_Flash.c   |  4 +--
+ .../ext/target/arm/rss/kronos/config.cmake    |  2 +-
+ .../ext/target/arm/rss/kronos/flash_layout.h  |  8 ++---
+ .../target/arm/rss/kronos/host_base_address.h | 33 +++++++------------
+ .../target/arm/rss/kronos/rss_memory_sizes.h  |  2 +-
+ 10 files changed, 19 insertions(+), 81 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/common/CMakeLists.txt b/platform/ext/target/arm/rss/common/CMakeLists.txt
+index 48900d6a4..d6ce24741 100644
+--- a/platform/ext/target/arm/rss/common/CMakeLists.txt
++++ b/platform/ext/target/arm/rss/common/CMakeLists.txt
+@@ -25,7 +25,6 @@ target_compile_definitions(platform_region_defs
+         $<$<BOOL:${RSS_USE_HOST_UART}>:RSS_USE_HOST_UART>
+         $<$<BOOL:${RSS_GPT_SUPPORT}>:RSS_GPT_SUPPORT>
+         $<$<BOOL:${RSS_HAS_EXPANSION_PERIPHERALS}>:RSS_HAS_EXPANSION_PERIPHERALS>
+-        $<$<BOOL:${RSS_USE_SI_FLASH}>:RSS_USE_SI_FLASH>
+         $<$<BOOL:${PLATFORM_HAS_PS_NV_OTP_COUNTERS}>:PLATFORM_HAS_PS_NV_OTP_COUNTERS>
+ )
+
+diff --git a/platform/ext/target/arm/rss/common/bl1/boot_hal_bl1_2.c b/platform/ext/target/arm/rss/common/bl1/boot_hal_bl1_2.c
+index 5b5d4d54a..e9a71bbee 100644
+--- a/platform/ext/target/arm/rss/common/bl1/boot_hal_bl1_2.c
++++ b/platform/ext/target/arm/rss/common/bl1/boot_hal_bl1_2.c
+@@ -125,18 +125,6 @@ int32_t boot_platform_init(void)
+
+ int32_t boot_platform_post_init(void)
+ {
+-#ifdef RSS_USE_SI_FLASH
+-    enum atu_error_t err;
+-
+-    /* Initialize SI NVM flash ATU region */
+-    /* Allocate 64MiB for SI NVM flash as the limit of per ATU region size */
+-    err = atu_initialize_region(&ATU_DEV_S, RSS_ATU_SI_FLASH_ID, SI_FLASH_BASE_NS_LOG,
+-                               SI_FLASH_BASE_NS_PHY, SI_FLASH_IMG_SIZE);
+-
+-    if (err != ATU_ERR_NONE) {
+-        return 1;
+-    }
+-#endif
+     return 0;
+ }
+
+diff --git a/platform/ext/target/arm/rss/common/config.cmake b/platform/ext/target/arm/rss/common/config.cmake
+index d4dcedcf9..9886734e1 100644
+--- a/platform/ext/target/arm/rss/common/config.cmake
++++ b/platform/ext/target/arm/rss/common/config.cmake
+@@ -45,7 +45,6 @@ set(MCUBOOT_S_IMAGE_FLASH_AREA_NUM      2          CACHE STRING   "ID of the fla
+ set(MCUBOOT_NS_IMAGE_FLASH_AREA_NUM     3          CACHE STRING   "ID of the flash area containing the primary Non-Secure image")
+ set(CONFIG_TFM_BOOT_STORE_ENCODED_MEASUREMENTS OFF CACHE BOOL     "Enable storing of encoded measurements in boot.")
+ set(RSS_USE_HOST_FLASH                  ON         CACHE BOOL     "Enable RSS using the host flash.")
+-set(RSS_USE_SI_FLASH                  	ON         CACHE BOOL     "Enable RSS using the safety island NVM flash.")
+
+ set(TFM_PARTITION_CRYPTO                ON         CACHE BOOL     "Enable Crypto partition")
+ set(TFM_PARTITION_INITIAL_ATTESTATION   ON         CACHE BOOL     "Enable Initial Attestation partition")
+diff --git a/platform/ext/target/arm/rss/common/tfm_hal_platform.c b/platform/ext/target/arm/rss/common/tfm_hal_platform.c
+index 62977228a..c8a911700 100644
+--- a/platform/ext/target/arm/rss/common/tfm_hal_platform.c
++++ b/platform/ext/target/arm/rss/common/tfm_hal_platform.c
+@@ -72,32 +72,6 @@ enum tfm_hal_status_t tfm_hal_platform_init(void)
+         return TFM_HAL_ERROR_GENERIC;
+     }
+
+-#ifdef TFM_PARTITION_PROTECTED_STORAGE
+-    /* Initialize PS region */
+-    atu_err = atu_initialize_region(&ATU_DEV_S,
+-                                RSS_ATU_REGION_PS_SLOT,
+-                                HOST_ACCESS_PS_BASE_S,
+-                                HOST_FLASH0_PS_BASE,
+-                                HOST_FLASH0_PS_SIZE);
+-    if (atu_err != ATU_ERR_NONE) {
+-        return TFM_HAL_ERROR_GENERIC;
+-    }
+-
+-#endif /* TFM_PARTITION_PROTECTED_STORAGE */
+-
+-#ifdef TFM_PARTITION_INTERNAL_TRUSTED_STORAGE
+-    /* Initialize ITS region */
+-    atu_err = atu_initialize_region(&ATU_DEV_S,
+-                                RSS_ATU_REGION_ITS_SLOT,
+-                                HOST_ACCESS_ITS_BASE_S,
+-                                HOST_FLASH0_ITS_BASE,
+-                                HOST_FLASH0_ITS_SIZE);
+-    if (atu_err != ATU_ERR_NONE) {
+-        return TFM_HAL_ERROR_GENERIC;
+-    }
+-
+-#endif /* TFM_PARTITION_INTERNAL_TRUSTED_STORAGE */
+-
+     return TFM_HAL_SUCCESS;
+ }
+
+diff --git a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+index d3d3adfff..ba6b80e05 100644
+--- a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
++++ b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+@@ -489,17 +489,6 @@ fail_si_cl2:
+
+ static int boot_platform_post_load_secure()
+ {
+-#ifdef RSS_USE_SI_FLASH
+-	enum atu_error_t err;
+-
+-    /* All the images had been loaded from SI NVM flash */
+-    /* Close SI NVM flash ATU region */
+-    err = atu_uninitialize_region(&ATU_DEV_S, 6);
+-    if (err != ATU_ERR_NONE) {
+-        return 1;
+-    }
+-#endif
+-
+     return 0;
+ }
+
+diff --git a/platform/ext/target/arm/rss/kronos/cmsis_drivers/Driver_Flash.c b/platform/ext/target/arm/rss/kronos/cmsis_drivers/Driver_Flash.c
+index aa06b2801..0b7841336 100644
+--- a/platform/ext/target/arm/rss/kronos/cmsis_drivers/Driver_Flash.c
++++ b/platform/ext/target/arm/rss/kronos/cmsis_drivers/Driver_Flash.c
+@@ -29,7 +29,7 @@
+ #endif
+
+ #define FLASH0_BASE_S         BOOT_FLASH
+-#define FLASH0_SIZE           SI_FLASH_SIZE
++#define FLASH0_SIZE           BOOT_FLASH_SIZE
+ #define FLASH0_SECTOR_SIZE    0x00001000 /* 4 kB */
+ #define FLASH0_PAGE_SIZE      0x00001000 /* 4 kB */
+ #define FLASH0_PROGRAM_UNIT   0x1        /* Minimum write size */
+@@ -56,7 +56,7 @@ static const struct cfi_dev_cfg_t CFI_DEV_CFG_S = {
+     /* Define the flash base/size to be the same as the host access area, as the
+      * flash may not be mapped contiguously or predictably within that area.
+      */
+-    .base = SI_FLASH_BASE_NS_LOG,
++    .base = BOOT_FLASH,
+ };
+
+ struct cfi_dev_t CFI_DEV_S = {
+diff --git a/platform/ext/target/arm/rss/kronos/config.cmake b/platform/ext/target/arm/rss/kronos/config.cmake
+index 35f392b2e..64cf6b056 100644
+--- a/platform/ext/target/arm/rss/kronos/config.cmake
++++ b/platform/ext/target/arm/rss/kronos/config.cmake
+@@ -9,7 +9,7 @@ set(PLAT_MHU_VERSION                        3        CACHE STRING  "Supported MH
+ set(TFM_BL1_MEMORY_MAPPED_FLASH             OFF      CACHE BOOL    "Whether BL1 can directly access flash content")
+ set(PLATFORM_HAS_BOOT_DMA                   OFF      CACHE BOOL    "Enable dma support for memory transactions for bootloader")
+ set(RSS_USE_HOST_UART                       OFF      CACHE BOOL    "Whether RSS should use the UART from the host system (opposed to dedicated UART)")
+-set(RSS_USE_SI_FLASH                        OFF      CACHE BOOL    "Enable RSS using the safety island NVM flash.")
++set(RSS_USE_HOST_FLASH                      OFF      CACHE BOOL    "Enable RSS using the host flash.")
+ set(MCUBOOT_IMAGE_NUMBER                    9        CACHE STRING  "Number of images supported by MCUBoot")
+ set(ENABLE_SCP_ATU_CTRL                     OFF      CACHE BOOL    "Enable SCP to configure ATU")
+ set(RSS_HAS_EXPANSION_PERIPHERALS           ON       CACHE BOOL    "Whether RSS has sub-platform specific peripherals in the expansion layer")
+diff --git a/platform/ext/target/arm/rss/kronos/flash_layout.h b/platform/ext/target/arm/rss/kronos/flash_layout.h
+index 2d35a4503..19ccaa212 100644
+--- a/platform/ext/target/arm/rss/kronos/flash_layout.h
++++ b/platform/ext/target/arm/rss/kronos/flash_layout.h
+@@ -63,12 +63,12 @@
+
+ /* Sector size of the flash hardware; same as FLASH0_SECTOR_SIZE */
+ #define FLASH_AREA_IMAGE_SECTOR_SIZE    (0x1000)    /* 4 KB */
+-/* Same as FLASH0_SIZE */
+-#define FLASH_TOTAL_SIZE                (SI_FLASH_IMG_SIZE)  /* 64 MB */
++#define FLASH_TOTAL_SIZE                (BOOT_FLASH_SIZE)  /* 64 MB */
+
+ /* Flash layout info for BL2 bootloader */
+-/* Same as SI_FLASH_BASE_NS_LOG */
+-#define FLASH_BASE_ADDRESS              (SI_FLASH_BASE_NS_LOG)
++/* Same as FLASH0_BASE_S */
++#define FLASH_BASE_ADDRESS              (BOOT_FLASH)
++
+ /* Offset and size definitions of the flash partitions that are handled by the
+  * bootloader. The image swapping is done between IMAGE_PRIMARY and
+  * IMAGE_SECONDARY, SCRATCH is used as a temporary storage during image
+diff --git a/platform/ext/target/arm/rss/kronos/host_base_address.h b/platform/ext/target/arm/rss/kronos/host_base_address.h
+index 976f9d6ad..c1322a07d 100644
+--- a/platform/ext/target/arm/rss/kronos/host_base_address.h
++++ b/platform/ext/target/arm/rss/kronos/host_base_address.h
+@@ -44,7 +44,6 @@
+ #define RSS_ATU_SCP_RSS_MAILBOX_ATU_ID  4
+ #define RSS_ATU_AP_RSS_MAILBOX_ATU_ID   5 /*ID to use for region mapping to MHU
+                                             outband msg buffer between AP and RSS */
+-#define RSS_ATU_SI_FLASH_ID             6  /* ID to use for region mapping to SI NVM flash */
+ #define RSS_ATU_SI_CL0_RSS_MAILBOX_ATU_ID   7 /* ID to use for region mapping to MHU
+                                                * outband msg buffer between SI CL0 and RSS
+                                                */
+@@ -339,27 +338,20 @@
+ /* Safety Island Multiple View GIC addresses */
+ #define SI_GIC_VIEW_0_BASE_S_PHY   (HOST_SI_PHYS_BASE + SI_GIC_VIEW_0_BASE)
+
+-/* Safety Island NVM flash layout */
++/* RSS flash layout */
+ /*
+  * ┌─────────────────────┬──────────────────────┬──────────────────────────┐
+  * │    Signed Images    │  Protected Storage   │ Internal Trusted Storage │
+- * │     (64MB)          │       (64KB)         │           (1MB)          │
++ * │     (48MB)          │       (64KB)         │           (1MB)          │
+  * └─────────────────────┴──────────────────────┴──────────────────────────┘
+  *
+  */
+-/* Safety Island NVM flash base address */
+-#define SI_FLASH_BASE           0x60000000
+-/* This part is for signed images. 64MB */
+-#define SI_FLASH_IMG_SIZE       0x4000000
++/* This part is for signed images. 48MB */
++#define RSS_FLASH_IMG_SIZE       0x3000000
+ /* This part is for Protected Storage. 64KB */
+-#define SI_FLASH_PS_SIZE        0x10000
++#define RSS_FLASH_PS_SIZE        0x10000
+ /* This part is for Internal Trusted Storage. 1MB */
+-#define SI_FLASH_ITS_SIZE       0x100000
+-
+-/* Safety Island NVM flash logical base address using Non-secure ATU region */
+-#define SI_FLASH_BASE_NS_LOG    HOST_ACCESS_BASE_NS
+-/* Safety Island NVM flash physical base address */
+-#define SI_FLASH_BASE_NS_PHY    (HOST_SI_PHYS_BASE + SI_FLASH_BASE)
++#define RSS_FLASH_ITS_SIZE       0x100000
+
+ /* Address to access safety island images */
+ #define SI_CL0_SRAM_BASE        0x120000000ULL
+@@ -370,21 +362,18 @@
+ #define HOST_SI_CL1_SRAM_PHYS_BASE      (HOST_SI_PHYS_BASE + SI_CL1_SRAM_BASE)
+ #define HOST_SI_CL2_SRAM_PHYS_BASE      (HOST_SI_PHYS_BASE + SI_CL2_SRAM_BASE)
+
+-/* Region into which to map Protected Storage */
+-#define HOST_ACCESS_PS_BASE_S           (SI_FLASH_BASE_NS_LOG + SI_FLASH_IMG_SIZE)
+-/* The offset is 64MB in SI Flash for PS */
+-#define HOST_ACCESS_PS_BASE_OFFSET      SI_FLASH_IMG_SIZE
++/* The offset is 48MB in RSS Flash for PS */
++#define HOST_ACCESS_PS_BASE_OFFSET      RSS_FLASH_IMG_SIZE
+
+ /* The physical region base for PS */
+-#define HOST_FLASH0_PS_BASE             (SI_FLASH_BASE_NS_PHY + SI_FLASH_IMG_SIZE)
+-#define HOST_FLASH0_PS_SIZE             SI_FLASH_PS_SIZE
++#define HOST_FLASH0_PS_BASE             (BOOT_FLASH + RSS_FLASH_IMG_SIZE)
++#define HOST_FLASH0_PS_SIZE             RSS_FLASH_PS_SIZE
+
+ /* ITS region follows PS region */
+-#define HOST_ACCESS_ITS_BASE_S          (HOST_ACCESS_PS_BASE_S + HOST_FLASH0_PS_SIZE)
+ #define HOST_ACCESS_ITS_BASE_OFFSET     (HOST_ACCESS_PS_BASE_OFFSET + HOST_FLASH0_PS_SIZE)
+
+ /* The physical region base and size for ITS */
+ #define HOST_FLASH0_ITS_BASE            (HOST_FLASH0_PS_BASE + HOST_FLASH0_PS_SIZE)
+-#define HOST_FLASH0_ITS_SIZE            SI_FLASH_ITS_SIZE
++#define HOST_FLASH0_ITS_SIZE            RSS_FLASH_ITS_SIZE
+
+ #endif  /* __HOST_BASE_ADDRESS_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/rss_memory_sizes.h b/platform/ext/target/arm/rss/kronos/rss_memory_sizes.h
+index f1c27b9d6..540994b88 100644
+--- a/platform/ext/target/arm/rss/kronos/rss_memory_sizes.h
++++ b/platform/ext/target/arm/rss/kronos/rss_memory_sizes.h
+@@ -20,7 +20,7 @@
+ #define VM0_SIZE                         0x00080000 /* 512 KiB */
+ #define VM1_SIZE                         0x00080000 /* 512 KiB */
+
+-#define BOOT_FLASH_SIZE                  0x00800000 /* 8MB */
++#define BOOT_FLASH_SIZE                  0x04000000 /* 64 MB */
+
+ /* The total size of the OTP for the RSS */
+ #define OTP_TOTAL_SIZE     (0x4000)
+--
+2.25.1
+

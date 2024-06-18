@@ -1,0 +1,33 @@
+From 7cfe2ef9699c9bf2557008ff002a330916b445f4 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Tue, 14 Nov 2023 19:50:28 +0800
+Subject: [PATCH] rss/drivers: Fix setting of `id_valid` in the in NI-710AE
+ driver
+
+The `id_valid` field from PRLAR_L register means valid bits for
+IDs in PRID register, therefore setting the corresponding bits
+should use the mask with logical AND instead of logical OR. Fix
+in this commit.
+
+Upstream-Status: Pending
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+---
+ platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.c b/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.c
+index 25706477c..929b543de 100644
+--- a/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.c
++++ b/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.c
+@@ -151,7 +151,7 @@ ni710ae_apu_set_id_valid(struct ni710ae_apu_dev_t *dev, uint32_t region,
+         return NI710AE_ERR_INVALID_ARG;
+     }
+ 
+-    reg->region[region].prlar_l |= (0xF | valid);
++    reg->region[region].prlar_l |= (0xF & valid);
+ 
+     return NI710AE_SUCCESS;
+ }
+-- 
+2.25.1
+

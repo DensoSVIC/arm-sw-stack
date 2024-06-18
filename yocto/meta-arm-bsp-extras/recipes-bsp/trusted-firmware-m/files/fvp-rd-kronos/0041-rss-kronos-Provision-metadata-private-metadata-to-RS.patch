@@ -1,0 +1,191 @@
+From 444aab54eb8913cefbb596388270db0b998785e2 Mon Sep 17 00:00:00 2001
+From: Jun Zhang <jun.zhang@arm.com>
+Date: Mon, 23 Oct 2023 13:44:05 +0800
+Subject: [PATCH] rss/kronos: Provision metadata/private metadata to RSS flash
+
+The metadata/private metadata will be provisioned to flash
+after MBR/GPT partition if the flash is empty. The metadata
+will be used to select correct bank for BL1 and BL2 to boot
+from BANK-0 or BANK-1 in RSS flash. The provisioning process
+is at RSS BL1 stage. The metadata provision logic is
+referenced from corstone1000 platform[0].
+
+[0]:
+platform/ext/target/arm/corstone1000/fw_update_agent/fwu_agent.c
+
+Upstream-Status: Pending
+Signed-off-by: Jun Zhang <jun.zhang@arm.com>
+---
+ .../ext/target/arm/rss/common/CMakeLists.txt  |  1 +
+ .../ext/target/arm/rss/kronos/flash_layout.h  |  2 +-
+ .../rss/kronos/fw_update_agent/fwu_agent.c    | 89 +++++++++++++++++--
+ .../target/arm/rss/kronos/host_base_address.h | 15 ++--
+ 4 files changed, 95 insertions(+), 12 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/common/CMakeLists.txt b/platform/ext/target/arm/rss/common/CMakeLists.txt
+index 4d9da7ebe..867231f26 100644
+--- a/platform/ext/target/arm/rss/common/CMakeLists.txt
++++ b/platform/ext/target/arm/rss/common/CMakeLists.txt
+@@ -372,6 +372,7 @@ target_sources(platform_bl1_2
+         ./bl1/boot_hal_bl1_2.c
+         ./rss_key_derivation.c
+         $<$<BOOL:${TFM_FWU_AGENT}>:${TARGET_PLATFORM_PATH}/fw_update_agent/fwu_agent.c>
++        $<$<BOOL:${TFM_FWU_AGENT}>:${TARGET_PLATFORM_PATH}/soft_crc/soft_crc.c>
+ )
+
+ target_include_directories(platform_bl1_2
+diff --git a/platform/ext/target/arm/rss/kronos/flash_layout.h b/platform/ext/target/arm/rss/kronos/flash_layout.h
+index fdfe2870e..a0c8fcd17 100644
+--- a/platform/ext/target/arm/rss/kronos/flash_layout.h
++++ b/platform/ext/target/arm/rss/kronos/flash_layout.h
+@@ -272,6 +272,6 @@
+ /* Static Configurations of the Flash */
+ #define BL2_PARTITION_SIZE              FLASH_BL2_PARTITION_SIZE   /* 128 KB */
+ #define BL2_BANK_0_OFFSET               (0x9000)                   /* 72nd LBA */
+-#define BL2_BANK_1_OFFSET               (0x1002000)                /* 32784th LBA */
++#define BL2_BANK_1_OFFSET               (0xFF9000)                 /* 32712th LBA */
+
+ #endif /* __FLASH_LAYOUT_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.c b/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.c
+index 6d48314b4..1c9f41db9 100644
+--- a/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.c
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.c
+@@ -138,18 +138,29 @@ extern ARM_DRIVER_FLASH FWU_METADATA_FLASH_DEV;
+
+ #define HOST_ACK_TIMEOUT_SEC    (6 * 60) /* About 360 seconds, not exact */
+
+-void bl1_get_active_bl2_image(uint32_t *offset)
++static enum fwu_agent_state_t get_fwu_agent_state(
++        struct fwu_metadata *metadata_ptr,
++        struct fwu_private_metadata *priv_metadata_ptr)
+ {
++    uint32_t boot_index;
++
+     FWU_LOG_MSG("%s: enter\n\r", __func__);
+
+-    if (fwu_metadata_init()) {
+-        FWU_ASSERT(0);
++    boot_index = priv_metadata_ptr->boot_index;
++
++    if (boot_index != metadata_ptr->active_index) {
++        return FWU_AGENT_STATE_TRIAL;
+     }
+
+-    /* This is the hardcode for debugging temporarily. */
+-    *offset = BL2_BANK_0_OFFSET;
++    for (uint8_t i = 0; i < NR_OF_IMAGES_IN_FW_BANK; i++) {
++        if ((metadata_ptr->img_entry[i].img_props[boot_index].accepted)
++                == (IMAGE_NOT_ACCEPTED)) {
++            return FWU_AGENT_STATE_TRIAL;
++        }
++    }
+
+-    return;
++    FWU_LOG_MSG("%s: exit: FWU_AGENT_STATE_REGULAR\n\r", __func__);
++    return FWU_AGENT_STATE_REGULAR;
+ }
+
+ static enum fwu_agent_error_t private_metadata_read(
+@@ -348,6 +359,72 @@ enum fwu_agent_error_t fwu_metadata_init(void)
+     return FWU_AGENT_SUCCESS;
+ }
+
++void bl1_get_active_bl2_image(uint32_t *offset)
++{
++    struct fwu_private_metadata priv_metadata;
++    enum fwu_agent_state_t current_state;
++    uint32_t boot_attempted;
++    uint32_t boot_index;
++
++    FWU_LOG_MSG("%s: enter\n\r", __func__);
++
++    if (fwu_metadata_init()) {
++        FWU_ASSERT(0);
++    }
++
++    if (private_metadata_read(&priv_metadata)) {
++        FWU_ASSERT(0);
++    }
++
++    if (metadata_read(&_metadata)) {
++        FWU_ASSERT(0);
++    }
++
++    current_state = get_fwu_agent_state(&_metadata, &priv_metadata);
++
++    if (current_state == FWU_AGENT_STATE_REGULAR) {
++        boot_index = _metadata.active_index;
++        FWU_ASSERT(boot_index == priv_metadata.boot_index);
++        boot_attempted = 0;
++    } else if (current_state == FWU_AGENT_STATE_TRIAL) {
++        boot_attempted = (++priv_metadata.boot_attempted);
++        FWU_LOG_MSG("%s: attempting boot number = %u\n\r",
++                                        __func__, boot_attempted);
++        if (boot_attempted <= MAX_BOOT_ATTEMPTS_PER_BANK) {
++            boot_index = _metadata.active_index;
++            FWU_LOG_MSG("%s: booting from trial bank: %u\n\r",
++                                        __func__, boot_index);
++        } else if (boot_attempted <= (2 * MAX_BOOT_ATTEMPTS_PER_BANK)) {
++            boot_index = _metadata.previous_active_index;
++            FWU_LOG_MSG("%s: gave up booting from trial bank\n\r", __func__);
++            FWU_LOG_MSG("%s: booting from previous active bank: %u\n\r",
++                                        __func__, boot_index);
++        } else {
++            FWU_LOG_MSG("%s: cannot boot system from any bank, halting...\n\r", __func__);
++            FWU_ASSERT(0);
++        }
++    } else {
++        FWU_ASSERT(0);
++    }
++
++    priv_metadata.boot_index = boot_index;
++    if (private_metadata_write(&priv_metadata) < 0) {
++        FWU_ASSERT(0);
++    }
++
++    if (boot_index == BANK_0) {
++        *offset = BL2_BANK_0_OFFSET;
++    } else if (boot_index == BANK_1) {
++        *offset = BL2_BANK_1_OFFSET;
++    } else {
++        FWU_ASSERT(0);
++    }
++
++    FWU_LOG_MSG("%s: exit: booting from bank = %u, offset = 0x%x\n\r", __func__,
++                        boot_index, *offset);
++    return;
++}
++
+ enum fwu_agent_error_t fwu_metadata_provision(void)
+ {
+     enum fwu_agent_error_t ret;
+diff --git a/platform/ext/target/arm/rss/kronos/host_base_address.h b/platform/ext/target/arm/rss/kronos/host_base_address.h
+index 48f3a9982..984a40c48 100644
+--- a/platform/ext/target/arm/rss/kronos/host_base_address.h
++++ b/platform/ext/target/arm/rss/kronos/host_base_address.h
+@@ -346,12 +346,17 @@
+
+ /* RSS flash layout */
+ /*
+- * ┌─────────────────────┬──────────────────────┬──────────────────────────┐
+- * │    Signed Images    │  Protected Storage   │ Internal Trusted Storage │
+- * │     (48MB)          │       (64KB)         │           (1MB)          │
+- * └─────────────────────┴──────────────────────┴──────────────────────────┘
+- *
++ * ┌─────────┬─────────────┬───────────────────┬──────────────┬──────────────────────┬────────────────────────┐
++ * │Reserved │FWU-Metadata │Bakup-FWU-Metadata │ Pri-Metadata │ BakupPri-Metadadata  │ Signed Images (Bank-0) │────┐
++ * │  (3KB)  │    (4KB)    │     (4KB)         │    (4KB)     │      (4KB)           │       (~16MB)          │    │
++ * └─────────┴─────────────┴───────────────────┴──────────────┴──────────────────────┴────────────────────────┘    │
++ * ┌───────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
++ * │     ┌──────────────────────┬─────────────┬─────────────────────┬────────────────────────────┐
++ * └────>│Signed Image (Bank-1) │  Reserved   │  Protected Storage  │  Internal Trusted Storage  │
++ *       │       (~16MB)        │    (3KB)    │       (64KB)        │           (1MB)            │
++ *       └──────────────────────┴─────────────┴─────────────────────┴────────────────────────────┘
+  */
++
+ /* This part is for signed images. 48MB */
+ #define RSS_FLASH_IMG_SIZE       0x3000000
+ /* This part is for Protected Storage. 64KB */
+--
+2.25.1
+

@@ -1,0 +1,325 @@
+From 0f835d23ae76cca5742030a1a526a85f4c1e54de Mon Sep 17 00:00:00 2001
+From: Jun Zhang <jun.zhang@arm.com>
+Date: Mon, 24 Jul 2023 17:49:03 +0800
+Subject: [PATCH] rss/kronos: Boot AP from BL2
+
+RD-Fremont boots AP from BL1.
+On Kronos, the boot FW of AP is changed to BL2, this commit improves
+the RSS based boot flow to boot AP BL2.
+
+Upstream-Status: Pending
+Signed-off-by: Jun Zhang <jun.zhang@arm.com>
+Signed-off-by: Hongda Deng <Hongda.Deng@arm.com>
+---
+ .../target/arm/rss/kronos/bl2/boot_hal_bl2.c  | 52 +++++++++----------
+ .../target/arm/rss/kronos/bl2/flash_map_bl2.c | 16 +++---
+ .../target/arm/rss/kronos/firmware_image_id.h |  2 +-
+ .../ext/target/arm/rss/kronos/flash_layout.h  | 18 +++----
+ .../target/arm/rss/kronos/host_base_address.h | 30 +++++------
+ .../ext/target/arm/rss/kronos/size_defs.h     |  2 +-
+ 6 files changed, 58 insertions(+), 62 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+index dc9318b4b..d1dff7a0a 100644
+--- a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
++++ b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+@@ -688,52 +688,52 @@ static int boot_platform_post_load_lcp(void)
+ }
+
+ /*
+- * ================================== AP BL1 ==================================
++ * ================================== AP BL2 ==================================
+  */
+
+-/* Fuction called before ap bl1 firmware is loaded. */
+-static int boot_platform_pre_load_ap_bl1(void)
++/* Fuction called before ap bl2 firmware is loaded. */
++static int boot_platform_pre_load_ap_bl2(void)
+ {
+     enum atu_error_t atu_err;
+
+-    BOOT_LOG_INF("BL2: AP BL1 pre load start");
++    BOOT_LOG_INF("BL2: AP BL2 pre load start");
+
+-    /* Configure RSS ATU to access RSS header region for AP BL1 */
++    /* Configure RSS ATU to access RSS header region for AP BL2 */
+     atu_err = atu_initialize_region(&ATU_DEV_S,
+-                                    HOST_AP_BL1_IMG_HDR_ATU_ID,
+-                                    HOST_AP_BL1_HDR_ATU_BASE_S,
++                                    HOST_AP_BL2_IMG_HDR_ATU_ID,
++                                    HOST_AP_BL2_HDR_ATU_BASE_S,
+                                     RSS_HDR_PHYS_BASE,
+                                     RSS_IMG_HDR_ATU_SIZE);
+     if (atu_err != ATU_ERR_NONE) {
+         return 1;
+     }
+-    /* Configure RSS ATU to access AP BL1 SRAM code region */
++    /* Configure RSS ATU to access AP BL2 SRAM code region */
+     atu_err = atu_initialize_region(&ATU_DEV_S,
+-                                    HOST_AP_BL1_IMG_CODE_ATU_ID,
+-                                    HOST_AP_BL1_CODE_BASE_S,
+-                                    HOST_AP_BL1_PHYS_BASE,
+-                                    HOST_AP_BL1_ATU_SIZE);
++                                    HOST_AP_BL2_IMG_CODE_ATU_ID,
++                                    HOST_AP_BL2_CODE_BASE_S,
++                                    HOST_AP_BL2_PHYS_BASE,
++                                    HOST_AP_BL2_ATU_SIZE);
+     if (atu_err != ATU_ERR_NONE) {
+         return 1;
+     }
+
+-    BOOT_LOG_INF("BL2: AP BL1 pre load complete");
++    BOOT_LOG_INF("BL2: AP BL2 pre load complete");
+
+     return 0;
+ }
+
+-/* Fuction called after ap bl1 firmware is loaded. */
+-static int boot_platform_post_load_ap_bl1(void)
++/* Fuction called after ap bl2 firmware is loaded. */
++static int boot_platform_post_load_ap_bl2(void)
+ {
+     enum atu_error_t atu_err;
+     enum mhu_v3_x_error_t mhu_error;
+
+-    BOOT_LOG_INF("BL2: AP BL1 post load start");
++    BOOT_LOG_INF("BL2: AP BL2 post load start");
+
+     /* Clear the header from the header region but avoid removing anything that
+      * the region may be incidentally overlapping.
+      */
+-    memset(HOST_AP_BL1_IMG_BASE_S, 0, BL2_HEADER_SIZE);
++    memset(HOST_AP_BL2_IMG_BASE_S, 0, BL2_HEADER_SIZE);
+
+     /*
+      * Send doorbell to SCP to indicate that the RSS initialization is
+@@ -747,18 +747,18 @@ static int boot_platform_post_load_ap_bl1(void)
+     }
+     BOOT_LOG_INF("BL2: RSS-->SCP doorbell set!");
+
+-    /* Close RSS ATU region configured to access RSS header region for AP BL1 */
+-    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_AP_BL1_IMG_HDR_ATU_ID);
++    /* Close RSS ATU region configured to access RSS header region for AP BL2 */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_AP_BL2_IMG_HDR_ATU_ID);
+     if (atu_err != ATU_ERR_NONE) {
+         return 1;
+     }
+-    /* Close RSS ATU region configured to access AP BL1 SRAM code region */
+-    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_AP_BL1_IMG_CODE_ATU_ID);
++    /* Close RSS ATU region configured to access AP BL2 SRAM code region */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_AP_BL2_IMG_CODE_ATU_ID);
+     if (atu_err != ATU_ERR_NONE) {
+         return 1;
+     }
+
+-    BOOT_LOG_INF("BL2: AP BL1 post load complete");
++    BOOT_LOG_INF("BL2: AP BL2 post load complete");
+
+     return 0;
+ }
+@@ -783,7 +783,7 @@ static int boot_platform_pre_load_si_cl0(void)
+     if (atu_err != ATU_ERR_NONE) {
+         return 1;
+     }
+-    /* Configure RSS ATU to access AP BL1 SRAM code region */
++    /* Configure RSS ATU to access AP BL2 SRAM code region */
+     atu_err = atu_initialize_region(&ATU_DEV_S,
+                                     HOST_SI_CL0_IMG_CODE_ATU_ID,
+                                     HOST_SI_CL0_CODE_BASE_S,
+@@ -857,7 +857,7 @@ static int boot_platform_pre_load_si_cl1(void)
+     if (atu_err != ATU_ERR_NONE) {
+         return 1;
+     }
+-    /* Configure RSS ATU to access AP BL1 SRAM code region */
++    /* Configure RSS ATU to access AP BL2 SRAM code region */
+     atu_err = atu_initialize_region(&ATU_DEV_S,
+                                     HOST_SI_CL1_IMG_CODE_ATU_ID,
+                                     HOST_SI_CL1_CODE_BASE_S,
+@@ -999,7 +999,7 @@ static int (*boot_platform_pre_load_vector[RSS_FIRMWARE_COUNT]) (void) = {
+     [RSS_FIRMWARE_SI_CL0_ID]        = boot_platform_pre_load_si_cl0,
+     [RSS_FIRMWARE_SI_CL1_ID]        = boot_platform_pre_load_si_cl1,
+     [RSS_FIRMWARE_SI_CL2_ID]        = boot_platform_pre_load_si_cl2,
+-    [RSS_FIRMWARE_AP_BL1_ID]        = boot_platform_pre_load_ap_bl1,
++    [RSS_FIRMWARE_AP_BL2_ID]        = boot_platform_pre_load_ap_bl2,
+ };
+
+ /* Array of function pointers to call after each image is loaded indexed by image id */
+@@ -1011,7 +1011,7 @@ static int (*boot_platform_post_load_vector[RSS_FIRMWARE_COUNT]) (void) = {
+     [RSS_FIRMWARE_SI_CL0_ID]        = boot_platform_post_load_si_cl0,
+     [RSS_FIRMWARE_SI_CL1_ID]        = boot_platform_post_load_si_cl1,
+     [RSS_FIRMWARE_SI_CL2_ID]        = boot_platform_post_load_si_cl2,
+-    [RSS_FIRMWARE_AP_BL1_ID]        = boot_platform_post_load_ap_bl1,
++    [RSS_FIRMWARE_AP_BL2_ID]        = boot_platform_post_load_ap_bl2,
+ };
+
+ /*
+diff --git a/platform/ext/target/arm/rss/kronos/bl2/flash_map_bl2.c b/platform/ext/target/arm/rss/kronos/bl2/flash_map_bl2.c
+index 4d9d182df..e06870e68 100644
+--- a/platform/ext/target/arm/rss/kronos/bl2/flash_map_bl2.c
++++ b/platform/ext/target/arm/rss/kronos/bl2/flash_map_bl2.c
+@@ -162,23 +162,19 @@ int boot_get_image_exec_ram_info(uint32_t image_id,
+         *exec_ram_start = HOST_LCP_IMG_BASE_S;
+         *exec_ram_size  = HOST_LCP_ATU_SIZE;
+         rc = 0;
+-    }
+-    else if (image_id == RSS_FIRMWARE_AP_BL1_ID) {
+-        *exec_ram_start = HOST_AP_BL1_IMG_BASE_S;
+-        *exec_ram_size  = HOST_AP_BL1_ATU_SIZE;
++    } else if (image_id == RSS_FIRMWARE_AP_BL2_ID) {
++        *exec_ram_start = HOST_AP_BL2_IMG_BASE_S;
++        *exec_ram_size  = HOST_AP_BL2_ATU_SIZE;
+         rc = 0;
+-    }
+-    else if (image_id == RSS_FIRMWARE_SI_CL0_ID) {
++    } else if (image_id == RSS_FIRMWARE_SI_CL0_ID) {
+         *exec_ram_start = HOST_SI_CL0_IMG_BASE_S;
+         *exec_ram_size  = HOST_SI_CL0_ATU_SIZE;
+         rc = 0;
+-    }
+-    else if (image_id == RSS_FIRMWARE_SI_CL1_ID) {
++    } else if (image_id == RSS_FIRMWARE_SI_CL1_ID) {
+         *exec_ram_start = HOST_SI_CL1_IMG_BASE_S;
+         *exec_ram_size  = HOST_SI_CL1_ATU_SIZE;
+         rc = 0;
+-    }
+-    else if (image_id == RSS_FIRMWARE_SI_CL2_ID) {
++    } else if (image_id == RSS_FIRMWARE_SI_CL2_ID) {
+         *exec_ram_start = HOST_SI_CL2_IMG_BASE_S;
+         *exec_ram_size  = HOST_SI_CL2_ATU_SIZE;
+         rc = 0;
+diff --git a/platform/ext/target/arm/rss/kronos/firmware_image_id.h b/platform/ext/target/arm/rss/kronos/firmware_image_id.h
+index cd37a776a..5dcfbdfd2 100644
+--- a/platform/ext/target/arm/rss/kronos/firmware_image_id.h
++++ b/platform/ext/target/arm/rss/kronos/firmware_image_id.h
+@@ -17,7 +17,7 @@
+ #define RSS_FIRMWARE_SECURE_ID       0
+ #define RSS_FIRMWARE_NON_SECURE_ID   1
+ /* Host Firmware */
+-#define RSS_FIRMWARE_AP_BL1_ID       2
++#define RSS_FIRMWARE_AP_BL2_ID       2
+ #define RSS_FIRMWARE_SI_CL2_ID       3
+ #define RSS_FIRMWARE_SI_CL1_ID       4
+ #define RSS_FIRMWARE_SI_CL0_ID       5
+diff --git a/platform/ext/target/arm/rss/kronos/flash_layout.h b/platform/ext/target/arm/rss/kronos/flash_layout.h
+index 6f5c27d1b..078448c20 100644
+--- a/platform/ext/target/arm/rss/kronos/flash_layout.h
++++ b/platform/ext/target/arm/rss/kronos/flash_layout.h
+@@ -34,8 +34,8 @@
+  * 0x3122_0000 SCP BL1 secondary slot (512 KB)
+  * 0x313A_0000 LCP BL1 primary slot (64 KB)
+  * 0x313B_0000 LCP BL1 secondary slot (64 KB)
+- * 0x312A_0000 AP BL1 primary slot (512 KB)
+- * 0x3132_0000 AP BL1 secondary slot (512 KB)
++ * 0x312A_0000 AP BL2 primary slot (512 KB)
++ * 0x3132_0000 AP BL2 secondary slot (512 KB)
+  */
+
+ /* This header file is included from linker scatter file as well, where only a
+@@ -52,7 +52,7 @@
+ #define FLASH_NS_PARTITION_SIZE         (SIZE_DEF_NS_IMAGE)  /* NS  partition */
+ #define FLASH_SCP_PARTITION_SIZE        (SIZE_DEF_SCP_IMAGE) /* SCP partition */
+ #define FLASH_LCP_PARTITION_SIZE        (SIZE_DEF_LCP_IMAGE) /* LCP  partition */
+-#define FLASH_AP_BL1_PARTITION_SIZE     (SIZE_DEF_AP_BL1_IMAGE) /* AP BL1  partition */
++#define FLASH_AP_BL2_PARTITION_SIZE     (SIZE_DEF_AP_BL2_IMAGE) /* AP BL2  partition */
+ #define FLASH_SI_CL0_PARTITION_SIZE     (SIZE_DEF_SI_CL0_IMAGE)  /* SI CL0 partition */
+ #define FLASH_SI_CL1_PARTITION_SIZE     (SIZE_DEF_SI_CL1_IMAGE)  /* SI CL1 partition */
+ #define FLASH_SI_CL2_PARTITION_SIZE     (SIZE_DEF_SI_CL2_IMAGE)  /* SI CL2 partition */
+@@ -117,14 +117,14 @@
+ #define FLASH_AREA_9_ID            (FLASH_AREA_8_ID + 1)
+ #define FLASH_AREA_9_OFFSET        (FLASH_AREA_8_OFFSET + FLASH_AREA_8_SIZE)
+ #define FLASH_AREA_9_SIZE          (FLASH_LCP_PARTITION_SIZE)
+-/* AP BL1 image primary slot */
++/* AP BL2 image primary slot */
+ #define FLASH_AREA_10_ID            (FLASH_AREA_9_ID + 1)
+ #define FLASH_AREA_10_OFFSET        (FLASH_AREA_9_OFFSET + FLASH_AREA_9_SIZE)
+-#define FLASH_AREA_10_SIZE          (FLASH_AP_BL1_PARTITION_SIZE)
+-/* AP BL1 image secondary slot */
++#define FLASH_AREA_10_SIZE          (FLASH_AP_BL2_PARTITION_SIZE)
++/* AP BL2 image secondary slot */
+ #define FLASH_AREA_11_ID            (FLASH_AREA_10_ID + 1)
+ #define FLASH_AREA_11_OFFSET        (FLASH_AREA_10_OFFSET + FLASH_AREA_10_SIZE)
+-#define FLASH_AREA_11_SIZE          (FLASH_AP_BL1_PARTITION_SIZE)
++#define FLASH_AREA_11_SIZE          (FLASH_AP_BL2_PARTITION_SIZE)
+ /* SI0 image primary slot */
+ #define FLASH_AREA_12_ID            (FLASH_AREA_11_ID + 1)
+ #define FLASH_AREA_12_OFFSET        (FLASH_AREA_11_OFFSET + FLASH_AREA_11_SIZE)
+@@ -165,7 +165,7 @@
+          ((x) == RSS_FIRMWARE_NON_SECURE_ID) ? FLASH_AREA_3_ID : \
+          ((x) == RSS_FIRMWARE_SCP_ID)        ? FLASH_AREA_6_ID : \
+          ((x) == RSS_FIRMWARE_LCP_ID)        ? FLASH_AREA_8_ID : \
+-         ((x) == RSS_FIRMWARE_AP_BL1_ID)     ? FLASH_AREA_10_ID : \
++         ((x) == RSS_FIRMWARE_AP_BL2_ID)     ? FLASH_AREA_10_ID : \
+          ((x) == RSS_FIRMWARE_SI_CL0_ID)     ? FLASH_AREA_12_ID : \
+          ((x) == RSS_FIRMWARE_SI_CL1_ID)     ? FLASH_AREA_14_ID : \
+          ((x) == RSS_FIRMWARE_SI_CL2_ID)     ? FLASH_AREA_16_ID : \
+@@ -175,7 +175,7 @@
+          ((x) == RSS_FIRMWARE_NON_SECURE_ID) ? FLASH_AREA_5_ID : \
+          ((x) == RSS_FIRMWARE_SCP_ID)        ? FLASH_AREA_7_ID : \
+          ((x) == RSS_FIRMWARE_LCP_ID)        ? FLASH_AREA_9_ID : \
+-         ((x) == RSS_FIRMWARE_AP_BL1_ID)     ? FLASH_AREA_11_ID : \
++         ((x) == RSS_FIRMWARE_AP_BL2_ID)     ? FLASH_AREA_11_ID : \
+          ((x) == RSS_FIRMWARE_SI_CL0_ID)     ? FLASH_AREA_13_ID : \
+          ((x) == RSS_FIRMWARE_SI_CL1_ID)     ? FLASH_AREA_15_ID : \
+          ((x) == RSS_FIRMWARE_SI_CL2_ID)     ? FLASH_AREA_17_ID : \
+diff --git a/platform/ext/target/arm/rss/kronos/host_base_address.h b/platform/ext/target/arm/rss/kronos/host_base_address.h
+index a31884f43..9f52cd244 100644
+--- a/platform/ext/target/arm/rss/kronos/host_base_address.h
++++ b/platform/ext/target/arm/rss/kronos/host_base_address.h
+@@ -141,26 +141,26 @@
+ /* ATU ID for LCP ATU CODE region */
+ #define HOST_LCP_IMG_CODE_ATU_ID    RSS_ATU_IMG_CODE_LOAD_ID
+
+-/* AP BL1 ATU HEADER logical address start */
+-#define HOST_AP_BL1_HDR_ATU_BASE_S     (HOST_LCP_CODE_BASE_S + HOST_LCP_ATU_SIZE)
+-/*  AP BL1 Code region and SCP ATU CODE logical address start */
+-#define HOST_AP_BL1_CODE_BASE_S        (HOST_AP_BL1_HDR_ATU_BASE_S + RSS_IMG_HDR_ATU_SIZE)
+-/*  AP BL1 Image address start, offset so end of HEADER is at end of ATU HEADER */
+-#define HOST_AP_BL1_IMG_BASE_S         (HOST_AP_BL1_CODE_BASE_S - BL2_HEADER_SIZE)
+-/*  AP BL1 ITCM physical address start */
+-#define HOST_AP_BL1_PHYS_BASE          (0x0000000000000ULL +  0x42000UL) /* AP initial boot SRAM base address
+-/*  AP BL1 ATU CODE size (aligned size of SCP image) */
+-#define HOST_AP_BL1_ATU_SIZE           ALIGN_UP(SIZE_DEF_AP_BL1_IMAGE, RSS_ATU_PAGE_SIZE)
+-/*  AP BL1 ID for SCP ATU HEADER region */
+-#define HOST_AP_BL1_IMG_HDR_ATU_ID     RSS_ATU_IMG_HDR_LOAD_ID
+-/*  AP BL1 ID for SCP ATU CODE region */
+-#define HOST_AP_BL1_IMG_CODE_ATU_ID    RSS_ATU_IMG_CODE_LOAD_ID
++/* AP BL2 ATU HEADER logical address start */
++#define HOST_AP_BL2_HDR_ATU_BASE_S     (HOST_LCP_CODE_BASE_S + HOST_LCP_ATU_SIZE)
++/*  AP BL2 Code region and SCP ATU CODE logical address start */
++#define HOST_AP_BL2_CODE_BASE_S        (HOST_AP_BL2_HDR_ATU_BASE_S + RSS_IMG_HDR_ATU_SIZE)
++/*  AP BL2 Image address start, offset so end of HEADER is at end of ATU HEADER */
++#define HOST_AP_BL2_IMG_BASE_S         (HOST_AP_BL2_CODE_BASE_S - BL2_HEADER_SIZE)
++/*  AP BL2 ITCM physical address start */
++#define HOST_AP_BL2_PHYS_BASE          (0x0000000000000ULL +  0x42000UL) /* AP initial boot SRAM base address
++/*  AP BL2 ATU CODE size (aligned size of SCP image) */
++#define HOST_AP_BL2_ATU_SIZE           ALIGN_UP(SIZE_DEF_AP_BL2_IMAGE, RSS_ATU_PAGE_SIZE)
++/*  AP BL2 ID for SCP ATU HEADER region */
++#define HOST_AP_BL2_IMG_HDR_ATU_ID     RSS_ATU_IMG_HDR_LOAD_ID
++/*  AP BL2 ID for SCP ATU CODE region */
++#define HOST_AP_BL2_IMG_CODE_ATU_ID    RSS_ATU_IMG_CODE_LOAD_ID
+
+ /* ATU HEADER physical address start (mapped so end of region is end of SCP ITCM) */
+ #define RSS_HDR_PHYS_BASE              (HOST_SCP_PHYS_BASE + HOST_SCP_ATU_SIZE - RSS_IMG_HDR_ATU_SIZE)
+
+ /* SI CL0 ATU HEADER logical address start */
+-#define HOST_SI_CL0_HDR_ATU_BASE_S     (HOST_AP_BL1_CODE_BASE_S + HOST_AP_BL1_ATU_SIZE)
++#define HOST_SI_CL0_HDR_ATU_BASE_S     (HOST_AP_BL2_CODE_BASE_S + HOST_AP_BL2_ATU_SIZE)
+ /*  SI CL0 Code region and AP ATU CODE logical address start */
+ #define HOST_SI_CL0_CODE_BASE_S        (HOST_SI_CL0_HDR_ATU_BASE_S + RSS_IMG_HDR_ATU_SIZE)
+ /*  SI CL0 Image address start, offset so end of HEADER is at end of ATU HEADER */
+diff --git a/platform/ext/target/arm/rss/kronos/size_defs.h b/platform/ext/target/arm/rss/kronos/size_defs.h
+index 141c1080e..3f6607834 100644
+--- a/platform/ext/target/arm/rss/kronos/size_defs.h
++++ b/platform/ext/target/arm/rss/kronos/size_defs.h
+@@ -25,7 +25,7 @@
+ /* Host Firmware */
+ #define SIZE_DEF_SCP_IMAGE          (0x80000) /* 512 KB */
+ #define SIZE_DEF_LCP_IMAGE          (0x10000) /* 64 KB */
+-#define SIZE_DEF_AP_BL1_IMAGE       (0x80000) /* 512 KB */
++#define SIZE_DEF_AP_BL2_IMAGE       (0x80000) /* 512 KB */
+ #define SIZE_DEF_SI_CL0_IMAGE       (0x400000) /* 4MB */
+ #define SIZE_DEF_SI_CL1_IMAGE       (0x400000) /* 4MB */
+ #define SIZE_DEF_SI_CL2_IMAGE       (0x800000) /* 8MB */
+--
+2.25.1
+

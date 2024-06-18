@@ -1,0 +1,671 @@
+From ea38a49ba42c456cbbb7fdb1eba7e30b75959f23 Mon Sep 17 00:00:00 2001
+From: Jun Zhang <jun.zhang@arm.com>
+Date: Fri, 24 Nov 2023 19:56:48 +0800
+Subject: [PATCH] rss/kronos: Add PSA IOCTL API and flash capsule images
+
+The capsule update related requests come from Trusted Service via
+PSA IOCTL API using platform service in RSS runtime. So enable
+this type API for capsule updates. Also add the capsule updating
+logic to update capsule images. Main changes:
+
+1.Add ATU for shared memory between AP and RSS to access capsule
+  image
+2.Parse the signed images in UEFI capsule image
+3.Flash the signed images to rss flash
+4.Flash the FIP image to AP secure flash
+
+Upstream-Status: Pending
+Signed-off-by: Jun Zhang <jun.zhang@arm.com>
+---
+ .../ext/target/arm/rss/common/CMakeLists.txt  |   7 +
+ .../common/services/include/ioctl_requests.h  |  19 ++
+ .../common/services/src/tfm_platform_system.c |  39 +++
+ .../target/arm/rss/common/tfm_hal_platform.c  |  38 ++-
+ .../ext/target/arm/rss/kronos/CMakeLists.txt  |   4 +
+ .../rss/kronos/fw_update_agent/fwu_agent.c    | 287 ++++++++++++++++++
+ .../fw_update_agent/uefi_capsule_parser.c     |   7 -
+ .../fw_update_agent/uefi_capsule_parser.h     |   6 +
+ .../arm/rss/kronos/fw_update_agent/uefi_fmp.c |  35 +++
+ .../target/arm/rss/kronos/host_base_address.h |   4 +
+ .../rss_comms/rss_comms_permissions_hal.c     |   1 +
+ 11 files changed, 436 insertions(+), 11 deletions(-)
+ create mode 100644 platform/ext/target/arm/rss/common/services/include/ioctl_requests.h
+
+diff --git a/platform/ext/target/arm/rss/common/CMakeLists.txt b/platform/ext/target/arm/rss/common/CMakeLists.txt
+index 84a35cf30..b2746b7ff 100644
+--- a/platform/ext/target/arm/rss/common/CMakeLists.txt
++++ b/platform/ext/target/arm/rss/common/CMakeLists.txt
+@@ -122,6 +122,7 @@ target_include_directories(platform_s
+         libraries
+         partition
+         services/src
++        $<$<BOOL:${TFM_FWU_AGENT}>:${CMAKE_CURRENT_SOURCE_DIR}/services/include>
+         ${PLATFORM_DIR}/..
+         ${PLATFORM_DIR}/ext/target/arm/drivers/counter/armv8m
+         ${PLATFORM_DIR}/ext/target/arm/drivers/mpc_sie
+@@ -184,6 +185,7 @@ target_compile_definitions(platform_s
+         # Needed for DMA-350 library
+         CMSIS_device_header="rss.h"
+         $<$<BOOL:${PLATFORM_SVC_HANDLERS}>:PLATFORM_SVC_HANDLERS>
++        $<$<BOOL:${TFM_FWU_AGENT}>:TFM_FWU_AGENT>
+ )
+
+ target_compile_options(platform_s
+@@ -442,6 +444,11 @@ target_sources(tfm_spm
+         faults.c
+ )
+
++target_compile_definitions(tfm_spm
++    PRIVATE
++        $<$<BOOL:${TFM_FWU_AGENT}>:TFM_FWU_AGENT>
++)
++
+ #=========================== CPAK generator tool ===============================
+
+ find_package(Python3)
+diff --git a/platform/ext/target/arm/rss/common/services/include/ioctl_requests.h b/platform/ext/target/arm/rss/common/services/include/ioctl_requests.h
+new file mode 100644
+index 000000000..975966d68
+--- /dev/null
++++ b/platform/ext/target/arm/rss/common/services/include/ioctl_requests.h
+@@ -0,0 +1,19 @@
++/*
++ * Copyright (c) 2021,2023 Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#ifndef IOCTL_REQUESTS_H
++#define IOCTL_REQUESTS_H
++
++#include <stdint.h>
++
++enum ioctl_id_t {
++   IOCTL_FWU_FLASH_IMAGES = 0,
++   IOCTL_FWU_HOST_ACK,
++   IOCTL_FMP_GET_IMAGE_INFO,
++};
++
++#endif /* IOCTL_REQUESTS_H */
+diff --git a/platform/ext/target/arm/rss/common/services/src/tfm_platform_system.c b/platform/ext/target/arm/rss/common/services/src/tfm_platform_system.c
+index 52670840c..5f84a47ed 100644
+--- a/platform/ext/target/arm/rss/common/services/src/tfm_platform_system.c
++++ b/platform/ext/target/arm/rss/common/services/src/tfm_platform_system.c
+@@ -7,21 +7,60 @@
+
+ #include "tfm_platform_system.h"
+ #include "cmsis.h"
++#ifdef TFM_FWU_AGENT
++#include "ioctl_requests.h"
++#include "fwu_agent.h"
++#include "uefi_fmp.h"
++#include <tfm_hal_interrupt.h>
++#endif /* TFM_FWU_AGENT */
+
+ void tfm_platform_hal_system_reset(void)
+ {
++#ifdef TFM_FWU_AGENT
++    /* Reset the system */
++    tfm_hal_system_reset();
++#else
+     /* Reset the system */
+     NVIC_SystemReset();
++#endif /* TFM_FWU_AGENT */
+ }
+
+ enum tfm_platform_err_t tfm_platform_hal_ioctl(tfm_platform_ioctl_req_t request,
+                                                psa_invec  *in_vec,
+                                                psa_outvec *out_vec)
+ {
++#ifdef TFM_FWU_AGENT
++    enum tfm_platform_err_t ret = TFM_PLATFORM_ERR_SUCCESS;
++    enum fwu_agent_error_t result;
++
++    switch(request) {
++    case IOCTL_FWU_FLASH_IMAGES:
++        result = fwu_flash_image();
++        if (result == FWU_AGENT_SUCCESS) {
++            tfm_platform_hal_system_reset();
++        } else {
++            ret = TFM_PLATFORM_ERR_SYSTEM_ERROR;
++        }
++        break;
++
++    case IOCTL_FWU_HOST_ACK:
++        break;
++
++    case IOCTL_FMP_GET_IMAGE_INFO:
++        break;
++
++    default:
++        ret = TFM_PLATFORM_ERR_NOT_SUPPORTED;
++        break;
++    }
++
++    return ret;
++#else
+     (void)request;
+     (void)in_vec;
+     (void)out_vec;
+
+     /* Not needed for this platform */
+     return TFM_PLATFORM_ERR_NOT_SUPPORTED;
++#endif /* TFM_FWU_AGENT */
+ }
+diff --git a/platform/ext/target/arm/rss/common/tfm_hal_platform.c b/platform/ext/target/arm/rss/common/tfm_hal_platform.c
+index c8a911700..90393441b 100644
+--- a/platform/ext/target/arm/rss/common/tfm_hal_platform.c
++++ b/platform/ext/target/arm/rss/common/tfm_hal_platform.c
+@@ -11,6 +11,11 @@
+ #include "tfm_peripherals_def.h"
+ #include "uart_stdout.h"
+ #include "device_definition.h"
++#ifdef TFM_FWU_AGENT
++#include "Driver_Flash.h"
++#include "flash_layout.h"
++#include "fwu_agent.h"
++#endif /* TFM_FWU_AGENT */
+
+ #if defined(TFM_PARTITION_PROTECTED_STORAGE) || \
+     defined(TFM_PARTITION_INTERNAL_TRUSTED_STORAGE)
+@@ -30,14 +35,20 @@
+
+ extern const struct memory_region_limits memory_regions;
+
++#ifdef TFM_FWU_AGENT
++extern ARM_DRIVER_FLASH FWU_METADATA_AP_FLASH_DEV;
++extern ARM_DRIVER_FLASH FWU_METADATA_RSS_FLASH_DEV;
++extern int is_initialized_rss;
++extern int is_initialized_ap;
++#endif /* TFM_FWU_AGENT */
++
+ enum tfm_hal_status_t tfm_hal_platform_init(void)
+ {
+     enum tfm_plat_err_t plat_err = TFM_PLAT_ERR_SYSTEM_ERR;
+-#if defined(TFM_PARTITION_PROTECTED_STORAGE) || \
+-    defined(TFM_PARTITION_INTERNAL_TRUSTED_STORAGE)
++#ifdef TFM_FWU_AGENT
+     enum atu_error_t atu_err;
+-#endif /* TFM_PARTITION_PROTECTED_STORAGE or
+-        * TFM_PARTITION_INTERNAL_TRUSTED_STORAGE  */
++    enum fwu_agent_error_t ret;
++#endif /* TFM_FWU_AGENT */
+
+     plat_err = enable_fault_handlers();
+     if (plat_err != TFM_PLAT_ERR_SUCCESS) {
+@@ -72,6 +83,25 @@ enum tfm_hal_status_t tfm_hal_platform_init(void)
+         return TFM_HAL_ERROR_GENERIC;
+     }
+
++#ifdef TFM_FWU_AGENT
++    /* Initialize the ATU region for capsule image between AP and RSS. */
++    atu_err = atu_initialize_region(&ATU_DEV_S, RSS_ATU_CAPSULE_ID,
++            HOST_CAPSULE_DRAM_LOG_BASE, HOST_CAPSULE_DRAM_PHY_BASE,
++            HOST_CAPSULE_DRAM_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return TFM_HAL_ERROR_GENERIC;
++    }
++
++    ret = fwu_metadata_init(FWU_RSS_FLASH_DEV, &is_initialized_rss);
++    if (ret) {
++        return TFM_HAL_ERROR_GENERIC;
++    }
++
++    ret = fwu_metadata_init(FWU_AP_FLASH_DEV, &is_initialized_ap);
++    if (ret) {
++        return TFM_HAL_ERROR_GENERIC;
++    }
++#endif /* TFM_FWU_AGENT */
+     return TFM_HAL_SUCCESS;
+ }
+
+diff --git a/platform/ext/target/arm/rss/kronos/CMakeLists.txt b/platform/ext/target/arm/rss/kronos/CMakeLists.txt
+index aa50159a6..bec00b70c 100644
+--- a/platform/ext/target/arm/rss/kronos/CMakeLists.txt
++++ b/platform/ext/target/arm/rss/kronos/CMakeLists.txt
+@@ -57,8 +57,10 @@ target_sources(platform_s
+         rss_expansion_peripherals_def.c
+         rss_comms/rss_comms_permissions_hal.c
+         ${PLATFORM_DIR}/ext/target/arm/drivers/flash/strata/spi_strataflashj3_flash_lib.c
++        fw_update_agent/uefi_capsule_parser.c
+         fw_update_agent/fwu_agent.c
+         fw_update_agent/fwu_agent_rss.c
++        fw_update_agent/uefi_fmp.c
+         soft_crc/soft_crc.c
+ )
+
+@@ -128,6 +130,8 @@ target_sources(platform_bl2
+         partition/gpt.c
+         fw_update_agent/fwu_agent.c
+         fw_update_agent/fwu_agent_rss.c
++        fw_update_agent/uefi_capsule_parser.c
++        fw_update_agent/uefi_fmp.c
+ )
+
+ target_compile_definitions(platform_bl2
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.c b/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.c
+index 834fed63f..a35c5f34a 100644
+--- a/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.c
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.c
+@@ -27,6 +27,13 @@ extern ARM_DRIVER_FLASH FWU_METADATA_RSS_FLASH_DEV;
+ extern int is_initialized_rss;
+ extern struct fwu_metadata_rss fwu_md_rss;
+
++capsule_image_info_t capsule_info;
++struct efi_guid full_capsule_image_guid = {
++    .time_low = 0xe2bb9c06,
++    .time_mid = 0x70e9,
++    .time_hi_and_version = 0x4b14,
++    .clock_seq_and_node = {0x97, 0xa3, 0x5a, 0x79, 0x13, 0x17, 0x6e, 0x3f}
++};
+ #ifndef FWU_METADATA_AP_FLASH_DEV
+     #ifndef FLASH_DEV_NAME
+     #error "FWU_METADATA_AP_FLASH_DEV or AP_FLASH_DEV_NAME must be defined in flash_layout.h"
+@@ -57,6 +64,56 @@ uint8_t bl2_get_boot_bank(void)
+     return boot_index;
+ }
+
++static enum fwu_agent_error_t erase_bank(enum FWU_METADATA_FLASH_DEV DEV_TYPE, uint32_t bank_offset)
++{
++    int32_t ret;
++    uint32_t sectors;
++    uint8_t img_num;
++    ARM_DRIVER_FLASH *FLASH_DEV;
++    enum fwu_agent_error_t agent_ret;
++
++    FWU_LOG_MSG("%s: enter\n\r", __func__);
++
++    if ((bank_offset % FWU_METADATA_FLASH_SECTOR_SIZE) != 0) {
++        return FWU_AGENT_ERROR;
++    }
++
++    if ((BANK_PARTITION_SIZE % FWU_METADATA_FLASH_SECTOR_SIZE) != 0) {
++        return FWU_AGENT_ERROR;
++    }
++
++    agent_ret = get_fwu_flash_and_img_num(DEV_TYPE, &FLASH_DEV, &img_num);
++    if (agent_ret != FWU_AGENT_SUCCESS) {
++        return FWU_AGENT_ERROR;
++    }
++
++    sectors = BANK_PARTITION_SIZE / FWU_METADATA_FLASH_SECTOR_SIZE;
++
++    FWU_LOG_MSG("%s: erasing sectors = %u, from offset = %u\n\r", __func__,
++                     sectors, bank_offset);
++
++    for (uint32_t i = 0; i < sectors; i++) {
++        ret = FLASH_DEV->EraseSector(
++                bank_offset + (i * FWU_METADATA_FLASH_SECTOR_SIZE));
++        if (ret != ARM_DRIVER_OK) {
++            return FWU_AGENT_ERROR;
++        }
++    }
++
++    FWU_LOG_MSG("%s: exit\n\r", __func__);
++    return FWU_AGENT_SUCCESS;
++}
++
++static int get_image_info_in_bank(struct efi_guid* guid, uint32_t* image_bank_offset)
++{
++    if ((memcmp(guid, &full_capsule_image_guid, sizeof(struct efi_guid))) == 0) {
++        *image_bank_offset = 0;
++        return IMAGE_ALL;
++    }
++
++    return IMAGE_NOT_RECOGNIZED;
++}
++
+ enum fwu_agent_error_t fwu_metadata_provision_ap(void)
+ {
+     enum fwu_agent_error_t ret;
+@@ -113,3 +170,233 @@ enum fwu_agent_error_t fwu_metadata_provision_ap(void)
+     FWU_LOG_MSG("%s: FWU METADATA PROVISIONED.\n\r", __func__);
+     return FWU_AGENT_SUCCESS;
+ }
++
++static enum fwu_agent_error_t flash_fip_capsule(struct fwu_metadata_ap* fwu_md_ptr,
++                                        void* images, uint32_t size, uint32_t version)
++{
++    int ret;
++    uint32_t bank_offset;
++    uint32_t previous_active_index;
++    uint32_t active_index;
++
++    FWU_LOG_MSG("%s: enter: image = %p, size = %u, version = %u\n\r"
++                , __func__, images, size, version);
++
++    if (!fwu_md_ptr || !images) {
++        return FWU_AGENT_ERROR;
++    }
++
++    active_index = fwu_md_ptr->md.active_index;
++
++    if (size > FIP_BANK_PARTITION_SIZE) {
++        FWU_LOG_MSG("ERROR: %s: size error\n\r",__func__);
++        return FWU_AGENT_ERROR;
++    }
++
++    if (version <=
++            (fwu_md_ptr->img_entry[IMAGE_0].img_props[active_index].version)) {
++        FWU_LOG_MSG("ERROR: %s: version error\n\r",__func__);
++        return FWU_AGENT_ERROR;
++    }
++
++    if (active_index == BANK_0) {
++        previous_active_index = BANK_1;
++        bank_offset = FIP_BANK_1_PARTITION_OFFSET;
++    } else if (active_index == BANK_1) {
++        previous_active_index = BANK_0;
++        bank_offset = FIP_BANK_0_PARTITION_OFFSET;
++    } else {
++        FWU_LOG_MSG("ERROR: %s: active_index %d\n\r",__func__,active_index);
++        return FWU_AGENT_ERROR;
++    }
++
++    if (erase_bank(FWU_AP_FLASH_DEV, bank_offset)) {
++        return FWU_AGENT_ERROR;
++    }
++    FWU_LOG_MSG("%s: writing capsule to the flash at offset = %u...\n\r",
++                      __func__, bank_offset);
++    ret = FWU_METADATA_AP_FLASH_DEV.ProgramData(bank_offset, images, size);
++    if (ret != size) {
++        return FWU_AGENT_ERROR;
++    }
++    FWU_LOG_MSG("%s: images are written to bank offset = %u\n\r", __func__,
++                     bank_offset);
++
++    /* Change system state to trial bank state. */
++    for (uint8_t i = 0; i < NR_OF_IMAGES_IN_AP_FW_BANK; i++) {
++        fwu_md_ptr->img_entry[i].img_props[previous_active_index].accepted =
++                                                        IMAGE_NOT_ACCEPTED;
++        fwu_md_ptr->img_entry[i].img_props[previous_active_index].version = version;
++    }
++    fwu_md_ptr->md.active_index = previous_active_index;
++    fwu_md_ptr->md.previous_active_index = active_index;
++    fwu_md_ptr->md.crc_32 = crc32((uint8_t *)&(fwu_md_ptr->md.version),
++                              sizeof(struct fwu_metadata_ap) - sizeof(uint32_t));
++
++    ret = metadata_write(FWU_AP_FLASH_DEV, &fwu_md_ptr->md);
++    if (ret) {
++        return ret;
++    }
++
++    FWU_LOG_MSG("%s: exit\n\r", __func__);
++    return FWU_AGENT_SUCCESS;
++}
++
++static enum fwu_agent_error_t flash_rss_capsule(struct fwu_metadata_rss* fwu_md_ptr,
++                                         void* images, uint32_t size, uint32_t version)
++{
++    int ret;
++    uint32_t bank_offset;
++    uint32_t previous_active_index;
++    uint32_t active_index;
++
++    FWU_LOG_MSG("%s: enter: image = %p, size = %u, version = %u\n\r"
++                , __func__, images, size, version);
++
++    if (!fwu_md_ptr || !images) {
++        return FWU_AGENT_ERROR;
++    }
++
++    active_index = fwu_md_ptr->md.active_index;
++
++    if (size > BANK_PARTITION_SIZE) {
++        FWU_LOG_MSG("ERROR: %s: size error\n\r",__func__);
++        return FWU_AGENT_ERROR;
++    }
++
++    if (version <=
++            (fwu_md_ptr->img_entry[IMAGE_0].img_props[active_index].version)) {
++        FWU_LOG_MSG("ERROR: %s: version error\n\r",__func__);
++        return FWU_AGENT_ERROR;
++    }
++
++    if (active_index == BANK_0) {
++        previous_active_index = BANK_1;
++        bank_offset = BANK_1_PARTITION_OFFSET;
++    } else if (active_index == BANK_1) {
++        previous_active_index = BANK_0;
++        bank_offset = BANK_0_PARTITION_OFFSET;
++    } else {
++        FWU_LOG_MSG("ERROR: %s: active_index %d\n\r",__func__,active_index);
++        return FWU_AGENT_ERROR;
++    }
++
++    if (erase_bank(FWU_RSS_FLASH_DEV, bank_offset)) {
++        return FWU_AGENT_ERROR;
++    }
++
++    FWU_LOG_MSG("%s: writing capsule to the flash at offset = %u...\n\r",
++                      __func__, bank_offset);
++    ret = FWU_METADATA_RSS_FLASH_DEV.ProgramData(bank_offset, images, size);
++    if (ret != size) {
++        return FWU_AGENT_ERROR;
++    }
++
++    FWU_LOG_MSG("%s: images are written to bank offset = %u\n\r", __func__,
++                     bank_offset);
++
++    /* Change system state to trial bank state. */
++    for (uint8_t i = 0; i < NR_OF_IMAGES_IN_RSS_FW_BANK; i++) {
++        fwu_md_ptr->img_entry[i].img_props[previous_active_index].accepted =
++                                                        IMAGE_NOT_ACCEPTED;
++        fwu_md_ptr->img_entry[i].img_props[previous_active_index].version = version;
++    }
++    fwu_md_ptr->md.active_index = previous_active_index;
++    fwu_md_ptr->md.previous_active_index = active_index;
++    fwu_md_ptr->md.crc_32 = crc32((uint8_t *)&(fwu_md_ptr->md.version),
++                              sizeof(struct fwu_metadata_rss) - sizeof(uint32_t));
++
++    ret = metadata_write(FWU_RSS_FLASH_DEV, &fwu_md_ptr->md);
++    if (ret) {
++        return ret;
++    }
++
++    FWU_LOG_MSG("%s: exit\n\r", __func__);
++    return FWU_AGENT_SUCCESS;
++}
++
++enum fwu_agent_error_t fwu_flash_image(void)
++{
++    enum fwu_agent_error_t rss_ret;
++    enum fwu_agent_error_t fip_ret;
++    enum fwu_agent_state_t current_state;
++    void *capsule_ptr = (char*)HOST_CAPSULE_DRAM_LOG_BASE;
++    int image_index;
++    uint32_t image_bank_offset;
++    uint32_t nr_images;
++    struct fwu_private_metadata priv_metadata;
++    void *fip_img_ptr;
++    enum fwu_agent_error_t ret;
++
++    FWU_LOG_MSG("%s: enter\n\r", __func__);
++
++    if (!is_initialized_ap || !is_initialized_rss) {
++        FWU_LOG_MSG("fwu flash has not been initialized!\r\n");
++    }
++
++    if (metadata_read(FWU_RSS_FLASH_DEV, &fwu_md_rss.md)) {
++        FWU_LOG_MSG("fwu read rss metadata failed!\r\n");
++        return FWU_AGENT_ERROR;
++    }
++
++    if (metadata_read(FWU_AP_FLASH_DEV, &fwu_md_ap.md)) {
++        FWU_LOG_MSG("fwu read ap metadata failed!\r\n");
++        return FWU_AGENT_ERROR;
++    }
++
++    if (private_metadata_read(&priv_metadata)) {
++        FWU_LOG_MSG("fwu read private metadata failed!\r\n");
++        return FWU_AGENT_ERROR;
++    }
++
++    /* Firmware update process can only start in regular state. */
++    current_state = get_fwu_agent_state(&fwu_md_rss, &priv_metadata);
++    if (current_state != FWU_AGENT_STATE_REGULAR) {
++        FWU_LOG_MSG("fwu metadata current state is not REGULAR!\r\n");
++        return FWU_AGENT_ERROR;
++    }
++
++    memset(&capsule_info, 0, sizeof(capsule_image_info_t));
++    if (uefi_capsule_retrieve_images(capsule_ptr, &capsule_info)) {
++        FWU_LOG_MSG("fwu retrieve images failed!\r\n");
++        return FWU_AGENT_ERROR;
++    }
++    nr_images = capsule_info.nr_image;
++
++    for (uint32_t i = 0; i < nr_images; i++) {
++        image_index = get_image_info_in_bank(&capsule_info.guid[i],
++                                &image_bank_offset);
++        switch(image_index) {
++        case IMAGE_ALL:
++            rss_ret = flash_rss_capsule(&fwu_md_rss, capsule_info.image[i],
++                                       capsule_info.size[i] - SIZE_DEF_FIP_IMAGE,
++                                       capsule_info.version[i]);
++            fip_img_ptr = capsule_info.image[i] + capsule_info.size[i]
++                          - SIZE_DEF_FIP_IMAGE - sizeof(fmp_payload_header_t);
++            fip_ret = flash_fip_capsule(&fwu_md_ap, fip_img_ptr,
++                          SIZE_DEF_FIP_IMAGE, capsule_info.version[i]);
++            if (rss_ret != FWU_AGENT_SUCCESS || fip_ret != FWU_AGENT_SUCCESS) {
++                priv_metadata.fmp_last_attempt_version = capsule_info.version[i];
++                priv_metadata.fmp_last_attempt_status = LAST_ATTEMPT_STATUS_ERROR_UNSUCCESSFUL;
++                private_metadata_write(&priv_metadata);
++                fmp_set_image_info(&full_capsule_image_guid,
++                        priv_metadata.fmp_version,
++                        priv_metadata.fmp_last_attempt_version,
++                        priv_metadata.fmp_last_attempt_status);
++                ret = FWU_AGENT_ERROR;
++            } else {
++                ret = FWU_AGENT_SUCCESS;
++            }
++            break;
++        default:
++            FWU_LOG_MSG("%s: sent image not recognized\n\r", __func__);
++            ret = FWU_AGENT_ERROR;
++            break;
++        }
++    }
++
++out:
++
++    FWU_LOG_MSG("%s: exit: ret = %d\n\r", __func__, ret);
++    return ret;
++}
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c
+index 4d77e05ee..da8f474d1 100644
+--- a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c
+@@ -54,13 +54,6 @@ typedef struct {
+     uint64_t                image_capsule_support; //introduced in v3
+ } efi_firmware_management_capsule_image_header_t;
+
+-typedef struct {
+-    uint32_t                signature;
+-    uint32_t                header_size;
+-    uint32_t                fw_version;
+-    uint32_t                lowest_supported_version;
+-} fmp_payload_header_t;
+-
+ #define ANYSIZE_ARRAY 0
+
+ typedef struct {
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.h b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.h
+index 07b1247e5..0a379fe61 100644
+--- a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.h
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.h
+@@ -25,6 +25,12 @@ typedef struct capsule_image_info {
+     uint32_t version[NR_OF_IMAGES_IN_FW_BANK];
+ } capsule_image_info_t;
+
++typedef struct {
++    uint32_t                signature;
++    uint32_t                header_size;
++    uint32_t                fw_version;
++    uint32_t                lowest_supported_version;
++} fmp_payload_header_t;
+ enum uefi_capsule_error_t uefi_capsule_retrieve_images(void* capsule_ptr,
+         capsule_image_info_t* images_info);
+
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_fmp.c b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_fmp.c
+index e7a0198d3..bd4a60fcb 100644
+--- a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_fmp.c
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_fmp.c
+@@ -124,6 +124,41 @@ static void init_fmp_info(void)
+     return;
+ }
+
++enum fwu_agent_error_t fmp_set_image_info(struct efi_guid *guid,
++                     uint32_t current_version, uint32_t attempt_version,
++                     uint32_t last_attempt_status)
++{
++    enum fwu_agent_error_t status = FWU_AGENT_ERROR;
++
++    FWU_LOG_MSG("%s:%d Enter\n\r", __func__, __LINE__);
++
++    if (is_fmp_info_initialized == false) {
++        init_fmp_info();
++    }
++
++    for (int i = 0; i < NUMBER_OF_FMP_IMAGES; i++) {
++        if ((memcmp(guid, &fmp_info[i].ImageDescriptor.ImageTypeId,
++                        sizeof(struct efi_guid))) == 0)
++        {
++            FWU_LOG_MSG("FMP image update: image id = %u\n\r",
++                                    fmp_info[i].ImageDescriptor.ImageId);
++            fmp_info[i].ImageDescriptor.Version = current_version;
++            fmp_info[i].ImageDescriptor.LastAttemptVersion = attempt_version;
++            fmp_info[i].ImageDescriptor.LastAttemptStatus = last_attempt_status;
++            FWU_LOG_MSG("FMP image update: status = %u"
++                            "version=%u last_attempt_version=%u.\n\r",
++                            last_attempt_status, current_version,
++                            attempt_version);
++            status = FWU_AGENT_SUCCESS;
++            break;
++        }
++    }
++
++    FWU_LOG_MSG("%s:%d Exit.\n\r", __func__, __LINE__);
++    return status;
++}
++
++
+ #define NO_OF_FMP_VARIABLES    (NUMBER_OF_FMP_IMAGES * NO_OF_FMP_VARIABLES_PER_IMAGE)
+
+ static enum fwu_agent_error_t pack_image_info(void *buffer, uint32_t size)
+diff --git a/platform/ext/target/arm/rss/kronos/host_base_address.h b/platform/ext/target/arm/rss/kronos/host_base_address.h
+index 6202da89c..27a147adb 100644
+--- a/platform/ext/target/arm/rss/kronos/host_base_address.h
++++ b/platform/ext/target/arm/rss/kronos/host_base_address.h
+@@ -58,6 +58,7 @@
+ #define RSS_ATU_FAINLIGHT_GIC_ID        10
+ #define RSS_ATU_NI710AE_ID              11
+ #define RSS_ATU_TOWER_NCI_ID            12
++#define RSS_ATU_CAPSULE_ID              13  /* ID to use for region mapping to SI NVM flash */
+
+ /* The ATU has a minimum size and all regions are restricted to align with it */
+ #define RSS_ATU_PAGE_SIZE           0x2000U /* 8KB */
+@@ -401,4 +402,7 @@
+ /* AP Secure flash physical base address */
+ #define AP_FLASH_PHY_BASE           (0x0000000000000ULL + 0x08000000ULL)
+
++#define HOST_CAPSULE_DRAM_LOG_BASE      (AP_FLASH_LOG_BASE + AP_FLASH_SIZE)
++#define HOST_CAPSULE_DRAM_SIZE          (0x1400000)  /*20MB*/
++#define HOST_CAPSULE_DRAM_PHY_BASE      (0x81000000)
+ #endif  /* __HOST_BASE_ADDRESS_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/rss_comms/rss_comms_permissions_hal.c b/platform/ext/target/arm/rss/kronos/rss_comms/rss_comms_permissions_hal.c
+index d2a8c82d9..9727e713a 100644
+--- a/platform/ext/target/arm/rss/kronos/rss_comms/rss_comms_permissions_hal.c
++++ b/platform/ext/target/arm/rss/kronos/rss_comms/rss_comms_permissions_hal.c
+@@ -156,6 +156,7 @@ enum tfm_plat_err_t comms_permissions_service_check(psa_handle_t handle,
+         switch(type) {
+         case TFM_PLATFORM_API_ID_NV_READ:
+         case TFM_PLATFORM_API_ID_NV_INCREMENT:
++        case TFM_PLATFORM_API_ID_IOCTL:
+             return TFM_PLAT_ERR_SUCCESS;
+         default:
+             goto out_err;
+--
+2.25.1
+

@@ -1,0 +1,871 @@
+From 7d2edfec3f98d74e114e5fcf80709266a3aa2a7f Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Fri, 18 Aug 2023 10:56:40 +0800
+Subject: [PATCH] platform/rss/common: Introduce NI-710-AE APU driver
+
+The NCI interconnect in the Safety Island is the NI-710-AE, and
+the APU driver of NI-710-AE is similar as the one for NCI-Tower.
+Since there is an ongoing work of refactoring the NCI-Tower, to
+save effort of rebasing the code, add an NI-710-AE APU driver by
+duplicating the key functions of APU driver from the NCI-Tower.
+
+Upstream-Status: Pending
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ .../ext/target/arm/rss/common/CMakeLists.txt  |   1 +
+ .../rss/common/native_drivers/ni710ae_drv.c   | 445 ++++++++++++++++++
+ .../rss/common/native_drivers/ni710ae_drv.h   | 338 +++++++++++++
+ .../rss/common/native_drivers/ni710ae_reg.h   |  31 ++
+ 4 files changed, 815 insertions(+)
+ create mode 100644 platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.c
+ create mode 100644 platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.h
+ create mode 100644 platform/ext/target/arm/rss/common/native_drivers/ni710ae_reg.h
+
+diff --git a/platform/ext/target/arm/rss/common/CMakeLists.txt b/platform/ext/target/arm/rss/common/CMakeLists.txt
+index d6ce24741..4399280c6 100644
+--- a/platform/ext/target/arm/rss/common/CMakeLists.txt
++++ b/platform/ext/target/arm/rss/common/CMakeLists.txt
+@@ -256,6 +256,7 @@ target_sources(platform_bl2
+         $<$<BOOL:${RSS_DEBUG_UART}>:${PLATFORM_DIR}/ext/target/arm/drivers/usart/cmsdk/uart_cmsdk_drv.c>
+         native_drivers/lcm_drv.c
+         native_drivers/tower_nci_drv.c
++        native_drivers/ni710ae_drv.c
+         native_drivers/fainlight_gic_drv.c
+         otp_lcm.c
+         nv_counters.c
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.c b/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.c
+new file mode 100644
+index 000000000..25706477c
+--- /dev/null
++++ b/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.c
+@@ -0,0 +1,445 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++#include "ni710ae_drv.h"
++#include "ni710ae_reg.h"
++
++#include <stdio.h>
++#include <stdlib.h>
++
++#define NI710AE_TYPE_IS_DOMAIN(type)                          \
++    ((type) == NI710AE_CFGNI) || ((type) == NI710AE_VD) ||  \
++    ((type) == NI710AE_PD) || ((type) == NI710AE_CD)
++#define NI710AE_TYPE_IS_COMPONENT(type)                       \
++    ((type) == NI710AE_ASNI) || ((type) == NI710AE_AMNI) || \
++    ((type) == NI710AE_PMU) || ((type) == NI710AE_HSNI) ||  \
++    ((type) == NI710AE_HMNI) || ((type) == NI710AE_PMNI) || \
++    ((type) == NI710AE_FMU)
++#define NI710AE_TYPE_IS_SUBFEATURE(type)                      \
++    ((type) == NI710AE_APU) || ((type) == NI710AE_SAM) ||  \
++    ((type) == NI710AE_FCU) || ((type) == NI710AE_IDM) || \
++    ((type) == NI710AE_RAS)
++
++/* NI710AE Domain top registers. These are common for all domains */
++typedef struct {
++    volatile uint32_t node_type;
++    volatile uint32_t child_node_info;
++    volatile uint32_t x_pointers[];
++} ni710ae_domain_cfg_hdr;
++
++/* NI710AE Sub-feature register set. Found in component domain */
++typedef struct {
++    volatile uint32_t type;
++    volatile uint32_t pointer;
++} ni710ae_sub_feature_cfg_attr;
++
++/* NI710AE Component top registers. These are common for all components */
++typedef struct {
++    volatile uint32_t node_type;
++             uint32_t reserved_0[8];
++    volatile uint32_t num_sub_features;
++    ni710ae_sub_feature_cfg_attr sub_feature[];
++} ni710ae_component_cfg_hdr;
++
++/*
++ * APU Programming
++ */
++enum ni710ae_err_t
++ni710ae_apu_set_addr_range(struct ni710ae_apu_dev_t *dev, uint32_t region,
++                           uint64_t base_addr, uint64_t end_addr)
++{
++    struct ni710ae_apu_reg_map_t* reg = dev->base;
++    if (dev == NULL) {
++        return NI710AE_ERR_INVALID_ARG;
++    }
++
++    // Set base address
++    reg->region[region].prbar_h = base_addr >> 32;
++    reg->region[region].prbar_l = (0xFFFFFFC0 & base_addr);
++    // Set end address
++    reg->region[region].prlar_h = end_addr >> 32;
++    reg->region[region].prlar_l = (0xFFFFFFC0 & end_addr);
++
++    return NI710AE_SUCCESS;
++}
++
++enum ni710ae_err_t
++ni710ae_apu_set_access_perms(struct ni710ae_apu_dev_t *dev, uint32_t region,
++                             uint32_t permission, uint32_t id_select)
++{
++    struct ni710ae_apu_reg_map_t* reg = dev->base;
++    if (dev == NULL) {
++        return NI710AE_ERR_INVALID_ARG;
++    }
++
++    if (id_select & NCI_ID_0_SELECT) {
++        reg->region[region].prid_l =
++                    (reg->region[region].prid_l & 0xFFFF00FF) |
++                    ((permission << 8) & 0x0000FF00);
++    }
++
++    if (id_select & NCI_ID_1_SELECT) {
++        reg->region[region].prid_l =
++                    (reg->region[region].prid_l & 0x00FFFFFF) |
++                    ((permission << 24) & 0xFF000000);
++    }
++
++    if (id_select & NCI_ID_2_SELECT) {
++        reg->region[region].prid_h =
++                    (reg->region[region].prid_h & 0xFFFF00FF) |
++                    ((permission << 8) & 0x0000FF00);
++    }
++
++    if (id_select & NCI_ID_3_SELECT) {
++        reg->region[region].prid_h =
++                    (reg->region[region].prid_h & 0x00FFFFFF) |
++                    ((permission << 24) & 0xFF000000);
++    }
++
++    return NI710AE_SUCCESS;
++}
++
++enum ni710ae_err_t
++ni710ae_apu_set_lock(struct ni710ae_apu_dev_t *dev, uint32_t region,
++                     uint32_t lock)
++{
++    struct ni710ae_apu_reg_map_t* reg = dev->base;
++    if (dev == NULL) {
++        return NI710AE_ERR_INVALID_ARG;
++    }
++
++    reg->region[region].prbar_l |= (0x4 & (lock << 2));
++
++    return NI710AE_SUCCESS;
++}
++
++enum ni710ae_err_t ni710ae_apu_set_br(struct ni710ae_apu_dev_t *dev,
++                                      uint32_t region, uint32_t background)
++{
++    struct ni710ae_apu_reg_map_t* reg = dev->base;
++    if (dev == NULL) {
++        return NI710AE_ERR_INVALID_ARG;
++    }
++
++    reg->region[region].prbar_l |= (0x2 & (background << 1));
++
++    return NI710AE_SUCCESS;
++}
++
++enum ni710ae_err_t
++ni710ae_apu_set_region_enable(struct ni710ae_apu_dev_t *dev, uint32_t region)
++{
++    struct ni710ae_apu_reg_map_t* reg = dev->base;
++    if (dev == NULL) {
++        return NI710AE_ERR_INVALID_ARG;
++    }
++
++    reg->region[region].prbar_l |= 0x1;
++
++    return NI710AE_SUCCESS;
++}
++
++enum ni710ae_err_t
++ni710ae_apu_set_id_valid(struct ni710ae_apu_dev_t *dev, uint32_t region,
++                         uint32_t valid)
++{
++    struct ni710ae_apu_reg_map_t* reg = dev->base;
++    if (dev == NULL) {
++        return NI710AE_ERR_INVALID_ARG;
++    }
++
++    reg->region[region].prlar_l |= (0xF | valid);
++
++    return NI710AE_SUCCESS;
++}
++
++enum ni710ae_err_t ni710ae_apu_enable(struct ni710ae_apu_dev_t *dev)
++{
++    struct ni710ae_apu_reg_map_t* reg = dev->base;
++    if (dev == NULL) {
++        return NI710AE_ERR_INVALID_ARG;
++    }
++
++    reg->apu_ctlr |= 0x1;
++
++    return NI710AE_SUCCESS;
++}
++
++enum ni710ae_err_t
++ni710ae_apu_sync_err_enable(struct ni710ae_apu_dev_t *dev)
++{
++    struct ni710ae_apu_reg_map_t* reg = dev->base;
++    if (dev == NULL) {
++        return NI710AE_ERR_INVALID_ARG;
++    }
++
++    reg->apu_ctlr |= 0x4;
++
++    return NI710AE_SUCCESS;
++}
++
++enum ni710ae_err_t
++ni710ae_apu_assign_id(struct ni710ae_apu_dev_t *dev, uint32_t region,
++                      uint32_t id_value, uint32_t id_select)
++{
++    struct ni710ae_apu_reg_map_t* reg = dev->base;
++    if (dev == NULL) {
++        return NI710AE_ERR_INVALID_ARG;
++    }
++
++    if (id_select & NCI_ID_0_SELECT) {
++        reg->region[region].prid_l =
++                    (reg->region[region].prid_l & 0xFFFFFF00) |
++                    (id_value & 0x000000FF);
++    }
++
++    if (id_select & NCI_ID_1_SELECT) {
++        reg->region[region].prid_l =
++                    (reg->region[region].prid_l & 0xFF00FFFF) |
++                    ((id_value << 16) & 0x00FF0000);
++    }
++
++    if (id_select & NCI_ID_2_SELECT) {
++        reg->region[region].prid_h =
++                    (reg->region[region].prid_h & 0xFFFFFF00) |
++                    (id_value & 0x000000FF);
++    }
++
++    if (id_select & NCI_ID_3_SELECT) {
++        reg->region[region].prid_h =
++                    (reg->region[region].prid_h & 0xFF00FFFF) |
++                    ((id_value << 16) & 0x00FF0000);
++    }
++
++    return NI710AE_SUCCESS;
++}
++
++enum ni710ae_err_t ni710ae_apu_initialize_region(
++                        struct ni710ae_apu_dev_t *dev, uint32_t region,
++                        uint64_t base_addr, uint64_t end_addr,
++                        enum ni710ae_apu_br_type_t background,
++                        uint32_t permissions[4], uint8_t entity_ids[4],
++                        uint32_t id_valid,
++                        enum ni710ae_apu_region_enable_type_t region_enable,
++                        enum ni710ae_apu_lock_type_t lock)
++{
++    enum ni710ae_err_t err;
++    uint32_t id_idx, id_select;
++
++    if (dev == NULL) {
++        return NI710AE_ERR_INVALID_ARG;
++    }
++
++    err = ni710ae_apu_set_addr_range(dev, region, base_addr, end_addr);
++    if (err != NI710AE_SUCCESS) {
++        return err;
++    }
++
++    err = ni710ae_apu_set_br(dev, region, background);
++    if (err != NI710AE_SUCCESS) {
++        return err;
++    }
++
++    err = ni710ae_apu_set_id_valid(dev, region, id_valid);
++    if (err != NI710AE_SUCCESS) {
++        return err;
++    }
++
++    for (id_idx = 0; id_idx < 4; ++id_idx) {
++        switch (id_idx)
++        {
++        case 0: id_select = NCI_ID_0_SELECT; break;
++        case 1: id_select = NCI_ID_1_SELECT; break;
++        case 2: id_select = NCI_ID_2_SELECT; break;
++        case 3: id_select = NCI_ID_3_SELECT; break;
++        }
++
++        err = ni710ae_apu_set_access_perms(dev, region, permissions[id_idx],
++                                           id_select);
++        if (err != NI710AE_SUCCESS) {
++            return err;
++        }
++
++        err = ni710ae_apu_assign_id(dev, region, entity_ids[id_idx],
++                                      id_select);
++        if (err != NI710AE_SUCCESS) {
++            return err;
++        }
++    }
++
++    if (region_enable = NCI_REGION_ENABLE) {
++        err = ni710ae_apu_set_region_enable(dev, region);
++        if (err != NI710AE_SUCCESS) {
++            return 1;
++        }
++    }
++
++    err = ni710ae_apu_set_lock(dev, region, lock);
++    if (err != NI710AE_SUCCESS) {
++        return 1;
++    }
++    return NI710AE_SUCCESS;
++}
++
++#define PRINT_NI710AE_TREE
++#ifdef PRINT_NI710AE_TREE
++void print_ni710ae(struct ni710ae_discovery_tree_t *node, int tab) {
++    if(node == NULL)
++        return;
++
++    print(node->sibling, tab);
++
++    for (int i = 0; i < tab; ++i) {
++        printf("\t");
++    }
++    switch(node->type) {
++        case NI710AE_CFGNI: printf("CFGNI"); break;
++        case NI710AE_VD: printf("VD"); break;
++        case NI710AE_PD: printf("PD"); break;
++        case NI710AE_CD: printf("CD"); break;
++        case NI710AE_ASNI: printf("ASNI"); break;
++        case NI710AE_AMNI: printf("AMNI"); break;
++        case NI710AE_PMU: printf("PMU"); break;
++        case NI710AE_HSNI: printf("HSNI"); break;
++        case NI710AE_HMNI: printf("HMNI"); break;
++        case NI710AE_PMNI: printf("PMNI"); break;
++        case NI710AE_FMU: printf("FMU"); break;
++        case NI710AE_APU: printf("APU"); break;
++        case NI710AE_SAM: printf("SAM"); break;
++        case NI710AE_FCU: printf("FCU"); break;
++        case NI710AE_IDM: printf("IDM"); break;
++        case NI710AE_RAS: printf("RAS"); break;
++    }
++    printf("[%d] -> 0x%lx\r\n", (uint32_t)node->id, (uint32_t)node->address);
++
++    print(node->child, tab+1);
++}
++#endif
++
++/*
++ * NI710AE Discovery
++ */
++enum ni710ae_err_t ni710ae_discovery(
++                    struct ni710ae_discovery_tree_t *cfg_node,
++                    const uint32_t periph_base,
++                    uint8_t (*pruning_function)(uint16_t, uint16_t, uint16_t))
++{
++    uint16_t type = 0, id = 0;
++    uint32_t address, child_count, c_idx = 0;
++    uint32_t hdr_base = periph_base + cfg_node->address;
++
++    struct ni710ae_discovery_tree_t* node;
++    struct ni710ae_discovery_tree_t* sibling = NULL;
++
++    enum ni710ae_err_t err;
++
++    /* Fetch number of children */
++    if (NI710AE_TYPE_IS_DOMAIN(cfg_node->type)) {
++        child_count = ((ni710ae_domain_cfg_hdr *)(hdr_base))->child_node_info;
++    } else if (NI710AE_TYPE_IS_COMPONENT(cfg_node->type)) {
++        if (cfg_node == NI710AE_PMU) {
++            /* Skipping because PMU doesn't have children */
++            return NI710AE_SUCCESS;
++        }
++        child_count =
++            ((ni710ae_component_cfg_hdr *)(hdr_base))->num_sub_features;
++    } else if (NI710AE_TYPE_IS_SUBFEATURE(cfg_node->type)) {
++        return NI710AE_SUCCESS;
++    } else {
++        return NI710AE_ERR_INVALID_ARG;
++    }
++
++    for(; c_idx < child_count; ++c_idx) {
++        /* Skip discovering node based on the pruning function */
++        if ((*pruning_function)(cfg_node->type, cfg_node->id, c_idx) != 0) {
++            return NI710AE_SUCCESS;
++        }
++
++        if (NI710AE_TYPE_IS_DOMAIN(cfg_node->type)) {
++            address = ((ni710ae_domain_cfg_hdr *)hdr_base)->x_pointers[c_idx];
++            ni710ae_domain_cfg_hdr *child_hdr = periph_base + address;
++            type = child_hdr->node_type & 0xFFFF;
++            id = child_hdr->node_type >> 16;
++        } else {
++            ni710ae_component_cfg_hdr *child_hdr = periph_base +
++                                                   cfg_node->address;
++            address = child_hdr->sub_feature[c_idx].pointer;
++            switch(child_hdr->sub_feature[c_idx].type) {
++            case 0x0: type = NI710AE_APU; break;
++            case 0x1: type = NI710AE_SAM; break;
++            case 0x2: type = NI710AE_FCU; break;
++            case 0x3: type = NI710AE_IDM; break;
++            case 0x4: type = NI710AE_RAS; break;
++            default: return NI710AE_ERR;
++            }
++            id = cfg_node->id;
++        }
++        node = calloc(sizeof(struct ni710ae_discovery_tree_t), 1);
++
++        memcpy(node,
++                &(struct ni710ae_discovery_tree_t) {
++                .type = type,
++                .id = id,
++                .address = address,
++                .sibling = sibling,
++                }, sizeof(struct ni710ae_discovery_tree_t));
++        cfg_node->child = node;
++        cfg_node->children++;
++        sibling = node;
++
++        err = ni710ae_discovery(node, periph_base, pruning_function);
++        if (err != NI710AE_SUCCESS) {
++            return err;
++        }
++    }
++#ifdef PRINT_NI710AE_TREE
++    if(cfg_node->type == 0) print_ni710ae(cfg_node, 0);
++#endif
++    return NI710AE_SUCCESS;
++}
++
++uint32_t ni710ae_fetch_offset_address(struct ni710ae_discovery_tree_t *root,
++                                      uint16_t component_type,
++                                      uint16_t component_id,
++                                      uint16_t sub_feature_type)
++{
++    struct ni710ae_discovery_tree_t *node;
++    uint32_t ret_addr;
++
++    if(root == NULL) {
++        return -1;
++    }
++
++    if (root->id == component_id && root->type == component_type) {
++        node = root->child;
++        while(node != NULL) {
++            if (sub_feature_type == node->type) {
++                return node->address;
++            }
++            node = node->sibling;
++        }
++    }
++
++    ret_addr = ni710ae_fetch_offset_address(root->child, component_type,
++                                            component_id, sub_feature_type);
++    if (ret_addr != -1) {
++        return ret_addr;
++    }
++
++    return ni710ae_fetch_offset_address(root->sibling, component_type,
++                                        component_id, sub_feature_type);
++}
++
++void free_ni710ae_discovery_tree(struct ni710ae_discovery_tree_t* tree) {
++    if(tree == NULL)
++        return;
++
++    free_ni710ae_discovery_tree(tree->child);
++    free_ni710ae_discovery_tree(tree->sibling);
++    free(tree);
++}
++
++#undef APU_REGION_SELECT
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.h b/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.h
+new file mode 100644
+index 000000000..c5e292780
+--- /dev/null
++++ b/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.h
+@@ -0,0 +1,338 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#ifndef __NI710AE_DRV_H__
++#define __NI710AE_DRV_H__
++
++#include "ni710ae_reg.h"
++#include <stdint.h>
++
++/**
++ * \brief NI710AE error enumeration types
++ */
++enum ni710ae_err_t {
++    NI710AE_SUCCESS,
++    NI710AE_ERR_INVALID_ARG,
++    NI710AE_ERR
++};
++
++/**
++ * \brief NI710AE APU device structure
++ */
++struct ni710ae_apu_dev_t {
++    const uintptr_t base;
++};
++
++/**
++ * \brief NI710AE device structure
++ */
++struct ni710ae_dev_t {
++    void *const base;
++};
++
++/**
++ * \brief NI710AE Discovery tree structure
++ */
++struct ni710ae_discovery_tree_t {
++    uint16_t type;
++    uint16_t id;
++    uint32_t address;
++
++    uint32_t children;
++    struct ni710ae_discovery_tree_t *child;
++    struct ni710ae_discovery_tree_t *sibling;
++};
++
++/**
++ * \brief NI710AE Discovery prune node structure
++ */
++struct ni710ae_prune_node_t {
++    uint16_t type;
++    uint16_t id;
++};
++
++/**
++ * \brief NI710AE node type enumerations
++ */
++enum ni710ae_node_type_t {
++    // Domains
++    NI710AE_CFGNI,
++    NI710AE_VD,
++    NI710AE_PD,
++    NI710AE_CD,
++    // Components
++    NI710AE_ASNI,
++    NI710AE_AMNI,
++    NI710AE_PMU,
++    NI710AE_HSNI,
++    NI710AE_HMNI,
++    NI710AE_PMNI,
++    NI710AE_FMU = 0x61,
++    // Sub-features
++    NI710AE_APU,
++    NI710AE_SAM,
++    NI710AE_FCU,
++    NI710AE_IDM,
++    NI710AE_RAS,
++};
++
++/**
++ * \brief NI710AE APU background type enumerations
++ */
++enum ni710ae_apu_br_type_t {
++    NCI_FOREGROUND = 0x0,
++    NCI_BACKGROUND = 0x1
++};
++
++/**
++ * \brief NI710AE APU access permission type enumerations
++ */
++enum ni710ae_apu_access_perm_type_t {
++    /* As per spec */
++    NCI_N_SEC_W = 0b00000001,
++    NCI_SEC_W   = 0b00000010,
++    NCI_N_SEC_R = 0b00000100,
++    NCI_SEC_R   = 0b00001000,
++
++    NCI_N_SEC_RW = NCI_N_SEC_R | NCI_N_SEC_W,
++    NCI_SEC_RW   = NCI_SEC_R | NCI_SEC_W,
++
++    NCI_ALL_PERM = NCI_N_SEC_RW | NCI_SEC_RW
++};
++
++/**
++ * \brief NI710AE APU entity selection type enumerations
++ */
++enum ni710ae_apu_entity_type_t {
++    /* program specific values */
++    NCI_ID_0_SELECT = 0b0001,
++    NCI_ID_1_SELECT = 0b0010,
++    NCI_ID_2_SELECT = 0b0100,
++    NCI_ID_3_SELECT = 0b1000,
++    NCI_SELECT_ALL_IDS = NCI_ID_0_SELECT | NCI_ID_1_SELECT |
++                         NCI_ID_2_SELECT | NCI_ID_3_SELECT
++};
++
++/**
++ * \brief NI710AE APU entity valid type enumerations
++ */
++enum ni710ae_apu_entity_valid_type_t {
++    /* program specific values */
++    NCI_ID_0_VALID = 0b0001,
++    NCI_ID_1_VALID = 0b0010,
++    NCI_ID_2_VALID = 0b0100,
++    NCI_ID_3_VALID = 0b1000,
++    NCI_ID_VALID_ALL = NCI_ID_0_VALID | NCI_ID_1_VALID |
++                       NCI_ID_2_VALID | NCI_ID_3_VALID,
++    NCI_ID_VALID_NONE = 0,
++};
++
++/**
++ * \brief NI710AE APU lcok type enumerations
++ */
++enum ni710ae_apu_lock_type_t {
++    /* program specific values */
++    NCI_UNLOCK = 0x0,
++    NCI_LOCK = 0x1,
++};
++
++/**
++ * \brief NI710AE APU region enable type enumerations
++ */
++enum ni710ae_apu_region_enable_type_t {
++    /* program specific values */
++    NCI_REGION_DISABLE = 0x0,
++    NCI_REGION_ENABLE = 0x1,
++};
++
++/**
++ * \brief Sets NI710AE APU address range,
++ *
++ * \param[in] dev           NI710AE APU device struct \ref ni710ae_apu_dev_t
++ * \param[in] region        APU region number to be initialized
++ * \param[in] base_addr     Base address of the region
++ * \param[in] end_addr      End address of the region
++ *
++ * \return Returns error code as specified in \ref ni710ae_err_t
++ */
++enum ni710ae_err_t ni710ae_apu_set_addr_range(struct ni710ae_apu_dev_t *dev,
++                                              uint32_t region,
++                                              uint64_t base_addr,
++                                              uint64_t end_addr);
++
++/**
++ * \brief Sets NI710AE APU access permissions
++ *
++ * \param[in] dev           NI710AE APU device struct \ref ni710ae_apu_dev_t
++ * \param[in] region        APU region number to be initialized
++ * \param[in] permission    Or'ing of required access permissions
++ *                          \ref ni710ae_apu_access_perm_type_t
++ * \param[in] id_select     Or'ing of entity id's where these permission needs
++ *                          to be applied \ref ni710ae_apu_entity_type_t
++ *
++ * \return Returns error code as specified in \ref ni710ae_err_t
++ */
++enum ni710ae_err_t ni710ae_apu_set_access_perms(struct ni710ae_apu_dev_t *dev,
++                                                uint32_t region,
++                                                uint32_t permission,
++                                                uint32_t id_select);
++
++/**
++ * \brief Sets NI710AE APU lock
++ *
++ * \param[in] dev           NI710AE APU device struct \ref ni710ae_apu_dev_t
++ * \param[in] region        APU region number to be initialized
++ * \param[in] lock          Lock or Unlock an APU region \ref ni710ae_apu_lock_type_t
++ *
++ * \return Returns error code as specified in \ref ni710ae_err_t
++ */
++enum ni710ae_err_t ni710ae_apu_set_lock(struct ni710ae_apu_dev_t *dev,
++                                        uint32_t region, uint32_t lock);
++
++/**
++ * \brief Sets NI710AE APU background/foreground type for a region
++ *
++ * \param[in] dev           NI710AE APU device struct \ref ni710ae_apu_dev_t
++ * \param[in] region        APU region number to be initialized
++ * \param[in] background    Specify if the region is backgroun or a foreground
++ *                          region \ref ni710ae_apu_br_type_t
++ *
++ * \return Returns error code as specified in \ref ni710ae_err_t
++ */
++enum ni710ae_err_t ni710ae_apu_set_br(struct ni710ae_apu_dev_t *dev,
++                                      uint32_t region, uint32_t background);
++
++/**
++ * \brief Enables NI710AE APU region
++ *
++ * \param[in] dev           NI710AE APU device struct \ref ni710ae_apu_dev_t
++ * \param[in] region        APU region number to be initialized
++ *
++ * \return Returns error code as specified in \ref ni710ae_err_t
++ */
++enum ni710ae_err_t ni710ae_apu_set_region_enable(struct ni710ae_apu_dev_t *dev,
++                                                 uint32_t region);
++
++/**
++ * \brief Sets NI710AE APU id_valid for a region
++ *
++ * \param[in] dev           NI710AE APU device struct \ref ni710ae_apu_dev_t
++ * \param[in] region        APU region number to be initialized
++ * \param[in] valid         Or'ing of entity id's where these ids are valid
++ *                          \ref ni710ae_apu_entity_valid_type_t
++ *
++ * \return Returns error code as specified in \ref ni710ae_err_t
++ */
++enum ni710ae_err_t ni710ae_apu_set_id_valid(struct ni710ae_apu_dev_t *dev,
++                                            uint32_t region, uint32_t valid);
++
++/**
++ * \brief Enables NI710AE APU
++ *
++ * \param[in] dev           NI710AE APU device struct \ref ni710ae_apu_dev_t
++ *
++ * \return Returns error code as specified in \ref ni710ae_err_t
++ */
++enum ni710ae_err_t ni710ae_apu_enable(struct ni710ae_apu_dev_t *dev);
++
++/**
++ * \brief Enables NI710AE APU SLVERR response.
++ *
++ * \param[in] dev           NI710AE APU device struct \ref ni710ae_apu_dev_t
++ *
++ * \return Returns error code as specified in \ref ni710ae_err_t
++ */
++enum ni710ae_err_t ni710ae_apu_sync_err_enable(struct ni710ae_apu_dev_t *dev);
++
++/**
++ * \brief Assign custom NI710AE APU id values
++ * \param[in] dev           NI710AE APU device struct \ref ni710ae_apu_dev_t
++ * \param[in] region        APU region number to be initialized
++ * \param[in] id_value      New ID value
++ * \param[in] id_select     Specify enitity id number \ref ni710ae_apu_entity_type_t
++ *
++ * \return Returns error code as specified in \ref ni710ae_err_t
++ */
++enum ni710ae_err_t ni710ae_apu_assign_id(struct ni710ae_apu_dev_t *dev,
++                                         uint32_t region, uint32_t id_value,
++                                         uint32_t id_select);
++
++/**
++ * \brief Initialize NI710AE APU
++ *
++ * \param[in] dev           NI710AE APU device struct \ref ni710ae_apu_dev_t
++ * \param[in] region        APU region number to be initialized
++ * \param[in] base_addr     Base address of the region
++ * \param[in] end_addr      End address of the region
++ * \param[in] background    Specify if the region is backgroun or a foreground
++ *                          region \ref ni710ae_apu_br_type_t
++ * \param[in] permissions   Array of Or'ed access permissions for all entity
++ *                          \ref ni710ae_apu_access_perm_type_t
++ * \param[in] entity_ids    Array of entity ids
++ * \param[in] id_valid      Or'ing of entity id's where these ids are valid
++ *                          \ref ni710ae_apu_entity_valid_type_t
++ * \param[in] region_enable Specify if the region needs to be enabled or not.
++ *                          \ref ni710ae_apu_region_enable_type_t
++ * \param[in] lock          Lock or Unlock an APU region \ref ni710ae_apu_lock_type_t
++ *
++ * \return Returns error code as specified in \ref ni710ae_err_t
++ */
++enum ni710ae_err_t ni710ae_apu_initialize_region(
++                        struct ni710ae_apu_dev_t *dev, uint32_t region,
++                        uint64_t base_addr, uint64_t end_addr,
++                        enum ni710ae_apu_br_type_t background,
++                        uint32_t permissions[4], uint8_t entity_ids[4],
++                        uint32_t id_valid,
++                        enum ni710ae_apu_region_enable_type_t region_enable,
++                        enum ni710ae_apu_lock_type_t lock);
++
++/**
++ * \brief Executes NI710AE discovery flow
++ *
++ * \param[in] cfg_node      NI710AE Discovery struct \ref ni710ae_discovery_tree_t
++ * \param[in] periph_base   NI710AE base address, same as CFGNI0 address
++ * \param[in] pruning_function  Pointer to pruning callback function. Takes node type and
++ *                              node id respectively. Should return 1 to skip the node
++ *                              discovery, else 0
++ *
++ * \return Returns error code as specified in \ref ni710ae_err_t
++ */
++enum ni710ae_err_t
++ni710ae_discovery(struct ni710ae_discovery_tree_t *cfg_node,
++                  const uint32_t periph_base,
++                  uint8_t (*pruning_function)(uint16_t, uint16_t, uint16_t));
++
++/**
++ * \brief Fetches sub-feature base address based on the parent component ID and
++ *        type.
++ *
++ * \param[in] root              NI710AE Discovery struct root node
++ *                              \ref ni710ae_discovery_tree_t
++ * \param[in] component_type    Specify the parent component ID of the sub-feature
++ *                              \ref ni710ae_node_type_t
++ * \param[in] component_id      Specify the parent component type of the sub-feature
++ * \param[in] sub_feature_type  Specify the type of the sub-feature
++ *                              \ref ni710ae_node_type_t
++ *
++ * \return Returns error code as specified in \ref ni710ae_err_t
++ */
++uint32_t ni710ae_fetch_offset_address(struct ni710ae_discovery_tree_t *root,
++                                      uint16_t component_type,
++                                      uint16_t component_id,
++                                      uint16_t sub_feature_type);
++
++/**
++ * \brief Free the discovery tree allocated memory
++ *
++ * \param[in] tree              NI710AE Discovery struct root node
++ *                              \ref ni710ae_discovery_tree_t
++ *
++ * \return Returns error code as specified in \ref ni710ae_err_t
++ */
++void free_ni710ae_discovery_tree(struct ni710ae_discovery_tree_t* tree);
++
++#endif /* __NI710AE_DRV_H__ */
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/ni710ae_reg.h b/platform/ext/target/arm/rss/common/native_drivers/ni710ae_reg.h
+new file mode 100644
+index 000000000..27c2a5b52
+--- /dev/null
++++ b/platform/ext/target/arm/rss/common/native_drivers/ni710ae_reg.h
+@@ -0,0 +1,31 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#ifndef __NI710AE_REG_H__
++#define __NI710AE_REG_H__
++
++#include <stdint.h>
++
++/**
++ * \brief NI710AE APU register map
++ */
++struct ni710ae_apu_reg_map_t {
++    struct {
++        volatile uint32_t prbar_l;
++        volatile uint32_t prbar_h;
++        volatile uint32_t prlar_l;
++        volatile uint32_t prlar_h;
++        volatile uint32_t prid_l;
++        volatile uint32_t prid_h;
++        volatile uint32_t reserved_0[2];
++    } region[32];
++    volatile uint32_t reserved_1[766];
++    volatile uint32_t apu_ctlr;
++    volatile uint32_t apu_iidr;
++};
++
++#endif /* __NI710AE_REG_H__ */
+--
+2.25.1
+

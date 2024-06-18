@@ -1,0 +1,102 @@
+From 560e8d924085792113fffba71f451443fe5863ff Mon Sep 17 00:00:00 2001
+From: Peter Hoyes <peter.hoyes@arm.com>
+Date: Tue, 21 May 2024 17:18:25 +0100
+Subject: [PATCH] rss/kronos: Align capsule update structs
+
+U-Boot's mkeficapsule creates capsule images without packed and
+byte-aligned structs. This patch aligns the capsule-update structures and
+avoids crashes in case of unaligned pointer access.
+
+Remove the extra uint32_t padding from the fmp_capsule_header pointer,
+which isn't needed for mkeficapsule-generated capsules.
+
+Based on:
+ * https://git.trustedfirmware.org/TF-M/trusted-firmware-m/+/0b8bae4ef3db8b7ba228daef8ff42cb520c0c403
+ * https://git.yoctoproject.org/meta-arm/tree/meta-arm-bsp/recipes-bsp/trusted-firmware-m/files/corstone1000/0003-platform-corstone1000-align-capsule-update-structs.patch
+
+Upstream-Status: Pending
+Signed-off-by: Emekcan Aras <emekcan.aras@arm.com>
+Signed-off-by: Mariam Elshakfy <mariam.elshakfy@arm.com>
+Signed-off-by: Peter Hoyes <peter.hoyes@arm.com>
+---
+ .../kronos/fw_update_agent/uefi_capsule_parser.c   | 14 +++++++-------
+ .../kronos/fw_update_agent/uefi_capsule_parser.h   |  2 +-
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c
+index 4e8c7aeba..a2a67e48e 100644
+--- a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c
+@@ -34,14 +34,14 @@ typedef struct {
+     uint32_t                header_size;
+     uint32_t                flags;
+     uint32_t                capsule_image_size;
+-} efi_capsule_header_t;
++} efi_capsule_header_t __attribute__((packed, aligned(1)));
+ 
+ typedef struct {
+     uint32_t                version;
+     uint16_t                embedded_driver_count;
+     uint16_t                payload_item_count;
+     uint64_t                item_offset_list[];
+-} efi_firmware_management_capsule_header_t;
++} efi_firmware_management_capsule_header_t __attribute__((packed, aligned(1)));
+ 
+ typedef struct {
+     uint32_t                version;
+@@ -52,7 +52,7 @@ typedef struct {
+     uint32_t                update_vendorcode_size;
+     uint64_t                update_hardware_instance; //introduced in v2
+     uint64_t                image_capsule_support; //introduced in v3
+-} efi_firmware_management_capsule_image_header_t;
++} efi_firmware_management_capsule_image_header_t __attribute__((packed, aligned(1)));
+ 
+ #define ANYSIZE_ARRAY 0
+ 
+@@ -61,18 +61,18 @@ typedef struct {
+     uint16_t                wRevision;
+     uint16_t                wCertificateType;
+     uint8_t                 bCertificate[ANYSIZE_ARRAY];
+-} WIN_CERTIFICATE;
++} WIN_CERTIFICATE __attribute__((packed, aligned(1)));
+ 
+ typedef struct {
+     WIN_CERTIFICATE         hdr;
+     struct efi_guid         cert_type;
+     uint8_t                 cert_data[ANYSIZE_ARRAY];
+-} win_certificate_uefi_guid_t;
++} win_certificate_uefi_guid_t __attribute__((packed, aligned(1)));
+ 
+ typedef struct {
+     uint64_t                    monotonic_count;
+     win_certificate_uefi_guid_t   auth_info;
+-} efi_firmware_image_authentication_t;
++} efi_firmware_image_authentication_t __attribute__((packed, aligned(1)));
+ 
+ enum uefi_capsule_error_t uefi_capsule_retrieve_images(void* capsule_ptr,
+         capsule_image_info_t* images_info)
+@@ -94,7 +94,7 @@ enum uefi_capsule_error_t uefi_capsule_retrieve_images(void* capsule_ptr,
+     }
+ 
+     capsule_header = (efi_capsule_header_t*)ptr;
+-    ptr += sizeof(efi_capsule_header_t) + sizeof(uint32_t);
++    ptr += sizeof(efi_capsule_header_t);
+     fmp_capsule_header = (efi_firmware_management_capsule_header_t*)ptr;
+ 
+     fmp_payload_header = fmp_capsule_header + sizeof(*fmp_capsule_header);
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.h b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.h
+index 0a379fe61..be565d963 100644
+--- a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.h
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.h
+@@ -30,7 +30,7 @@ typedef struct {
+     uint32_t                header_size;
+     uint32_t                fw_version;
+     uint32_t                lowest_supported_version;
+-} fmp_payload_header_t;
++} fmp_payload_header_t __attribute__((packed, aligned(1)));
+ enum uefi_capsule_error_t uefi_capsule_retrieve_images(void* capsule_ptr,
+         capsule_image_info_t* images_info);
+ 
+-- 
+2.34.1
+

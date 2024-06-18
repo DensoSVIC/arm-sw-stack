@@ -1,0 +1,28 @@
+From 4e016f56dc902b7cf77b236f5e35741bf2a01011 Mon Sep 17 00:00:00 2001
+From: Ambroise Vincent <ambroise.vincent@arm.com>
+Date: Mon, 28 Aug 2023 09:16:02 +0100
+Subject: [PATCH] rss/kronos: Decrease SI CL0 LLRAM size to 2MB
+
+Revert the previous temporary increase to 4MB.
+
+Signed-off-by: Ambroise Vincent <ambroise.vincent@arm.com>
+Upstream-Status: Pending
+---
+ platform/ext/target/arm/rss/kronos/size_defs.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/platform/ext/target/arm/rss/kronos/size_defs.h b/platform/ext/target/arm/rss/kronos/size_defs.h
+index 3f6607834..4f912204b 100644
+--- a/platform/ext/target/arm/rss/kronos/size_defs.h
++++ b/platform/ext/target/arm/rss/kronos/size_defs.h
+@@ -26,6 +26,6 @@
+ #define SIZE_DEF_SCP_IMAGE          (0x80000) /* 512 KB */
+ #define SIZE_DEF_LCP_IMAGE          (0x10000) /* 64 KB */
+ #define SIZE_DEF_AP_BL2_IMAGE       (0x80000) /* 512 KB */
+-#define SIZE_DEF_SI_CL0_IMAGE       (0x400000) /* 4MB */
++#define SIZE_DEF_SI_CL0_IMAGE       (0x200000) /* 2MB */
+ #define SIZE_DEF_SI_CL1_IMAGE       (0x400000) /* 4MB */
+ #define SIZE_DEF_SI_CL2_IMAGE       (0x800000) /* 8MB */
+-- 
+2.25.1
+

@@ -1,0 +1,58 @@
+From a7883438b3bbab676ba4a1b021bde988ff55c22e Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Tue, 21 Nov 2023 14:09:20 +0000
+Subject: [PATCH] platform: Disable interrupts in stdio output string
+ function
+
+UART stdout is not designed to be reentrant.
+If there is an ongoing stdio output operation and an interrupt
+occurs which also tries to use stdio output, this causes
+an undesirable effect of either interleaved messages or even
+printing garbage data infinitely.
+
+Disable the interrupts on entering stdio_output_string and
+re-enable it before returning.
+
+Upstream-Status: Pending
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ platform/ext/common/uart_stdout.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/platform/ext/common/uart_stdout.c b/platform/ext/common/uart_stdout.c
+index ac379342b..665888b1a 100644
+--- a/platform/ext/common/uart_stdout.c
++++ b/platform/ext/common/uart_stdout.c
+@@ -21,6 +21,7 @@
+ #include "Driver_USART.h"
+ #include "target_cfg.h"
+ #include "device_cfg.h"
++#include "cmsis.h"
+ 
+ #define ASSERT_HIGH(X)  assert(X == ARM_DRIVER_OK)
+ 
+@@ -37,6 +38,8 @@ int stdio_output_string(const unsigned char *str, uint32_t len)
+ {
+     int32_t ret;
+ 
++    __disable_irq();
++
+     ret = STDIO_DRIVER.Send(str, len);
+     if (ret != ARM_DRIVER_OK) {
+         return 0;
+@@ -44,7 +47,11 @@ int stdio_output_string(const unsigned char *str, uint32_t len)
+     /* Add a busy wait after sending. */
+     while (STDIO_DRIVER.GetStatus().tx_busy);
+ 
+-    return STDIO_DRIVER.GetTxCount();
++    ret = STDIO_DRIVER.GetTxCount();
++
++    __enable_irq();
++
++    return ret;
+ }
+ 
+ /* Redirects printf to STDIO_DRIVER in case of ARMCLANG*/
+-- 
+2.25.1
+

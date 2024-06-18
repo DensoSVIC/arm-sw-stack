@@ -1,0 +1,977 @@
+From cb8207ba0dfb6fb818e40f4c203e9b2b166a8ad9 Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Thu, 21 Dec 2023 17:12:20 +0000
+Subject: [PATCH] rss/kronos: Use platform logger for Firmware Update
+
+The current logging mechanism used in Firmware Update for
+Kronos prints a large amount of messages which are not all
+necessary.
+
+Differentiate between Error, Warning, Info and Debug messages
+by using the platform logger.
+
+Upstream-Status: Pending
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ .../common/services/src/tfm_platform_system.c |  10 ++
+ .../rss/kronos/fw_update_agent/fwu_agent.c    | 117 ++++++++++--------
+ .../rss/kronos/fw_update_agent/fwu_agent.h    |  21 ++--
+ .../kronos/fw_update_agent/fwu_agent_rss.c    |  64 +++++-----
+ .../fw_update_agent/uefi_capsule_parser.c     |  12 +-
+ .../arm/rss/kronos/fw_update_agent/uefi_fmp.c |  22 ++--
+ 6 files changed, 136 insertions(+), 110 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/common/services/src/tfm_platform_system.c b/platform/ext/target/arm/rss/common/services/src/tfm_platform_system.c
+index d3975a576..3209c2e1f 100644
+--- a/platform/ext/target/arm/rss/common/services/src/tfm_platform_system.c
++++ b/platform/ext/target/arm/rss/common/services/src/tfm_platform_system.c
+@@ -8,6 +8,7 @@
+ #include "tfm_platform_system.h"
+ #include "cmsis.h"
+ #ifdef TFM_FWU_AGENT
++#include "platform_log.h"
+ #include "ioctl_requests.h"
+ #include "fwu_agent.h"
+ #include "uefi_fmp.h"
+@@ -37,8 +38,11 @@ enum tfm_platform_err_t tfm_platform_hal_ioctl(tfm_platform_ioctl_req_t request,
+     case IOCTL_FWU_FLASH_IMAGES:
+         result = fwu_flash_image();
+         if (result == FWU_AGENT_SUCCESS) {
++            INFO("[FWU]: Flashing the image succeeded.");
++            INFO("[FWU]: Performing system reset...");
+             tfm_platform_hal_system_reset();
+         } else {
++            ERROR("[FWU]: Flashing the image Failed.");
+             ret = TFM_PLATFORM_ERR_SYSTEM_ERROR;
+         }
+         break;
+@@ -46,7 +50,10 @@ enum tfm_platform_err_t tfm_platform_hal_ioctl(tfm_platform_ioctl_req_t request,
+     case IOCTL_FWU_HOST_ACK:
+         result = fwu_host_ack();
+         if (result != FWU_AGENT_SUCCESS) {
++            ERROR("[FWU]: Host acknowledging failed.");
+             ret = TFM_PLATFORM_ERR_SYSTEM_ERROR;
++        } else {
++            INFO("[FWU]: Host acknowledged.");
+         }
+         break;
+ 
+@@ -57,7 +64,10 @@ enum tfm_platform_err_t tfm_platform_hal_ioctl(tfm_platform_ioctl_req_t request,
+         }
+         result = fmp_get_image_info(out_vec[0].base, out_vec[0].len);
+         if (result != FWU_AGENT_SUCCESS) {
++            ERROR("[FWU]: Getting image info failed.");
+             ret = TFM_PLATFORM_ERR_SYSTEM_ERROR;
++        } else {
++            INFO("[FWU]: Getting image info succeeded.");
+         }
+         break;
+ 
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.c b/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.c
+index 0eb80d389..fed777078 100644
+--- a/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.c
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.c
+@@ -56,7 +56,7 @@ enum fwu_agent_error_t fwu_stage_nv_counter(enum fwu_nv_counter_index_t index,
+ {
+     struct fwu_private_metadata priv_metadata;
+ 
+-    FWU_LOG_MSG("%s: enter: index = %u, val = %u\n\r", __func__,
++    DEBUG("%s: enter: index = %u, val = %u", __func__,
+                                 index, img_security_cnt);
+ 
+     if (!is_initialized_rss) {
+@@ -64,6 +64,7 @@ enum fwu_agent_error_t fwu_stage_nv_counter(enum fwu_nv_counter_index_t index,
+     }
+ 
+     if (index > FWU_MAX_NV_COUNTER_INDEX) {
++        ERROR("%s: NV counter index is bigger than maximum index", __func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+@@ -78,7 +79,7 @@ enum fwu_agent_error_t fwu_stage_nv_counter(enum fwu_nv_counter_index_t index,
+         }
+     }
+ 
+-    FWU_LOG_MSG("%s: exit\n\r", __func__);
++    DEBUG("%s: exit", __func__);
+     return FWU_AGENT_SUCCESS;
+ }
+ 
+@@ -86,7 +87,7 @@ uint8_t bl2_get_boot_bank(void)
+ {
+     uint8_t boot_index;
+     struct fwu_private_metadata priv_metadata;
+-    FWU_LOG_MSG("%s: enter", __func__);
++    DEBUG("%s: enter", __func__);
+ 
+     if (fwu_metadata_init(FWU_RSS_FLASH_DEV, &is_initialized_rss)) {
+         FWU_ASSERT(0);
+@@ -97,7 +98,8 @@ uint8_t bl2_get_boot_bank(void)
+     }
+ 
+     boot_index = priv_metadata.boot_index;
+-    FWU_LOG_MSG("%s: exit: booting from bank = %u\r\n", __func__, boot_index);
++    INFO("%s: booting from bank = %u", __func__, boot_index);
++    DEBUG("%s: exit", __func__);
+     return boot_index;
+ }
+ 
+@@ -109,24 +111,27 @@ static enum fwu_agent_error_t erase_bank(enum FWU_METADATA_FLASH_DEV DEV_TYPE, u
+     ARM_DRIVER_FLASH *FLASH_DEV;
+     enum fwu_agent_error_t agent_ret;
+ 
+-    FWU_LOG_MSG("%s: enter\n\r", __func__);
++    DEBUG("%s: enter", __func__);
+ 
+     if ((bank_offset % FWU_METADATA_FLASH_SECTOR_SIZE) != 0) {
++        ERROR("%s: Bank offset is not a multiple of sector size", __func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+     if ((BANK_PARTITION_SIZE % FWU_METADATA_FLASH_SECTOR_SIZE) != 0) {
++        ERROR("%s: Bank partition size is not a multiple of flash sector size", __func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+     agent_ret = get_fwu_flash_and_img_num(DEV_TYPE, &FLASH_DEV, &img_num);
+     if (agent_ret != FWU_AGENT_SUCCESS) {
++        ERROR("%s: Getting FWU flash and image number failed", __func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+     sectors = BANK_PARTITION_SIZE / FWU_METADATA_FLASH_SECTOR_SIZE;
+ 
+-    FWU_LOG_MSG("%s: erasing sectors = %u, from offset = %u\n\r", __func__,
++    INFO("%s: erasing sectors = %u, from offset = %u", __func__,
+                      sectors, bank_offset);
+ 
+     for (uint32_t i = 0; i < sectors; i++) {
+@@ -137,7 +142,7 @@ static enum fwu_agent_error_t erase_bank(enum FWU_METADATA_FLASH_DEV DEV_TYPE, u
+         }
+     }
+ 
+-    FWU_LOG_MSG("%s: exit\n\r", __func__);
++    DEBUG("%s: exit", __func__);
+     return FWU_AGENT_SUCCESS;
+ }
+ 
+@@ -201,10 +206,10 @@ enum fwu_agent_error_t fwu_metadata_provision_ap(void)
+     if (ret) {
+         return ret;
+     }
+-    FWU_LOG_MSG("%s: provisioned values: active = %u, previous = %d\n\r",
++    INFO("%s: provisioned values: active = %u, previous = %d",
+              __func__, fwu_md_ap.md.active_index, fwu_md_ap.md.previous_active_index);
+ 
+-    FWU_LOG_MSG("%s: FWU METADATA PROVISIONED.\n\r", __func__);
++    DEBUG("%s: FWU METADATA PROVISIONED.", __func__);
+     return FWU_AGENT_SUCCESS;
+ }
+ 
+@@ -216,7 +221,7 @@ static enum fwu_agent_error_t flash_fip_capsule(struct fwu_metadata_ap* fwu_md_p
+     uint32_t previous_active_index;
+     uint32_t active_index;
+ 
+-    FWU_LOG_MSG("%s: enter: image = %p, size = %u, version = %u\n\r"
++    INFO("%s: enter: image = %p, size = %u, version = %u"
+                 , __func__, images, size, version);
+ 
+     if (!fwu_md_ptr || !images) {
+@@ -226,13 +231,13 @@ static enum fwu_agent_error_t flash_fip_capsule(struct fwu_metadata_ap* fwu_md_p
+     active_index = fwu_md_ptr->md.active_index;
+ 
+     if (size > FIP_BANK_PARTITION_SIZE) {
+-        FWU_LOG_MSG("ERROR: %s: size error\n\r",__func__);
++        ERROR("%s: size error",__func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+     if (version <=
+             (fwu_md_ptr->img_entry[IMAGE_0].img_props[active_index].version)) {
+-        FWU_LOG_MSG("ERROR: %s: version error\n\r",__func__);
++        ERROR("%s: version error",__func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+@@ -243,20 +248,21 @@ static enum fwu_agent_error_t flash_fip_capsule(struct fwu_metadata_ap* fwu_md_p
+         previous_active_index = BANK_0;
+         bank_offset = FIP_BANK_0_PARTITION_OFFSET;
+     } else {
+-        FWU_LOG_MSG("ERROR: %s: active_index %d\n\r",__func__,active_index);
++        ERROR("%s: active_index %d",__func__,active_index);
+         return FWU_AGENT_ERROR;
+     }
+ 
+     if (erase_bank(FWU_AP_FLASH_DEV, bank_offset)) {
++        ERROR("%s: Erasing the bank failed", __func__);
+         return FWU_AGENT_ERROR;
+     }
+-    FWU_LOG_MSG("%s: writing capsule to the flash at offset = %u...\n\r",
++    INFO("%s: writing capsule to the flash at offset = %u...",
+                       __func__, bank_offset);
+     ret = FWU_METADATA_AP_FLASH_DEV.ProgramData(bank_offset, images, size);
+     if (ret != size) {
+         return FWU_AGENT_ERROR;
+     }
+-    FWU_LOG_MSG("%s: images are written to bank offset = %u\n\r", __func__,
++    INFO("%s: images are written to bank offset = %u", __func__,
+                      bank_offset);
+ 
+     /* Change system state to trial bank state. */
+@@ -275,7 +281,7 @@ static enum fwu_agent_error_t flash_fip_capsule(struct fwu_metadata_ap* fwu_md_p
+         return ret;
+     }
+ 
+-    FWU_LOG_MSG("%s: exit\n\r", __func__);
++    DEBUG("%s: exit", __func__);
+     return FWU_AGENT_SUCCESS;
+ }
+ 
+@@ -287,7 +293,7 @@ static enum fwu_agent_error_t flash_rss_capsule(struct fwu_metadata_rss* fwu_md_
+     uint32_t previous_active_index;
+     uint32_t active_index;
+ 
+-    FWU_LOG_MSG("%s: enter: image = %p, size = %u, version = %u\n\r"
++    INFO("%s: enter: image = %p, size = %u, version = %u"
+                 , __func__, images, size, version);
+ 
+     if (!fwu_md_ptr || !images) {
+@@ -297,13 +303,13 @@ static enum fwu_agent_error_t flash_rss_capsule(struct fwu_metadata_rss* fwu_md_
+     active_index = fwu_md_ptr->md.active_index;
+ 
+     if (size > BANK_PARTITION_SIZE) {
+-        FWU_LOG_MSG("ERROR: %s: size error\n\r",__func__);
++        ERROR("%s: size error",__func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+     if (version <=
+             (fwu_md_ptr->img_entry[IMAGE_0].img_props[active_index].version)) {
+-        FWU_LOG_MSG("ERROR: %s: version error\n\r",__func__);
++        ERROR("%s: version error",__func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+@@ -314,22 +320,23 @@ static enum fwu_agent_error_t flash_rss_capsule(struct fwu_metadata_rss* fwu_md_
+         previous_active_index = BANK_0;
+         bank_offset = BANK_0_PARTITION_OFFSET;
+     } else {
+-        FWU_LOG_MSG("ERROR: %s: active_index %d\n\r",__func__,active_index);
++        ERROR("%s: active_index %d",__func__,active_index);
+         return FWU_AGENT_ERROR;
+     }
+ 
+     if (erase_bank(FWU_RSS_FLASH_DEV, bank_offset)) {
++        ERROR("%s: Erasing the bank failed", __func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+-    FWU_LOG_MSG("%s: writing capsule to the flash at offset = %u...\n\r",
++    INFO("%s: writing capsule to the flash at offset = %u...",
+                       __func__, bank_offset);
+     ret = FWU_METADATA_RSS_FLASH_DEV.ProgramData(bank_offset, images, size);
+     if (ret != size) {
+         return FWU_AGENT_ERROR;
+     }
+ 
+-    FWU_LOG_MSG("%s: images are written to bank offset = %u\n\r", __func__,
++    INFO("%s: images are written to bank offset = %u", __func__,
+                      bank_offset);
+ 
+     /* Change system state to trial bank state. */
+@@ -348,7 +355,7 @@ static enum fwu_agent_error_t flash_rss_capsule(struct fwu_metadata_rss* fwu_md_
+         return ret;
+     }
+ 
+-    FWU_LOG_MSG("%s: exit\n\r", __func__);
++    DEBUG("%s: exit", __func__);
+     return FWU_AGENT_SUCCESS;
+ }
+ 
+@@ -365,37 +372,37 @@ enum fwu_agent_error_t fwu_flash_image(void)
+     void *fip_img_ptr;
+     enum fwu_agent_error_t ret;
+ 
+-    FWU_LOG_MSG("%s: enter\n\r", __func__);
++    DEBUG("%s: enter", __func__);
+ 
+     if (!is_initialized_ap || !is_initialized_rss) {
+-        FWU_LOG_MSG("fwu flash has not been initialized!\r\n");
++        ERROR("fwu flash has not been initialized!");
+     }
+ 
+     if (metadata_read(FWU_RSS_FLASH_DEV, &fwu_md_rss.md)) {
+-        FWU_LOG_MSG("fwu read rss metadata failed!\r\n");
++        ERROR("fwu read rss metadata failed!");
+         return FWU_AGENT_ERROR;
+     }
+ 
+     if (metadata_read(FWU_AP_FLASH_DEV, &fwu_md_ap.md)) {
+-        FWU_LOG_MSG("fwu read ap metadata failed!\r\n");
++        ERROR("fwu read ap metadata failed!");
+         return FWU_AGENT_ERROR;
+     }
+ 
+     if (private_metadata_read(&priv_metadata)) {
+-        FWU_LOG_MSG("fwu read private metadata failed!\r\n");
++        ERROR("fwu read private metadata failed!");
+         return FWU_AGENT_ERROR;
+     }
+ 
+     /* Firmware update process can only start in regular state. */
+     current_state = get_fwu_agent_state(&fwu_md_rss, &priv_metadata);
+     if (current_state != FWU_AGENT_STATE_REGULAR) {
+-        FWU_LOG_MSG("fwu metadata current state is not REGULAR!\r\n");
++        ERROR("fwu metadata current state is not REGULAR!");
+         return FWU_AGENT_ERROR;
+     }
+ 
+     memset(&capsule_info, 0, sizeof(capsule_image_info_t));
+     if (uefi_capsule_retrieve_images(capsule_ptr, &capsule_info)) {
+-        FWU_LOG_MSG("fwu retrieve images failed!\r\n");
++        ERROR("fwu retrieve images failed!");
+         return FWU_AGENT_ERROR;
+     }
+     nr_images = capsule_info.nr_image;
+@@ -426,7 +433,7 @@ enum fwu_agent_error_t fwu_flash_image(void)
+             }
+             break;
+         default:
+-            FWU_LOG_MSG("%s: sent image not recognized\n\r", __func__);
++            ERROR("%s: sent image not recognized", __func__);
+             ret = FWU_AGENT_ERROR;
+             break;
+         }
+@@ -434,7 +441,7 @@ enum fwu_agent_error_t fwu_flash_image(void)
+ 
+ out:
+ 
+-    FWU_LOG_MSG("%s: exit: ret = %d\n\r", __func__, ret);
++    DEBUG("%s: exit: ret = %d", __func__, ret);
+     return ret;
+ }
+ 
+@@ -446,9 +453,10 @@ static enum fwu_agent_error_t accept_full_capsule(
+     uint32_t active_index;
+     enum fwu_agent_error_t ret;
+ 
+-    FWU_LOG_MSG("%s: enter\n\r", __func__);
++    DEBUG("%s: enter", __func__);
+ 
+     if (!fwu_md_rss) {
++        ERROR("%s: Invalid FWU metadata for RSS", __func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+@@ -487,7 +495,7 @@ static enum fwu_agent_error_t accept_full_capsule(
+         return ret;
+     }
+ 
+-    FWU_LOG_MSG("%s: exit: fwu state is changed to regular\n\r", __func__);
++    DEBUG("%s: exit: fwu state is changed to regular", __func__);
+     return FWU_AGENT_SUCCESS;
+ }
+ 
+@@ -501,11 +509,12 @@ static enum fwu_agent_error_t fwu_accept_image(struct efi_guid* guid,
+     uint32_t image_bank_offset;
+     enum fwu_agent_error_t ret;
+ 
+-    FWU_LOG_MSG("%s: enter\n\r", __func__);
++    DEBUG("%s: enter", __func__);
+ 
+     /* It is expected to receive this call only when in trial state. */
+     current_state = get_fwu_agent_state(fwu_md_rss, priv_metadata);
+     if (current_state != FWU_AGENT_STATE_TRIAL) {
++        ERROR("%s: FWU metadata current state is not TRIAL!", __func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+@@ -514,6 +523,7 @@ static enum fwu_agent_error_t fwu_accept_image(struct efi_guid* guid,
+      * call fwu_select_previous.
+      */
+     if (fwu_md_rss->md.active_index != priv_metadata->boot_index) {
++        ERROR("%s: Active index is not equal to boot index", __func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+@@ -523,12 +533,12 @@ static enum fwu_agent_error_t fwu_accept_image(struct efi_guid* guid,
+         ret = accept_full_capsule(fwu_md_rss, fwu_md_ap, priv_metadata);
+         break;
+     default:
+-        FWU_LOG_MSG("%s: sent image not recognized\n\r", __func__);
++        ERROR("%s: sent image not recognized", __func__);
+         ret = FWU_AGENT_ERROR;
+         break;
+     }
+ 
+-    FWU_LOG_MSG("%s: exit: ret = %d\n\r", __func__, ret);
++    DEBUG("%s: exit: ret = %d", __func__, ret);
+     return ret;
+ }
+ 
+@@ -541,11 +551,12 @@ static enum fwu_agent_error_t fwu_select_previous(
+     enum fwu_agent_state_t current_state;
+     uint32_t index;
+ 
+-    FWU_LOG_MSG("%s: enter\n\r", __func__);
++    DEBUG("%s: enter", __func__);
+ 
+     /* It is expected to receive this call only when in trial state. */
+     current_state = get_fwu_agent_state(fwu_md_rss, priv_metadata);
+     if (current_state != FWU_AGENT_STATE_TRIAL) {
++        ERROR("%s: FWU metadata current state is not TRIAL!", __func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+@@ -553,10 +564,11 @@ static enum fwu_agent_error_t fwu_select_previous(
+      * did not boot from previous active index.
+      */
+     if (fwu_md_rss->md.previous_active_index != priv_metadata->boot_index) {
++        ERROR("%s: Previous active index is not equal to boot index", __func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+-    FWU_LOG_MSG("%s: trial state: active index = %u, previous active = %u\n\r",
++    INFO("%s: trial state: active index = %u, previous active = %u",
+             __func__, fwu_md_rss->md.active_index, fwu_md_rss->md.previous_active_index);
+ 
+     index = fwu_md_rss->md.previous_active_index;
+@@ -604,10 +616,10 @@ static enum fwu_agent_error_t fwu_select_previous(
+         return ret;
+     }
+ 
+-    FWU_LOG_MSG("%s: in regular state by choosing previous active bank\n\r",
++    DEBUG("%s: in regular state by choosing previous active bank",
+                  __func__);
+ 
+-    FWU_LOG_MSG("%s: exit: ret = %d\n\r", __func__, ret);
++    DEBUG("%s: exit: ret = %d", __func__, ret);
+     return ret;
+ 
+ }
+@@ -653,30 +665,33 @@ static enum fwu_agent_error_t update_nv_counters(
+         err = tfm_plat_read_nv_counter(tfm_nv_counter_i,
+                         sizeof(security_cnt), (uint8_t *)&security_cnt);
+         if (err != TFM_PLAT_ERR_SUCCESS) {
++            ERROR("%s: Reading NV Counter failed", __func__);
+             return FWU_AGENT_ERROR;
+         }
+ 
+         if (priv_metadata->nv_counter[i] < security_cnt) {
++            ERROR("%s: NV counter is bigger than staged counter", __func__);
+             return FWU_AGENT_ERROR;
+         } else if (priv_metadata->nv_counter[i] > security_cnt) {
+-            FWU_LOG_MSG("%s: updaing index = %u nv counter = %u->%u\n\r",
++            INFO("%s: updaing index = %u, nv counter = %u->%u",
+                         __func__, i, security_cnt,
+                         priv_metadata->nv_counter[FWU_BL2_NV_COUNTER]);
+             err = tfm_plat_set_nv_counter(tfm_nv_counter_i,
+                                     priv_metadata->nv_counter[FWU_BL2_NV_COUNTER]);
+             if (err != TFM_PLAT_ERR_SUCCESS) {
++                ERROR("%s: Setting NV counter failed", __func__);
+                 return FWU_AGENT_ERROR;
+             }
+         }
+     }
+ 
+-    FWU_LOG_MSG("%s: exit\n\r", __func__);
++    DEBUG("%s: exit", __func__);
+     return FWU_AGENT_SUCCESS;
+ }
+ 
+ static void disable_host_ack_timer(void)
+ {
+-    FWU_LOG_MSG("%s: timer to reset is disabled\n\r", __func__);
++    DEBUG("%s: timer to reset is disabled", __func__);
+     SysTick->CTRL &= (~SysTick_CTRL_ENABLE_Msk);
+ }
+ 
+@@ -686,7 +701,7 @@ enum fwu_agent_error_t fwu_host_ack(void)
+     struct fwu_private_metadata priv_metadata;
+     enum fwu_agent_state_t current_state;
+ 
+-    FWU_LOG_MSG("%s: enter\n\r", __func__);
++    DEBUG("%s: enter", __func__);
+ 
+     if (!is_initialized_rss || !is_initialized_ap) {
+         return FWU_AGENT_ERROR;
+@@ -759,7 +774,7 @@ enum fwu_agent_error_t fwu_host_ack(void)
+ 
+ out:
+ 
+-    FWU_LOG_MSG("%s: exit: ret = %d\n\r", __func__, ret);
++    DEBUG("%s: exit: ret = %d", __func__, ret);
+     return ret;
+ }
+ 
+@@ -791,7 +806,7 @@ void host_acknowledgement_timer_to_reset(void)
+     struct fwu_private_metadata priv_metadata;
+     enum fwu_agent_state_t current_state;
+ 
+-    FWU_LOG_MSG("%s: enter\n\r", __func__);
++    DEBUG("%s: enter", __func__);
+ 
+     if (!is_initialized_rss || !is_initialized_ap) {
+         FWU_ASSERT(0);
+@@ -808,18 +823,18 @@ void host_acknowledgement_timer_to_reset(void)
+     current_state = get_fwu_agent_state(&fwu_md_rss, &priv_metadata);
+ 
+     if (current_state == FWU_AGENT_STATE_TRIAL) {
+-        FWU_LOG_MSG("%s: in trial state, starting host ack timer\n\r",
++        INFO("%s: in trial state, starting host ack timer",
+                         __func__);
+         systic_counter = 0;
+         if (SysTick_Config(SysTick_LOAD_RELOAD_Msk)) {
+-            FWU_LOG_MSG("%s: timer init failed\n\r", __func__);
++            ERROR("%s: timer init failed", __func__);
+             FWU_ASSERT(0);
+         } else {
+-            FWU_LOG_MSG("%s: timer started: seconds to expire : %u\n\r",
++            INFO("%s: timer started: seconds to expire : %u",
+                         __func__, HOST_ACK_TIMEOUT_SEC);
+         }
+     }
+ 
+-    FWU_LOG_MSG("%s: exit\n\r", __func__);
++    DEBUG("%s: exit", __func__);
+     return;
+ }
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.h b/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.h
+index 87d5f4077..5b13a9a0c 100644
+--- a/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.h
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.h
+@@ -8,22 +8,17 @@
+ #ifndef FWU_AGENT_H
+ #define FWU_AGENT_H
+ 
++#define PLAT_LOG_MODULE_NAME "FWU"
++#include "platform_log.h"
++
+ #include "Driver_Flash.h"
+ #include "uefi_capsule_parser.h"
+ 
+-#define ENABLE_FWU_AGENT_DEBUG_LOGS
+-#ifdef ENABLE_FWU_AGENT_DEBUG_LOGS
+-    #include <stdio.h>
+-    #define FWU_LOG_MSG(f_, ...) printf((f_), ##__VA_ARGS__)
+-#else
+-    #define FWU_LOG_MSG(f_, ...)
+-#endif
+-
+-#define FWU_ASSERT(_c_)                                                        \
+-                if (!(_c_)) {                                                  \
+-                    FWU_LOG_MSG("%s:%d assert hit\n\r", __func__, __LINE__);   \
+-                    while(1) {};                                               \
+-                }                                                              \
++#define FWU_ASSERT(_c_)                                       \
++    if (!(_c_)) {                                             \
++        ERROR("%s:%d Assert Hit", __func__, __LINE__);    \
++        while(1) {};                                          \
++    }                                                         \
+ 
+ /* Version used for the very first image of the device. */
+ #define FWU_IMAGE_INITIAL_VERSION 0
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent_rss.c b/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent_rss.c
+index 30e025903..f59a04517 100644
+--- a/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent_rss.c
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent_rss.c
+@@ -52,7 +52,7 @@ enum fwu_agent_error_t get_fwu_flash_and_img_num(enum FWU_METADATA_FLASH_DEV dev
+         *img_num = NR_OF_IMAGES_IN_AP_FW_BANK;
+         break;
+     default:
+-        FWU_LOG_MSG("%s: This device is not supported!\n\r", __func__);
++        ERROR("%s: This device is not supported!", __func__);
+         ret = FWU_AGENT_ERROR;
+         break;
+     }
+@@ -68,7 +68,7 @@ enum fwu_agent_state_t get_fwu_agent_state(
+ 
+     boot_index = priv_metadata_ptr->boot_index;
+ 
+-    FWU_LOG_MSG("%s: enter, boot_index=%d\n\r", __func__, boot_index);
++    INFO("%s: enter, boot_index = %d", __func__, boot_index);
+ 
+     if (boot_index != fwu_md_rss_ptr->md.active_index) {
+         return FWU_AGENT_STATE_TRIAL;
+@@ -81,7 +81,7 @@ enum fwu_agent_state_t get_fwu_agent_state(
+         }
+     }
+ 
+-    FWU_LOG_MSG("%s: exit: FWU_AGENT_STATE_REGULAR\n\r", __func__);
++    DEBUG("%s: exit: FWU_AGENT_STATE_REGULAR", __func__);
+     return FWU_AGENT_STATE_REGULAR;
+ }
+ 
+@@ -89,7 +89,7 @@ enum fwu_agent_error_t private_metadata_write(struct fwu_private_metadata* p_met
+ {
+     int32_t ret;
+ 
+-    FWU_LOG_MSG("%s: enter: boot_index = %u\n\r", __func__,
++    INFO("%s: enter: boot_index = %u", __func__,
+                         p_metadata->boot_index);
+ 
+     if (!p_metadata) {
+@@ -107,7 +107,7 @@ enum fwu_agent_error_t private_metadata_write(struct fwu_private_metadata* p_met
+         return FWU_AGENT_ERROR;
+     }
+ 
+-    FWU_LOG_MSG("%s: success\n\r", __func__);
++    DEBUG("%s: success", __func__);
+     return FWU_AGENT_SUCCESS;
+ }
+ 
+@@ -115,7 +115,7 @@ enum fwu_agent_error_t private_metadata_read(struct fwu_private_metadata* p_meta
+ {
+     int32_t ret;
+ 
+-    FWU_LOG_MSG("%s: enter\n\r", __func__);
++    DEBUG("%s: enter", __func__);
+ 
+     if (!p_metadata) {
+         return FWU_AGENT_ERROR;
+@@ -127,7 +127,7 @@ enum fwu_agent_error_t private_metadata_read(struct fwu_private_metadata* p_meta
+         return FWU_AGENT_ERROR;
+     }
+ 
+-    FWU_LOG_MSG("%s: success: boot_index = %u\n\r", __func__,
++    DEBUG("%s: success: boot_index = %u", __func__,
+                         p_metadata->boot_index);
+ 
+     return FWU_AGENT_SUCCESS;
+@@ -138,7 +138,7 @@ static enum fwu_agent_error_t metadata_validate(struct metadata *p_metadata, uin
+     uint32_t fwu_md_size;
+     uint32_t calculated_crc32;
+ 
+-    FWU_LOG_MSG("%s: enter:\n\r", __func__);
++    DEBUG("%s: enter:", __func__);
+ 
+     if (!p_metadata) {
+         return FWU_AGENT_ERROR;
+@@ -150,12 +150,12 @@ static enum fwu_agent_error_t metadata_validate(struct metadata *p_metadata, uin
+                                       fwu_md_size - sizeof(uint32_t));
+ 
+     if (p_metadata->crc_32 != calculated_crc32) {
+-        FWU_LOG_MSG("%s: failed: crc32 calculated: 0x%x, given: 0x%x\n\r", __func__,
++        WARN("%s: failed: crc32 calculated: 0x%x, given: 0x%x", __func__,
+                     calculated_crc32, p_metadata->crc_32);
+         return FWU_AGENT_ERROR;
+     }
+ 
+-    FWU_LOG_MSG("%s: success\n\r", __func__);
++    DEBUG("%s: success", __func__);
+ 
+     return FWU_AGENT_SUCCESS;
+ }
+@@ -169,7 +169,7 @@ enum fwu_agent_error_t metadata_read(enum FWU_METADATA_FLASH_DEV DEV_TYPE,
+     ARM_DRIVER_FLASH *FLASH_DEV;
+     enum fwu_agent_error_t agent_ret;
+ 
+-    FWU_LOG_MSG("%s: enter: flash addr = %u, size = %d\n\r", __func__,
++    DEBUG("%s: enter: flash addr = %u, size = %d", __func__,
+                   FWU_METADATA_REPLICA_1_OFFSET, sizeof(struct metadata));
+ 
+     if (!p_metadata) {
+@@ -178,6 +178,7 @@ enum fwu_agent_error_t metadata_read(enum FWU_METADATA_FLASH_DEV DEV_TYPE,
+ 
+     agent_ret = get_fwu_flash_and_img_num(DEV_TYPE, &FLASH_DEV, &img_num);
+     if (agent_ret != FWU_AGENT_SUCCESS) {
++        ERROR("%s: Getting FWU flash and image number failed", __func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+@@ -193,7 +194,7 @@ enum fwu_agent_error_t metadata_read(enum FWU_METADATA_FLASH_DEV DEV_TYPE,
+         return FWU_AGENT_ERROR;
+     }
+ 
+-    FWU_LOG_MSG("%s: success: active = %u, previous = %d\n\r", __func__,
++    DEBUG("%s: success: active = %u, previous = %d", __func__,
+                   p_metadata->active_index, p_metadata->previous_active_index);
+ 
+     return FWU_AGENT_SUCCESS;
+@@ -209,25 +210,28 @@ enum fwu_agent_error_t fwu_metadata_init(enum FWU_METADATA_FLASH_DEV DEV_TYPE,
+     uint8_t img_num;
+     int32_t ret;
+ 
+-    FWU_LOG_MSG("%s: enter\n\r", __func__);
++    DEBUG("%s: enter", __func__);
+ 
+     if (*is_initialized) {
+-        FWU_LOG_MSG("%s: flash had been initialized, return\n\r", __func__);
++        DEBUG("%s: flash had been initialized, return", __func__);
+         return FWU_AGENT_SUCCESS;
+     }
+ 
+     agent_ret = get_fwu_flash_and_img_num(DEV_TYPE, &FLASH_DEV, &img_num);
+     if (agent_ret != FWU_AGENT_SUCCESS) {
++        ERROR("%s: Getting FWU flash and image number failed", __func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+     fwu_md_size = sizeof(struct metadata) + img_num * sizeof(struct fwu_image_entry);
+     if (fwu_md_size > FWU_METADATA_FLASH_SECTOR_SIZE) {
++        ERROR("%s: FWU metadata size is bigger than FWU metadata flash sector size", __func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+     if (DEV_TYPE == FWU_RSS_FLASH_DEV) {
+         if (sizeof(struct fwu_private_metadata) > FWU_METADATA_FLASH_SECTOR_SIZE) {
++            ERROR("%s: FWU private metadata structure size is bigger than FWU metadata flash sector size", __func__);
+             return FWU_AGENT_ERROR;
+         }
+     }
+@@ -240,12 +244,13 @@ enum fwu_agent_error_t fwu_metadata_init(enum FWU_METADATA_FLASH_DEV DEV_TYPE,
+     flash_info = FLASH_DEV->GetInfo();
+     if (flash_info->program_unit != 1) {
+         FLASH_DEV->Uninitialize();
++        ERROR("%s: Smallest programmable unit is not one byte", __func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+     *is_initialized = 1;
+ 
+-    FWU_LOG_MSG("%s: is_initialized = %d\n\r", __func__, *is_initialized);
++    DEBUG("%s: is_initialized = %d", __func__, *is_initialized);
+ 
+     return FWU_AGENT_SUCCESS;
+ }
+@@ -259,7 +264,7 @@ enum fwu_agent_error_t metadata_write(enum FWU_METADATA_FLASH_DEV DEV_TYPE,
+     uint8_t img_num;
+     enum fwu_agent_error_t agent_ret;
+ 
+-    FWU_LOG_MSG("%s: enter: flash addr = %u, size = %d\n\r", __func__,
++    DEBUG("%s: enter: flash addr = %u, size = %d", __func__,
+                   FWU_METADATA_REPLICA_1_OFFSET, fwu_md_size);
+ 
+     if (!p_metadata) {
+@@ -268,6 +273,7 @@ enum fwu_agent_error_t metadata_write(enum FWU_METADATA_FLASH_DEV DEV_TYPE,
+ 
+     agent_ret = get_fwu_flash_and_img_num(DEV_TYPE, &FLASH_DEV, &img_num);
+     if (agent_ret != FWU_AGENT_SUCCESS) {
++        ERROR("%s: Getting FWU flash and image number failed", __func__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+@@ -284,7 +290,7 @@ enum fwu_agent_error_t metadata_write(enum FWU_METADATA_FLASH_DEV DEV_TYPE,
+         return FWU_AGENT_ERROR;
+     }
+ 
+-    FWU_LOG_MSG("%s: enter: flash addr = %u, size = %d\n\r", __func__,
++    DEBUG("%s: enter: flash addr = %u, size = %d", __func__,
+                   FWU_METADATA_REPLICA_2_OFFSET, fwu_md_size);
+ 
+     ret = FLASH_DEV->EraseSector(FWU_METADATA_REPLICA_2_OFFSET);
+@@ -298,10 +304,10 @@ enum fwu_agent_error_t metadata_write(enum FWU_METADATA_FLASH_DEV DEV_TYPE,
+         return FWU_AGENT_ERROR;
+     }
+ 
+-    FWU_LOG_MSG("%s: enter: flash addr = %u, size = %d\n\r", __func__,
++    DEBUG("%s: enter: flash addr = %u, size = %d", __func__,
+                   FWU_METADATA_REPLICA_2_OFFSET, fwu_md_size);
+ 
+-    FWU_LOG_MSG("%s: success: active = %u, previous = %d\n\r", __func__,
++    DEBUG("%s: success: active = %u, previous = %d", __func__,
+                   p_metadata->active_index, p_metadata->previous_active_index);
+     return FWU_AGENT_SUCCESS;
+ }
+@@ -313,7 +319,7 @@ void bl1_get_active_bl2_image(uint32_t *offset)
+     uint32_t boot_attempted;
+     uint32_t boot_index;
+ 
+-    FWU_LOG_MSG("%s: enter\n\r", __func__);
++    DEBUG("%s: enter", __func__);
+ 
+     if(fwu_metadata_init(FWU_RSS_FLASH_DEV, &is_initialized_rss)) {
+         FWU_ASSERT(0);
+@@ -335,19 +341,19 @@ void bl1_get_active_bl2_image(uint32_t *offset)
+         boot_attempted = 0;
+     } else if (current_state == FWU_AGENT_STATE_TRIAL) {
+         boot_attempted = (++priv_metadata.boot_attempted);
+-        FWU_LOG_MSG("%s: attempting boot number = %u\n\r",
++        INFO("%s: attempting boot number = %u",
+                                         __func__, boot_attempted);
+         if (boot_attempted <= MAX_BOOT_ATTEMPTS_PER_BANK) {
+             boot_index = fwu_md_rss.md.active_index;
+-            FWU_LOG_MSG("%s: booting from trial bank: %u\n\r",
++            INFO("%s: booting from trial bank: %u",
+                                         __func__, boot_index);
+         } else if (boot_attempted <= (2 * MAX_BOOT_ATTEMPTS_PER_BANK)) {
+             boot_index = fwu_md_rss.md.previous_active_index;
+-            FWU_LOG_MSG("%s: gave up booting from trial bank\n\r", __func__);
+-            FWU_LOG_MSG("%s: booting from previous active bank: %u\n\r",
++            WARN("%s: gave up booting from trial bank", __func__);
++            WARN("%s: booting from previous active bank: %u",
+                                         __func__, boot_index);
+         } else {
+-            FWU_LOG_MSG("FWU: cannot boot system from any bank, halting...\n\r");
++            ERROR("FWU: cannot boot system from any bank, halting...");
+             FWU_ASSERT(0);
+         }
+     } else {
+@@ -367,7 +373,7 @@ void bl1_get_active_bl2_image(uint32_t *offset)
+         FWU_ASSERT(0);
+     }
+ 
+-    FWU_LOG_MSG("%s: exit: booting from bank = %u, offset = 0x%x\n\r", __func__,
++    INFO("%s: exit: booting from bank = %u, offset = 0x%x", __func__,
+                         boot_index, *offset);
+     return;
+ }
+@@ -426,7 +432,7 @@ enum fwu_agent_error_t fwu_metadata_provision_rss(void)
+     if (ret) {
+         return ret;
+     }
+-    FWU_LOG_MSG("%s: provisioned values: active = %u, previous = %d\n\r",
++    INFO("%s: provisioned values: active = %u, previous = %d",
+              __func__, fwu_md_rss.md.active_index, fwu_md_rss.md.previous_active_index);
+ 
+     /* Provision Private metadata for update agent which is shared
+@@ -450,9 +456,9 @@ enum fwu_agent_error_t fwu_metadata_provision_rss(void)
+     if (ret) {
+         return ret;
+     }
+-    FWU_LOG_MSG("%s: provisioned values: boot_index = %u\n\r", __func__,
++    DEBUG("%s: provisioned values: boot_index = %u", __func__,
+                         priv_metadata.boot_index);
+ 
+-    FWU_LOG_MSG("%s: FWU METADATA PROVISIONED.\n\r", __func__);
++    DEBUG("%s: FWU METADATA PROVISIONED.", __func__);
+     return FWU_AGENT_SUCCESS;
+ }
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c
+index da8f474d1..4e8c7aeba 100644
+--- a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c
+@@ -87,7 +87,7 @@ enum uefi_capsule_error_t uefi_capsule_retrieve_images(void* capsule_ptr,
+     uint32_t image_count;
+     uint32_t auth_size;
+ 
+-    FWU_LOG_MSG("%s: enter, capsule ptr = 0x%p\n\r", __func__, capsule_ptr);
++    INFO("%s: enter, capsule ptr = 0x%p", __func__, capsule_ptr);
+ 
+     if (!capsule_ptr) {
+         return UEFI_CAPSULE_PARSER_ERROR;
+@@ -103,7 +103,7 @@ enum uefi_capsule_error_t uefi_capsule_retrieve_images(void* capsule_ptr,
+     image_count = fmp_capsule_header->payload_item_count;
+     images_info->nr_image = image_count;
+ 
+-    FWU_LOG_MSG("%s: capsule size = %u, image count = %u\n\r", __func__,
++    INFO("%s: capsule size = %u, image count = %u", __func__,
+                         total_size, image_count);
+ 
+     if ((image_count == 0) || (image_count > NR_OF_IMAGES_IN_FW_BANK)) {
+@@ -117,7 +117,7 @@ enum uefi_capsule_error_t uefi_capsule_retrieve_images(void* capsule_ptr,
+ 
+         images_info->size[i] = image_header->update_image_size;
+         images_info->version[i] = fmp_payload_header->fw_version;
+-        FWU_LOG_MSG("%s: image %i version = %u\n\r", __func__, i,
++        INFO("%s: image %i, version = %u", __func__, i,
+                                 images_info->version[i]);
+ #ifdef AUTHENTICATED_CAPSULE
+         image_auth = (efi_firmware_image_authentication_t*)(
+@@ -128,7 +128,7 @@ enum uefi_capsule_error_t uefi_capsule_retrieve_images(void* capsule_ptr,
+                     image_auth->auth_info.hdr.dwLength /* WIN_CERTIFICATE + cert_data */ +
+                     sizeof(struct efi_guid) /* cert_type */;
+ 
+-        FWU_LOG_MSG("%s: auth size = %u\n\r", __func__, auth_size);
++        INFO("%s: auth size = %u", __func__, auth_size);
+ 
+         images_info->size[i] -= auth_size;
+ 
+@@ -145,7 +145,7 @@ enum uefi_capsule_error_t uefi_capsule_retrieve_images(void* capsule_ptr,
+         memcpy(&images_info->guid[i], &(image_header->update_image_type_id),
+                                                         sizeof(struct efi_guid));
+ 
+-        FWU_LOG_MSG("%s: image %d at %p, size=%u\n\r", __func__, i,
++        INFO("%s: image %d at %p, size=%u", __func__, i,
+                         images_info->image[i], images_info->size[i]);
+ 
+         if ((fmp_capsule_header->item_offset_list[i] +
+@@ -157,6 +157,6 @@ enum uefi_capsule_error_t uefi_capsule_retrieve_images(void* capsule_ptr,
+ 
+     }
+ 
+-    FWU_LOG_MSG("%s: exit\n\r", __func__);
++    DEBUG("%s: exit", __func__);
+     return UEFI_CAPSULE_PARSER_SUCCESS;
+ }
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_fmp.c b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_fmp.c
+index bd4a60fcb..b3119eef9 100644
+--- a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_fmp.c
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_fmp.c
+@@ -130,7 +130,7 @@ enum fwu_agent_error_t fmp_set_image_info(struct efi_guid *guid,
+ {
+     enum fwu_agent_error_t status = FWU_AGENT_ERROR;
+ 
+-    FWU_LOG_MSG("%s:%d Enter\n\r", __func__, __LINE__);
++    DEBUG("%s:%d Enter", __func__, __LINE__);
+ 
+     if (is_fmp_info_initialized == false) {
+         init_fmp_info();
+@@ -140,13 +140,13 @@ enum fwu_agent_error_t fmp_set_image_info(struct efi_guid *guid,
+         if ((memcmp(guid, &fmp_info[i].ImageDescriptor.ImageTypeId,
+                         sizeof(struct efi_guid))) == 0)
+         {
+-            FWU_LOG_MSG("FMP image update: image id = %u\n\r",
++            INFO("FMP image update: image id = %u",
+                                     fmp_info[i].ImageDescriptor.ImageId);
+             fmp_info[i].ImageDescriptor.Version = current_version;
+             fmp_info[i].ImageDescriptor.LastAttemptVersion = attempt_version;
+             fmp_info[i].ImageDescriptor.LastAttemptStatus = last_attempt_status;
+-            FWU_LOG_MSG("FMP image update: status = %u"
+-                            "version=%u last_attempt_version=%u.\n\r",
++            INFO("FMP image update: status = %u, "
++                            "version=%u, last_attempt_version=%u.",
+                             last_attempt_status, current_version,
+                             attempt_version);
+             status = FWU_AGENT_SUCCESS;
+@@ -154,7 +154,7 @@ enum fwu_agent_error_t fmp_set_image_info(struct efi_guid *guid,
+         }
+     }
+ 
+-    FWU_LOG_MSG("%s:%d Exit.\n\r", __func__, __LINE__);
++    DEBUG("%s:%d Exit.", __func__, __LINE__);
+     return status;
+ }
+ 
+@@ -177,7 +177,7 @@ static enum fwu_agent_error_t pack_image_info(void *buffer, uint32_t size)
+     int size_requirement_2 = 0;
+ 
+     if (size < current_size) {
+-        FWU_LOG_MSG("%s:%d Buffer too small.\n\r", __func__, __LINE__);
++        ERROR("%s:%d Buffer too small.", __func__, __LINE__);
+         return FWU_AGENT_ERROR;
+     }
+ 
+@@ -200,12 +200,12 @@ static enum fwu_agent_error_t pack_image_info(void *buffer, uint32_t size)
+        current_size += size_requirement_1 + size_requirement_2;
+ 
+        if (size < current_size) {
+-           FWU_LOG_MSG("%s:%d Buffer too small.\n\r", __func__, __LINE__);
++           ERROR("%s:%d Buffer too small.", __func__, __LINE__);
+            return FWU_AGENT_ERROR;
+        }
+ 
+-       FWU_LOG_MSG("%s:%d ImageInfo size = %u, ImageName size = %u, "
+-               "ImageVersionName size = %u\n\r", __func__, __LINE__,
++       INFO("%s:%d ImageInfo size = %u, ImageName size = %u, "
++               "ImageVersionName size = %u", __func__, __LINE__,
+                sizeof(EFI_FIRMWARE_IMAGE_DESCRIPTOR), fmp_info[i].ImageNameSize,
+                fmp_info[i].ImageVersionNameSize);
+ 
+@@ -229,11 +229,11 @@ enum fwu_agent_error_t fmp_get_image_info(void *buffer, uint32_t size)
+ {
+     enum fwu_agent_error_t status;
+ 
+-    FWU_LOG_MSG("%s:%d Enter\n\r", __func__, __LINE__);
++    DEBUG("%s:%d Enter", __func__, __LINE__);
+ 
+     status = pack_image_info(buffer, size);
+ 
+-    FWU_LOG_MSG("%s:%d Exit\n\r", __func__, __LINE__);
++    DEBUG("%s:%d Exit", __func__, __LINE__);
+ 
+     return status;
+ }
+-- 
+2.25.1
+

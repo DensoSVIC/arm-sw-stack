@@ -1,0 +1,824 @@
+From f532dac4d91164085a9c5c80474f4a747af0308f Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Mon, 28 Aug 2023 14:52:03 +0800
+Subject: [PATCH] platform/rss/kronos: Add Kronos board specific NI-710-AE
+ driver
+
+Refer to the Kronos Safety Island Architecture Specification,
+use the NI-710-AE APU driver to configure the APUs from the
+NI-710-AE interconnect.
+
+The APU configuration is supposed to be two stages, i.e. the
+boot time configuration where RSS/SCP is able to only see the
+interfaces that they are supposed to touch. After the Safety Island
+images are loaded, switch to the runtime APU configuration where
+interfaces of Safety Island clusters are isolated.
+
+Upstream-Status: Pending
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ .../ext/target/arm/rss/kronos/CMakeLists.txt  |   1 +
+ .../target/arm/rss/kronos/bl2/boot_hal_bl2.c  |  58 ++
+ .../target/arm/rss/kronos/host_base_address.h |   6 +
+ .../ext/target/arm/rss/kronos/ni710ae_lib.c   | 621 ++++++++++++++++++
+ .../ext/target/arm/rss/kronos/ni710ae_lib.h   |  26 +
+ 5 files changed, 712 insertions(+)
+ create mode 100644 platform/ext/target/arm/rss/kronos/ni710ae_lib.c
+ create mode 100644 platform/ext/target/arm/rss/kronos/ni710ae_lib.h
+
+diff --git a/platform/ext/target/arm/rss/kronos/CMakeLists.txt b/platform/ext/target/arm/rss/kronos/CMakeLists.txt
+index 428a647d9..d306ea16f 100644
+--- a/platform/ext/target/arm/rss/kronos/CMakeLists.txt
++++ b/platform/ext/target/arm/rss/kronos/CMakeLists.txt
+@@ -110,6 +110,7 @@ target_sources(platform_bl2
+         ${PLATFORM_DIR}/ext/target/arm/drivers/usart/pl011/uart_pl011_drv.c
+         tfm_interrupts.c
+         tower_nci_lib.c
++        ni710ae_lib.c
+         fainlight_gic_lib.c
+         ${PLATFORM_DIR}/ext/target/arm/drivers/flash/strata/spi_strataflashj3_flash_lib.c
+ )
+diff --git a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+index ba6b80e05..dab628636 100644
+--- a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
++++ b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+@@ -28,6 +28,7 @@
+ #include "tfm_boot_status.h"
+ #include "tfm_plat_defs.h"
+ #include "tower_nci_lib.h"
++#include "ni710ae_lib.h"
+ #include "fainlight_gic_lib.h"
+ #ifdef CRYPTO_HW_ACCELERATOR
+ #include "crypto_hw.h"
+@@ -280,6 +281,52 @@ int32_t tower_nci_sysctrl_init(void)
+     return 0;
+ }
+
++int32_t program_si_ni710ae(bool is_boot_time)
++{
++    enum atu_error_t atu_err;
++    enum atu_roba_t roba_value;
++    uint32_t err;
++
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_NI710AE_ATU_ID,
++                                    HOST_NI710AE_BASE,
++                                    (HOST_REMOTE_CHIP_PERIPH_OFFSET(chip_id) +
++                                     HOST_NI710AE_PHYS_BASE),
++                                    HOST_NI710AE_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    roba_value = ATU_ROBA_SET_0;
++    atu_err = set_axnsc(&ATU_DEV_S, roba_value, HOST_NI710AE_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        printf("BL2: Unable to modify AxNSE");
++        return atu_err;
++    }
++
++    roba_value = ATU_ROBA_SET_0;
++    atu_err = set_axprot1(&ATU_DEV_S, roba_value, HOST_NI710AE_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        printf("BL2: Unable to modify AxPROT1");
++        return atu_err;
++    }
++
++    err = program_si_ni710ae_apu(HOST_NI710AE_BASE,
++                                 HOST_REMOTE_CHIP_PERIPH_OFFSET(chip_id),
++                                 is_boot_time);
++    if (err != 0) {
++        printf("BL2: Error programming Safety Island NI710AE");
++        return 1;
++    }
++
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_NI710AE_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    return 0;
++}
++
+ int32_t tower_nci_periph_init(void) {
+     enum atu_error_t atu_err;
+     enum atu_roba_t roba_value;
+@@ -334,6 +381,11 @@ int32_t boot_platform_init(void)
+         return 1;
+     }
+
++    result = program_si_ni710ae(true);
++    if (result != ARM_DRIVER_OK) {
++        return 1;
++    }
++
+     result = gic_multiple_view_init();
+     if (result != ARM_DRIVER_OK) {
+         return 1;
+@@ -1177,6 +1229,7 @@ static int boot_platform_post_load_si_cl2(void)
+ {
+     enum atu_error_t atu_err;
+     enum mhu_v3_x_error_t mhu_error;
++    int32_t result;
+
+     BOOT_LOG_INF("BL2: SI CL2 post load start");
+
+@@ -1207,6 +1260,11 @@ static int boot_platform_post_load_si_cl2(void)
+         return 1;
+     }
+
++    result = program_si_ni710ae(false);
++    if (result != ARM_DRIVER_OK) {
++        return 1;
++    }
++
+     BOOT_LOG_INF("BL2: SI CL2 post load complete");
+
+     return 0;
+diff --git a/platform/ext/target/arm/rss/kronos/host_base_address.h b/platform/ext/target/arm/rss/kronos/host_base_address.h
+index c1322a07d..48f3a9982 100644
+--- a/platform/ext/target/arm/rss/kronos/host_base_address.h
++++ b/platform/ext/target/arm/rss/kronos/host_base_address.h
+@@ -55,6 +55,7 @@
+                                                */
+ /* ID to use for region mapping to GIC fainlight MMIO pages. */
+ #define RSS_ATU_FAINLIGHT_GIC_ID        10
++#define RSS_ATU_NI710AE_ID              11
+ #define RSS_ATU_TOWER_NCI_ID            12
+
+ /* The ATU has a minimum size and all regions are restricted to align with it */
+@@ -263,6 +264,11 @@
+ #define HOST_PERIPH_TOWER_NCI_SIZE         0x1000000
+ #define HOST_PERIPH_TOWER_NCI_ATU_ID       RSS_ATU_TOWER_NCI_ID
+
++/* ATU region mapping to access NI710AE */
++#define HOST_NI710AE_BASE         (HOST_SYSCTRL_TOWER_NCI_BASE + HOST_SYSCTRL_TOWER_NCI_SIZE)
++#define HOST_NI710AE_PHYS_BASE    (HOST_SI_PHYS_BASE + 0x00002A000000ULL)
++#define HOST_NI710AE_SIZE         0x100000
++#define HOST_NI710AE_ATU_ID       RSS_ATU_NI710AE_ID
+ /*
+  * ATU region for AP<->RSS MHU outband message buffer
+  * HOST_AP_RSS_MAILBOX_BASE_S: Logical address at which the RSS should access
+diff --git a/platform/ext/target/arm/rss/kronos/ni710ae_lib.c b/platform/ext/target/arm/rss/kronos/ni710ae_lib.c
+new file mode 100644
+index 000000000..15e49c0bf
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/ni710ae_lib.c
+@@ -0,0 +1,621 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++#include "bootutil/bootutil_log.h"
++#include "ni710ae_drv.h"
++#include "ni710ae_lib.h"
++#include "host_device_definition.h"
++
++#include <stddef.h>
++
++#define APU_TUPLE(cfg, type, id)                                              \
++    {                                                                         \
++        .apu = {.base = nci_addr + ni710ae_fetch_offset_address(dis_tree, \
++                                            type, id, NI710AE_APU) },     \
++        .region_count = sizeof(cfg) / sizeof(struct apu_region_cfgs),         \
++        .regions = cfg,                                                       \
++    }
++
++/* Interface ID of xSNI components */
++enum si_xSNI_ids {
++    SI_ASNI_CLUSTER0_MM_ID,
++    SI_ASNI_CLUSTER0_SPP_ID,
++    SI_ASNI_CLUSTER1_MM_ID,
++    SI_ASNI_CLUSTER1_SPP_ID,
++    SI_ASNI_CLUSTER2_MM_ID,
++    SI_ASNI_CLUSTER2_SPP_ID,
++    SI_ASNI_DMA_IO0_ID,
++    SI_ASNI_DMA_IO1_ID,
++    SI_ASNI_DMA_IO2_ID,
++    SI_ASNI_ETHERNET_DATA0_ID,
++    SI_ASNI_ETHERNET_DATA1_ID,
++    SI_ASNI_IO_EXTENSION_ID,
++    SI_ASNI_PC_SHRD_ID,
++    SI_ASNI_RSS_MM_ID,
++    SI_ASNI_RSS_PP_ID,
++};
++
++/* Interface ID of xMNI components */
++enum si_xMNI_ids {
++    SI_AMNI_CLUSTER0_ACEL_ID,
++    SI_AMNI_CLUSTER0_UTILITY_ID,
++    SI_AMNI_CLUSTER1_ACEL_ID,
++    SI_AMNI_CLUSTER1_UTILITY_ID,
++    SI_AMNI_CLUSTER2_ACEL_ID,
++    SI_AMNI_CLUSTER2_UTILITY_ID,
++    SI_AMNI_ETHERNET_CTRL0_ID,
++    SI_AMNI_ETHERNET_CTRL1_ID,
++    SI_AMNI_GIC_SI_ID,
++    SI_AMNI_PCMA0_ID,
++    SI_AMNI_PCMA1_ID,
++    SI_AMNI_PCPA0_ID,
++    SI_AMNI_PCPA1_ID,
++    SI_AMNI_QSPI_ID,
++    SI_AMNI_SRAM0_ID,
++    SI_AMNI_SRAM1_ID,
++    SI_AMNI_SRAM_SHRD_ID,
++};
++
++/* APU region config structure */
++struct apu_region_cfgs {
++    uint64_t base_addr;
++    uint64_t end_addr;
++    uint32_t br;
++    uint32_t perms;
++    uint32_t region;
++};
++
++/* APU config structure */
++struct apu_cfgs {
++    struct ni710ae_apu_dev_t apu;
++    int region_count;
++    struct apu_region_cfgs* regions;
++};
++
++uint32_t program_ni710ae_apu_table(struct apu_cfgs apu_table[],
++                                   int apu_table_count)
++{
++    enum ni710ae_err_t err = 0;
++    struct apu_region_cfgs* r_map;
++    uint32_t a_idx, r_idx, id_idx;
++    uint8_t entity_ids[4] = { 0, 0, 0, 0 };
++
++    for (a_idx = 0; a_idx < apu_table_count; ++a_idx) {
++        for (r_idx = 0; r_idx < apu_table[a_idx].region_count; ++r_idx) {
++            r_map = &apu_table[a_idx].regions[r_idx];
++            uint32_t permissions[4] = { r_map->perms, 0, 0, 0 };
++            err = ni710ae_apu_initialize_region(&apu_table[a_idx].apu,
++                                                r_map->region,
++                                                r_map->base_addr,
++                                                r_map->end_addr, r_map->br,
++                                                permissions, entity_ids,
++                                                NCI_ID_VALID_NONE,
++                                                NCI_REGION_ENABLE,
++                                                NCI_UNLOCK);
++            if (err != NI710AE_SUCCESS) {
++                return 1;
++            }
++        }
++
++        err = ni710ae_apu_sync_err_enable(&apu_table[a_idx].apu);
++        if (err != NI710AE_SUCCESS) {
++            return 1;
++        }
++        err = ni710ae_apu_enable(&apu_table[a_idx].apu);
++        if (err != NI710AE_SUCCESS) {
++            return 1;
++        }
++    }
++
++    return err;
++}
++
++/* Program boot time APU for the platform System Control NI710AE */
++static uint32_t
++program_si_apu_boot_time(struct ni710ae_discovery_tree_t* dis_tree,
++                         uint64_t nci_addr, uint64_t chip_addr_offset)
++{
++    struct apu_region_cfgs asni_rss_mm[] = {
++        /* GIC View 0 */
++        { 0x30000000, 0x303FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++        /* NCI CFG space */
++        { 0x2A000000, 0x2A0FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 1, },
++        /* cluster0_acel */
++        { 0x110000000, 0x12FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 2, },
++        /* cluster1_acel */
++        { 0x130000000, 0x14FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 3, },
++        /* cluster2_acel */
++        { 0x150000000, 0x16FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 4, },
++        /* cluster0_utility */
++        { 0x28000000, 0x283FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 5, },
++        /* cluster1_utility */
++        { 0x28400000, 0x287FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 6, },
++        /* cluster2_utility */
++        { 0x28800000, 0x28BFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 7, },
++        /* qspi */
++        { 0x60000000, 0x7FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 8, },
++        /* base_periphs */
++        /* sysctrl */
++        { 0x2A6A0000, 0x2A6CFFFF, NCI_FOREGROUND, NCI_SEC_RW, 11, },
++        /* gcounter_ctrl */
++        { 0x2A6D0000, 0x2A6DFFFF, NCI_FOREGROUND, NCI_SEC_RW, 12, },
++        /* gcounter_read */
++        { 0x2A6E0000, 0x2A6EFFFF, NCI_FOREGROUND, NCI_SEC_RW, 13, },
++        /* timer_ctrl */
++        { 0x2A6F0000, 0x2A6FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 14, },
++        /* si_fmu */
++        { 0x2A510000, 0x2A51FFFF, NCI_FOREGROUND, NCI_SEC_RW, 15, },
++        /* nci_fmu */
++        { 0x2A520000, 0x2A52FFFF, NCI_FOREGROUND, NCI_SEC_RW, 16, },
++        /* gic_fmu */
++        { 0x2A530000, 0x2A53FFFF, NCI_FOREGROUND, NCI_SEC_RW, 17, },
++        /* pc_gic_fmu */
++        { 0x2A570000, 0x2A57FFFF, NCI_FOREGROUND, NCI_SEC_RW, 18, },
++        /* ssu */
++        { 0x2A500000, 0x2A50FFFF, NCI_FOREGROUND, NCI_SEC_RW, 19, },
++        /* pc_bist0 */
++        { 0x2B200000, 0x2B20FFFF, NCI_FOREGROUND, NCI_SEC_RW, 20, },
++        /* pc_bist1 */
++        { 0x2B210000, 0x2B21FFFF, NCI_FOREGROUND, NCI_SEC_RW, 21, },
++        /* pc_pik */
++        { 0x2A640000, 0x2A64FFFF, NCI_FOREGROUND, NCI_SEC_RW, 22, },
++    };
++
++    struct apu_region_cfgs asni_rss_pp[] = {
++        { 0x000000000000, 0xFFFFFFFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_cluster0_acel[] = {
++        { 0x110000000, 0x12FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_cluster0_utility[] = {
++        { 0x28000000, 0x283FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_cluster1_acel[] = {
++        { 0x130000000, 0x14FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_cluster1_utility[] = {
++        { 0x28400000, 0x287FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_cluster2_acel[] = {
++        { 0x150000000, 0x16FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_cluster2_utility[] = {
++        { 0x28800000, 0x28BFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_gic_si[] = {
++        { 0x30000000, 0x30FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_qspi[] = {
++        { 0x60000000, 0x7FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_cfgs apu_table[] = {
++        APU_TUPLE(asni_rss_mm, NI710AE_ASNI, SI_ASNI_RSS_MM_ID),
++        APU_TUPLE(asni_rss_pp, NI710AE_ASNI, SI_ASNI_RSS_PP_ID),
++        APU_TUPLE(amni_cluster0_acel, NI710AE_AMNI, SI_AMNI_CLUSTER0_ACEL_ID),
++        APU_TUPLE(amni_cluster0_utility, NI710AE_AMNI, SI_AMNI_CLUSTER0_UTILITY_ID),
++        APU_TUPLE(amni_cluster1_acel, NI710AE_AMNI, SI_AMNI_CLUSTER1_ACEL_ID),
++        APU_TUPLE(amni_cluster1_utility, NI710AE_AMNI, SI_AMNI_CLUSTER1_UTILITY_ID),
++        APU_TUPLE(amni_cluster2_acel, NI710AE_AMNI, SI_AMNI_CLUSTER2_ACEL_ID),
++        APU_TUPLE(amni_cluster2_utility, NI710AE_AMNI, SI_AMNI_CLUSTER2_UTILITY_ID),
++        APU_TUPLE(amni_gic_si, NI710AE_AMNI, SI_AMNI_GIC_SI_ID),
++        APU_TUPLE(amni_qspi, NI710AE_AMNI, SI_AMNI_QSPI_ID),
++    };
++
++    if (program_ni710ae_apu_table(apu_table, sizeof(apu_table) /
++                                             sizeof(struct apu_cfgs)) != 0) {
++        return 1;
++    }
++
++    BOOT_LOG_INF("Safety Island boot time APU programming done");
++
++    return 0;
++}
++
++/* Program runtime APU for the platform System Control NI710AE */
++static uint32_t
++program_si_apu_runtime(struct ni710ae_discovery_tree_t* dis_tree,
++                       uint64_t nci_addr, uint64_t chip_addr_offset)
++{
++    struct apu_region_cfgs asni_cluster0_mm[] = {
++        /* GIC View 1 (Cluster 0) */
++        { 0x30400000, 0x307FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++        /* PCMA<n> */
++        { 0x10000000, 0x17FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 1, },
++        { 0x80000000, 0x80FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 2, },
++        /* PCPA<n> */
++        { 0x18000000, 0x1FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 3, },
++        { 0x20000000, 0x27FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 4, },
++        /* SRAM0 */
++        { 0x40000000, 0x47FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 5, },
++        /* SRAM1 */
++        { 0x48000000, 0x4FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 6, },
++        /* ethernet_ctrl_0 */
++        { 0x8100000, 0x81FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 7, },
++        /* ethernet_ctrl_1 */
++        { 0x8200000, 0x82FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 8, },
++        /* pc_shrd */
++        { 0x200000000, 0x2000FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 9, },
++        /* base_periphs */
++        /* sysctrl */
++        { 0x2A6A0000, 0x2A6CFFFF, NCI_FOREGROUND, NCI_SEC_RW, 10, },
++        /* gcounter_ctrl */
++        { 0x2A6D0000, 0x2A6DFFFF, NCI_FOREGROUND, NCI_SEC_RW, 11, },
++        /* gcounter_read */
++        { 0x2A6E0000, 0x2A6EFFFF, NCI_FOREGROUND, NCI_SEC_RW, 12, },
++        /* timer_ctrl */
++        { 0x2A6F0000, 0x2A6FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 13, },
++        /* si_fmu */
++        { 0x2A510000, 0x2A51FFFF, NCI_FOREGROUND, NCI_SEC_RW, 14, },
++        /* nci_fmu */
++        { 0x2A520000, 0x2A52FFFF, NCI_FOREGROUND, NCI_SEC_RW, 15, },
++        /* gic_fmu */
++        { 0x2A530000, 0x2A53FFFF, NCI_FOREGROUND, NCI_SEC_RW, 16, },
++        /* pc_gic_fmu */
++        { 0x2A570000, 0x2A57FFFF, NCI_FOREGROUND, NCI_SEC_RW, 17, },
++        /* ssu */
++        { 0x2A500000, 0x2A50FFFF, NCI_FOREGROUND, NCI_SEC_RW, 18, },
++        /* pc_bist0 */
++        { 0x2B200000, 0x2B20FFFF, NCI_FOREGROUND, NCI_SEC_RW, 19, },
++        /* pc_bist1 */
++        { 0x2B210000, 0x2B21FFFF, NCI_FOREGROUND, NCI_SEC_RW, 20, },
++        /* pc_pik */
++        { 0x2A640000, 0x2A64FFFF, NCI_FOREGROUND, NCI_SEC_RW, 21, },
++        /* cl0_exclusive_mh */
++        /* mh_{cl0_pc_send, pc_cl0_rcv}_ns */
++        { 0x2A920000, 0x2A93FFFF, NCI_FOREGROUND, NCI_SEC_RW, 22, },
++        /* mh_{cl0_rss_send, rss_cl0_rcv}_s */
++        { 0x2AA00000, 0x2AA1FFFF, NCI_FOREGROUND, NCI_SEC_RW, 23, },
++        /* mh_{cl0_pc_send, pc_cl0_rcv}_s */
++        { 0x2AA20000, 0x2AA3FFFF, NCI_FOREGROUND, NCI_SEC_RW, 24, },
++        /* mh_{cl0_cl1_send, cl1_cl0_rcv}_s */
++        { 0x2AF00000, 0x2AF1FFFF, NCI_FOREGROUND, NCI_SEC_RW, 25, },
++        /* mh_{cl0_cl2_send, cl2_cl0_rcv}_s */
++        { 0x2AF20000, 0x2AF3FFFF, NCI_FOREGROUND, NCI_SEC_RW, 26, },
++        /* cl0_exclusive_others */
++        /* timer0 */
++        { 0x2A720000, 0x2A72FFFF, NCI_FOREGROUND, NCI_SEC_RW, 27, },
++        /* wdog0 */
++        { 0x2A700000, 0x2A71FFFF, NCI_FOREGROUND, NCI_SEC_RW, 28, },
++        /* uart0 */
++        { 0x2A400000, 0x2A40FFFF, NCI_FOREGROUND, NCI_SEC_RW, 29, },
++        /* dma_request0 */
++        { 0x8000000, 0x800FFFF, NCI_FOREGROUND, NCI_SEC_RW, 30, },
++        /* mh_{cl0_scp_send, scp_cl0_rcv}_s */
++        { 0x2B000000, 0x2B01FFFF, NCI_FOREGROUND, NCI_SEC_RW, 31, },
++    };
++
++    struct apu_region_cfgs asni_cluster0_spp[] = {
++        { 0x170000000, 0x177FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs asni_cluster1_mm[] = {
++        /* GIC View 2 (Cluster 1) */
++        { 0x30800000, 0x30BFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++        /* PCMA<n> */
++        { 0x10000000, 0x17FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 1, },
++        { 0x80000000, 0x80FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 2, },
++        /* PCPA<n> */
++        { 0x18000000, 0x1FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 3, },
++        { 0x20000000, 0x27FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 4, },
++        /* SRAM0 */
++        { 0x40000000, 0x47FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 5, },
++        /* SRAM1 */
++        { 0x48000000, 0x4FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 6, },
++        /* pc_shrd */
++        { 0x200000000, 0x2000FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 7, },
++        /* base_periphs */
++        /* sysctrl */
++        { 0x2A6A0000, 0x2A6CFFFF, NCI_FOREGROUND, NCI_SEC_RW, 8, },
++        /* gcounter_ctrl */
++        { 0x2A6D0000, 0x2A6DFFFF, NCI_FOREGROUND, NCI_SEC_RW, 9, },
++        /* gcounter_read */
++        { 0x2A6E0000, 0x2A6EFFFF, NCI_FOREGROUND, NCI_SEC_RW, 10, },
++        /* timer_ctrl */
++        { 0x2A6F0000, 0x2A6FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 11, },
++        /* si_fmu */
++        { 0x2A510000, 0x2A51FFFF, NCI_FOREGROUND, NCI_SEC_RW, 12, },
++        /* nci_fmu */
++        { 0x2A520000, 0x2A52FFFF, NCI_FOREGROUND, NCI_SEC_RW, 13, },
++        /* gic_fmu */
++        { 0x2A530000, 0x2A53FFFF, NCI_FOREGROUND, NCI_SEC_RW, 14, },
++        /* pc_gic_fmu */
++        { 0x2A570000, 0x2A57FFFF, NCI_FOREGROUND, NCI_SEC_RW, 15, },
++        /* ssu */
++        { 0x2A500000, 0x2A50FFFF, NCI_FOREGROUND, NCI_SEC_RW, 16, },
++        /* pc_bist0 */
++        { 0x2B200000, 0x2B20FFFF, NCI_FOREGROUND, NCI_SEC_RW, 17, },
++        /* pc_bist1 */
++        { 0x2B210000, 0x2B21FFFF, NCI_FOREGROUND, NCI_SEC_RW, 18, },
++        /* pc_pik */
++        { 0x2A640000, 0x2A64FFFF, NCI_FOREGROUND, NCI_SEC_RW, 19, },
++        /* cl1_exclusive_mh */
++        /* mh_{cl1_pc_send, pc_cl1_rcv}_ns */
++        { 0x2AB20000, 0x2AB3FFFF, NCI_FOREGROUND, NCI_SEC_RW, 20, },
++        /* mh_{cl1_rss_send, rss_cl1_rcv}_s */
++        { 0x2AC00000, 0x2AC1FFFF, NCI_FOREGROUND, NCI_SEC_RW, 21, },
++        /* mh_{cl1_pc_send, pc_cl1_rcv}_s */
++        { 0x2AC20000, 0x2AC3FFFF, NCI_FOREGROUND, NCI_SEC_RW, 22, },
++        /* mh_{cl1_cl0_send, cl0_cl1_rcv}_s */
++        { 0x2AF40000, 0x2AF5FFFF, NCI_FOREGROUND, NCI_SEC_RW, 23, },
++        /* mh_{cl1_cl2_send, cl2_cl1_rcv}_s */
++        { 0x2AF60000, 0x2AF7FFFF, NCI_FOREGROUND, NCI_SEC_RW, 24, },
++        /* cl1_exclusive_others */
++        /* timer1 */
++        { 0x2A7A0000, 0x2A7AFFFF, NCI_FOREGROUND, NCI_SEC_RW, 25, },
++        /* wdog1 */
++        { 0x2A780000, 0x2A79FFFF, NCI_FOREGROUND, NCI_SEC_RW, 26, },
++        /* uart1 */
++        { 0x2A410000, 0x2A41FFFF, NCI_FOREGROUND, NCI_SEC_RW, 27, },
++        /* dma_request1 */
++        { 0x8010000, 0x801FFFF, NCI_FOREGROUND, NCI_SEC_RW, 28, },
++        /* mh_{cl1_scp_send, scp_cl1_rcv}_s */
++        { 0x2B020000, 0x2B03FFFF, NCI_FOREGROUND, NCI_SEC_RW, 29, },
++    };
++
++    struct apu_region_cfgs asni_cluster1_spp[] = {
++        { 0x178000000, 0x17FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs asni_cluster2_mm[] = {
++        /* GIC View 3 (Cluster 2) */
++        { 0x30C00000, 0x30FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++        /* PCMA<n> */
++        { 0x10000000, 0x17FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 1, },
++        { 0x80000000, 0x80FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 2, },
++        /* PCPA<n> */
++        { 0x18000000, 0x1FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 3, },
++        { 0x20000000, 0x27FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 4, },
++        /* SRAM0 */
++        { 0x40000000, 0x47FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 5, },
++        /* SRAM1 */
++        { 0x48000000, 0x4FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 6, },
++        /* pc_shrd */
++        { 0x200000000, 0x2000FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 7, },
++        /* base_periphs */
++        /* sysctrl */
++        { 0x2A6A0000, 0x2A6CFFFF, NCI_FOREGROUND, NCI_SEC_RW, 8, },
++        /* gcounter_ctrl */
++        { 0x2A6D0000, 0x2A6DFFFF, NCI_FOREGROUND, NCI_SEC_RW, 9, },
++        /* gcounter_read */
++        { 0x2A6E0000, 0x2A6EFFFF, NCI_FOREGROUND, NCI_SEC_RW, 10, },
++        /* timer_ctrl */
++        { 0x2A6F0000, 0x2A6FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 11, },
++        /* si_fmu */
++        { 0x2A510000, 0x2A51FFFF, NCI_FOREGROUND, NCI_SEC_RW, 12, },
++        /* nci_fmu */
++        { 0x2A520000, 0x2A52FFFF, NCI_FOREGROUND, NCI_SEC_RW, 13, },
++        /* gic_fmu */
++        { 0x2A530000, 0x2A53FFFF, NCI_FOREGROUND, NCI_SEC_RW, 14, },
++        /* pc_gic_fmu */
++        { 0x2A570000, 0x2A57FFFF, NCI_FOREGROUND, NCI_SEC_RW, 15, },
++        /* ssu */
++        { 0x2A500000, 0x2A50FFFF, NCI_FOREGROUND, NCI_SEC_RW, 16, },
++        /* pc_bist0 */
++        { 0x2B200000, 0x2B20FFFF, NCI_FOREGROUND, NCI_SEC_RW, 17, },
++        /* pc_bist1 */
++        { 0x2B210000, 0x2B21FFFF, NCI_FOREGROUND, NCI_SEC_RW, 18, },
++        /* pc_pik */
++        { 0x2A640000, 0x2A64FFFF, NCI_FOREGROUND, NCI_SEC_RW, 19, },
++        /* cl2_exclusive_mh */
++        /* mh_{cl2_pc_send, pc_cl2_rcv}_ns */
++        { 0x2AD20000, 0x2AD3FFFF, NCI_FOREGROUND, NCI_SEC_RW, 20, },
++        /* mh_{cl2_rss_send, rss_cl2_rcv}_s */
++        { 0x2AE00000, 0x2AE1FFFF, NCI_FOREGROUND, NCI_SEC_RW, 21, },
++        /* mh_{cl2_pc_send, pc_cl2_rcv}_s */
++        { 0x2AE20000, 0x2AE3FFFF, NCI_FOREGROUND, NCI_SEC_RW, 22, },
++        /* mh_{cl2_cl0_send, cl0_cl2_rcv}_s */
++        { 0x2AF80000, 0x2AF9FFFF, NCI_FOREGROUND, NCI_SEC_RW, 23, },
++        /* mh_{cl2_cl1_send, cl1_cl2_rcv}_s */
++        { 0x2AFA0000, 0x2AFBFFFF, NCI_FOREGROUND, NCI_SEC_RW, 24, },
++        /* cl2_exclusive_others */
++        /* timer2 */
++        { 0x2A820000, 0x2A82FFFF, NCI_FOREGROUND, NCI_SEC_RW, 25, },
++        /* wdog2 */
++        { 0x2A800000, 0x2A81FFFF, NCI_FOREGROUND, NCI_SEC_RW, 26, },
++        /* uart2 */
++        { 0x2A420000, 0x2A42FFFF, NCI_FOREGROUND, NCI_SEC_RW, 27, },
++        /* dma_request2 */
++        { 0x8020000, 0x802FFFF, NCI_FOREGROUND, NCI_SEC_RW, 28, },
++        /* mh_{cl2_scp_send, scp_cl2_rcv}_s */
++        { 0x2B040000, 0x2B05FFFF, NCI_FOREGROUND, NCI_SEC_RW, 29, },
++    };
++
++    struct apu_region_cfgs asni_cluster2_spp[] = {
++        { 0x180000000, 0x187FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs asni_dma_io0[] = {
++        { 0x000000000000, 0xFFFFFFFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs asni_dma_io1[] = {
++        { 0x000000000000, 0xFFFFFFFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs asni_dma_io2[] = {
++        { 0x000000000000, 0xFFFFFFFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs asni_ethernet_data0[] = {
++        { 0x000000000000, 0xFFFFFFFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs asni_ethernet_data1[] = {
++        { 0x000000000000, 0xFFFFFFFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs asni_io_extension[] = {
++        { 0x000000000000, 0xFFFFFFFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs asni_pc_shrd[] = {
++        { 0x200000000, 0x2000FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs asni_rss_mm[] = {
++        { 0x000000000000, 0xFFFFFFFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs asni_rss_pp[] = {
++        { 0x000000000000, 0xFFFFFFFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_cluster0_acel[] = {
++        { 0x110000000, 0x12FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_cluster0_utility[] = {
++        { 0x28000000, 0x283FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_cluster1_acel[] = {
++        { 0x130000000, 0x14FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_cluster1_utility[] = {
++        { 0x28400000, 0x287FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_cluster2_acel[] = {
++        { 0x150000000, 0x16FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_cluster2_utility[] = {
++        { 0x28800000, 0x28BFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_ethernet_ctrl0[] = {
++        { 0x8100000, 0x81FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_ethernet_ctrl1[] = {
++        { 0x8200000, 0x82FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_gic_si[] = {
++        { 0x30000000, 0x30FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_pcma0[] = {
++        { 0x10000000, 0x17FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_pcma1[] = {
++        { 0x80000000, 0x80FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_pcpa0[] = {
++        { 0x18000000, 0x1FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_pcpa1[] = {
++        { 0x20000000, 0x27FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_qspi[] = {
++        { 0x60000000, 0x7FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_sram0[] = {
++        { 0x40000000, 0x47FFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_sram1[] = {
++        { 0x48000000, 0x4FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_region_cfgs amni_sram_shrd[] = {
++        { 0x200000000, 0x2000FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++    };
++
++    struct apu_cfgs apu_table[] = {
++        APU_TUPLE(asni_cluster0_mm, NI710AE_ASNI, SI_ASNI_CLUSTER0_MM_ID),
++        APU_TUPLE(asni_cluster0_spp, NI710AE_ASNI, SI_ASNI_CLUSTER0_SPP_ID),
++        APU_TUPLE(asni_cluster1_mm, NI710AE_ASNI, SI_ASNI_CLUSTER1_MM_ID),
++        APU_TUPLE(asni_cluster1_spp, NI710AE_ASNI, SI_ASNI_CLUSTER1_SPP_ID),
++        APU_TUPLE(asni_cluster2_mm, NI710AE_ASNI, SI_ASNI_CLUSTER2_MM_ID),
++        APU_TUPLE(asni_cluster2_spp, NI710AE_ASNI, SI_ASNI_CLUSTER2_SPP_ID),
++        APU_TUPLE(asni_dma_io0, NI710AE_ASNI, SI_ASNI_DMA_IO0_ID),
++        APU_TUPLE(asni_dma_io1, NI710AE_ASNI, SI_ASNI_DMA_IO1_ID),
++        APU_TUPLE(asni_dma_io2, NI710AE_ASNI, SI_ASNI_DMA_IO2_ID),
++        APU_TUPLE(asni_ethernet_data0, NI710AE_ASNI, SI_ASNI_ETHERNET_DATA0_ID),
++        APU_TUPLE(asni_ethernet_data1, NI710AE_ASNI, SI_ASNI_ETHERNET_DATA1_ID),
++        APU_TUPLE(asni_io_extension, NI710AE_ASNI, SI_ASNI_IO_EXTENSION_ID),
++        APU_TUPLE(asni_pc_shrd, NI710AE_ASNI, SI_ASNI_PC_SHRD_ID),
++        APU_TUPLE(asni_rss_mm, NI710AE_ASNI, SI_ASNI_RSS_MM_ID),
++        APU_TUPLE(asni_rss_pp, NI710AE_ASNI, SI_ASNI_RSS_PP_ID),
++        APU_TUPLE(amni_cluster0_acel, NI710AE_AMNI, SI_AMNI_CLUSTER0_ACEL_ID),
++        APU_TUPLE(amni_cluster0_utility, NI710AE_AMNI, SI_AMNI_CLUSTER0_UTILITY_ID),
++        APU_TUPLE(amni_cluster1_acel, NI710AE_AMNI, SI_AMNI_CLUSTER1_ACEL_ID),
++        APU_TUPLE(amni_cluster1_utility, NI710AE_AMNI, SI_AMNI_CLUSTER1_UTILITY_ID),
++        APU_TUPLE(amni_cluster2_acel, NI710AE_AMNI, SI_AMNI_CLUSTER2_ACEL_ID),
++        APU_TUPLE(amni_cluster2_utility, NI710AE_AMNI, SI_AMNI_CLUSTER2_UTILITY_ID),
++        APU_TUPLE(amni_ethernet_ctrl0, NI710AE_AMNI, SI_AMNI_ETHERNET_CTRL0_ID),
++        APU_TUPLE(amni_ethernet_ctrl1, NI710AE_AMNI, SI_AMNI_ETHERNET_CTRL1_ID),
++        APU_TUPLE(amni_gic_si, NI710AE_AMNI, SI_AMNI_GIC_SI_ID),
++        APU_TUPLE(amni_pcma0, NI710AE_AMNI, SI_AMNI_PCMA0_ID),
++        APU_TUPLE(amni_pcma1, NI710AE_AMNI, SI_AMNI_PCMA1_ID),
++        APU_TUPLE(amni_pcpa0, NI710AE_AMNI, SI_AMNI_PCPA0_ID),
++        APU_TUPLE(amni_pcpa1, NI710AE_AMNI, SI_AMNI_PCPA1_ID),
++        APU_TUPLE(amni_qspi, NI710AE_AMNI, SI_AMNI_QSPI_ID),
++        APU_TUPLE(amni_sram0, NI710AE_AMNI, SI_AMNI_SRAM0_ID),
++        APU_TUPLE(amni_sram1, NI710AE_AMNI, SI_AMNI_SRAM1_ID),
++        APU_TUPLE(amni_sram_shrd, NI710AE_AMNI, SI_AMNI_SRAM_SHRD_ID),
++    };
++
++    if (program_ni710ae_apu_table(apu_table, sizeof(apu_table) /
++                                             sizeof(struct apu_cfgs)) != 0) {
++        return 1;
++    }
++
++    BOOT_LOG_INF("Safety Island runtime APU programming done");
++
++    return 0;
++}
++
++uint8_t prune_ni710ae_node_cb(uint16_t type, uint16_t id, uint16_t child_idx)
++{
++    return 0;
++}
++
++uint32_t program_si_ni710ae_apu(uint32_t nci_addr,
++                                    uint64_t chip_addr_offset,
++                                    bool is_boot_time)
++{
++    enum ni710ae_err_t err = 0;
++    uint32_t res = 0;
++
++    struct ni710ae_discovery_tree_t dis_tree = {
++        .type = NI710AE_CFGNI,
++        .id = 0,
++        .address = 0x0,
++        .sibling = NULL,
++    };
++
++    err = ni710ae_discovery(&dis_tree, nci_addr, &prune_ni710ae_node_cb);
++    if (err != NI710AE_SUCCESS) {
++        free_ni710ae_discovery_tree(dis_tree.child);
++        return 1;
++    }
++
++    if (is_boot_time)
++        res = program_si_apu_boot_time(&dis_tree, nci_addr, chip_addr_offset);
++    else
++        res = program_si_apu_runtime(&dis_tree, nci_addr, chip_addr_offset);
++
++    free_ni710ae_discovery_tree(dis_tree.child);
++
++    return res;
++}
+diff --git a/platform/ext/target/arm/rss/kronos/ni710ae_lib.h b/platform/ext/target/arm/rss/kronos/ni710ae_lib.h
+new file mode 100644
+index 000000000..16ab5ee9d
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/ni710ae_lib.h
+@@ -0,0 +1,26 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#ifndef __NI710AE_LIB_H__
++#define __NI710AE_LIB_H__
++
++#include <stdint.h>
++#include <stdbool.h>
++
++/**
++ * \brief Programs NI710AE APU
++ *
++ * \param[in] nci_addr          NI710AE base address
++ * \param[in] chip_addr_offset  Offset address based on current Chip ID
++ * \param[in] is_boot_time      Flag to determine the boot/run time
++ *
++ * \return Returns 1 if there is an error, else 0.
++ */
++uint32_t program_si_ni710ae_apu(uint32_t nci_addr, uint64_t chip_addr_offset,
++                                bool is_boot_time);
++
++#endif /* __NI710AE_LIB_H__ */
+--
+2.25.1
+

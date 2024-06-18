@@ -1,0 +1,44 @@
+From 9b6f053ed4ee43ccec70fd75466453f641498e78 Mon Sep 17 00:00:00 2001
+From: Michael Zhao <michael.zhao@arm.com>
+Date: Tue, 22 Aug 2023 16:09:35 +0800
+Subject: [PATCH] RSS: Enlarge the maximum file size of ITS
+
+Kronos platform uses ITS to store keys. The size of a key may exceed the
+default maximum file size: 512 bytes.
+
+Now enlarge the limit to 4096 bytes.
+
+Upstream-Status: Pending
+Signed-off-by: Michael Zhao <michael.zhao@arm.com>
+---
+ platform/ext/target/arm/rss/kronos/config.cmake              | 1 +
+ secure_fw/partitions/internal_trusted_storage/CMakeLists.txt | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/platform/ext/target/arm/rss/kronos/config.cmake b/platform/ext/target/arm/rss/kronos/config.cmake
+index be6409fab9..35f392b2ea 100644
+--- a/platform/ext/target/arm/rss/kronos/config.cmake
++++ b/platform/ext/target/arm/rss/kronos/config.cmake
+@@ -14,6 +14,7 @@ set(MCUBOOT_IMAGE_NUMBER                    9        CACHE STRING  "Number of im
+ set(ENABLE_SCP_ATU_CTRL                     OFF      CACHE BOOL    "Enable SCP to configure ATU")
+ set(RSS_HAS_EXPANSION_PERIPHERALS           ON       CACHE BOOL    "Whether RSS has sub-platform specific peripherals in the expansion layer")
+ set(PLATFORM_DEFAULT_MCUBOOT_IMAGE_NUMBER   OFF      CACHE BOOL    "Whether to use default value of MCUBOOT_IMAGE_NUMBER")
++set(ITS_MAX_ASSET_SIZE                      4096     CACHE STRING  "The maximum asset size to be stored in the Internal Trusted Storage")
+ if (TFM_PLATFORM_VARIANT STREQUAL "1")
+     set(RSS_LCP_COUNT                          8        CACHE STRING   "Number of LCPs to load")
+ elseif(TFM_PLATFORM_VARIANT STREQUAL "2")
+diff --git a/secure_fw/partitions/internal_trusted_storage/CMakeLists.txt b/secure_fw/partitions/internal_trusted_storage/CMakeLists.txt
+index a36e84a755..6bf31240bc 100644
+--- a/secure_fw/partitions/internal_trusted_storage/CMakeLists.txt
++++ b/secure_fw/partitions/internal_trusted_storage/CMakeLists.txt
+@@ -61,6 +61,7 @@ target_link_libraries(tfm_psa_rot_partition_its
+ target_compile_definitions(tfm_psa_rot_partition_its
+     PUBLIC
+         PS_CRYPTO_AEAD_ALG=${PS_CRYPTO_AEAD_ALG}
++        ITS_MAX_ASSET_SIZE=${ITS_MAX_ASSET_SIZE}
+ )
+ 
+ ################ Display the configuration being applied #######################
+-- 
+2.25.1
+

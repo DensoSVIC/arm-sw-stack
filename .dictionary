@@ -117,6 +117,7 @@ constprop
 contex
 copybutton
 cortexa
+cpak
 CPBM
 cpio
 CPOR
@@ -362,6 +363,7 @@ kmeta
 knownissues
 kronos
 kzalloc
+laurencelundblade
 LAYERDEPENDS
 LAYERDIR
 LAYERNAME
@@ -403,6 +405,7 @@ maxcpus
 maxdepth
 MAXSIZE
 MBED
+mbedcrypto
 mbedtls
 mbedtlsxxx
 mbid
@@ -575,6 +578,7 @@ pytest
 python3
 pythonprefix
 pyyaml
+qcbor
 qcow
 Rahul
 RAMDISK
@@ -660,6 +664,7 @@ sphinxheadercomma
 spinlock
 SPMC
 sram
+srcbranch
 srcdir
 SRCPV
 SRCREV
@@ -719,6 +724,7 @@ toctree
 TOOLNG
 topdir
 TRAPMPAM
+trustedfirmware
 TrustZone
 trysend
 tstee
@@ -735,6 +741,7 @@ udevd
 uefi
 ufvp
 uintptr
+unexport
 unitdir
 unixadmin
 unmanaged

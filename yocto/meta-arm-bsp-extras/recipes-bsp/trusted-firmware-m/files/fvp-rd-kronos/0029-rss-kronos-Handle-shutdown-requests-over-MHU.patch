@@ -1,0 +1,83 @@
+From 69f4f53106110f8f4416c09fc56e162b111eb2d8 Mon Sep 17 00:00:00 2001
+From: Jun Zhang <jun.zhang@arm.com>
+Date: Tue, 5 Sep 2023 14:19:27 +0800
+Subject: [PATCH] rss/kronos: Handle shutdown requests over MHU
+
+- For a system wide shutdown/reboot, the SCP subsystem send shutdown
+  request to RSS over MHU doorbell channel. Add handler for the shutdown
+  request.
+- Change the MHU channel id from hardcode to enum for SI like below:
+        2---->MHU_SCP_RSS_SI_CL0_CHANNEL_ID
+
+Upstream-Status: Pending
+Signed-off-by: Jun Zhang <jun.zhang@arm.com>
+Signed-off-by: Robbie Cao <robbie.cao@arm.com>
+---
+ .../ext/target/arm/rss/kronos/tfm_interrupts.c   | 16 ++++++++++------
+ platform/include/tfm_hal_interrupt.h             | 12 ++++++++++++
+ 2 files changed, 22 insertions(+), 6 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/kronos/tfm_interrupts.c b/platform/ext/target/arm/rss/kronos/tfm_interrupts.c
+index c0be7d901..1056112b0 100644
+--- a/platform/ext/target/arm/rss/kronos/tfm_interrupts.c
++++ b/platform/ext/target/arm/rss/kronos/tfm_interrupts.c
+@@ -14,12 +14,8 @@
+ #include "mscp_atu_request_handler.h"
+
+ #include <inttypes.h>
+-
+-enum mhu_scp_rss_doorbell_channel {
+-    MHU_SCP_RSS_ATU_REQUEST_CHANNEL_ID=0,
+-    MHU_SCP_RSS_SYSTOP_ON_CHANNEL_ID,
+-    MHU_SCP_RSS_CHANNEL_COUNT,
+-};
++#include <tfm_hal_platform.h>
++#include <tfm_hal_interrupt.h>
+
+ volatile bool scp_doorbell = false;
+
+@@ -62,10 +58,18 @@ static int mhu_scp_rss_systop_on_doorbell_handler(uint32_t value) {
+     return 0;
+ }
+
++static int mhu_scp_rss_sys_reset_doorbell_handler(uint32_t value) {
++	tfm_hal_system_reset();
++
++	/* Not expected to return from this function call */
++	return -1;
++}
++
+ /* Array of function pointers to call if a message is received on a channel */
+ static int (*mhu_scp_rss_doorbell_vector[MHU_SCP_RSS_CHANNEL_COUNT]) (uint32_t) = {
+     [MHU_SCP_RSS_ATU_REQUEST_CHANNEL_ID] = mhu_scp_rss_atu_request_doorbell_handler,
+     [MHU_SCP_RSS_SYSTOP_ON_CHANNEL_ID]   = mhu_scp_rss_systop_on_doorbell_handler,
++    [MHU_SCP_RSS_SYS_RESET_CHANNEL_ID]   = mhu_scp_rss_sys_reset_doorbell_handler,
+ };
+
+ /* Function to handle the SCP-->RSS MHUv3 combined MBX interrupt */
+diff --git a/platform/include/tfm_hal_interrupt.h b/platform/include/tfm_hal_interrupt.h
+index 3081a1e24..e34ed6499 100644
+--- a/platform/include/tfm_hal_interrupt.h
++++ b/platform/include/tfm_hal_interrupt.h
+@@ -11,6 +11,18 @@
+ #include <stdint.h>
+ #include "tfm_hal_defs.h"
+
++#ifdef MHU_V3_RSS_TO_SCP
++enum mhu_scp_rss_doorbell_channel {
++    MHU_SCP_RSS_ATU_REQUEST_CHANNEL_ID=0,
++    MHU_SCP_RSS_SYSTOP_ON_CHANNEL_ID,
++    MHU_SCP_RSS_SYS_RESET_CHANNEL_ID,
++    MHU_SCP_RSS_SI_CL0_CHANNEL_ID,
++    MHU_SCP_RSS_SI_CL1_CHANNEL_ID,
++    MHU_SCP_RSS_SI_CL2_CHANNEL_ID,
++    MHU_SCP_RSS_CHANNEL_COUNT,
++};
++#endif
++
+ /**
+  * \brief  Enables an interrupt from the Interrupt Controller of the platform
+  *
+--
+2.25.1
+

@@ -1,0 +1,224 @@
+From 1dbb3ff109dcfb403f961699b1096dfc0c18db31 Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Tue, 19 Sep 2023 09:30:54 +0100
+Subject: [PATCH] RSS: Kronos: Add and configure ATU regions between Safety
+ Island and RSS
+
+1- Add and configure the ATU region between each Safety Island cluster
+and RSS to enable the communication between them using MHUv3 devices.
+
+2- Change the logical address of AP<->RSS outband message buffer to
+give space to the logical addresses of each safety island cluster mailbox.
+
+Upstream-Status: Pending
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ .../target/arm/rss/kronos/bl2/boot_hal_bl2.c  | 96 ++++++++++++++++++-
+ .../target/arm/rss/kronos/host_base_address.h | 60 +++++++++++-
+ 2 files changed, 151 insertions(+), 5 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+index 37d402d6c..ae9e54a66 100644
+--- a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
++++ b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+@@ -233,6 +233,64 @@ int32_t boot_platform_post_init(void)
+  * ================================ Secure ====================================
+  */
+ 
++static enum atu_error_t rss_si_atu_config(uint8_t si_cluster)
++{
++    enum atu_error_t atu_err;
++    uint8_t region;
++    uint32_t log_addr;
++    uint64_t phys_addr;
++    uint32_t size;
++
++    switch (si_cluster) {
++    case MHU_V3_RSS_SI_CL0:
++        region = HOST_SI_CL0_RSS_MAILBOX_ATU_ID;
++        log_addr = HOST_SI_CL0_RSS_MAILBOX_BASE_S;
++        phys_addr = HOST_SI_CL0_RSS_MAILBOX_PHYS_BASE;
++        size = HOST_SI_CL0_RSS_MAILBOX_ATU_SIZE;
++        break;
++    case MHU_V3_RSS_SI_CL1:
++        region = HOST_SI_CL1_RSS_MAILBOX_ATU_ID;
++        log_addr = HOST_SI_CL1_RSS_MAILBOX_BASE_S;
++        phys_addr = HOST_SI_CL1_RSS_MAILBOX_PHYS_BASE;
++        size = HOST_SI_CL1_RSS_MAILBOX_ATU_SIZE;
++        break;
++    case MHU_V3_RSS_SI_CL2:
++        region = HOST_SI_CL2_RSS_MAILBOX_ATU_ID;
++        log_addr = HOST_SI_CL2_RSS_MAILBOX_BASE_S;
++        phys_addr = HOST_SI_CL2_RSS_MAILBOX_PHYS_BASE;
++        size = HOST_SI_CL2_RSS_MAILBOX_ATU_SIZE;
++        break;
++    default:
++        return ATU_ERR_INVALID_ARG;
++    }
++
++    /* Configure RSS ATU to access the Safety Island Cluster SRAM region
++     * for MHU Outband Msg Buffer
++     */
++    atu_err = atu_initialize_region(&ATU_DEV_S, region, log_addr,
++                                    phys_addr, size);
++
++    if (atu_err != ATU_ERR_NONE) {
++        BOOT_LOG_ERR("BL2: Failed to map SI CL%d<->RSS MHU Outband "
++                "msg region in ATU: error:%d", si_cluster, atu_err);
++        goto end;
++    }
++
++    /* Configure output bus attribute for the ATU region */
++    atu_err = set_axnsc(&ATU_DEV_S, ATU_ROBA_SET_0, region);
++    if (atu_err != ATU_ERR_NONE) {
++        BOOT_LOG_ERR("BL2: Failed to set SI CL%d<->RSS MHU Outband msg region "
++                "as secure in ATU mapping: error:%d", si_cluster, atu_err);
++        goto end;
++    }
++
++    BOOT_LOG_INF("BL2: Mapped SI CL%d<->RSS MHU Outband msg region in ATU",
++                 si_cluster);
++
++end:
++    return atu_err;
++}
++
+ static int boot_platform_pre_load_secure()
+ {
+     enum atu_error_t atu_err;
+@@ -252,16 +310,46 @@ static int boot_platform_pre_load_secure()
+     atu_err = set_axnsc(&ATU_DEV_S, ATU_ROBA_SET_0, HOST_AP_RSS_MAILBOX_ATU_ID);
+     if (atu_err != ATU_ERR_NONE) {
+         BOOT_LOG_ERR("BL2: Failed to set AP<->RSS MHU Outband msg region as "
+-                "root in ATU mapping: error:%d", atu_err);
+-        goto fail;
++                "secure in ATU mapping: error:%d", atu_err);
++        goto fail_ap;
+     }
+ 
+     BOOT_LOG_INF("BL2: Mapped AP<->RSS MHU Outband msg region in ATU");
++
++    /* Configure RSS ATU region for Safety Island Cluster 0 */
++    atu_err = rss_si_atu_config(MHU_V3_RSS_SI_CL0);
++    if (atu_err != ATU_ERR_NONE) {
++        goto fail_si_cl0;
++    }
++
++    /* Configure RSS ATU region for Safety Island Cluster 1 */
++    atu_err = rss_si_atu_config(MHU_V3_RSS_SI_CL1);
++    if (atu_err != ATU_ERR_NONE) {
++        goto fail_si_cl1;
++    }
++
++    /* Configure RSS ATU region for Safety Island Cluster 2 */
++    atu_err = rss_si_atu_config(MHU_V3_RSS_SI_CL2);
++    if (atu_err != ATU_ERR_NONE) {
++        goto fail_si_cl2;
++    }
++
+     return 0;
+ 
+-fail:
++fail_ap:
+     atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_AP_RSS_MAILBOX_ATU_ID);
+-
++    return -1;
++fail_si_cl0:
++    atu_err = atu_uninitialize_region(&ATU_DEV_S,
++                                      HOST_SI_CL0_RSS_MAILBOX_ATU_ID);
++    return -1;
++fail_si_cl1:
++    atu_err = atu_uninitialize_region(&ATU_DEV_S,
++                                      HOST_SI_CL1_RSS_MAILBOX_ATU_ID);
++    return -1;
++fail_si_cl2:
++    atu_err = atu_uninitialize_region(&ATU_DEV_S,
++                                      HOST_SI_CL2_RSS_MAILBOX_ATU_ID);
+     return -1;
+ }
+ 
+diff --git a/platform/ext/target/arm/rss/kronos/host_base_address.h b/platform/ext/target/arm/rss/kronos/host_base_address.h
+index 8a365a726..50911c191 100644
+--- a/platform/ext/target/arm/rss/kronos/host_base_address.h
++++ b/platform/ext/target/arm/rss/kronos/host_base_address.h
+@@ -45,6 +45,15 @@
+ #define RSS_ATU_AP_RSS_MAILBOX_ATU_ID   5 /*ID to use for region mapping to MHU
+                                             outband msg buffer between AP and RSS */
+ #define RSS_ATU_SI_FLASH_ID             6  /* ID to use for region mapping to SI NVM flash */
++#define RSS_ATU_SI_CL0_RSS_MAILBOX_ATU_ID   7 /* ID to use for region mapping to MHU
++                                               * outband msg buffer between SI CL0 and RSS
++                                               */
++#define RSS_ATU_SI_CL1_RSS_MAILBOX_ATU_ID   8 /* ID to use for region mapping to MHU
++                                               * outband msg buffer between SI CL1 and RSS
++                                               */
++#define RSS_ATU_SI_CL2_RSS_MAILBOX_ATU_ID   9 /* ID to use for region mapping to MHU
++                                               * outband msg buffer between SI CL2 and RSS
++                                               */
+ 
+ /* The ATU has a minimum size and all regions are restricted to align with it */
+ #define RSS_ATU_PAGE_SIZE           0x2000U /* 8KB */
+@@ -251,11 +260,60 @@
+  * HOST_AP_RSS_MAILBOX_ATU_SIZE: Size of outband msg buffer as defined in TF-A.
+  */
+ #define HOST_AP_RSS_MAILBOX_BASE_S     \
+-    (HOST_SI_CL2_CODE_BASE_S + HOST_SI_CL2_ATU_SIZE)
++    (HOST_SCP_RSS_MAILBOX_BASE_S + HOST_SCP_RSS_MAILBOX_ATU_SIZE)
+ #define HOST_AP_RSS_MAILBOX_PHYS_BASE  UINT64_C(0xFFFFC000)
+ #define HOST_AP_RSS_MAILBOX_ATU_SIZE   ALIGN_UP(0x1000, RSS_ATU_PAGE_SIZE)
+ #define HOST_AP_RSS_MAILBOX_ATU_ID     RSS_ATU_AP_RSS_MAILBOX_ATU_ID
+ 
++/*
++ * ATU region for SI CL0<->RSS MHU outband message buffer
++ * HOST_SI_CL0_RSS_MAILBOX_BASE_S: Logical address at which the RSS should access
++ *                                 the SI CL0<->RSS outband msg buffer.
++ *
++ * HOST_SI_CL0_RSS_MAILBOX_PHYS_BASE: Physical address of outband msg buffer
++ *                                    located in the SI Shared RAM region.
++ *
++ * HOST_SI_CL0_RSS_MAILBOX_ATU_SIZE: Size of outband msg buffer.
++ */
++#define HOST_SI_CL0_RSS_MAILBOX_BASE_S     \
++    (HOST_AP_RSS_MAILBOX_BASE_S + HOST_AP_RSS_MAILBOX_ATU_SIZE)
++#define HOST_SI_CL0_RSS_MAILBOX_PHYS_BASE  HOST_SI_PHYS_BASE + UINT64_C(0x40000000)
++#define HOST_SI_CL0_RSS_MAILBOX_ATU_SIZE   ALIGN_UP(0x1000, RSS_ATU_PAGE_SIZE)
++#define HOST_SI_CL0_RSS_MAILBOX_ATU_ID     RSS_ATU_SI_CL0_RSS_MAILBOX_ATU_ID
++
++/*
++ * ATU region for SI CL1<->RSS MHU outband message buffer
++ * HOST_SI_CL1_RSS_MAILBOX_BASE_S: Logical address at which the RSS should access
++ *                                 the SI CL1<->RSS outband msg buffer.
++ *
++ * HOST_SI_CL1_RSS_MAILBOX_PHYS_BASE: Physical address of outband msg buffer
++ *                                    located in the SI Shared RAM region.
++ *
++ * HOST_SI_CL1_RSS_MAILBOX_ATU_SIZE: Size of outband msg buffer.
++ */
++#define HOST_SI_CL1_RSS_MAILBOX_BASE_S     \
++    (HOST_SI_CL0_RSS_MAILBOX_BASE_S + HOST_SI_CL0_RSS_MAILBOX_ATU_SIZE)
++#define HOST_SI_CL1_RSS_MAILBOX_PHYS_BASE  HOST_SI_PHYS_BASE + UINT64_C(0x40002000)
++#define HOST_SI_CL1_RSS_MAILBOX_ATU_SIZE   ALIGN_UP(0x1000, RSS_ATU_PAGE_SIZE)
++#define HOST_SI_CL1_RSS_MAILBOX_ATU_ID     RSS_ATU_SI_CL1_RSS_MAILBOX_ATU_ID
++
++/*
++ * ATU region for SI CL2<->RSS MHU outband message buffer
++ * HOST_SI_CL2_RSS_MAILBOX_BASE_S: Logical address at which the RSS should access
++ *                                 the SI CL2<->RSS outband msg buffer.
++ *
++ * HOST_SI_CL2_RSS_MAILBOX_PHYS_BASE: Physical address of outband msg buffer
++ *                                    located in the SI Shared RAM region.
++ *
++ * HOST_SI_CL2_RSS_MAILBOX_ATU_SIZE: Size of outband msg buffer.
++ */
++#define HOST_SI_CL2_RSS_MAILBOX_BASE_S     \
++    (HOST_SI_CL1_RSS_MAILBOX_BASE_S + HOST_SI_CL1_RSS_MAILBOX_ATU_SIZE)
++#define HOST_SI_CL2_RSS_MAILBOX_PHYS_BASE  HOST_SI_PHYS_BASE + UINT64_C(0x40004000)
++#define HOST_SI_CL2_RSS_MAILBOX_ATU_SIZE   ALIGN_UP(0x1000, RSS_ATU_PAGE_SIZE)
++#define HOST_SI_CL2_RSS_MAILBOX_ATU_ID     RSS_ATU_SI_CL2_RSS_MAILBOX_ATU_ID
++
++
+ /* Safety Island NVM flash layout */
+ /*
+  * ┌─────────────────────┬──────────────────────┬──────────────────────────┐
+-- 
+2.25.1
+

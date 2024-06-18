@@ -1,0 +1,650 @@
+From f94890f6587d82981ac871a685ed4e77d2650361 Mon Sep 17 00:00:00 2001
+From: Jun Zhang <jun.zhang@arm.com>
+Date: Mon, 24 Jul 2023 15:51:01 +0800
+Subject: [PATCH] rss/kronos: Add support of booting 3 SI clusters
+
+This commit adds the support of loading and booting 3 safety island
+clusters.
+1. Setup flash layout and flash map;
+2. Load image in the order of SCP, SI CL0, SI CL1, SI CL2 and LCP;
+3. Use MHUv3 to tell SCP to boot safety island clusters;
+4. Skip loading of MCP which is not needed in rdkronos platform.
+5. Increase size of BOOT_TFM_SHARED_DATA_SIZE to 0x800:w
+
+Upstream-Status: Pending
+Signed-off-by: Jun Zhang <jun.zhang@arm.com>
+Signed-off-by: Hongda Deng <Hongda.Deng@arm.com>
+---
+ bl2/ext/mcuboot/bl2_main.c                    |   5 +
+ config/check_config.cmake                     |   2 +-
+ .../arm/rss/common/partition/region_defs.h    |  13 +-
+ .../target/arm/rss/kronos/bl2/boot_hal_bl2.c  | 233 +++++++++++++++++-
+ .../target/arm/rss/kronos/bl2/flash_map_bl2.c |  57 +++++
+ .../ext/target/arm/rss/kronos/config.cmake    |   2 +-
+ .../target/arm/rss/kronos/firmware_image_id.h |  11 +-
+ .../ext/target/arm/rss/kronos/flash_layout.h  |  36 ++-
+ .../target/arm/rss/kronos/host_base_address.h |  58 ++++-
+ .../ext/target/arm/rss/kronos/size_defs.h     |   3 +
+ 10 files changed, 400 insertions(+), 20 deletions(-)
+
+diff --git a/bl2/ext/mcuboot/bl2_main.c b/bl2/ext/mcuboot/bl2_main.c
+index 901a94e83..b8614de96 100644
+--- a/bl2/ext/mcuboot/bl2_main.c
++++ b/bl2/ext/mcuboot/bl2_main.c
+@@ -146,6 +146,11 @@ int main(void)
+      * TF-M image, which means the response is filled correctly.
+      */
+     for (image_id = MCUBOOT_IMAGE_NUMBER - 1; image_id >= 0; image_id--) {
++        if (image_id == RSS_FIRMWARE_MCP_ID) {
++            BOOT_LOG_INF("Skip loading MCP");
++            continue;
++        }
++
+         if (boot_platform_pre_load(image_id)) {
+             BOOT_LOG_ERR("Pre-load step for image %d failed", image_id);
+             FIH_PANIC;
+diff --git a/config/check_config.cmake b/config/check_config.cmake
+index 7e72d9371..78f7f6400 100644
+--- a/config/check_config.cmake
++++ b/config/check_config.cmake
+@@ -55,7 +55,7 @@ get_property(MCUBOOT_STRATEGY_LIST CACHE MCUBOOT_UPGRADE_STRATEGY PROPERTY STRIN
+ tfm_invalid_config(BL2 AND (NOT MCUBOOT_UPGRADE_STRATEGY IN_LIST MCUBOOT_STRATEGY_LIST) AND NOT USE_KCONFIG_TOOL)
+
+ # Maximum number of MCUBoot images supported by TF-M NV counters and ROTPKs
+-tfm_invalid_config(PLATFORM_DEFAULT_MCUBOOT_IMAGE_NUMBER AND (MCUBOOT_IMAGE_NUMBER GREATER 4))
++tfm_invalid_config(PLATFORM_DEFAULT_MCUBOOT_IMAGE_NUMBER AND (MCUBOOT_IMAGE_NUMBER GREATER 5))
+
+ tfm_invalid_config((BL2 AND CONFIG_TFM_BOOT_STORE_MEASUREMENTS AND NOT CONFIG_TFM_BOOT_STORE_ENCODED_MEASUREMENTS) AND NOT MCUBOOT_DATA_SHARING)
+ tfm_invalid_config((NOT (TFM_PARTITION_FIRMWARE_UPDATE OR CONFIG_TFM_BOOT_STORE_MEASUREMENTS)) AND MCUBOOT_DATA_SHARING)
+diff --git a/platform/ext/target/arm/rss/common/partition/region_defs.h b/platform/ext/target/arm/rss/common/partition/region_defs.h
+index e4b634771..5fdac742f 100644
+--- a/platform/ext/target/arm/rss/common/partition/region_defs.h
++++ b/platform/ext/target/arm/rss/common/partition/region_defs.h
+@@ -207,12 +207,12 @@
+ #endif
+
+ /* BL1 data is in DTCM */
+-#define BL1_1_DATA_START  (BOOT_TFM_SHARED_DATA_BASE + BOOT_TFM_SHARED_DATA_SIZE)
+-#define BL1_1_DATA_SIZE   ((DTCM_SIZE - BOOT_TFM_SHARED_DATA_SIZE) / 2)
++#define BL1_1_DATA_START  (BOOT_TFM_SHARED_DATA_BASE + BOOT_TFM_SHARED_DATA_SIZE - SHARED_OFFSET)
++#define BL1_1_DATA_SIZE   ((DTCM_SIZE - BOOT_TFM_SHARED_DATA_SIZE + SHARED_OFFSET) / 2)
+ #define BL1_1_DATA_LIMIT  (BL1_1_DATA_START + BL1_1_DATA_SIZE - 1)
+
+ #define BL1_2_DATA_START  (BL1_1_DATA_START + BL1_1_DATA_SIZE)
+-#define BL1_2_DATA_SIZE   ((DTCM_SIZE - BOOT_TFM_SHARED_DATA_SIZE) / 2)
++#define BL1_2_DATA_SIZE   ((DTCM_SIZE - BOOT_TFM_SHARED_DATA_SIZE + SHARED_OFFSET) / 2)
+ #define BL1_2_DATA_LIMIT  (BL1_2_DATA_START + BL1_2_DATA_SIZE - 1)
+
+ /* XIP data goes after the BL2 image */
+@@ -224,14 +224,15 @@
+  * runtime driver supports DMA remapping.
+  */
+ #define BL2_DATA_START    (BL2_XIP_TABLES_START + BL2_XIP_TABLES_SIZE)
+-#define BL2_DATA_SIZE     (DTCM_SIZE - BOOT_TFM_SHARED_DATA_SIZE)
++#define BL2_DATA_SIZE     (DTCM_SIZE - BOOT_TFM_SHARED_DATA_SIZE + SHARED_OFFSET)
+ #define BL2_DATA_LIMIT    (BL2_DATA_START + BL2_DATA_SIZE - 1)
+
+ /* Store boot data at the start of the DTCM. */
+ #define BOOT_TFM_SHARED_DATA_BASE DTCM_BASE_S
+-#define BOOT_TFM_SHARED_DATA_SIZE (0x400)
++#define BOOT_TFM_SHARED_DATA_SIZE (0x400 + SHARED_OFFSET)
+ #define BOOT_TFM_SHARED_DATA_LIMIT (BOOT_TFM_SHARED_DATA_BASE + \
+-                                    BOOT_TFM_SHARED_DATA_SIZE - 1)
++                                    BOOT_TFM_SHARED_DATA_SIZE - SHARED_OFFSET - 1)
++#define SHARED_OFFSET 0x400
+
+ #define PROVISIONING_BUNDLE_CODE_START ITCM_BASE_S
+ #define PROVISIONING_BUNDLE_CODE_SIZE  ITCM_SIZE
+diff --git a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+index 922f6882a..4dcebda6b 100644
+--- a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
++++ b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+@@ -800,8 +800,7 @@ static int boot_platform_pre_load_ap_bl1(void)
+     atu_err = atu_initialize_region(&ATU_DEV_S,
+                                     HOST_AP_BL1_IMG_CODE_ATU_ID,
+                                     HOST_AP_BL1_CODE_BASE_S,
+-                                    (HOST_REMOTE_CHIP_PERIPH_OFFSET(chip_id) +
+-                                     HOST_AP_BL1_PHYS_BASE),
++                                    HOST_AP_BL1_PHYS_BASE,
+                                     HOST_AP_BL1_ATU_SIZE);
+     if (atu_err != ATU_ERR_NONE) {
+         return 1;
+@@ -853,6 +852,229 @@ static int boot_platform_post_load_ap_bl1(void)
+     return 0;
+ }
+
++/*
++ * ================================== Safety Island Cluster0 ==================================
++ */
++
++/* Fuction called before si cl0 firmware is loaded. */
++static int boot_platform_pre_load_si_cl0(void)
++{
++    enum atu_error_t atu_err;
++
++    BOOT_LOG_INF("BL2: SI CL0 pre load start");
++
++    /* Configure RSS ATU to access RSS header region for SI CL0 */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_SI_CL0_IMG_HDR_ATU_ID,
++                                    HOST_SI_CL0_HDR_ATU_BASE_S,
++                                    RSS_HDR_PHYS_BASE,
++                                    RSS_IMG_HDR_ATU_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++    /* Configure RSS ATU to access AP BL1 SRAM code region */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_SI_CL0_IMG_CODE_ATU_ID,
++                                    HOST_SI_CL0_CODE_BASE_S,
++                                    HOST_SI_CL0_SRAM_PHYS_BASE,
++                                    HOST_SI_CL0_ATU_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    BOOT_LOG_INF("BL2: SI CL0 pre load complete");
++
++    return 0;
++}
++
++/* Fuction called after si cl0 firmware is loaded. */
++static int boot_platform_post_load_si_cl0(void)
++{
++    enum atu_error_t atu_err;
++    enum mhu_v3_x_error_t mhu_error;
++
++    BOOT_LOG_INF("BL2: SI CL0 post load start");
++    /* Clear the header from the header region but avoid removing anything that
++     * the region may be incidentally overlapping.
++     */
++    memset(HOST_SI_CL0_IMG_BASE_S, 0, BL2_HEADER_SIZE);
++    /*
++     * Send doorbell to SCP to indicate that the RSS initialization is
++     * complete and that the SCP can release safety island cluster0
++     */
++    BOOT_LOG_INF("Telling SCP to reset SI CL0");
++    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, 2, 0x1);
++
++    if (mhu_error != MHU_V_3_X_ERR_NONE) {
++        return mhu_error;
++    }
++    BOOT_LOG_INF("BL2: RSS-->SCP doorbell set!");
++
++    /* Close RSS ATU region configured to access RSS header region for SI CL0 */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_SI_CL0_IMG_HDR_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++    /* Close RSS ATU region configured to access SI CL0 SRAM code region */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_SI_CL0_IMG_CODE_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    BOOT_LOG_INF("BL2: SI CL0 post load complete");
++
++    return 0;
++}
++
++/*
++ * ================================== Safety Island Cluster1 ==================================
++ */
++
++/* Fuction called before si cl1 firmware is loaded. */
++static int boot_platform_pre_load_si_cl1(void)
++{
++    enum atu_error_t atu_err;
++
++    BOOT_LOG_INF("BL2: SI CL1 pre load start");
++
++    /* Configure RSS ATU to access RSS header region for SI CL1 */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_SI_CL1_IMG_HDR_ATU_ID,
++                                    HOST_SI_CL1_HDR_ATU_BASE_S,
++                                    RSS_HDR_PHYS_BASE,
++                                    RSS_IMG_HDR_ATU_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++    /* Configure RSS ATU to access AP BL1 SRAM code region */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_SI_CL1_IMG_CODE_ATU_ID,
++                                    HOST_SI_CL1_CODE_BASE_S,
++                                    HOST_SI_CL1_SRAM_PHYS_BASE,
++                                    HOST_SI_CL1_ATU_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    BOOT_LOG_INF("BL2: SI CL1 pre load complete");
++
++    return 0;
++}
++
++/* Fuction called after si cl1 firmware is loaded. */
++static int boot_platform_post_load_si_cl1(void)
++{
++    enum atu_error_t atu_err;
++    enum mhu_v3_x_error_t mhu_error;
++
++    BOOT_LOG_INF("BL2: SI CL1 post load start");
++
++    /* Clear the header from the header region but avoid removing anything that
++     * the region may be incidentally overlapping.
++     */
++    memset(HOST_SI_CL1_IMG_BASE_S, 0, BL2_HEADER_SIZE);
++    /*
++     * Send doorbell to SCP to indicate that the RSS initialization is
++     * complete and that the SCP can release safety island cluster1
++     */
++    BOOT_LOG_INF("Telling SCP to reset SI CL1");
++    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, 3, 0x1);
++
++    if (mhu_error != MHU_V_3_X_ERR_NONE) {
++        return mhu_error;
++    }
++    BOOT_LOG_INF("BL2: RSS-->SCP doorbell set!");
++
++    /* Close RSS ATU region configured to access RSS header region for SI CL1 */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_SI_CL1_IMG_HDR_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++    /* Close RSS ATU region configured to access SI CL1 SRAM code region */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_SI_CL1_IMG_CODE_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    BOOT_LOG_INF("BL2: SI CL1 post load complete");
++
++    return 0;
++}
++
++/*
++ * ================================== Safety Island Cluster2 ==================================
++ */
++
++/* Fuction called before si cl2 firmware is loaded. */
++static int boot_platform_pre_load_si_cl2(void)
++{
++    enum atu_error_t atu_err;
++
++    BOOT_LOG_INF("BL2: SI CL2 pre load start");
++
++    /* Configure RSS ATU to access RSS header region for SI CL2 */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_SI_CL2_IMG_HDR_ATU_ID,
++                                    HOST_SI_CL2_HDR_ATU_BASE_S,
++                                    RSS_HDR_PHYS_BASE,
++                                    RSS_IMG_HDR_ATU_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++    /* Configure RSS ATU to access SI CL2 SRAM code region */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_SI_CL2_IMG_CODE_ATU_ID,
++                                    HOST_SI_CL2_CODE_BASE_S,
++                                    HOST_SI_CL2_SRAM_PHYS_BASE,
++                                    HOST_SI_CL2_ATU_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    BOOT_LOG_INF("BL2: SI CL2 pre load complete");
++
++    return 0;
++}
++
++/* Fuction called after si cl2 firmware is loaded. */
++static int boot_platform_post_load_si_cl2(void)
++{
++    enum atu_error_t atu_err;
++    enum mhu_v3_x_error_t mhu_error;
++
++    BOOT_LOG_INF("BL2: SI CL2 post load start");
++
++    /* Clear the header from the header region but avoid removing anything that
++     * the region may be incidentally overlapping.
++     */
++    memset(HOST_SI_CL2_IMG_BASE_S, 0, BL2_HEADER_SIZE);
++    /*
++     * Send doorbell to SCP to indicate that the RSS initialization is
++     * complete and that the SCP can release safety island cluster2
++     */
++	BOOT_LOG_INF("Telling SCP to reset SI CL2");
++    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, 4, 0x1);
++
++    if (mhu_error != MHU_V_3_X_ERR_NONE) {
++        return mhu_error;
++    }
++    BOOT_LOG_INF("BL2: RSS-->SCP doorbell set!");
++
++    /* Close RSS ATU region configured to access RSS header region for SI CL2 */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_SI_CL2_IMG_HDR_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++    /* Close RSS ATU region configured to access SI CL2 SRAM code region */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_SI_CL2_IMG_CODE_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    BOOT_LOG_INF("BL2: SI CL2 post load complete");
++
++    return 0;
++}
+ /*
+  * ================================= VECTORS ==================================
+  */
+@@ -864,6 +1086,9 @@ static int (*boot_platform_pre_load_vector[RSS_FIRMWARE_COUNT]) (void) = {
+     [RSS_FIRMWARE_SCP_ID]           = boot_platform_pre_load_scp,
+     [RSS_FIRMWARE_MCP_ID]           = boot_platform_pre_load_mcp,
+     [RSS_FIRMWARE_LCP_ID]           = boot_platform_pre_load_lcp,
++    [RSS_FIRMWARE_SI_CL0_ID]        = boot_platform_pre_load_si_cl0,
++    [RSS_FIRMWARE_SI_CL1_ID]        = boot_platform_pre_load_si_cl1,
++    [RSS_FIRMWARE_SI_CL2_ID]        = boot_platform_pre_load_si_cl2,
+     [RSS_FIRMWARE_AP_BL1_ID]        = boot_platform_pre_load_ap_bl1,
+ };
+
+@@ -874,13 +1099,15 @@ static int (*boot_platform_post_load_vector[RSS_FIRMWARE_COUNT]) (void) = {
+     [RSS_FIRMWARE_SCP_ID]           = boot_platform_post_load_scp,
+     [RSS_FIRMWARE_MCP_ID]           = boot_platform_post_load_mcp,
+     [RSS_FIRMWARE_LCP_ID]           = boot_platform_post_load_lcp,
++    [RSS_FIRMWARE_SI_CL0_ID]        = boot_platform_post_load_si_cl0,
++    [RSS_FIRMWARE_SI_CL1_ID]        = boot_platform_post_load_si_cl1,
++    [RSS_FIRMWARE_SI_CL2_ID]        = boot_platform_post_load_si_cl2,
+     [RSS_FIRMWARE_AP_BL1_ID]        = boot_platform_post_load_ap_bl1,
+ };
+
+ /*
+  * ============================== LOAD FUNCTIONS ==============================
+  */
+-
+ int boot_platform_pre_load(uint32_t image_id)
+ {
+     if (image_id >= RSS_FIRMWARE_COUNT) {
+diff --git a/platform/ext/target/arm/rss/kronos/bl2/flash_map_bl2.c b/platform/ext/target/arm/rss/kronos/bl2/flash_map_bl2.c
+index 4309b2e10..2b3f8a552 100644
+--- a/platform/ext/target/arm/rss/kronos/bl2/flash_map_bl2.c
++++ b/platform/ext/target/arm/rss/kronos/bl2/flash_map_bl2.c
+@@ -108,6 +108,48 @@ const struct flash_area flash_map[] = {
+         .fa_off = FLASH_AREA_13_OFFSET,
+         .fa_size = FLASH_AREA_13_SIZE,
+     },
++    {
++        .fa_id = FLASH_AREA_14_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_14_OFFSET,
++        .fa_size = FLASH_AREA_14_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_15_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_15_OFFSET,
++        .fa_size = FLASH_AREA_15_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_16_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_16_OFFSET,
++        .fa_size = FLASH_AREA_16_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_17_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_17_OFFSET,
++        .fa_size = FLASH_AREA_17_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_18_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_18_OFFSET,
++        .fa_size = FLASH_AREA_18_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_19_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_19_OFFSET,
++        .fa_size = FLASH_AREA_19_SIZE,
++    },
+ };
+
+ const int flash_map_entry_num = ARRAY_SIZE(flash_map);
+@@ -144,6 +186,21 @@ int boot_get_image_exec_ram_info(uint32_t image_id,
+         *exec_ram_size  = HOST_AP_BL1_ATU_SIZE;
+         rc = 0;
+     }
++    else if (image_id == RSS_FIRMWARE_SI_CL0_ID) {
++        *exec_ram_start = HOST_SI_CL0_IMG_BASE_S;
++        *exec_ram_size  = HOST_SI_CL0_ATU_SIZE;
++        rc = 0;
++    }
++    else if (image_id == RSS_FIRMWARE_SI_CL1_ID) {
++        *exec_ram_start = HOST_SI_CL1_IMG_BASE_S;
++        *exec_ram_size  = HOST_SI_CL1_ATU_SIZE;
++        rc = 0;
++    }
++    else if (image_id == RSS_FIRMWARE_SI_CL2_ID) {
++        *exec_ram_start = HOST_SI_CL2_IMG_BASE_S;
++        *exec_ram_size  = HOST_SI_CL2_ATU_SIZE;
++        rc = 0;
++    }
+
+     return rc;
+ }
+diff --git a/platform/ext/target/arm/rss/kronos/config.cmake b/platform/ext/target/arm/rss/kronos/config.cmake
+index 7e77d8911..a596617be 100644
+--- a/platform/ext/target/arm/rss/kronos/config.cmake
++++ b/platform/ext/target/arm/rss/kronos/config.cmake
+@@ -10,7 +10,7 @@ set(TFM_BL1_MEMORY_MAPPED_FLASH             OFF      CACHE BOOL    "Whether BL1
+ set(PLATFORM_HAS_BOOT_DMA                   OFF      CACHE BOOL    "Enable dma support for memory transactions for bootloader")
+ set(RSS_USE_HOST_UART                       OFF      CACHE BOOL    "Whether RSS should use the UART from the host system (opposed to dedicated UART)")
+ set(RSS_USE_SI_FLASH                        OFF      CACHE BOOL    "Enable RSS using the safety island NVM flash.")
+-set(MCUBOOT_IMAGE_NUMBER                    6        CACHE STRING  "Number of images supported by MCUBoot")
++set(MCUBOOT_IMAGE_NUMBER                    9        CACHE STRING  "Number of images supported by MCUBoot")
+ set(ENABLE_SCP_ATU_CTRL                     OFF      CACHE BOOL    "Enable SCP to configure ATU")
+ set(RSS_HAS_EXPANSION_PERIPHERALS           ON       CACHE BOOL    "Whether RSS has sub-platform specific peripherals in the expansion layer")
+ set(ENABLE_MCP_ATU_CTRL                     OFF      CACHE BOOL    "Enable MCP to configure ATU")
+diff --git a/platform/ext/target/arm/rss/kronos/firmware_image_id.h b/platform/ext/target/arm/rss/kronos/firmware_image_id.h
+index 497d3bf90..2f527916a 100644
+--- a/platform/ext/target/arm/rss/kronos/firmware_image_id.h
++++ b/platform/ext/target/arm/rss/kronos/firmware_image_id.h
+@@ -18,10 +18,13 @@
+ #define RSS_FIRMWARE_NON_SECURE_ID   1
+ /* Host Firmware */
+ #define RSS_FIRMWARE_AP_BL1_ID       2
+-#define RSS_FIRMWARE_LCP_ID          3
+-#define RSS_FIRMWARE_MCP_ID          4
+-#define RSS_FIRMWARE_SCP_ID          5
++#define RSS_FIRMWARE_SI_CL2_ID       3
++#define RSS_FIRMWARE_SI_CL1_ID       4
++#define RSS_FIRMWARE_SI_CL0_ID       5
++#define RSS_FIRMWARE_LCP_ID          6
++#define RSS_FIRMWARE_MCP_ID          7
++#define RSS_FIRMWARE_SCP_ID          8
+ /* Number of firmware loaded by BL2 */
+-#define RSS_FIRMWARE_COUNT           6
++#define RSS_FIRMWARE_COUNT           9
+
+ #endif /* __RSS_FIRMWARE_IMAGE_ID_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/flash_layout.h b/platform/ext/target/arm/rss/kronos/flash_layout.h
+index 4fdda8662..a1152d67c 100644
+--- a/platform/ext/target/arm/rss/kronos/flash_layout.h
++++ b/platform/ext/target/arm/rss/kronos/flash_layout.h
+@@ -56,6 +56,9 @@
+ #define FLASH_MCP_PARTITION_SIZE        (SIZE_DEF_MCP_IMAGE) /* MCP  partition */
+ #define FLASH_LCP_PARTITION_SIZE        (SIZE_DEF_LCP_IMAGE) /* LCP  partition */
+ #define FLASH_AP_BL1_PARTITION_SIZE     (SIZE_DEF_AP_BL1_IMAGE) /* AP BL1  partition */
++#define FLASH_SI_CL0_PARTITION_SIZE     (SIZE_DEF_SI_CL0_IMAGE)  /* SI CL0 partition */
++#define FLASH_SI_CL1_PARTITION_SIZE     (SIZE_DEF_SI_CL1_IMAGE)  /* SI CL1 partition */
++#define FLASH_SI_CL2_PARTITION_SIZE     (SIZE_DEF_SI_CL2_IMAGE)  /* SI CL2 partition */
+ #define FLASH_MAX_PARTITION_SIZE        ((FLASH_S_PARTITION_SIZE >   \
+                                           FLASH_NS_PARTITION_SIZE) ? \
+                                          FLASH_S_PARTITION_SIZE :    \
+@@ -133,13 +136,38 @@
+ #define FLASH_AREA_13_ID            (FLASH_AREA_12_ID + 1)
+ #define FLASH_AREA_13_OFFSET        (FLASH_AREA_12_OFFSET + FLASH_AREA_12_SIZE)
+ #define FLASH_AREA_13_SIZE          (FLASH_AP_BL1_PARTITION_SIZE)
++/* SI0 image primary slot */
++#define FLASH_AREA_14_ID            (FLASH_AREA_13_ID + 1)
++#define FLASH_AREA_14_OFFSET        (FLASH_AREA_13_OFFSET + FLASH_AREA_13_SIZE)
++#define FLASH_AREA_14_SIZE          (FLASH_SI_CL0_PARTITION_SIZE)
++/* SI0 image secondary slot */
++#define FLASH_AREA_15_ID            (FLASH_AREA_14_ID + 1)
++#define FLASH_AREA_15_OFFSET        (FLASH_AREA_14_OFFSET + FLASH_AREA_14_SIZE)
++#define FLASH_AREA_15_SIZE          (FLASH_SI_CL0_PARTITION_SIZE)
++/* SI1 image primary slot */
++#define FLASH_AREA_16_ID            (FLASH_AREA_15_ID + 1)
++#define FLASH_AREA_16_OFFSET        (FLASH_AREA_15_OFFSET + FLASH_AREA_15_SIZE)
++#define FLASH_AREA_16_SIZE          (FLASH_SI_CL1_PARTITION_SIZE)
++/* SI1 image secondary slot */
++#define FLASH_AREA_17_ID            (FLASH_AREA_16_ID + 1)
++#define FLASH_AREA_17_OFFSET        (FLASH_AREA_16_OFFSET + FLASH_AREA_16_SIZE)
++#define FLASH_AREA_17_SIZE          (FLASH_SI_CL1_PARTITION_SIZE)
++/* SI2 image primary slot */
++#define FLASH_AREA_18_ID            (FLASH_AREA_17_ID + 1)
++#define FLASH_AREA_18_OFFSET        (FLASH_AREA_17_OFFSET + FLASH_AREA_17_SIZE)
++#define FLASH_AREA_18_SIZE          (FLASH_SI_CL2_PARTITION_SIZE)
++/* SI2 image secondary slot */
++#define FLASH_AREA_19_ID            (FLASH_AREA_18_ID + 1)
++#define FLASH_AREA_19_OFFSET        (FLASH_AREA_18_OFFSET + FLASH_AREA_18_SIZE)
++#define FLASH_AREA_19_SIZE          (FLASH_SI_CL2_PARTITION_SIZE)
++
+
+ /* Maximum number of image sectors supported by the bootloader. */
+ #define MCUBOOT_MAX_IMG_SECTORS    (FLASH_MAX_PARTITION_SIZE / \
+                                     FLASH_AREA_IMAGE_SECTOR_SIZE)
+
+ /* Check that all the images can fit in the Flash area. */
+-#if (FLASH_AREA_11_OFFSET + FLASH_AREA_13_SIZE > FLASH_TOTAL_SIZE)
++#if (FLASH_AREA_19_OFFSET + FLASH_AREA_19_SIZE > FLASH_TOTAL_SIZE)
+ #error "Out of Flash memory!"
+ #endif
+
+@@ -150,6 +178,9 @@
+          ((x) == RSS_FIRMWARE_MCP_ID)        ? FLASH_AREA_8_ID : \
+          ((x) == RSS_FIRMWARE_LCP_ID)        ? FLASH_AREA_10_ID : \
+          ((x) == RSS_FIRMWARE_AP_BL1_ID)     ? FLASH_AREA_12_ID : \
++         ((x) == RSS_FIRMWARE_SI_CL0_ID)     ? FLASH_AREA_14_ID : \
++         ((x) == RSS_FIRMWARE_SI_CL1_ID)     ? FLASH_AREA_16_ID : \
++         ((x) == RSS_FIRMWARE_SI_CL2_ID)     ? FLASH_AREA_18_ID : \
+                                               255)
+ #define FLASH_AREA_IMAGE_SECONDARY(x) \
+         (((x) == RSS_FIRMWARE_SECURE_ID)     ? FLASH_AREA_4_ID : \
+@@ -158,6 +189,9 @@
+          ((x) == RSS_FIRMWARE_MCP_ID)        ? FLASH_AREA_9_ID : \
+          ((x) == RSS_FIRMWARE_LCP_ID)        ? FLASH_AREA_11_ID : \
+          ((x) == RSS_FIRMWARE_AP_BL1_ID)     ? FLASH_AREA_13_ID : \
++         ((x) == RSS_FIRMWARE_SI_CL0_ID)     ? FLASH_AREA_15_ID : \
++         ((x) == RSS_FIRMWARE_SI_CL1_ID)     ? FLASH_AREA_17_ID : \
++         ((x) == RSS_FIRMWARE_SI_CL2_ID)     ? FLASH_AREA_19_ID : \
+                                               255)
+
+ /* Scratch area is not used with RAM loading firmware upgrade */
+diff --git a/platform/ext/target/arm/rss/kronos/host_base_address.h b/platform/ext/target/arm/rss/kronos/host_base_address.h
+index 363aca527..0c1c9cd67 100644
+--- a/platform/ext/target/arm/rss/kronos/host_base_address.h
++++ b/platform/ext/target/arm/rss/kronos/host_base_address.h
+@@ -163,7 +163,7 @@
+ /*  AP BL1 Image address start, offset so end of HEADER is at end of ATU HEADER */
+ #define HOST_AP_BL1_IMG_BASE_S         (HOST_AP_BL1_CODE_BASE_S - BL2_HEADER_SIZE)
+ /*  AP BL1 ITCM physical address start */
+-#define HOST_AP_BL1_PHYS_BASE          0x0000000000000ULL
++#define HOST_AP_BL1_PHYS_BASE          (0x0000000000000ULL +  0x42000UL) /* AP initial boot SRAM base address
+ /*  AP BL1 ATU CODE size (aligned size of SCP image) */
+ #define HOST_AP_BL1_ATU_SIZE           ALIGN_UP(SIZE_DEF_AP_BL1_IMAGE, RSS_ATU_PAGE_SIZE)
+ /*  AP BL1 ID for SCP ATU HEADER region */
+@@ -172,10 +172,51 @@
+ #define HOST_AP_BL1_IMG_CODE_ATU_ID    RSS_ATU_IMG_CODE_LOAD_ID
+
+ /* ATU HEADER physical address start (mapped so end of region is end of MCP ITCM) */
+-#define RSS_HDR_PHYS_BASE      HOST_MCP_PHYS_BASE + HOST_MCP_ATU_SIZE - RSS_IMG_HDR_ATU_SIZE
++#define RSS_HDR_PHYS_BASE              (HOST_SCP_PHYS_BASE + HOST_SCP_ATU_SIZE - RSS_IMG_HDR_ATU_SIZE)
++
++/* SI CL0 ATU HEADER logical address start */
++#define HOST_SI_CL0_HDR_ATU_BASE_S     (HOST_AP_BL1_CODE_BASE_S + HOST_AP_BL1_ATU_SIZE)
++/*  SI CL0 Code region and AP ATU CODE logical address start */
++#define HOST_SI_CL0_CODE_BASE_S        (HOST_SI_CL0_HDR_ATU_BASE_S + RSS_IMG_HDR_ATU_SIZE)
++/*  SI CL0 Image address start, offset so end of HEADER is at end of ATU HEADER */
++#define HOST_SI_CL0_IMG_BASE_S         (HOST_SI_CL0_CODE_BASE_S - BL2_HEADER_SIZE)
++/*  SI physical address start */
++#define HOST_SI_PHYS_BASE              0x2000000000000ULL
++/*  SI CL0 ATU CODE size (aligned size of SI image) */
++#define HOST_SI_CL0_ATU_SIZE           ALIGN_UP(SIZE_DEF_SI_CL0_IMAGE, RSS_ATU_PAGE_SIZE)
++/*  SI CL0 ID for SI CL0 ATU HEADER region */
++#define HOST_SI_CL0_IMG_HDR_ATU_ID     RSS_ATU_IMG_HDR_LOAD_ID
++/*  SI CL0 ID for SI CL0 ATU CODE region */
++#define HOST_SI_CL0_IMG_CODE_ATU_ID    RSS_ATU_IMG_CODE_LOAD_ID
++
++/* SI CL1 ATU HEADER logical address start */
++#define HOST_SI_CL1_HDR_ATU_BASE_S     (HOST_SI_CL0_CODE_BASE_S + HOST_SI_CL0_ATU_SIZE)
++/*  SI CL1 Code region and AP ATU CODE logical address start */
++#define HOST_SI_CL1_CODE_BASE_S        (HOST_SI_CL1_HDR_ATU_BASE_S + RSS_IMG_HDR_ATU_SIZE)
++/*  SI CL1 Image address start, offset so end of HEADER is at end of ATU HEADER */
++#define HOST_SI_CL1_IMG_BASE_S         (HOST_SI_CL1_CODE_BASE_S - BL2_HEADER_SIZE)
++/*  SI CL1 ATU CODE size (aligned size of SI image) */
++#define HOST_SI_CL1_ATU_SIZE           ALIGN_UP(SIZE_DEF_SI_CL1_IMAGE, RSS_ATU_PAGE_SIZE)
++/*  SI CL1 ID for SI CL1 ATU HEADER region */
++#define HOST_SI_CL1_IMG_HDR_ATU_ID     RSS_ATU_IMG_HDR_LOAD_ID
++/*  SI CL1 ID for SI CL1 ATU CODE region */
++#define HOST_SI_CL1_IMG_CODE_ATU_ID    RSS_ATU_IMG_CODE_LOAD_ID
++
++/* SI CL2 ATU HEADER logical address start */
++#define HOST_SI_CL2_HDR_ATU_BASE_S     (HOST_SI_CL1_CODE_BASE_S + HOST_SI_CL1_ATU_SIZE)
++/*  SI CL2 Code region and AP ATU CODE logical address start */
++#define HOST_SI_CL2_CODE_BASE_S        (HOST_SI_CL2_HDR_ATU_BASE_S + RSS_IMG_HDR_ATU_SIZE)
++/*  SI CL2 Image address start, offset so end of HEADER is at end of ATU HEADER */
++#define HOST_SI_CL2_IMG_BASE_S         (HOST_SI_CL2_CODE_BASE_S - BL2_HEADER_SIZE)
++/*  SI CL2 ATU CODE size (aligned size of SI image) */
++#define HOST_SI_CL2_ATU_SIZE           ALIGN_UP(SIZE_DEF_SI_CL2_IMAGE, RSS_ATU_PAGE_SIZE)
++/*  SI CL2 ID for SI CL2 ATU HEADER region */
++#define HOST_SI_CL2_IMG_HDR_ATU_ID     RSS_ATU_IMG_HDR_LOAD_ID
++/*  SI CL2 ID for SI CL2 CODE region */
++#define HOST_SI_CL2_IMG_CODE_ATU_ID    RSS_ATU_IMG_CODE_LOAD_ID
+
+ /* Last rss logical address used for loading images */
+-#define RSS_IMAGE_LOADING_END   (HOST_AP_BL1_CODE_BASE_S + HOST_AP_BL1_ATU_SIZE)
++#define RSS_IMAGE_LOADING_END   (HOST_SI_CL2_CODE_BASE_S + HOST_SI_CL2_ATU_SIZE)
+
+ /*
+  * RSS ATU Regions for accessing the initiation registers.
+@@ -246,6 +287,15 @@
+ /* Safety Island NVM flash logical base address using Non-secure ATU region */
+ #define SI_FLASH_BASE_NS_LOG    (HOST_ACCESS_BASE_NS + 0x8000000)
+ /* Safety Island NVM flash physical base address */
+-#define SI_FLASH_BASE_NS_PHY    (0x2000000000000 + SI_FLASH_BASE)
++#define SI_FLASH_BASE_NS_PHY    (HOST_SI_PHYS_BASE + SI_FLASH_BASE)
++
++/* Address to access safety island images */
++#define SI_CL0_SRAM_BASE        0x120000000ULL
++#define SI_CL1_SRAM_BASE        0x140000000ULL
++#define SI_CL2_SRAM_BASE        0x160000000ULL
++
++#define HOST_SI_CL0_SRAM_PHYS_BASE      (HOST_SI_PHYS_BASE + SI_CL0_SRAM_BASE)
++#define HOST_SI_CL1_SRAM_PHYS_BASE      (HOST_SI_PHYS_BASE + SI_CL1_SRAM_BASE)
++#define HOST_SI_CL2_SRAM_PHYS_BASE      (HOST_SI_PHYS_BASE + SI_CL2_SRAM_BASE)
+
+ #endif  /* __HOST_BASE_ADDRESS_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/size_defs.h b/platform/ext/target/arm/rss/kronos/size_defs.h
+index 3d7b50127..6f18f9fc1 100644
+--- a/platform/ext/target/arm/rss/kronos/size_defs.h
++++ b/platform/ext/target/arm/rss/kronos/size_defs.h
+@@ -27,3 +27,6 @@
+ #define SIZE_DEF_MCP_IMAGE          (0x80000) /* 512 KB */
+ #define SIZE_DEF_LCP_IMAGE          (0x10000) /* 64 KB */
+ #define SIZE_DEF_AP_BL1_IMAGE       (0x80000) /* 512 KB */
++#define SIZE_DEF_SI_CL0_IMAGE       (0x200000) /* 2MB */
++#define SIZE_DEF_SI_CL1_IMAGE       (0x400000) /* 4MB */
++#define SIZE_DEF_SI_CL2_IMAGE       (0x800000) /* 8MB */
+--
+2.25.1
+

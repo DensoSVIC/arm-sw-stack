@@ -1,0 +1,119 @@
+From 393c3390f05b85b882c135d9c47adc3416e941d4 Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Sun, 11 Feb 2024 13:23:11 +0000
+Subject: [PATCH] rss/kronos: Add FVP shutdown handler
+
+In Kronos, There is no differentiation between a reset and
+a shutdown request. A shutdown request results in a system
+reset which is an incorrect behavior.
+
+This is because the FVP model can not be turned off through
+software.
+
+Create a work around by adding a shutdown handler that
+prints a shutdown message, this message can be detected
+by the FVP shutdown_tag parameter causing the FVP to
+terminate.
+
+Upstream-Status: Pending
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ .../ext/target/arm/rss/kronos/CMakeLists.txt  |  3 +-
+ .../target/arm/rss/kronos/tfm_interrupts.c    | 28 ++++++++++++++++---
+ platform/include/tfm_hal_interrupt.h          |  3 +-
+ 3 files changed, 28 insertions(+), 6 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/kronos/CMakeLists.txt b/platform/ext/target/arm/rss/kronos/CMakeLists.txt
+index e99ae9b98..d514bafe0 100644
+--- a/platform/ext/target/arm/rss/kronos/CMakeLists.txt
++++ b/platform/ext/target/arm/rss/kronos/CMakeLists.txt
+@@ -1,5 +1,5 @@
+ #-------------------------------------------------------------------------------
+-# Copyright (c) 2023, Arm Limited. All rights reserved.
++# Copyright (c) 2023-2024, Arm Limited. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ #
+@@ -133,6 +133,7 @@ target_sources(platform_bl2
+         fw_update_agent/fwu_agent_rss.c
+         fw_update_agent/uefi_capsule_parser.c
+         fw_update_agent/uefi_fmp.c
++        ${PLATFORM_DIR}/ext/common/tfm_hal_spm_logdev_peripheral.c
+ )
+ 
+ target_compile_definitions(platform_bl2
+diff --git a/platform/ext/target/arm/rss/kronos/tfm_interrupts.c b/platform/ext/target/arm/rss/kronos/tfm_interrupts.c
+index 1056112b0..b1d4ee714 100644
+--- a/platform/ext/target/arm/rss/kronos/tfm_interrupts.c
++++ b/platform/ext/target/arm/rss/kronos/tfm_interrupts.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2023, Arm Limited. All rights reserved.
++ * Copyright (c) 2023-2024, Arm Limited. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -16,6 +16,9 @@
+ #include <inttypes.h>
+ #include <tfm_hal_platform.h>
+ #include <tfm_hal_interrupt.h>
++#include "tfm_hal_spm_logdev.h"
++
++#define SPMLOG(x) tfm_hal_output_spm_log((x), sizeof(x))
+ 
+ volatile bool scp_doorbell = false;
+ 
+@@ -65,11 +68,28 @@ static int mhu_scp_rss_sys_reset_doorbell_handler(uint32_t value) {
+ 	return -1;
+ }
+ 
++static int mhu_scp_rss_sys_shutdown_doorbell_handler(uint32_t value) {
++
++	SPMLOG("System shutdown complete\r\n");
++
++	/* 
++	 * Not expected to reach here in case of FVP,
++	 * but this is required for FPGA as we are unable to shutdown.
++	 */
++	while(1) {
++		__WFI();
++	}
++
++	/* Not expected to return from this function call */
++	return -1;
++}
++
+ /* Array of function pointers to call if a message is received on a channel */
+ static int (*mhu_scp_rss_doorbell_vector[MHU_SCP_RSS_CHANNEL_COUNT]) (uint32_t) = {
+-    [MHU_SCP_RSS_ATU_REQUEST_CHANNEL_ID] = mhu_scp_rss_atu_request_doorbell_handler,
+-    [MHU_SCP_RSS_SYSTOP_ON_CHANNEL_ID]   = mhu_scp_rss_systop_on_doorbell_handler,
+-    [MHU_SCP_RSS_SYS_RESET_CHANNEL_ID]   = mhu_scp_rss_sys_reset_doorbell_handler,
++    [MHU_SCP_RSS_ATU_REQUEST_CHANNEL_ID]  = mhu_scp_rss_atu_request_doorbell_handler,
++    [MHU_SCP_RSS_SYSTOP_ON_CHANNEL_ID]    = mhu_scp_rss_systop_on_doorbell_handler,
++    [MHU_SCP_RSS_SYS_RESET_CHANNEL_ID]    = mhu_scp_rss_sys_reset_doorbell_handler,
++    [MHU_SCP_RSS_SYS_SHUTDOWN_CHANNEL_ID] = mhu_scp_rss_sys_shutdown_doorbell_handler,
+ };
+ 
+ /* Function to handle the SCP-->RSS MHUv3 combined MBX interrupt */
+diff --git a/platform/include/tfm_hal_interrupt.h b/platform/include/tfm_hal_interrupt.h
+index e34ed6499..6c3692a62 100644
+--- a/platform/include/tfm_hal_interrupt.h
++++ b/platform/include/tfm_hal_interrupt.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2020-2021, Arm Limited. All rights reserved.
++ * Copyright (c) 2020-2021,2024 Arm Limited. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -19,6 +19,7 @@ enum mhu_scp_rss_doorbell_channel {
+     MHU_SCP_RSS_SI_CL0_CHANNEL_ID,
+     MHU_SCP_RSS_SI_CL1_CHANNEL_ID,
+     MHU_SCP_RSS_SI_CL2_CHANNEL_ID,
++    MHU_SCP_RSS_SYS_SHUTDOWN_CHANNEL_ID,
+     MHU_SCP_RSS_CHANNEL_COUNT,
+ };
+ #endif
+-- 
+2.25.1
+

@@ -1,0 +1,217 @@
+From 404b92145ec9cb0d3cffb495282858acfdd6e602 Mon Sep 17 00:00:00 2001
+From: Jingzhao Ni <Jingzhao.Ni@arm.com>
+Date: Fri, 13 Oct 2023 12:32:33 +0800
+Subject: [PATCH] rss/kronos: Add the AP Secure Flash for FWU
+
+Based on the implementation of FWU, the RSS needs to have
+the permission to access the AP secure Flash in BL2 stage
+for loading and writing the image. In this patch:
+1. Add the AP secure flash configuration drvier in Kronos.
+2. Add ATU region for AP secure flash.
+3. Add the RTE_FLASH1 macro definition in the cmsis_drivers
+   configuration file.
+
+Upstream-Status: Pending
+Signed-off-by: Jingzhao Ni <Jingzhao.Ni@arm.com>
+Signed-off-by: Jun Zhang <jun.zhang@arm.com>
+---
+ .../common/cmsis_drivers/config/RTE_Device.h  |  4 ++
+ .../target/arm/rss/kronos/bl2/boot_hal_bl2.c  | 18 +++++++++
+ .../rss/kronos/cmsis_drivers/Driver_Flash.c   | 40 +++++++++++++++++++
+ .../cmsis_drivers/host_cmsis_driver_config.h  |  4 +-
+ .../ext/target/arm/rss/kronos/flash_layout.h  |  9 +++++
+ .../target/arm/rss/kronos/host_base_address.h | 18 ++++++++-
+ 6 files changed, 90 insertions(+), 3 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/common/cmsis_drivers/config/RTE_Device.h b/platform/ext/target/arm/rss/common/cmsis_drivers/config/RTE_Device.h
+index c8c1f49d9..828fa0446 100644
+--- a/platform/ext/target/arm/rss/common/cmsis_drivers/config/RTE_Device.h
++++ b/platform/ext/target/arm/rss/common/cmsis_drivers/config/RTE_Device.h
+@@ -85,4 +85,8 @@
+ // <i> Configuration settings for Driver_Flash0 in component ::Drivers:Flash
+ #define   RTE_FLASH0                     1
+
++// <q> Flash device emulated by SRAM [Driver_Flash1]
++// <i> Configuration settings for Driver_Flash1 in component ::Drivers:Flash
++#define   RTE_FLASH1                     1
++
+ #endif  /* __RTE_DEVICE_H */
+diff --git a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+index 08e7ff122..3d055082c 100644
+--- a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
++++ b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+@@ -41,6 +41,7 @@ extern volatile bool scp_doorbell;
+ extern ARM_DRIVER_FLASH FLASH_DEV_NAME;
+ extern struct flash_area flash_map[];
+ extern const int flash_map_entry_num;
++extern ARM_DRIVER_FLASH AP_FLASH_DEV_NAME;
+
+ static uint8_t *lcp_measurement;
+ static struct boot_measurement_metadata *lcp_measurement_metadata;
+@@ -461,6 +462,12 @@ int32_t boot_platform_init(void)
+         return 1;
+     }
+
++    /* AP flash initial */
++    result = AP_FLASH_DEV_NAME.Initialize(NULL);
++    if (result != ARM_DRIVER_OK) {
++        return 1;
++    }
++
+     return 0;
+ }
+
+@@ -1040,6 +1047,16 @@ static int boot_platform_pre_load_ap_bl2(void)
+
+     BOOT_LOG_INF("BL2: AP BL2 pre load start");
+
++    /* Configure RSS ATU to access AP Secure Flash for AP BL2   */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    RSS_ATU_AP_FLASH_ID,
++                                    AP_FLASH_LOG_BASE,
++                                    AP_FLASH_PHY_BASE,
++                                    AP_FLASH_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
+     /* Configure RSS ATU to access RSS header region for AP BL2 */
+     atu_err = atu_initialize_region(&ATU_DEV_S,
+                                     HOST_AP_BL2_IMG_HDR_ATU_ID,
+@@ -1049,6 +1066,7 @@ static int boot_platform_pre_load_ap_bl2(void)
+     if (atu_err != ATU_ERR_NONE) {
+         return 1;
+     }
++
+     /* Configure RSS ATU to access AP BL2 SRAM code region */
+     atu_err = atu_initialize_region(&ATU_DEV_S,
+                                     HOST_AP_BL2_IMG_CODE_ATU_ID,
+diff --git a/platform/ext/target/arm/rss/kronos/cmsis_drivers/Driver_Flash.c b/platform/ext/target/arm/rss/kronos/cmsis_drivers/Driver_Flash.c
+index 0b7841336..66cccdf35 100644
+--- a/platform/ext/target/arm/rss/kronos/cmsis_drivers/Driver_Flash.c
++++ b/platform/ext/target/arm/rss/kronos/cmsis_drivers/Driver_Flash.c
+@@ -74,3 +74,43 @@ struct cfi_strataflashj3_dev_t SPI_STRATAFLASHJ3_DEV = {
+ #endif /* (SPI_STRATAFLASHJ3_S) && (CFI_S) */
+
+ #endif /* RTE_FLASH0 */
++
++#if (RTE_FLASH1)
++static ARM_FLASH_INFO ARM_FLASH1_DEV_DATA = {
++    .sector_info    = NULL,     /* Uniform sector layout */
++    .sector_count   = AP_FLASH_SIZE / 0x1000,
++    .sector_size    = 0x1000,
++    .page_size      = 256U,
++    .program_unit   = 1U,
++    .erased_value   = ARM_FLASH_DRV_ERASE_VALUE
++};
++
++static struct arm_strata_flash_dev_t ARM_FLASH1_DEV = {
++    .dev    = &FLASH1_DEV,
++    .data   = &ARM_FLASH1_DEV_DATA
++};
++
++ARM_FLASH_STRATA(ARM_FLASH1_DEV, Driver_FLASH1);
++
++#if (defined (SPI_STRATAFLASHJ3_S) && defined (CFI_S))
++static const struct cfi_dev_cfg_t CFI_DEV_CFG_S_AP = {
++    /* Define the flash base/size to be the same as the host access area, as the
++     * flash may not be mapped contiguously or predictably within that area.
++     */
++    .base = AP_FLASH_LOG_BASE,
++};
++
++struct cfi_dev_t CFI_DEV_S_AP = {
++    .cfg = &CFI_DEV_CFG_S_AP,
++};
++
++struct cfi_strataflashj3_dev_t SPI_STRATAFLASHJ3_AP_DEV = {
++    .controller = &CFI_DEV_S_AP,
++    .total_sector_cnt = 0,
++    .page_size = 0,
++    .sector_size = 0,
++    .program_unit = 1U,
++    .is_initialized = false,
++};
++#endif /* (SPI_STRATAFLASHJ3_S) && (CFI_S) */
++#endif
+\ No newline at end of file
+diff --git a/platform/ext/target/arm/rss/kronos/cmsis_drivers/host_cmsis_driver_config.h b/platform/ext/target/arm/rss/kronos/cmsis_drivers/host_cmsis_driver_config.h
+index 2e4d0136c..7f6c559d8 100644
+--- a/platform/ext/target/arm/rss/kronos/cmsis_drivers/host_cmsis_driver_config.h
++++ b/platform/ext/target/arm/rss/kronos/cmsis_drivers/host_cmsis_driver_config.h
+@@ -24,7 +24,9 @@
+ #include "RTE_Device.h"
+
+ extern struct cfi_strataflashj3_dev_t SPI_STRATAFLASHJ3_DEV;
+-
+ #define FLASH0_DEV                   SPI_STRATAFLASHJ3_DEV
+
++extern struct cfi_strataflashj3_dev_t SPI_STRATAFLASHJ3_AP_DEV;
++#define FLASH1_DEV                   SPI_STRATAFLASHJ3_AP_DEV
++
+ #endif  /* __HOST_CMSIS_DRIVER_CONFIG_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/flash_layout.h b/platform/ext/target/arm/rss/kronos/flash_layout.h
+index a0c8fcd17..ad5e068ef 100644
+--- a/platform/ext/target/arm/rss/kronos/flash_layout.h
++++ b/platform/ext/target/arm/rss/kronos/flash_layout.h
+@@ -210,6 +210,15 @@
+ #define FLASH_DEV_NAME_SE_SECURE_FLASH  Driver_FLASH0
+
+
++/* AP Secure Flash
++ * PHY addr: 0x0000_0000_0000_0000 + 0x0800_0000
++ * size    : 0x400_0000 64MB
++ */
++#define AP_FLASH_DEV_NAME Driver_FLASH1
++/* Smallest flash programmable unit in bytes */
++#define AP_TFM_HAL_FLASH_PROGRAM_UNIT      (0x1)
++
++
+ /*******************************/
+ /* ITS */
+ /*******************************/
+diff --git a/platform/ext/target/arm/rss/kronos/host_base_address.h b/platform/ext/target/arm/rss/kronos/host_base_address.h
+index 984a40c48..6202da89c 100644
+--- a/platform/ext/target/arm/rss/kronos/host_base_address.h
++++ b/platform/ext/target/arm/rss/kronos/host_base_address.h
+@@ -44,6 +44,7 @@
+ #define RSS_ATU_SCP_RSS_MAILBOX_ATU_ID  4
+ #define RSS_ATU_AP_RSS_MAILBOX_ATU_ID   5 /*ID to use for region mapping to MHU
+                                             outband msg buffer between AP and RSS */
++#define RSS_ATU_AP_FLASH_ID             6  /* ID to use for region mapping to AP flash */
+ #define RSS_ATU_SI_CL0_RSS_MAILBOX_ATU_ID   7 /* ID to use for region mapping to MHU
+                                                * outband msg buffer between SI CL0 and RSS
+                                                */
+@@ -377,14 +378,27 @@
+ #define HOST_ACCESS_PS_BASE_OFFSET      RSS_FLASH_IMG_SIZE
+
+ /* The physical region base for PS */
+-#define HOST_FLASH0_PS_BASE             (BOOT_FLASH + RSS_FLASH_IMG_SIZE)
+ #define HOST_FLASH0_PS_SIZE             RSS_FLASH_PS_SIZE
+
+ /* ITS region follows PS region */
+ #define HOST_ACCESS_ITS_BASE_OFFSET     (HOST_ACCESS_PS_BASE_OFFSET + HOST_FLASH0_PS_SIZE)
+
+ /* The physical region base and size for ITS */
+-#define HOST_FLASH0_ITS_BASE            (HOST_FLASH0_PS_BASE + HOST_FLASH0_PS_SIZE)
+ #define HOST_FLASH0_ITS_SIZE            RSS_FLASH_ITS_SIZE
+
++/* AP Secure flash layout */
++/*
++ * ┌────────────┬──────────────┬─────────────────┬───────────┬─────────┬────────────┐
++ * │   Reserved │ FWU-Metadata │  Bakup-Metadata │   FIP_A   │  FIP_B  │  Reserverd │
++ * │    (3KB)   │   (4KB)      │      (4KB)      │   (2MB)   │  (2MB)  │   (3KB)    │
++ * └────────────┴──────────────┴─────────────────┴───────────┴─────────┴────────────┘
++ */
++/* AP Secure flash logical base address */
++#define AP_FLASH_LOG_BASE           (HOST_PERIPH_TOWER_NCI_BASE + HOST_PERIPH_TOWER_NCI_SIZE)
++/* This part is for signed images. 64MB */
++#define AP_FLASH_SIZE               0x4000000UL
++
++/* AP Secure flash physical base address */
++#define AP_FLASH_PHY_BASE           (0x0000000000000ULL + 0x08000000ULL)
++
+ #endif  /* __HOST_BASE_ADDRESS_H__ */
+--
+2.25.1
+

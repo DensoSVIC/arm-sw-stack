@@ -1,0 +1,117 @@
+From a3778284e518c6c1bee3e0ac4c383f75ffbfb47b Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Thu, 23 Nov 2023 09:25:51 +0000
+Subject: [PATCH] platform: RSS: Block mailbox IRQs while replying on MHU
+
+RSS sends the reply message, then prints a log,
+then frees the req memory. If the client sends another
+message quickly enough, it could arrive before RSS has
+freed the memory, and if the allocated memory was already
+at the max, then tfm_multi_core_hal_receive() will reject
+the new message with PSA_ERROR_CONNECTION_BUSY.
+
+Disable the MHU IRQ for the duration of the reply() function
+so that the code has the chance to fully complete the MHU
+reply before handling any new messages.
+
+Upstream-Status: Pending
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ .../arm/rss/common/rss_comms/rss_comms_hal.c  | 34 ++++++++++++++++---
+ .../arm/rss/kronos/device/host_device_cfg.h   |  9 +++++
+ 2 files changed, 38 insertions(+), 5 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/common/rss_comms/rss_comms_hal.c b/platform/ext/target/arm/rss/common/rss_comms/rss_comms_hal.c
+index a2356168f..fe9c78729 100644
+--- a/platform/ext/target/arm/rss/common/rss_comms/rss_comms_hal.c
++++ b/platform/ext/target/arm/rss/common/rss_comms/rss_comms_hal.c
+@@ -10,7 +10,9 @@
+ #include "rss_comms.h"
+ #include "rss_comms_queue.h"
+ #include "mhu.h"
++#include "cmsis.h"
+ #include "device_definition.h"
++#include "tfm_peripherals_def.h"
+ #include "tfm_spm_log.h"
+ #include "tfm_pools.h"
+ #include "tfm_hal_interrupt.h"
+@@ -176,29 +178,51 @@ enum tfm_plat_err_t tfm_multi_core_hal_reply(struct client_request_t *req)
+     enum mhu_error_t mhu_err;
+     size_t reply_size;
+ 
++    NVIC_DisableIRQ(MAILBOX_IRQ_AP);
++#ifdef MHU_V3_RSS_SI_CL0
++    NVIC_DisableIRQ(MAILBOX_IRQ_SI_CL0);
++#endif
++#ifdef MHU_V3_RSS_SI_CL1
++    NVIC_DisableIRQ(MAILBOX_IRQ_SI_CL1);
++#endif
++#ifdef MHU_V3_RSS_SI_CL2
++    NVIC_DisableIRQ(MAILBOX_IRQ_SI_CL2);
++#endif
++
+     if (!is_valid_chunk_data_in_pool(req_pool, (uint8_t *)req)) {
+-        return TFM_PLAT_ERR_SYSTEM_ERR;
++        err = TFM_PLAT_ERR_SYSTEM_ERR;
++        goto out;
+     }
+-
+     /* FIXME: Queue replies to avoid blocking execution */
+ 
+     err = rss_protocol_serialize_reply(req, &reply, &reply_size);
+     if (err != TFM_PLAT_ERR_SUCCESS) {
+         SPMLOG_DBGMSGVAL("[COMMS] Serialize reply failed: ", err);
+-        goto out;
++        goto out_free_req;
+     }
+ 
+     mhu_err = mhu_send_data(req->mhu_sender_dev, (uint8_t *)&reply, reply_size);
+     if (mhu_err != MHU_ERR_NONE) {
+         SPMLOG_DBGMSGVAL("[COMMS] MHU send failed: ", mhu_err);
+         err = TFM_PLAT_ERR_SYSTEM_ERR;
+-        goto out;
++        goto out_free_req;
+     }
+ 
+     SPMLOG_DBGMSG("[COMMS] Sent reply\r\n");
+ 
+-out:
++out_free_req:
+     tfm_pool_free(req_pool, req);
++out:
++    NVIC_EnableIRQ(MAILBOX_IRQ_AP);
++#ifdef MHU_V3_RSS_SI_CL0
++    NVIC_EnableIRQ(MAILBOX_IRQ_SI_CL0);
++#endif
++#ifdef MHU_V3_RSS_SI_CL1
++    NVIC_EnableIRQ(MAILBOX_IRQ_SI_CL1);
++#endif
++#ifdef MHU_V3_RSS_SI_CL2
++    NVIC_EnableIRQ(MAILBOX_IRQ_SI_CL2);
++#endif
+     return err;
+ }
+ 
+diff --git a/platform/ext/target/arm/rss/kronos/device/host_device_cfg.h b/platform/ext/target/arm/rss/kronos/device/host_device_cfg.h
+index 6ffb6c8d7..c54ca578f 100644
+--- a/platform/ext/target/arm/rss/kronos/device/host_device_cfg.h
++++ b/platform/ext/target/arm/rss/kronos/device/host_device_cfg.h
+@@ -33,6 +33,15 @@
+ 
+ #define MHU_V3_RSS_SI_CL2    2U
+ 
++/* AP to RSS Secure MHU receiver interrupt */
++#define MAILBOX_IRQ_AP CMU_MHU2_Receiver_IRQn
++/* SI CL0 to RSS MHU receiver interrupt */
++#define MAILBOX_IRQ_SI_CL0 CMU_MHU6_Receiver_IRQn
++/* SI CL1 to RSS MHU receiver interrupt */
++#define MAILBOX_IRQ_SI_CL1 CMU_MHU7_Receiver_IRQn
++/* SI CL2 to RSS MHU receiver interrupt */
++#define MAILBOX_IRQ_SI_CL2 CMU_MHU8_Receiver_IRQn
++
+ /*External Intel Strata Flash Device*/
+ #define SPI_STRATAFLASHJ3_S
+ 
+-- 
+2.25.1
+

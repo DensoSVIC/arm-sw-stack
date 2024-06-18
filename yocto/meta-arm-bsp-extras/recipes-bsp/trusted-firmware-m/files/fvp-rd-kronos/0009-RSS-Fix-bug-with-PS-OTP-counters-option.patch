@@ -1,0 +1,39 @@
+From dc523cd5159496945cdf370d2950bb45dc05a40b Mon Sep 17 00:00:00 2001
+From: Raef Coles <raef.coles@arm.com>
+Date: Mon, 10 Jul 2023 10:37:50 +0100
+Subject: [PATCH] RSS: Fix bug with PS OTP counters option
+
+Add the definition to all platform_ targets, so that the LCM OTP layout
+isn't different in different boot stages (which would cause data to be
+written to the wrong offset).
+
+Upstream-Status: Pending
+Change-Id: I3a7b30b4e399be7a46736505f240b744f43422b6
+Signed-off-by: Raef Coles <raef.coles@arm.com>
+---
+ platform/ext/target/arm/rss/common/CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/platform/ext/target/arm/rss/common/CMakeLists.txt b/platform/ext/target/arm/rss/common/CMakeLists.txt
+index d4fbe8951..d905ad068 100644
+--- a/platform/ext/target/arm/rss/common/CMakeLists.txt
++++ b/platform/ext/target/arm/rss/common/CMakeLists.txt
+@@ -26,6 +26,7 @@ target_compile_definitions(platform_region_defs
+         $<$<BOOL:${RSS_GPT_SUPPORT}>:RSS_GPT_SUPPORT>
+         $<$<BOOL:${RSS_HAS_EXPANSION_PERIPHERALS}>:RSS_HAS_EXPANSION_PERIPHERALS>
+         $<$<BOOL:${RSS_USE_SI_FLASH}>:RSS_USE_SI_FLASH>
++        $<$<BOOL:${PLATFORM_HAS_PS_NV_OTP_COUNTERS}>:PLATFORM_HAS_PS_NV_OTP_COUNTERS>
+ )
+
+ #========================= Platform common defs ===============================#
+@@ -184,7 +185,6 @@ target_compile_definitions(platform_s
+         # Needed for DMA-350 library
+         CMSIS_device_header="rss.h"
+         $<$<BOOL:${PLATFORM_SVC_HANDLERS}>:PLATFORM_SVC_HANDLERS>
+-        $<$<BOOL:${PLATFORM_HAS_PS_NV_OTP_COUNTERS}>:PLATFORM_HAS_PS_NV_OTP_COUNTERS>
+ )
+
+ target_compile_options(platform_s
+--
+2.25.1
+

@@ -1,0 +1,34 @@
+From 6eeb5b71266a59475e2716e5f5ff8133093589ff Mon Sep 17 00:00:00 2001
+From: Jun Zhang <jun.zhang@arm.com>
+Date: Thu, 17 Aug 2023 14:13:08 +0800
+Subject: [PATCH] RSS: Crypto Service allow permission check for PSA_IPC_CALL
+ type
+
+To allow the checking for the TFM_CRYPTO_HANDLE handler in Crypto
+Service, grant crypto permission request whose type is PSA_IPC_CALL
+from Trusted Service.
+
+Upstream-Status: Inappropriate
+Signed-off-by: Jun Zhang <jun.zhang@arm.com>
+---
+ .../arm/rss/kronos/rss_comms/rss_comms_permissions_hal.c      | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/platform/ext/target/arm/rss/kronos/rss_comms/rss_comms_permissions_hal.c b/platform/ext/target/arm/rss/kronos/rss_comms/rss_comms_permissions_hal.c
+index d198d1229..126691099 100644
+--- a/platform/ext/target/arm/rss/kronos/rss_comms/rss_comms_permissions_hal.c
++++ b/platform/ext/target/arm/rss/kronos/rss_comms/rss_comms_permissions_hal.c
+@@ -133,6 +133,10 @@ enum tfm_plat_err_t comms_permissions_service_check(psa_handle_t handle,
+ #endif /* TFM_PARTITION_MEASURED_BOOT */
+ #ifdef TFM_PARTITION_CRYPTO
+     case TFM_CRYPTO_HANDLE:
++        if (type == PSA_IPC_CALL) {
++            return TFM_PLAT_ERR_SUCCESS;
++        }
++
+         if (in_len >= 1) {
+             function_id = ((struct tfm_crypto_pack_iovec *)in_vec[0].base)->function_id;
+             switch(function_id) {
+--
+2.25.1
+

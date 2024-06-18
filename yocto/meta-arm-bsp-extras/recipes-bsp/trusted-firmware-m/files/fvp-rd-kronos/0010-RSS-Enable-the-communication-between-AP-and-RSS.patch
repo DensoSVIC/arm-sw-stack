@@ -1,0 +1,145 @@
+From 6b16db227ef03adee047ee5a64d6506493ff33f2 Mon Sep 17 00:00:00 2001
+From: Jun Zhang <jun.zhang@arm.com>
+Date: Wed, 26 Jul 2023 17:14:29 +0800
+Subject: [PATCH] RSS: Enable the communication between AP and RSS
+
+Enable the AP2RSS Secure MHU and use the MHU v3
+driver as the transport layer to transfer the
+PSA messages between AP and RSS.
+
+Upstream-Status: Pending
+Signed-off-by: Jun Zhang <jun.zhang@arm.com>
+---
+ platform/ext/target/arm/rss/common/target_cfg.c   | 11 +++++++++++
+ .../ext/target/arm/rss/common/tfm_interrupts.c    | 15 +++++++++++++++
+ .../ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c  |  2 +-
+ .../rss/kronos/device/host_device_definition.c    |  4 ++--
+ .../ext/target/arm/rss/kronos/host_base_address.h |  9 +++++----
+ 5 files changed, 34 insertions(+), 7 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/common/target_cfg.c b/platform/ext/target/arm/rss/common/target_cfg.c
+index e00a87b27..5d100713c 100644
+--- a/platform/ext/target/arm/rss/common/target_cfg.c
++++ b/platform/ext/target/arm/rss/common/target_cfg.c
+@@ -215,6 +215,11 @@ enum tfm_plat_err_t nvic_interrupt_target_state_cfg(void)
+ #endif
+     NVIC_ClearTargetState(CMU_MHU0_Receiver_IRQn);
+
++#ifdef MHU_V3_AP_TO_RSS
++    /* Target AP-->RSS MHU interrupt to secure state */
++    NVIC_ClearTargetState(CMU_MHU2_Receiver_IRQn);
++#endif
++
+     return TFM_PLAT_ERR_SUCCESS;
+ }
+
+@@ -264,6 +269,12 @@ enum tfm_plat_err_t nvic_interrupt_enable(void)
+     NVIC_ClearPendingIRQ(CMU_MHU0_Receiver_IRQn);
+     NVIC_EnableIRQ(CMU_MHU0_Receiver_IRQn);
+
++#ifdef MHU_V3_AP_TO_RSS
++    /* Enable AP<-->RSS MHU Interrupt */
++    NVIC_ClearPendingIRQ(CMU_MHU2_Receiver_IRQn);
++    NVIC_EnableIRQ(CMU_MHU2_Receiver_IRQn);
++#endif
++
+     return TFM_PLAT_ERR_SUCCESS;
+ }
+
+diff --git a/platform/ext/target/arm/rss/common/tfm_interrupts.c b/platform/ext/target/arm/rss/common/tfm_interrupts.c
+index 26cadfb61..41404fcab 100644
+--- a/platform/ext/target/arm/rss/common/tfm_interrupts.c
++++ b/platform/ext/target/arm/rss/common/tfm_interrupts.c
+@@ -20,6 +20,9 @@
+ #include "rss_comms_hal.h"
+ #endif
+
++extern struct mhu_v3_x_dev_t MHU_AP_TO_RSS_DEV;
++extern struct mhu_v3_x_dev_t MHU_RSS_TO_AP_DEV;
++
+ static struct irq_t timer0_irq = {0};
+
+ void TFM_TIMER0_IRQ_Handler(void)
+@@ -72,6 +75,18 @@ enum tfm_hal_status_t mailbox_irq_init(void *p_pt,
+
+     return TFM_HAL_SUCCESS;
+ }
++
++/* Platform specific inter-processor communication interrupt handler. */
++void CMU_MHU2_Receiver_Handler(void)
++{
++    (void)tfm_multi_core_hal_receive(&MHU_AP_TO_RSS_DEV, &MHU_RSS_TO_AP_DEV);
++
++    /*
++     * SPM will send a MAILBOX_SIGNAL to the corresponding partition
++     * indicating that a message has arrived and can be processed.
++     */
++    spm_handle_interrupt(mbox_irq_info.p_pt, mbox_irq_info.p_ildi);
++}
+ #endif /* TFM_MULTI_CORE_TOPOLOGY */
+
+ static struct irq_t dma0_ch0_irq = {0};
+diff --git a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+index d1dff7a0a..1b73e21fd 100644
+--- a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
++++ b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+@@ -241,7 +241,7 @@ static int boot_platform_pre_load_secure()
+     }
+
+     /* Configure output bus attribute for the ATU region */
+-    atu_err = set_axnsc(&ATU_DEV_S, ATU_ROBA_SET_1, HOST_AP_RSS_MAILBOX_ATU_ID);
++    atu_err = set_axnsc(&ATU_DEV_S, ATU_ROBA_SET_0, HOST_AP_RSS_MAILBOX_ATU_ID);
+     if (atu_err != ATU_ERR_NONE) {
+         BOOT_LOG_ERR("BL2: Failed to set AP<->RSS MHU Outband msg region as "
+                 "root in ATU mapping: error:%d", atu_err);
+diff --git a/platform/ext/target/arm/rss/kronos/device/host_device_definition.c b/platform/ext/target/arm/rss/kronos/device/host_device_definition.c
+index dab961b35..95ba4eba8 100644
+--- a/platform/ext/target/arm/rss/kronos/device/host_device_definition.c
++++ b/platform/ext/target/arm/rss/kronos/device/host_device_definition.c
+@@ -127,14 +127,14 @@ struct atu_dev_info SCP_ATU_INFO = {
+ /* Message Handling Units (MHU) */
+ #ifdef MHU_V3_AP_TO_RSS
+ struct mhu_v3_x_dev_t MHU_AP_TO_RSS_DEV = {
+-    .base = MHU0_RECEIVER_BASE_S,
++    .base = MHU2_RECEIVER_BASE_S,
+     .frame = MHU_V3_X_MBX_FRAME,
+     .subversion = 0};
+ #endif
+
+ #ifdef MHU_V3_RSS_TO_AP
+ struct mhu_v3_x_dev_t MHU_RSS_TO_AP_DEV = {
+-    .base = MHU0_SENDER_BASE_S,
++    .base = MHU2_SENDER_BASE_S,
+     .frame = MHU_V3_X_PBX_FRAME,
+     .subversion = 0};
+ #endif
+diff --git a/platform/ext/target/arm/rss/kronos/host_base_address.h b/platform/ext/target/arm/rss/kronos/host_base_address.h
+index 9f52cd244..a37a531fd 100644
+--- a/platform/ext/target/arm/rss/kronos/host_base_address.h
++++ b/platform/ext/target/arm/rss/kronos/host_base_address.h
+@@ -147,8 +147,8 @@
+ #define HOST_AP_BL2_CODE_BASE_S        (HOST_AP_BL2_HDR_ATU_BASE_S + RSS_IMG_HDR_ATU_SIZE)
+ /*  AP BL2 Image address start, offset so end of HEADER is at end of ATU HEADER */
+ #define HOST_AP_BL2_IMG_BASE_S         (HOST_AP_BL2_CODE_BASE_S - BL2_HEADER_SIZE)
+-/*  AP BL2 ITCM physical address start */
+-#define HOST_AP_BL2_PHYS_BASE          (0x0000000000000ULL +  0x42000UL) /* AP initial boot SRAM base address
++/*  AP BL2 initial boot SRAM base address */
++#define HOST_AP_BL2_PHYS_BASE          (0x0000000000000ULL +  0x42000UL)
+ /*  AP BL2 ATU CODE size (aligned size of SCP image) */
+ #define HOST_AP_BL2_ATU_SIZE           ALIGN_UP(SIZE_DEF_AP_BL2_IMAGE, RSS_ATU_PAGE_SIZE)
+ /*  AP BL2 ID for SCP ATU HEADER region */
+@@ -250,8 +250,9 @@
+  *
+  * HOST_AP_RSS_MAILBOX_ATU_SIZE: Size of outband msg buffer as defined in TF-A.
+  */
+-#define HOST_AP_RSS_MAILBOX_BASE_S     HOST_ACCESS_BASE_NS
+-#define HOST_AP_RSS_MAILBOX_PHYS_BASE  UINT64_C(0x86000)
++#define HOST_AP_RSS_MAILBOX_BASE_S     \
++    (HOST_SI_CL2_CODE_BASE_S + HOST_SI_CL2_ATU_SIZE)
++#define HOST_AP_RSS_MAILBOX_PHYS_BASE  UINT64_C(0xA03F0000)
+ #define HOST_AP_RSS_MAILBOX_ATU_SIZE   ALIGN_UP(0x1000, RSS_ATU_PAGE_SIZE)
+ #define HOST_AP_RSS_MAILBOX_ATU_ID     RSS_ATU_AP_RSS_MAILBOX_ATU_ID
+
+--
+2.25.1
+

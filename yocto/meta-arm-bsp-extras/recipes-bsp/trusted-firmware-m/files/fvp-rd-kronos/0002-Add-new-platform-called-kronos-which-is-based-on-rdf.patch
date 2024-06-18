@@ -1,0 +1,3457 @@
+From b036053bb726a0c4641f55c89fd9f4fe83131653 Mon Sep 17 00:00:00 2001
+From: Jun Zhang <jun.zhang@arm.com>
+Date: Wed, 19 Jul 2023 14:55:55 +0800
+Subject: [PATCH] Add new platform called kronos which is based on rdfremont
+
+Upstream-Status: Pending
+Signed-off-by: Jun Zhang <jun.zhang@arm.com>
+---
+ .../ext/target/arm/rss/kronos/CMakeLists.txt  | 156 +++
+ .../target/arm/rss/kronos/bl2/boot_hal_bl2.c  | 892 ++++++++++++++++++
+ .../target/arm/rss/kronos/bl2/flash_map_bl2.c | 149 +++
+ .../rss/kronos/cmsis_drivers/Driver_Flash.c   | 318 +++++++
+ .../rss/kronos/cmsis_drivers/Driver_USART.c   | 345 +++++++
+ .../cmsis_drivers/host_cmsis_driver_config.h  |  22 +
+ .../rss_expansion_cmsis_driver_config.h       |  26 +
+ .../ext/target/arm/rss/kronos/config.cmake    |  32 +
+ .../target/arm/rss/kronos/config_tfm_target.h |  32 +
+ .../arm/rss/kronos/device/host_device_cfg.h   |  30 +
+ .../kronos/device/host_device_definition.c    | 154 +++
+ .../kronos/device/host_device_definition.h    | 117 +++
+ .../kronos/device/rss_expansion_device_cfg.h  |  32 +
+ .../device/rss_expansion_device_definition.c  |  44 +
+ .../device/rss_expansion_device_definition.h  |  45 +
+ .../target/arm/rss/kronos/firmware_image_id.h |  27 +
+ .../ext/target/arm/rss/kronos/flash_layout.h  | 189 ++++
+ .../target/arm/rss/kronos/host_base_address.h | 240 +++++
+ .../ext/target/arm/rss/kronos/preload.cmake   |   9 +
+ .../rss_comms/rss_comms_permissions_hal.c     | 162 ++++
+ .../rss/kronos/rss_expansion_base_address.h   |  39 +
+ .../kronos/rss_expansion_peripherals_def.c    |  16 +
+ .../target/arm/rss/kronos/rss_memory_sizes.h  |  35 +
+ .../ext/target/arm/rss/kronos/size_defs.h     |  29 +
+ .../target/arm/rss/kronos/tfm_interrupts.c    | 103 ++
+ 25 files changed, 3243 insertions(+)
+ create mode 100644 platform/ext/target/arm/rss/kronos/CMakeLists.txt
+ create mode 100644 platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+ create mode 100644 platform/ext/target/arm/rss/kronos/bl2/flash_map_bl2.c
+ create mode 100644 platform/ext/target/arm/rss/kronos/cmsis_drivers/Driver_Flash.c
+ create mode 100644 platform/ext/target/arm/rss/kronos/cmsis_drivers/Driver_USART.c
+ create mode 100644 platform/ext/target/arm/rss/kronos/cmsis_drivers/host_cmsis_driver_config.h
+ create mode 100644 platform/ext/target/arm/rss/kronos/cmsis_drivers/rss_expansion_cmsis_driver_config.h
+ create mode 100644 platform/ext/target/arm/rss/kronos/config.cmake
+ create mode 100644 platform/ext/target/arm/rss/kronos/config_tfm_target.h
+ create mode 100644 platform/ext/target/arm/rss/kronos/device/host_device_cfg.h
+ create mode 100644 platform/ext/target/arm/rss/kronos/device/host_device_definition.c
+ create mode 100644 platform/ext/target/arm/rss/kronos/device/host_device_definition.h
+ create mode 100644 platform/ext/target/arm/rss/kronos/device/rss_expansion_device_cfg.h
+ create mode 100644 platform/ext/target/arm/rss/kronos/device/rss_expansion_device_definition.c
+ create mode 100644 platform/ext/target/arm/rss/kronos/device/rss_expansion_device_definition.h
+ create mode 100644 platform/ext/target/arm/rss/kronos/firmware_image_id.h
+ create mode 100644 platform/ext/target/arm/rss/kronos/flash_layout.h
+ create mode 100644 platform/ext/target/arm/rss/kronos/host_base_address.h
+ create mode 100644 platform/ext/target/arm/rss/kronos/preload.cmake
+ create mode 100644 platform/ext/target/arm/rss/kronos/rss_comms/rss_comms_permissions_hal.c
+ create mode 100644 platform/ext/target/arm/rss/kronos/rss_expansion_base_address.h
+ create mode 100644 platform/ext/target/arm/rss/kronos/rss_expansion_peripherals_def.c
+ create mode 100644 platform/ext/target/arm/rss/kronos/rss_memory_sizes.h
+ create mode 100644 platform/ext/target/arm/rss/kronos/size_defs.h
+ create mode 100644 platform/ext/target/arm/rss/kronos/tfm_interrupts.c
+
+diff --git a/platform/ext/target/arm/rss/kronos/CMakeLists.txt b/platform/ext/target/arm/rss/kronos/CMakeLists.txt
+new file mode 100644
+index 000000000..24597a5e2
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/CMakeLists.txt
+@@ -0,0 +1,156 @@
++#-------------------------------------------------------------------------------
++# Copyright (c) 2023, Arm Limited. All rights reserved.
++#
++# SPDX-License-Identifier: BSD-3-Clause
++#
++#-------------------------------------------------------------------------------
++
++cmake_policy(SET CMP0076 NEW)
++set(CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
++
++add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../common common)
++
++#========================= Platform Region Defs ===============================#
++
++target_include_directories(platform_region_defs
++    INTERFACE
++        .
++)
++
++#========================= tfm_spm ============================================#
++target_sources(tfm_spm
++    PRIVATE
++        device/host_device_definition.c
++        ${CMAKE_CURRENT_LIST_DIR}/../common/mscp_atu_request_handler.c
++        ${CMAKE_CURRENT_LIST_DIR}/../common/mscp_mailbox.c
++)
++
++target_include_directories(tfm_spm
++    PUBLIC
++        device
++)
++
++#========================= Platform Secure ====================================#
++
++target_include_directories(platform_s
++    PUBLIC
++        cmsis_drivers
++        device
++        ${PLATFORM_DIR}/ext/target/arm/drivers/usart/pl011
++)
++
++target_sources(platform_s
++    PRIVATE
++        cmsis_drivers/Driver_Flash.c
++        cmsis_drivers/Driver_USART.c
++        device/host_device_definition.c
++        device/rss_expansion_device_definition.c
++        ${CMAKE_CURRENT_LIST_DIR}/../common/mscp_atu_request_handler.c
++        ${CMAKE_CURRENT_LIST_DIR}/../common/mscp_mailbox.c
++        ${PLATFORM_DIR}/ext/target/arm/drivers/usart/pl011/uart_pl011_drv.c
++        rss_expansion_peripherals_def.c
++        rss_comms/rss_comms_permissions_hal.c
++)
++
++target_sources(tfm_s
++    PRIVATE
++        device/rss_expansion_device_definition.c
++        ${CMAKE_CURRENT_LIST_DIR}/../common/mscp_atu_request_handler.c
++        ${CMAKE_CURRENT_LIST_DIR}/../common/mscp_mailbox.c
++)
++
++target_include_directories(tfm_s
++    PUBLIC
++        ./device
++)
++
++#========================= Platform Non-Secure ================================#
++
++target_include_directories(platform_ns
++    PUBLIC
++        cmsis_drivers
++        device
++        ${PLATFORM_DIR}/ext/target/arm/drivers/usart/pl011
++)
++
++target_sources(platform_ns
++    PRIVATE
++        cmsis_drivers/Driver_Flash.c
++        cmsis_drivers/Driver_USART.c
++        device/host_device_definition.c
++        device/rss_expansion_device_definition.c
++        ${PLATFORM_DIR}/ext/target/arm/drivers/usart/pl011/uart_pl011_drv.c
++)
++
++#========================= Platform BL2 =======================================#
++
++target_sources(platform_bl2
++    PRIVATE
++        bl2/flash_map_bl2.c
++        cmsis_drivers/Driver_Flash.c
++        cmsis_drivers/Driver_USART.c
++        device/host_device_definition.c
++        device/rss_expansion_device_definition.c
++        ${CMAKE_CURRENT_LIST_DIR}/../common/mscp_atu_request_handler.c
++        ${CMAKE_CURRENT_LIST_DIR}/../common/mscp_mailbox.c
++        ${PLATFORM_DIR}/ext/target/arm/drivers/usart/pl011/uart_pl011_drv.c
++        tfm_interrupts.c
++)
++
++target_compile_definitions(platform_bl2
++    PRIVATE
++        $<$<BOOL:${ENABLE_SCP_ATU_CTRL}>:ENABLE_SCP_ATU_CTRL>
++        $<$<BOOL:${ENABLE_MCP_ATU_CTRL}>:ENABLE_MCP_ATU_CTRL>
++        MEASURED_BOOT_HASH_ALG=${MEASURED_BOOT_HASH_ALG}
++)
++
++target_sources(bl2
++    PRIVATE
++        ${CMAKE_CURRENT_LIST_DIR}/../common/mscp_atu_request_handler.c
++        ${CMAKE_CURRENT_LIST_DIR}/../common/mscp_mailbox.c
++)
++
++target_include_directories(platform_bl2
++    PUBLIC
++        cmsis_drivers
++        device
++        ${PLATFORM_DIR}/ext/target/arm/drivers/usart/pl011
++)
++
++target_compile_definitions(platform_bl2
++    PRIVATE
++        RSS_LCP_COUNT=${RSS_LCP_COUNT}
++)
++
++#========================= Platform BL1_1 =====================================#
++
++target_sources(platform_bl1_1
++    PRIVATE
++        cmsis_drivers/Driver_Flash.c
++        cmsis_drivers/Driver_USART.c
++        device/host_device_definition.c
++        device/rss_expansion_device_definition.c
++        ${PLATFORM_DIR}/ext/target/arm/drivers/usart/pl011/uart_pl011_drv.c
++)
++
++target_include_directories(platform_bl1_1_interface
++    INTERFACE
++        cmsis_drivers
++        device
++        ${PLATFORM_DIR}/ext/target/arm/drivers/usart/pl011
++)
++
++#=========================== MHUv3 Dependent Code ===============================#
++
++if(PLAT_MHU_VERSION EQUAL 3)
++    target_sources(platform_bl2
++        PRIVATE
++            tfm_interrupts.c
++            bl2/boot_hal_bl2.c
++    )
++
++    target_sources(tfm_s
++        PRIVATE
++            tfm_interrupts.c
++    )
++endif()
+diff --git a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+new file mode 100644
+index 000000000..77d6dadbe
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+@@ -0,0 +1,892 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#include "boot_hal.h"
++
++#include <string.h>
++
++#include "atu_rss_drv.h"
++#include "boot_measurement.h"
++#include "bootutil/bootutil.h"
++#include "bootutil/bootutil_log.h"
++#include "bootutil/fault_injection_hardening.h"
++#include "cmsis.h"
++#include "device_definition.h"
++#include "flash_map/flash_map.h"
++#include "host_base_address.h"
++#include "mhu.h"
++#include "mhu_v3_x.h"
++#include "mscp_mailbox.h"
++#include "platform_base_address.h"
++#include "platform_regs.h"
++#include "psa/crypto.h"
++#include "size_defs.h"
++#include "tfm_boot_status.h"
++#include "tfm_plat_defs.h"
++#ifdef CRYPTO_HW_ACCELERATOR
++#include "crypto_hw.h"
++#include "fih.h"
++#endif /* CRYPTO_HW_ACCELERATOR */
++
++extern volatile bool scp_doorbell;
++
++static uint8_t *lcp_measurement;
++static struct boot_measurement_metadata *lcp_measurement_metadata;
++
++static volatile uint8_t chip_id = 0;
++
++/* Read Chip ID and store it in a global variable */
++static void read_chip_id()
++{
++    uint32_t *chip_id_reg = (uint32_t *)RSS_INTEG_REG_BASE;
++
++    chip_id = (((*chip_id_reg) >> 0x8) & 0xFF);
++
++    BOOT_LOG_INF("[BL2] Chip ID: %u", chip_id);
++}
++
++static int boot_add_data_to_shared_area(uint8_t        major_type,
++                                        uint16_t       minor_type,
++                                        size_t         size,
++                                        const uint8_t *data)
++{
++    struct shared_data_tlv_entry tlv_entry = {0};
++    struct tfm_boot_data *boot_data;
++    uintptr_t tlv_end, offset;
++
++    if (data == NULL) {
++        return -1;
++    }
++
++    boot_data = (struct tfm_boot_data *)BOOT_TFM_SHARED_DATA_BASE;
++
++    /* Check whether the shared area needs to be initialized. */
++    if ((boot_data->header.tlv_magic != SHARED_DATA_TLV_INFO_MAGIC) ||
++        (boot_data->header.tlv_tot_len > BOOT_TFM_SHARED_DATA_SIZE)) {
++
++        memset((void *)BOOT_TFM_SHARED_DATA_BASE, 0, BOOT_TFM_SHARED_DATA_SIZE);
++        boot_data->header.tlv_magic   = SHARED_DATA_TLV_INFO_MAGIC;
++        boot_data->header.tlv_tot_len = SHARED_DATA_HEADER_SIZE;
++    }
++
++    /* Get the boundaries of TLV section. */
++    tlv_end = BOOT_TFM_SHARED_DATA_BASE + boot_data->header.tlv_tot_len;
++    offset  = BOOT_TFM_SHARED_DATA_BASE + SHARED_DATA_HEADER_SIZE;
++
++    /* Check whether TLV entry is already added. Iterates over the TLV section
++     * looks for the same entry if found then returns with error.
++     */
++    while (offset < tlv_end) {
++        /* Create local copy to avoid unaligned access */
++        memcpy(&tlv_entry, (const void *)offset, SHARED_DATA_ENTRY_HEADER_SIZE);
++        if (GET_MAJOR(tlv_entry.tlv_type) == major_type &&
++            GET_MINOR(tlv_entry.tlv_type) == minor_type) {
++
++            return -1;
++        }
++
++        offset += SHARED_DATA_ENTRY_SIZE(tlv_entry.tlv_len);
++    }
++
++    /* Add TLV entry. */
++    tlv_entry.tlv_type = SET_TLV_TYPE(major_type, minor_type);
++    tlv_entry.tlv_len  = size;
++
++    /* Check integer overflow and overflow of shared data area. */
++    if (SHARED_DATA_ENTRY_SIZE(size) >
++        (UINT16_MAX - boot_data->header.tlv_tot_len)) {
++        return -1;
++    } else if ((SHARED_DATA_ENTRY_SIZE(size) + boot_data->header.tlv_tot_len) >
++               BOOT_TFM_SHARED_DATA_SIZE) {
++        return -1;
++    }
++
++    offset = tlv_end;
++    memcpy((void *)offset, &tlv_entry, SHARED_DATA_ENTRY_HEADER_SIZE);
++
++    offset += SHARED_DATA_ENTRY_HEADER_SIZE;
++    memcpy((void *)offset, data, size);
++
++    boot_data->header.tlv_tot_len += SHARED_DATA_ENTRY_SIZE(size);
++
++    return 0;
++}
++
++static int store_measurement(uint8_t index,
++                             const uint8_t *measurement,
++                             size_t measurement_size,
++                             const struct boot_measurement_metadata *metadata,
++                             bool lock_measurement)
++{
++    uint16_t minor_type;
++    uint8_t claim;
++    int rc;
++
++    minor_type = SET_MBS_MINOR(index, SW_MEASURE_METADATA);
++    rc = boot_add_data_to_shared_area(TLV_MAJOR_MBS,
++                                      minor_type,
++                                      sizeof(struct boot_measurement_metadata),
++                                      (const uint8_t *)metadata);
++    if (rc) {
++        return rc;
++    }
++
++    claim = lock_measurement ? SW_MEASURE_VALUE_NON_EXTENDABLE
++                             : SW_MEASURE_VALUE;
++    minor_type = SET_MBS_MINOR(index, claim);
++    rc = boot_add_data_to_shared_area(TLV_MAJOR_MBS,
++                                      minor_type,
++                                      measurement_size,
++                                      measurement);
++
++    return rc;
++}
++
++int boot_store_measurement(uint8_t index,
++                           const uint8_t *measurement,
++                           size_t measurement_size,
++                           const struct boot_measurement_metadata *metadata,
++                           bool lock_measurement)
++{
++    uint8_t *test_zero_measurement;
++
++    if (index >= BOOT_MEASUREMENT_SLOT_MAX) {
++        return -1;
++    }
++
++    /*
++     * LCP image requires multiple loads. If slot index is for LCP, then don't
++     * add data to the shared area.
++     */
++    if(index == BOOT_MEASUREMENT_SLOT_RT_0 + RSS_FIRMWARE_LCP_ID) {
++        if (measurement_size > PSA_HASH_LENGTH(MEASURED_BOOT_HASH_ALG)) {
++            return -1;
++        }
++
++        test_zero_measurement = calloc(measurement_size, sizeof(uint8_t));
++
++        /*
++         * If LCP measurements are not stored, store the input measurements.
++         * Else, check if the store measurements matches with the input
++         * measurements. If those doesn't match, then return -1.
++         */
++        if (memcmp(lcp_measurement, test_zero_measurement,
++                   measurement_size * sizeof(uint8_t)) == 0) {
++            memcpy(lcp_measurement, measurement,
++                   measurement_size * sizeof(uint8_t));
++            memcpy(lcp_measurement_metadata, metadata,
++                   sizeof(struct boot_measurement_metadata));
++        } else {
++            if ((memcmp(measurement, lcp_measurement,
++                        measurement_size * sizeof(uint8_t)) != 0) ||
++                (memcmp(metadata, lcp_measurement_metadata,
++                        sizeof(struct boot_measurement_metadata)) != 0)) {
++                return -1;
++            }
++        }
++        return 0;
++    }
++
++    return store_measurement(index,
++                             measurement,
++                             measurement_size,
++                             metadata,
++                             lock_measurement);
++}
++
++int32_t boot_platform_init(void)
++{
++    read_chip_id();
++
++    return 0;
++}
++
++int32_t boot_platform_post_init(void)
++{
++#ifdef CRYPTO_HW_ACCELERATOR
++    int32_t result;
++
++    result = crypto_hw_accelerator_init();
++    if (result) {
++        return 1;
++    }
++
++    (void)fih_delay_init();
++#endif /* CRYPTO_HW_ACCELERATOR */
++
++    return 0;
++}
++
++/*
++ * ================================ Secure ====================================
++ */
++
++static int boot_platform_pre_load_secure()
++{
++    enum atu_error_t atu_err;
++
++    /* Configure RSS ATU to access AP SRAM region for MHU Outband Msg Buffer */
++    atu_err = atu_initialize_region(&ATU_DEV_S, HOST_AP_RSS_MAILBOX_ATU_ID,
++            HOST_AP_RSS_MAILBOX_BASE_S, HOST_AP_RSS_MAILBOX_PHYS_BASE,
++            HOST_AP_RSS_MAILBOX_ATU_SIZE);
++
++    if (atu_err != ATU_ERR_NONE)
++{
++        BOOT_LOG_ERR("BL2: Failed to map AP<->RSS MHU Outband msg region in ATU"
++                ": error:%d", atu_err);
++        return -1;
++    }
++
++    /* Configure output bus attribute for the ATU region */
++    atu_err = set_axnsc(&ATU_DEV_S, ATU_ROBA_SET_1, HOST_AP_RSS_MAILBOX_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        BOOT_LOG_ERR("BL2: Failed to set AP<->RSS MHU Outband msg region as "
++                "root in ATU mapping: error:%d", atu_err);
++        goto fail;
++    }
++
++    BOOT_LOG_INF("BL2: Mapped AP<->RSS MHU Outband msg region in ATU");
++    return 0;
++
++fail:
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_AP_RSS_MAILBOX_ATU_ID);
++
++    return -1;
++}
++
++static int boot_platform_post_load_secure()
++{
++    return 0;
++}
++
++/*
++ * ============================ Non-Secure ====================================
++ */
++
++static int boot_platform_pre_load_non_secure()
++{
++    return 0;
++}
++
++static int boot_platform_post_load_non_secure()
++{
++    return 0;
++}
++
++/*
++ * =================================== SCP ====================================
++ */
++#ifdef ATU_SCP
++enum atu_error_t scp_atu_init(void)
++{
++    enum atu_error_t atu_error;
++    enum mscp_atu_req_error_t scp_atu_error;
++    uint8_t idx;
++
++    scp_atu_error = init_atu_request_handler(&SCP_ATU_INFO);
++    if(scp_atu_error != MSCP_ATU_REQ_ERR_NONE) {
++        BOOT_LOG_INF("BL2: ERROR! Failed to initialize SCP ATU context\n");
++    };
++
++    /* Initialize the translation regions in SCP ATU */
++    for (idx = CMN_CONFIG_SCP_ATU_REGION; idx < SCP_ATU_REGION_COUNT; idx++) {
++        atu_error = atu_initialize_region(&ATU_DEV_SCP, idx,
++                scp_atu_regions[idx].log_addr,
++                (HOST_REMOTE_CHIP_PERIPH_OFFSET(chip_id) +
++                 scp_atu_regions[idx].phy_addr),
++                scp_atu_regions[idx].size);
++
++        if (atu_error != ATU_ERR_NONE) {
++            BOOT_LOG_INF("BL2: ERROR! SCP ATU region %u init status: %d\n",
++                    idx, atu_error);
++            return atu_error;
++        }
++
++        /* Store the region info in the context */
++        SCP_ATU_INFO.active_regions_list[idx].region_owner_id =
++            ATU_REGION_OWNER_ID_RSS;
++
++        SCP_ATU_INFO.active_regions_list[idx].log_addr_start =
++            scp_atu_regions[idx].log_addr;
++
++        SCP_ATU_INFO.active_regions_list[idx].log_addr_end =
++            ((scp_atu_regions[idx].log_addr +
++              scp_atu_regions[idx].size) - 1);
++
++        SCP_ATU_INFO.active_regions_list[idx].phy_addr_start =
++            scp_atu_regions[idx].phy_addr;
++
++        SCP_ATU_INFO.active_regions_list[idx].phy_addr_end =
++            ((scp_atu_regions[idx].phy_addr +
++              scp_atu_regions[idx].size) - 1);
++
++        SCP_ATU_INFO.active_regions_list[idx].is_enabled = true;
++
++        SCP_ATU_INFO.active_regions_count++;
++        BOOT_LOG_INF("BL2: SCP ATU region: %u", idx);
++        BOOT_LOG_INF("[%p - %p]-->[%lx%lx - %lx%lx]\n",
++                (void *)SCP_ATU_INFO.active_regions_list[idx].log_addr_start,
++                (void *)SCP_ATU_INFO.active_regions_list[idx].log_addr_end,
++                (SCP_ATU_INFO.active_regions_list[idx].phy_addr_start & (0xFFFFFFFF << 31)),
++                SCP_ATU_INFO.active_regions_list[idx].phy_addr_start,
++                (SCP_ATU_INFO.active_regions_list[idx].phy_addr_end & (0xFFFFFFFF << 31)),
++                SCP_ATU_INFO.active_regions_list[idx].phy_addr_end);
++
++        if (scp_atu_regions[idx].access_type != ATU_ACCESS_ROOT) {
++            continue;
++        }
++
++        /*
++         * Configure the output bus attributes for ATU regions used to access
++         * CMN config space and Cluster utility region in the AP memory map.
++         * These regions are accessible by root only.
++         *
++         * Access Rights:
++         * | NSE | PROT[1] | attr
++         * | 0   | 0       | secure
++         * | 0   | 1       | non-secure
++         * | 1   | 0       | root
++         * | 1   | 1       | realm
++         *
++         * | PROT[0] | attr
++         * | 0       | unprivileged
++         * | 1       | privileged
++         */
++        atu_error = set_axnsc(&ATU_DEV_SCP, ATU_ROBA_SET_1, idx);
++        if (atu_error != ATU_ERR_NONE) {
++            BOOT_LOG_INF("BL2: Unable to modify AxNSE for ATU region %u\n",
++                    idx);
++            return atu_error;
++        }
++
++        atu_error = set_axprot1(&ATU_DEV_SCP, ATU_ROBA_SET_0, idx);
++        if (atu_error != ATU_ERR_NONE) {
++            BOOT_LOG_INF("BL2: Unable to modify AxPROT1 for ATU region %u\n",
++                    idx);
++            return atu_error;
++        }
++    }
++
++    return 0;
++}
++#endif
++
++static int initialize_rss_scp_mhu(void)
++{
++    enum mhu_error_t err;
++
++    /* Initialize the RSS to SCP Sender MHU */
++    err = mhu_init_sender(&MHU_V3_RSS_TO_SCP_DEV);
++    if (err != MHU_ERR_NONE) {
++        BOOT_LOG_ERR("BL2: RSS to SCP MHU driver init failed:%d", err);
++        return -1;
++    }
++
++    /* Initialize the SCP to RSS Receiver MHU */
++    err = mhu_init_receiver(&MHU_V3_SCP_TO_RSS_DEV);
++    if (err != MHU_ERR_NONE) {
++        BOOT_LOG_ERR("BL2: SCP to RSS MHU driver init failed:%d", err);
++        return -1;
++    }
++
++    BOOT_LOG_INF("BL2: RSS<->SCP MHU initialized");
++    return 0;
++}
++
++/* Fuction called before scp firmware is loaded. */
++static int boot_platform_pre_load_scp(void)
++{
++    enum mscp_mailbox_error_t status;
++    enum atu_error_t atu_err;
++    int32_t mhu_err;
++
++    BOOT_LOG_INF("BL2: SCP pre load start");
++
++    /* Configure RSS ATU to access RSS header region for SCP */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_SCP_IMG_HDR_ATU_ID,
++                                    HOST_SCP_HDR_ATU_BASE_S,
++                                    RSS_HDR_PHYS_BASE,
++                                    RSS_IMG_HDR_ATU_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++    /* Configure RSS ATU to access SCP SRAM code region */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_SCP_IMG_CODE_ATU_ID,
++                                    HOST_SCP_CODE_BASE_S,
++                                    HOST_SCP_PHYS_BASE,
++                                    HOST_SCP_ATU_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++    /* Configure RSS ATU to access SCP INIT_CTRL region */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_SCP_INIT_ATU_ID,
++                                    HOST_SCP_INIT_BASE_S,
++                                    HOST_SCP_INIT_PHYS_BASE,
++                                    HOST_SCP_INIT_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    /* Initialize RSS<-->SCP MHU */
++    mhu_err = initialize_rss_scp_mhu();
++    if (mhu_err) {
++        return mhu_err;
++    }
++
++#ifdef ATU_SCP
++    /* Configure RSS ATU to access SCP ATU */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_SCP_ATU_ATU_ID,
++                                    HOST_SCP_ATU_BASE_S,
++                                    HOST_SCP_ATU_PHYS_BASE,
++                                    HOST_SCP_ATU_ATU_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    /* Configure RSS ATU to access RSM region */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++            HOST_SCP_RSS_MAILBOX_ATU_ID,
++            HOST_SCP_RSS_MAILBOX_BASE_S,
++            (HOST_REMOTE_CHIP_PERIPH_OFFSET(chip_id) +
++             HOST_SCP_RSS_MAILBOX_PHYS_BASE),
++            HOST_SCP_RSS_MAILBOX_ATU_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    /* Initialize the SCP-RSS shared mailbox status */
++    status = mailbox_init(&scp2rss_mbx_info);
++    if (status != MSCP_MAILBOX_ERR_NONE) {
++        BOOT_LOG_INF("BL2: Failed to initialize SCP-RSS mailbox\n");
++        return 1;
++    }
++
++    /*
++     * If SCP ATU control is enabled, then skip configuring the SCP ATU regions
++     * except the RSM shared SRAM region in order to indicate that the SCP ATU
++     * driver can configure the SCP ATU.
++     */
++#   ifndef ENABLE_SCP_ATU_CTRL
++    /* Configure the SCP ATU */
++    atu_err = scp_atu_init();
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++#endif
++#ifdef ENABLE_SCP_ATU_CTRL
++    /* Enable SCP ATU control */
++    *(volatile uint32_t *)RSS_ATU_AP |= 0x1;
++#endif
++    /* Enable SCP<-->RSS MHUv3 Interrupt */
++    NVIC_ClearPendingIRQ(CMU_MHU4_Receiver_IRQn);
++    NVIC_EnableIRQ(CMU_MHU4_Receiver_IRQn);
++#endif
++
++    BOOT_LOG_INF("BL2: SCP pre load complete");
++
++    return 0;
++}
++
++/* Fuction called after scp firmware is loaded. */
++static int boot_platform_post_load_scp(void)
++{
++    enum atu_error_t atu_err;
++    struct mscp_sysctrl *scp_init = (void *) HOST_SCP_INIT_BASE_S;
++
++    BOOT_LOG_INF("BL2: SCP post load start");
++
++    /* Clear the header from the header region but avoid removing anything that
++     * the region may be incidentally overlapping.
++     */
++    memset(HOST_SCP_IMG_BASE_S, 0, BL2_HEADER_SIZE);
++
++    scp_init->cpuwait = 0x1;
++    scp_init->cpuwait = 0x0;
++    BOOT_LOG_INF("SCP is released out of reset");
++
++    /* Close RSS ATU region configured to access RSS header region for SCP */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_SCP_IMG_HDR_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++    /* Close RSS ATU region configured to access SCP SRAM code region */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_SCP_IMG_CODE_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++    /* Close RSS ATU region configured to access SCP INIT_CTRL region */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_SCP_INIT_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    BOOT_LOG_INF("BL2: SCP post load complete");
++
++    return 0;
++}
++
++/*
++ * =================================== MCP ====================================
++ */
++
++/* Fuction called before mcp firmware is loaded. */
++static int boot_platform_pre_load_mcp(void)
++{
++    enum atu_error_t atu_err;
++
++    BOOT_LOG_INF("BL2: MCP pre load start");
++
++    /* Configure RSS ATU to access RSS header region for MCP */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_MCP_IMG_HDR_ATU_ID,
++                                    HOST_MCP_HDR_ATU_BASE_S,
++                                    RSS_HDR_PHYS_BASE,
++                                    RSS_IMG_HDR_ATU_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++    /* Configure RSS ATU to access MCP SRAM code region */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_MCP_IMG_CODE_ATU_ID,
++                                    HOST_MCP_CODE_BASE_S,
++                                    HOST_MCP_PHYS_BASE,
++                                    HOST_MCP_ATU_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++    /* Configure RSS ATU to access MCP INIT_CTRL region */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_MCP_INIT_ATU_ID,
++                                    HOST_MCP_INIT_BASE_S,
++                                    HOST_MCP_INIT_PHYS_BASE,
++                                    HOST_MCP_INIT_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++#ifdef ENABLE_MCP_ATU_CTRL
++    /* Enable MCP ATU control */
++    *(volatile uint32_t *)RSS_ATU_AP |= (0x1 << 1);
++    /* Enable MCP ATU driver to configure the ATU */
++    *(volatile uint32_t *)RSS_SCP_ATU_CFG_BASE = 0x1;
++    BOOT_LOG_WRN("BL2: Enabled MCP ATU CONTROL!");
++#endif
++    BOOT_LOG_INF("BL2: MCP pre load complete");
++
++    return 0;
++}
++
++/* Fuction called after mcp firmware is loaded. */
++static int boot_platform_post_load_mcp(void)
++{
++    enum atu_error_t atu_err;
++    struct mscp_sysctrl *mcp_init = (void *) HOST_MCP_INIT_BASE_S;
++
++    BOOT_LOG_INF("BL2: MCP post load start");
++
++    /* Clear the header from the header region but avoid removing anything that
++     * the region may be incidentally overlapping.
++     */
++    memset(HOST_MCP_IMG_BASE_S, 0, BL2_HEADER_SIZE);
++
++    mcp_init->cpuwait = 0x1;
++    mcp_init->cpuwait = 0x0;
++    BOOT_LOG_INF("MCP is released out of reset");
++
++    /* Close RSS ATU region configured to access RSS header region for MCP */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_MCP_IMG_HDR_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++    /* Close RSS ATU region configured to access MCP SRAM code region */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_MCP_IMG_CODE_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++    /* Close RSS ATU region configured to access MCP INIT_CTRL region */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_MCP_INIT_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    BOOT_LOG_INF("BL2: MCP post load complete");
++
++    return 0;
++}
++
++/*
++ * =================================== LCP ====================================
++ */
++
++/* Fuction called before lcp firmware is loaded. */
++static int boot_platform_pre_load_lcp(void)
++{
++    enum atu_error_t atu_err;
++    int32_t err;
++
++    BOOT_LOG_INF("BL2: LCP pre load start");
++
++    BOOT_LOG_INF("BL2: Wait for doorbell from SCP before starting LCP...");
++
++    /*
++     * Wait till the SCP turns on the SYSTOP power domain. This is required
++     * as the next image that will be loaded by MCUBOOT is LCP and in order
++     * to load the LCM firmware, the SYSTOP domain should be in ON state which
++     * can be done by SCP only.
++     */
++    while (1) {
++        if (scp_doorbell) {
++            BOOT_LOG_INF("BL2: Doorbell received from SCP!");
++            break;
++        }
++    }
++
++    /* Intialize LCP boot measurements */
++    lcp_measurement = calloc(PSA_HASH_LENGTH(MEASURED_BOOT_HASH_ALG),
++                            sizeof(uint8_t));
++    lcp_measurement_metadata =
++            calloc(1, sizeof(struct boot_measurement_metadata));
++    /* Configure RSS ATU to access RSS header region for LCP0 */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_LCP_IMG_HDR_ATU_ID,
++                                    HOST_LCP_HDR_ATU_BASE_S,
++                                    RSS_HDR_PHYS_BASE,
++                                    RSS_IMG_HDR_ATU_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++    /*
++     * Configure RSS ATU region to access the Cluster utility space via SCP
++     * address translation window. This will require both RSS and SCP ATU to be
++     * programmed correctly.
++     */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_LCP_IMG_CODE_ATU_ID,
++                                    HOST_LCP_CODE_BASE_S,
++                                    (HOST_REMOTE_CHIP_PERIPH_OFFSET(chip_id) +
++                                     HOST_LCP_0_PHYS_BASE),
++                                    HOST_LCP_ATU_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    BOOT_LOG_INF("BL2: LCP pre load complete");
++
++    return 0;
++}
++
++/* Fuction called after lcp firmware is loaded. */
++static int boot_platform_post_load_lcp(void)
++{
++    enum atu_error_t atu_err;
++    enum mhu_v3_x_error_t mhu_error;
++    struct boot_rsp rsp;
++    int lcp_idx, rc;
++    fih_ret fih_rc = FIH_FAILURE;
++
++    BOOT_LOG_INF("BL2: LCP post load start");
++
++    /* Clear the header from the header region but avoid removing anything that
++     * the region may be incidentally overlapping.
++     */
++    memset(HOST_LCP_IMG_BASE_S, 0, BL2_HEADER_SIZE);
++
++    /* Close RSS ATU region configured to access LCP SRAM code region */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_LCP_IMG_CODE_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    /* Copy the ITCM contents from LCP0 to other LCPs */
++    for (int lcp_idx = 1; lcp_idx < RSS_LCP_COUNT; lcp_idx++) {
++        /*
++         * Configure RSS ATU region to access the SCP Cluster utility space
++         * and map to the i-th LCP's ITCM
++         */
++        atu_err = atu_initialize_region(&ATU_DEV_S,
++                                        HOST_LCP_IMG_CODE_ATU_ID,
++                                        HOST_LCP_CODE_BASE_S,
++                                        (HOST_REMOTE_CHIP_PERIPH_OFFSET(chip_id) +
++                                         HOST_LCP_N_PHYS_BASE(lcp_idx)),
++                                        HOST_LCP_ATU_SIZE);
++        if (atu_err != ATU_ERR_NONE) {
++            return 1;
++        }
++
++        /* Cleaning 'rsp' to avoid accidentally loading
++         * the NS image in case of a fault injection attack. */
++        memset(&rsp, 0, sizeof(struct boot_rsp));
++
++        FIH_CALL(boot_go_for_image_id, fih_rc, &rsp, RSS_FIRMWARE_LCP_ID);
++        if (FIH_NOT_EQ(fih_rc, FIH_SUCCESS)) {
++            BOOT_LOG_ERR("Unable to find bootable LCP image");
++            FIH_PANIC;
++        }
++
++        /* Clear the header from the header region but avoid removing anything that
++         * the region may be incidentally overlapping.
++         */
++        memset(HOST_LCP_IMG_BASE_S, 0, BL2_HEADER_SIZE);
++
++        /* Close RSS ATU region configured to access LCP SRAM code region */
++        atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_LCP_IMG_CODE_ATU_ID);
++        if (atu_err != ATU_ERR_NONE) {
++            return 1;
++        }
++    }
++
++    /*
++     * Save the boot measurement after LCP images are loaded.
++     */
++    rc = store_measurement(
++        (uint8_t)BOOT_MEASUREMENT_SLOT_RT_0 + RSS_FIRMWARE_LCP_ID,
++        lcp_measurement,
++        PSA_HASH_LENGTH(MEASURED_BOOT_HASH_ALG) * sizeof(uint8_t),
++        lcp_measurement_metadata, false);
++    if (rc) {
++        return -1;
++    }
++
++    /* Close RSS ATU region configured to access RSS header region for LCP */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_LCP_IMG_HDR_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    BOOT_LOG_INF("BL2: LCP post load complete");
++
++    return 0;
++}
++
++/*
++ * ================================== AP BL1 ==================================
++ */
++
++/* Fuction called before ap bl1 firmware is loaded. */
++static int boot_platform_pre_load_ap_bl1(void)
++{
++    enum atu_error_t atu_err;
++
++    BOOT_LOG_INF("BL2: AP BL1 pre load start");
++
++    /* Configure RSS ATU to access RSS header region for AP BL1 */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_AP_BL1_IMG_HDR_ATU_ID,
++                                    HOST_AP_BL1_HDR_ATU_BASE_S,
++                                    RSS_HDR_PHYS_BASE,
++                                    RSS_IMG_HDR_ATU_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++    /* Configure RSS ATU to access AP BL1 SRAM code region */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_AP_BL1_IMG_CODE_ATU_ID,
++                                    HOST_AP_BL1_CODE_BASE_S,
++                                    (HOST_REMOTE_CHIP_PERIPH_OFFSET(chip_id) +
++                                     HOST_AP_BL1_PHYS_BASE),
++                                    HOST_AP_BL1_ATU_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    BOOT_LOG_INF("BL2: AP BL1 pre load complete");
++
++    return 0;
++}
++
++/* Fuction called after ap bl1 firmware is loaded. */
++static int boot_platform_post_load_ap_bl1(void)
++{
++    enum atu_error_t atu_err;
++    enum mhu_v3_x_error_t mhu_error;
++
++    BOOT_LOG_INF("BL2: AP BL1 post load start");
++
++    /* Clear the header from the header region but avoid removing anything that
++     * the region may be incidentally overlapping.
++     */
++    memset(HOST_AP_BL1_IMG_BASE_S, 0, BL2_HEADER_SIZE);
++
++    /*
++     * Send doorbell to SCP to indicate that the RSS initialization is
++     * complete and that the SCP can release the LCPs and turn on the
++     * primary AP core.
++     */
++    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, 1, 0x1);
++
++    if (mhu_error != MHU_V_3_X_ERR_NONE) {
++        return mhu_error;
++    }
++    BOOT_LOG_INF("BL2: RSS-->SCP doorbell set!");
++
++    /* Close RSS ATU region configured to access RSS header region for AP BL1 */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_AP_BL1_IMG_HDR_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++    /* Close RSS ATU region configured to access AP BL1 SRAM code region */
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_AP_BL1_IMG_CODE_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    BOOT_LOG_INF("BL2: AP BL1 post load complete");
++
++    return 0;
++}
++
++/*
++ * ================================= VECTORS ==================================
++ */
++
++/* Array of function pointers to call before each image is loaded indexed by image id */
++static int (*boot_platform_pre_load_vector[RSS_FIRMWARE_COUNT]) (void) = {
++    [RSS_FIRMWARE_SECURE_ID]        = boot_platform_pre_load_secure,
++    [RSS_FIRMWARE_NON_SECURE_ID]    = boot_platform_pre_load_non_secure,
++    [RSS_FIRMWARE_SCP_ID]           = boot_platform_pre_load_scp,
++    [RSS_FIRMWARE_MCP_ID]           = boot_platform_pre_load_mcp,
++    [RSS_FIRMWARE_LCP_ID]           = boot_platform_pre_load_lcp,
++    [RSS_FIRMWARE_AP_BL1_ID]        = boot_platform_pre_load_ap_bl1,
++};
++
++/* Array of function pointers to call after each image is loaded indexed by image id */
++static int (*boot_platform_post_load_vector[RSS_FIRMWARE_COUNT]) (void) = {
++    [RSS_FIRMWARE_SECURE_ID]        = boot_platform_post_load_secure,
++    [RSS_FIRMWARE_NON_SECURE_ID]    = boot_platform_post_load_non_secure,
++    [RSS_FIRMWARE_SCP_ID]           = boot_platform_post_load_scp,
++    [RSS_FIRMWARE_MCP_ID]           = boot_platform_post_load_mcp,
++    [RSS_FIRMWARE_LCP_ID]           = boot_platform_post_load_lcp,
++    [RSS_FIRMWARE_AP_BL1_ID]        = boot_platform_post_load_ap_bl1,
++};
++
++/*
++ * ============================== LOAD FUNCTIONS ==============================
++ */
++
++int boot_platform_pre_load(uint32_t image_id)
++{
++    if (image_id >= RSS_FIRMWARE_COUNT) {
++        BOOT_LOG_WRN("BL2: no pre load for image %d", image_id);
++        return 0;
++    }
++
++    return boot_platform_pre_load_vector[image_id]();
++}
++
++int boot_platform_post_load(uint32_t image_id)
++{
++    if (image_id >= RSS_FIRMWARE_COUNT) {
++        BOOT_LOG_WRN("BL2: no post load for image %d", image_id);
++        return 0;
++    }
++
++    return boot_platform_post_load_vector[image_id]();
++}
+diff --git a/platform/ext/target/arm/rss/kronos/bl2/flash_map_bl2.c b/platform/ext/target/arm/rss/kronos/bl2/flash_map_bl2.c
+new file mode 100644
+index 000000000..4309b2e10
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/bl2/flash_map_bl2.c
+@@ -0,0 +1,149 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#include "flash_map/flash_map.h"
++
++#include "Driver_Flash.h"
++#include "firmware_image_id.h"
++#include "host_base_address.h"
++#include "target.h"
++
++#define ARRAY_SIZE(arr) (sizeof(arr)/sizeof((arr)[0]))
++
++/* Flash device names must be specified by target */
++extern ARM_DRIVER_FLASH FLASH_DEV_NAME;
++
++/* Default Drivers list */
++const ARM_DRIVER_FLASH *flash_driver[] = {
++    &FLASH_DEV_NAME,
++};
++const int flash_driver_entry_num = ARRAY_SIZE(flash_driver);
++
++const struct flash_area flash_map[] = {
++    {
++        .fa_id = FLASH_AREA_2_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_2_OFFSET,
++        .fa_size = FLASH_AREA_2_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_3_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_3_OFFSET,
++        .fa_size = FLASH_AREA_3_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_4_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_4_OFFSET,
++        .fa_size = FLASH_AREA_4_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_5_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_5_OFFSET,
++        .fa_size = FLASH_AREA_5_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_6_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_6_OFFSET,
++        .fa_size = FLASH_AREA_6_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_7_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_7_OFFSET,
++        .fa_size = FLASH_AREA_7_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_8_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_8_OFFSET,
++        .fa_size = FLASH_AREA_8_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_9_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_9_OFFSET,
++        .fa_size = FLASH_AREA_9_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_10_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_10_OFFSET,
++        .fa_size = FLASH_AREA_10_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_11_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_11_OFFSET,
++        .fa_size = FLASH_AREA_11_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_12_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_12_OFFSET,
++        .fa_size = FLASH_AREA_12_SIZE,
++    },
++    {
++        .fa_id = FLASH_AREA_13_ID,
++        .fa_device_id = FLASH_DEVICE_ID,
++        .fa_driver = &FLASH_DEV_NAME,
++        .fa_off = FLASH_AREA_13_OFFSET,
++        .fa_size = FLASH_AREA_13_SIZE,
++    },
++};
++
++const int flash_map_entry_num = ARRAY_SIZE(flash_map);
++
++int boot_get_image_exec_ram_info(uint32_t image_id,
++                                 uint32_t *exec_ram_start,
++                                 uint32_t *exec_ram_size)
++{
++    int rc = -1;
++
++    if (image_id == RSS_FIRMWARE_SECURE_ID) {
++        *exec_ram_start = S_IMAGE_LOAD_ADDRESS;
++        *exec_ram_size  = SECURE_IMAGE_MAX_SIZE;
++        rc = 0;
++    } else if (image_id == RSS_FIRMWARE_NON_SECURE_ID) {
++        *exec_ram_start = NS_IMAGE_LOAD_ADDRESS;
++        *exec_ram_size  = NON_SECURE_IMAGE_MAX_SIZE;
++        rc = 0;
++    } else if (image_id == RSS_FIRMWARE_SCP_ID) {
++        *exec_ram_start = HOST_SCP_IMG_BASE_S;
++        *exec_ram_size  = HOST_SCP_ATU_SIZE;
++        rc = 0;
++    } else if (image_id == RSS_FIRMWARE_MCP_ID) {
++        *exec_ram_start = HOST_MCP_IMG_BASE_S;
++        *exec_ram_size  = HOST_MCP_ATU_SIZE;
++        rc = 0;
++    } else if (image_id == RSS_FIRMWARE_LCP_ID) {
++        *exec_ram_start = HOST_LCP_IMG_BASE_S;
++        *exec_ram_size  = HOST_LCP_ATU_SIZE;
++        rc = 0;
++    }
++    else if (image_id == RSS_FIRMWARE_AP_BL1_ID) {
++        *exec_ram_start = HOST_AP_BL1_IMG_BASE_S;
++        *exec_ram_size  = HOST_AP_BL1_ATU_SIZE;
++        rc = 0;
++    }
++
++    return rc;
++}
+diff --git a/platform/ext/target/arm/rss/kronos/cmsis_drivers/Driver_Flash.c b/platform/ext/target/arm/rss/kronos/cmsis_drivers/Driver_Flash.c
+new file mode 100644
+index 000000000..761bf9009
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/cmsis_drivers/Driver_Flash.c
+@@ -0,0 +1,318 @@
++/*
++ * Copyright (c) 2023 Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ *
++ * Licensed under the Apache License, Version 2.0 (the License); you may
++ * not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ * www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an AS IS BASIS, WITHOUT
++ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#include <string.h>
++#include <stdint.h>
++#include "Driver_Flash.h"
++#include "RTE_Device.h"
++#include "platform_base_address.h"
++
++#ifndef ARG_UNUSED
++#define ARG_UNUSED(arg)  ((void)arg)
++#endif
++
++#define FLASH0_BASE_S         BOOT_FLASH
++#define FLASH0_SIZE           BOOT_FLASH_SIZE
++#define FLASH0_SECTOR_SIZE    0x00001000 /* 4 kB */
++#define FLASH0_PAGE_SIZE      0x00001000 /* 4 kB */
++#define FLASH0_PROGRAM_UNIT   0x1        /* Minimum write size */
++
++/* Driver version */
++#define ARM_FLASH_DRV_VERSION      ARM_DRIVER_VERSION_MAJOR_MINOR(1, 1)
++#define ARM_FLASH_DRV_ERASE_VALUE  0xFF
++
++/**
++ * Data width values for ARM_FLASH_CAPABILITIES::data_width
++ * \ref ARM_FLASH_CAPABILITIES
++ */
++ enum {
++    DATA_WIDTH_8BIT   = 0u,
++    DATA_WIDTH_16BIT,
++    DATA_WIDTH_32BIT,
++    DATA_WIDTH_ENUM_SIZE
++};
++
++static const uint32_t data_width_byte[DATA_WIDTH_ENUM_SIZE] = {
++    sizeof(uint8_t),
++    sizeof(uint16_t),
++    sizeof(uint32_t),
++};
++
++/*
++ * ARM FLASH device structure
++ *
++ * This driver just emulates a flash interface and behaviour on top of the SRAM
++ * memory.
++ */
++struct arm_flash_dev_t {
++    const uint32_t memory_base;   /*!< FLASH memory base address */
++    ARM_FLASH_INFO *data;         /*!< FLASH data */
++};
++
++/* Flash Status */
++static ARM_FLASH_STATUS FlashStatus = {0, 0, 0};
++
++/* Driver Version */
++static const ARM_DRIVER_VERSION DriverVersion = {
++    ARM_FLASH_API_VERSION,
++    ARM_FLASH_DRV_VERSION
++};
++
++/* Driver Capabilities */
++static const ARM_FLASH_CAPABILITIES DriverCapabilities = {
++    0, /* event_ready */
++    0, /* data_width = 0:8-bit, 1:16-bit, 2:32-bit */
++    1  /* erase_chip */
++};
++
++static int32_t is_range_valid(struct arm_flash_dev_t *flash_dev,
++                              uint32_t offset)
++{
++    uint32_t flash_limit = 0;
++    int32_t rc = 0;
++
++    flash_limit = (flash_dev->data->sector_count * flash_dev->data->sector_size)
++                   - 1;
++
++    if (offset > flash_limit) {
++        rc = -1;
++    }
++    return rc;
++}
++
++static int32_t is_write_aligned(struct arm_flash_dev_t *flash_dev,
++                                uint32_t param)
++{
++    int32_t rc = 0;
++
++    if ((param % flash_dev->data->program_unit) != 0) {
++        rc = -1;
++    }
++    return rc;
++}
++
++static int32_t is_sector_aligned(struct arm_flash_dev_t *flash_dev,
++                                 uint32_t offset)
++{
++    int32_t rc = 0;
++
++    if ((offset % flash_dev->data->sector_size) != 0) {
++        rc = -1;
++    }
++    return rc;
++}
++
++static int32_t is_flash_ready_to_write(const uint8_t *start_addr, uint32_t cnt)
++{
++    int32_t rc = 0;
++    uint32_t i;
++
++    for (i = 0; i < cnt; i++) {
++        if(start_addr[i] != ARM_FLASH_DRV_ERASE_VALUE) {
++            rc = -1;
++            break;
++        }
++    }
++
++    return rc;
++}
++
++#if (RTE_FLASH0)
++static ARM_FLASH_INFO ARM_FLASH0_DEV_DATA = {
++    .sector_info  = NULL,                  /* Uniform sector layout */
++    .sector_count = FLASH0_SIZE / FLASH0_SECTOR_SIZE,
++    .sector_size  = FLASH0_SECTOR_SIZE,
++    .page_size    = FLASH0_PAGE_SIZE,
++    .program_unit = FLASH0_PROGRAM_UNIT,
++    .erased_value = ARM_FLASH_DRV_ERASE_VALUE};
++
++static struct arm_flash_dev_t ARM_FLASH0_DEV = {
++#if (__DOMAIN_NS == 1)
++    .memory_base = FLASH0_BASE_NS,
++#else
++    .memory_base = FLASH0_BASE_S,
++#endif /* __DOMAIN_NS == 1 */
++    .data        = &(ARM_FLASH0_DEV_DATA)};
++
++struct arm_flash_dev_t *FLASH0_DEV = &ARM_FLASH0_DEV;
++
++/*
++ * Functions
++ */
++
++static ARM_DRIVER_VERSION ARM_Flash_GetVersion(void)
++{
++    return DriverVersion;
++}
++
++static ARM_FLASH_CAPABILITIES ARM_Flash_GetCapabilities(void)
++{
++    return DriverCapabilities;
++}
++
++static int32_t ARM_Flash_Initialize(ARM_Flash_SignalEvent_t cb_event)
++{
++    ARG_UNUSED(cb_event);
++
++    if (DriverCapabilities.data_width >= DATA_WIDTH_ENUM_SIZE) {
++        return ARM_DRIVER_ERROR;
++    }
++
++    /* Nothing to be done */
++    return ARM_DRIVER_OK;
++}
++
++static int32_t ARM_Flash_Uninitialize(void)
++{
++    /* Nothing to be done */
++    return ARM_DRIVER_OK;
++}
++
++static int32_t ARM_Flash_PowerControl(ARM_POWER_STATE state)
++{
++    switch (state) {
++    case ARM_POWER_FULL:
++        /* Nothing to be done */
++        return ARM_DRIVER_OK;
++        break;
++
++    case ARM_POWER_OFF:
++    case ARM_POWER_LOW:
++    default:
++        return ARM_DRIVER_ERROR_UNSUPPORTED;
++    }
++}
++
++static int32_t ARM_Flash_ReadData(uint32_t addr, void *data, uint32_t cnt)
++{
++    uint32_t start_addr = FLASH0_DEV->memory_base + addr;
++    int32_t rc = 0;
++
++    /* Conversion between data items and bytes */
++    cnt *= data_width_byte[DriverCapabilities.data_width];
++
++    /* Check flash memory boundaries */
++    rc = is_range_valid(FLASH0_DEV, addr + cnt);
++    if (rc != 0) {
++        return ARM_DRIVER_ERROR_PARAMETER;
++    }
++
++    /* Flash interface just emulated over SRAM, use memcpy */
++    memcpy(data, (void *)start_addr, cnt);
++
++    /* Conversion between bytes and data items */
++    cnt /= data_width_byte[DriverCapabilities.data_width];
++
++    return cnt;
++}
++
++static int32_t ARM_Flash_ProgramData(uint32_t addr, const void *data,
++                                     uint32_t cnt)
++{
++    uint32_t start_addr = FLASH0_DEV->memory_base + addr;
++    int32_t rc = 0;
++
++    /* Conversion between data items and bytes */
++    cnt *= data_width_byte[DriverCapabilities.data_width];
++
++    /* Check flash memory boundaries and alignment with minimal write size */
++    rc  = is_range_valid(FLASH0_DEV, addr + cnt);
++    rc |= is_write_aligned(FLASH0_DEV, addr);
++    rc |= is_write_aligned(FLASH0_DEV, cnt);
++    if (rc != 0) {
++        return ARM_DRIVER_ERROR_PARAMETER;
++    }
++
++    /* Check if the flash area to write the data was erased previously */
++    rc = is_flash_ready_to_write((const uint8_t*)start_addr, cnt);
++    if (rc != 0) {
++        return ARM_DRIVER_ERROR;
++    }
++
++    /* Flash interface just emulated over SRAM, use memcpy */
++    memcpy((void *)start_addr, data, cnt);
++
++    /* Conversion between bytes and data items */
++    cnt /= data_width_byte[DriverCapabilities.data_width];
++
++    return cnt;
++}
++
++static int32_t ARM_Flash_EraseSector(uint32_t addr)
++{
++    uint32_t start_addr = FLASH0_DEV->memory_base + addr;
++    uint32_t rc = 0;
++
++    rc  = is_range_valid(FLASH0_DEV, addr);
++    rc |= is_sector_aligned(FLASH0_DEV, addr);
++    if (rc != 0) {
++        return ARM_DRIVER_ERROR_PARAMETER;
++    }
++
++    /* Flash interface just emulated over SRAM, use memset */
++    memset((void *)start_addr,
++           FLASH0_DEV->data->erased_value,
++           FLASH0_DEV->data->sector_size);
++    return ARM_DRIVER_OK;
++}
++
++static int32_t ARM_Flash_EraseChip(void)
++{
++    uint32_t i;
++    uint32_t addr = FLASH0_DEV->memory_base;
++    int32_t rc = ARM_DRIVER_ERROR_UNSUPPORTED;
++
++    /* Check driver capability erase_chip bit */
++    if (DriverCapabilities.erase_chip == 1) {
++        for (i = 0; i < FLASH0_DEV->data->sector_count; i++) {
++            /* Flash interface just emulated over SRAM, use memset */
++            memset((void *)addr,
++                   FLASH0_DEV->data->erased_value,
++                   FLASH0_DEV->data->sector_size);
++
++            addr += FLASH0_DEV->data->sector_size;
++            rc = ARM_DRIVER_OK;
++        }
++    }
++    return rc;
++}
++
++static ARM_FLASH_STATUS ARM_Flash_GetStatus(void)
++{
++    return FlashStatus;
++}
++
++static ARM_FLASH_INFO * ARM_Flash_GetInfo(void)
++{
++    return FLASH0_DEV->data;
++}
++
++ARM_DRIVER_FLASH Driver_FLASH0 = {
++    ARM_Flash_GetVersion,
++    ARM_Flash_GetCapabilities,
++    ARM_Flash_Initialize,
++    ARM_Flash_Uninitialize,
++    ARM_Flash_PowerControl,
++    ARM_Flash_ReadData,
++    ARM_Flash_ProgramData,
++    ARM_Flash_EraseSector,
++    ARM_Flash_EraseChip,
++    ARM_Flash_GetStatus,
++    ARM_Flash_GetInfo
++};
++#endif /* RTE_FLASH0 */
+diff --git a/platform/ext/target/arm/rss/kronos/cmsis_drivers/Driver_USART.c b/platform/ext/target/arm/rss/kronos/cmsis_drivers/Driver_USART.c
+new file mode 100644
+index 000000000..05ad13a71
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/cmsis_drivers/Driver_USART.c
+@@ -0,0 +1,345 @@
++/*
++ * Copyright (c) 2023 Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ *
++ * Licensed under the Apache License, Version 2.0 (the License); you may
++ * not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ * http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an AS IS BASIS, WITHOUT
++ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#include "Driver_USART.h"
++
++#include "cmsis_driver_config.h"
++#include "RTE_Device.h"
++
++#ifndef ARG_UNUSED
++#define ARG_UNUSED(arg)  (void)arg
++#endif
++
++/* Driver version */
++#define ARM_USART_DRV_VERSION  ARM_DRIVER_VERSION_MAJOR_MINOR(2, 2)
++
++/* Driver Version */
++static const ARM_DRIVER_VERSION DriverVersion = {
++    ARM_USART_API_VERSION,
++    ARM_USART_DRV_VERSION
++};
++
++/* Driver Capabilities */
++static const ARM_USART_CAPABILITIES DriverCapabilities = {
++    1, /* supports UART (Asynchronous) mode */
++    0, /* supports Synchronous Master mode */
++    0, /* supports Synchronous Slave mode */
++    0, /* supports UART Single-wire mode */
++    0, /* supports UART IrDA mode */
++    0, /* supports UART Smart Card mode */
++    0, /* Smart Card Clock generator available */
++    0, /* RTS Flow Control available */
++    0, /* CTS Flow Control available */
++    0, /* Transmit completed event: \ref ARM_USARTx_EVENT_TX_COMPLETE */
++    0, /* Signal receive character timeout event:
++        * \ref ARM_USARTx_EVENT_RX_TIMEOUT
++        */
++    0, /* RTS Line: 0=not available, 1=available */
++    0, /* CTS Line: 0=not available, 1=available */
++    0, /* DTR Line: 0=not available, 1=available */
++    0, /* DSR Line: 0=not available, 1=available */
++    0, /* DCD Line: 0=not available, 1=available */
++    0, /* RI Line: 0=not available, 1=available */
++    0, /* Signal CTS change event: \ref ARM_USARTx_EVENT_CTS */
++    0, /* Signal DSR change event: \ref ARM_USARTx_EVENT_DSR */
++    0, /* Signal DCD change event: \ref ARM_USARTx_EVENT_DCD */
++    0, /* Signal RI change event: \ref ARM_USARTx_EVENT_RI */
++    0  /* Reserved */
++};
++
++static ARM_DRIVER_VERSION ARM_USART_GetVersion(void)
++{
++    return DriverVersion;
++}
++
++static ARM_USART_CAPABILITIES ARM_USART_GetCapabilities(void)
++{
++    return DriverCapabilities;
++}
++
++typedef struct {
++    struct uart_pl011_dev_t* dev;      /* UART device structure */
++    uint32_t tx_nbr_bytes;             /* Number of bytes transfered */
++    uint32_t rx_nbr_bytes;             /* Number of bytes received */
++    ARM_USART_SignalEvent_t cb_event;  /* Callback function for events */
++} UARTx_Resources;
++
++static int32_t ARM_USARTx_Initialize(UARTx_Resources* uart_dev)
++{
++    /* Initializes generic UART driver */
++    uart_pl011_init(uart_dev->dev, PeripheralClock);
++
++    uart_pl011_enable(uart_dev->dev);
++
++    return ARM_DRIVER_OK;
++}
++
++static int32_t ARM_USARTx_Uninitialize(UARTx_Resources* uart_dev)
++{
++    /* Disables and uninitializes generic UART driver */
++    uart_pl011_uninit(uart_dev->dev);
++
++    return ARM_DRIVER_OK;
++}
++
++static int32_t ARM_USARTx_PowerControl(UARTx_Resources* uart_dev,
++                                       ARM_POWER_STATE state)
++{
++    ARG_UNUSED(uart_dev);
++
++    switch (state) {
++    case ARM_POWER_OFF:
++    case ARM_POWER_LOW:
++        return ARM_DRIVER_ERROR_UNSUPPORTED;
++    case ARM_POWER_FULL:
++        /* Nothing to be done */
++        return ARM_DRIVER_OK;
++    default:
++        return ARM_DRIVER_ERROR_PARAMETER;
++    }
++}
++
++static int32_t ARM_USARTx_Send(UARTx_Resources* uart_dev, const void *data,
++                               uint32_t num)
++{
++    const uint8_t* p_data = (const uint8_t*)data;
++
++    if ((data == NULL) || (num == 0U)) {
++        /* Invalid parameters */
++        return ARM_DRIVER_ERROR_PARAMETER;
++    }
++
++    /* Resets previous TX counter */
++    uart_dev->tx_nbr_bytes = 0;
++
++    while(uart_dev->tx_nbr_bytes != num) {
++        /* Waits until UART is ready to transmit */
++        while(!uart_pl011_is_writable(uart_dev->dev)) {};
++
++        /* As UART is ready to transmit at this point, the write function can
++         * not return any transmit error */
++        (void)uart_pl011_write(uart_dev->dev, *p_data);
++
++        uart_dev->tx_nbr_bytes++;
++        p_data++;
++    }
++
++    if (uart_dev->cb_event != NULL) {
++        uart_dev->cb_event(ARM_USART_EVENT_SEND_COMPLETE);
++    }
++
++    /* Waits until character is transmited */
++    while (!uart_pl011_is_writable(uart_dev->dev)){};
++
++    return ARM_DRIVER_OK;
++}
++
++static int32_t ARM_USARTx_Receive(UARTx_Resources* uart_dev,
++                                  void *data, uint32_t num)
++{
++    uint8_t* p_data = (uint8_t*)data;
++
++    if ((data == NULL) || (num == 0U)) {
++        // Invalid parameters
++        return ARM_DRIVER_ERROR_PARAMETER;
++    }
++
++    /* Resets previous RX counter */
++    uart_dev->rx_nbr_bytes = 0;
++
++    while(uart_dev->rx_nbr_bytes != num) {
++        /* Waits until one character is received */
++        while (!uart_pl011_is_readable(uart_dev->dev)){};
++
++        /* As UART has received one byte, the read can not
++         * return any receive error at this point */
++        (void)uart_pl011_read(uart_dev->dev, p_data);
++
++        uart_dev->rx_nbr_bytes++;
++        p_data++;
++    }
++
++    if (uart_dev->cb_event != NULL) {
++        uart_dev->cb_event(ARM_USART_EVENT_RECEIVE_COMPLETE);
++    }
++
++    return ARM_DRIVER_OK;
++}
++
++static uint32_t ARM_USARTx_GetTxCount(UARTx_Resources* uart_dev)
++{
++    return uart_dev->tx_nbr_bytes;
++}
++
++static uint32_t ARM_USARTx_GetRxCount(UARTx_Resources* uart_dev)
++{
++    return uart_dev->rx_nbr_bytes;
++}
++
++static int32_t ARM_USARTx_Control(UARTx_Resources* uart_dev, uint32_t control,
++                                  uint32_t arg)
++{
++    switch (control & ARM_USART_CONTROL_Msk) {
++#ifdef UART_TX_RX_CONTROL_ENABLED
++        case ARM_USART_CONTROL_TX:
++            if (arg == 0) {
++                uart_pl011_disable_transmit(uart_dev->dev);
++            } else if (arg == 1) {
++                uart_pl011_enable_transmit(uart_dev->dev);
++            } else {
++                return ARM_DRIVER_ERROR_PARAMETER;
++            }
++            break;
++        case ARM_USART_CONTROL_RX:
++            if (arg == 0) {
++                uart_pl011_disable_receive(uart_dev->dev);
++            } else if (arg == 1) {
++                uart_pl011_enable_receive(uart_dev->dev);
++            } else {
++                return ARM_DRIVER_ERROR_PARAMETER;
++            }
++            break;
++#endif
++        case ARM_USART_MODE_ASYNCHRONOUS:
++            if(uart_pl011_set_baudrate(uart_dev->dev, arg) !=
++                UART_PL011_ERR_NONE) {
++                return ARM_USART_ERROR_BAUDRATE;
++            }
++            break;
++        /* Unsupported command */
++        default:
++            return ARM_DRIVER_ERROR_UNSUPPORTED;
++    }
++
++    /* UART Data bits */
++    if(control & ARM_USART_DATA_BITS_Msk) {
++        /* Data bit is not configurable */
++        return ARM_DRIVER_ERROR_UNSUPPORTED;
++    }
++
++    /* UART Parity */
++    if(control & ARM_USART_PARITY_Msk) {
++        /* Parity is not configurable */
++        return ARM_USART_ERROR_PARITY;
++    }
++
++    /* USART Stop bits */
++    if(control & ARM_USART_STOP_BITS_Msk) {
++        /* Stop bit is not configurable */
++        return ARM_USART_ERROR_STOP_BITS;
++    }
++
++    return ARM_DRIVER_OK;
++}
++
++#if (RTE_USART0)
++/* USART0 Driver wrapper functions */
++static UARTx_Resources USART0_DEV = {
++    .dev = &UART0_DEV,
++    .tx_nbr_bytes = 0,
++    .rx_nbr_bytes = 0,
++    .cb_event = NULL,
++};
++
++static int32_t ARM_USART0_Initialize(ARM_USART_SignalEvent_t cb_event)
++{
++    USART0_DEV.cb_event = cb_event;
++
++    return ARM_USARTx_Initialize(&USART0_DEV);
++}
++
++static int32_t ARM_USART0_Uninitialize(void)
++{
++    return ARM_USARTx_Uninitialize(&USART0_DEV);
++}
++
++static int32_t ARM_USART0_PowerControl(ARM_POWER_STATE state)
++{
++    return ARM_USARTx_PowerControl(&USART0_DEV, state);
++}
++
++static int32_t ARM_USART0_Send(const void *data, uint32_t num)
++{
++    return ARM_USARTx_Send(&USART0_DEV, data, num);
++}
++
++static int32_t ARM_USART0_Receive(void *data, uint32_t num)
++{
++    return ARM_USARTx_Receive(&USART0_DEV, data, num);
++}
++
++static int32_t ARM_USART0_Transfer(const void *data_out, void *data_in,
++                                   uint32_t num)
++{
++    ARG_UNUSED(data_out);
++    ARG_UNUSED(data_in);
++    ARG_UNUSED(num);
++
++    return ARM_DRIVER_ERROR_UNSUPPORTED;
++}
++
++static uint32_t ARM_USART0_GetTxCount(void)
++{
++    return ARM_USARTx_GetTxCount(&USART0_DEV);
++}
++
++static uint32_t ARM_USART0_GetRxCount(void)
++{
++    return ARM_USARTx_GetRxCount(&USART0_DEV);
++}
++static int32_t ARM_USART0_Control(uint32_t control, uint32_t arg)
++{
++    return ARM_USARTx_Control(&USART0_DEV, control, arg);
++}
++
++static ARM_USART_STATUS ARM_USART0_GetStatus(void)
++{
++    ARM_USART_STATUS status = {0, 0, 0, 0, 0, 0, 0, 0};
++    return status;
++}
++
++static int32_t ARM_USART0_SetModemControl(ARM_USART_MODEM_CONTROL control)
++{
++    ARG_UNUSED(control);
++    return ARM_DRIVER_ERROR_UNSUPPORTED;
++}
++
++static ARM_USART_MODEM_STATUS ARM_USART0_GetModemStatus(void)
++{
++    ARM_USART_MODEM_STATUS modem_status = {0, 0, 0, 0, 0};
++    return modem_status;
++}
++
++extern ARM_DRIVER_USART Driver_USART0;
++ARM_DRIVER_USART Driver_USART0 = {
++    ARM_USART_GetVersion,
++    ARM_USART_GetCapabilities,
++    ARM_USART0_Initialize,
++    ARM_USART0_Uninitialize,
++    ARM_USART0_PowerControl,
++    ARM_USART0_Send,
++    ARM_USART0_Receive,
++    ARM_USART0_Transfer,
++    ARM_USART0_GetTxCount,
++    ARM_USART0_GetRxCount,
++    ARM_USART0_Control,
++    ARM_USART0_GetStatus,
++    ARM_USART0_SetModemControl,
++    ARM_USART0_GetModemStatus
++};
++#endif /* RTE_USART0 */
+diff --git a/platform/ext/target/arm/rss/kronos/cmsis_drivers/host_cmsis_driver_config.h b/platform/ext/target/arm/rss/kronos/cmsis_drivers/host_cmsis_driver_config.h
+new file mode 100644
+index 000000000..d26b9d842
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/cmsis_drivers/host_cmsis_driver_config.h
+@@ -0,0 +1,22 @@
++/*
++ * Copyright (c) 2023 Arm Limited. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#ifndef __HOST_CMSIS_DRIVER_CONFIG_H__
++#define __HOST_CMSIS_DRIVER_CONFIG_H__
++
++/* Currently no host cmsis drivers */
++
++#endif  /* __HOST_CMSIS_DRIVER_CONFIG_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/cmsis_drivers/rss_expansion_cmsis_driver_config.h b/platform/ext/target/arm/rss/kronos/cmsis_drivers/rss_expansion_cmsis_driver_config.h
+new file mode 100644
+index 000000000..6a6c6b57c
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/cmsis_drivers/rss_expansion_cmsis_driver_config.h
+@@ -0,0 +1,26 @@
++/*
++ * Copyright (c) 2023 Arm Limited. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#ifndef __RSS_EXPANSION_CMSIS_DRIVER_CONFIG_H__
++#define __RSS_EXPANSION_CMSIS_DRIVER_CONFIG_H__
++
++#include "cmsis.h"
++#include "device_definition.h"
++#include "RTE_Device.h"
++
++#define UART0_DEV                    RSS_UART0_PL011_DEV_S
++
++#endif  /* __RSS_EXPANSION_CMSIS_DRIVER_CONFIG_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/config.cmake b/platform/ext/target/arm/rss/kronos/config.cmake
+new file mode 100644
+index 000000000..445a5edf7
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/config.cmake
+@@ -0,0 +1,32 @@
++#-------------------------------------------------------------------------------
++# Copyright (c) 2023, Arm Limited. All rights reserved.
++#
++# SPDX-License-Identifier: BSD-3-Clause
++#
++#-------------------------------------------------------------------------------
++
++set(PLAT_MHU_VERSION                        3        CACHE STRING  "Supported MHU version by platform")
++set(TFM_BL1_MEMORY_MAPPED_FLASH             OFF      CACHE BOOL    "Whether BL1 can directly access flash content")
++set(PLATFORM_HAS_BOOT_DMA                   OFF      CACHE BOOL    "Enable dma support for memory transactions for bootloader")
++set(RSS_USE_HOST_UART                       OFF      CACHE BOOL    "Whether RSS should use the UART from the host system (opposed to dedicated UART)")
++set(RSS_USE_HOST_FLASH                      OFF      CACHE BOOL    "Enable RSS using the host flash.")
++set(MCUBOOT_IMAGE_NUMBER                    6        CACHE STRING  "Number of images supported by MCUBoot")
++set(ENABLE_SCP_ATU_CTRL                     OFF      CACHE BOOL    "Enable SCP to configure ATU")
++set(RSS_HAS_EXPANSION_PERIPHERALS           ON       CACHE BOOL    "Whether RSS has sub-platform specific peripherals in the expansion layer")
++set(ENABLE_MCP_ATU_CTRL                     OFF      CACHE BOOL    "Enable MCP to configure ATU")
++set(PLATFORM_DEFAULT_MCUBOOT_IMAGE_NUMBER   OFF      CACHE BOOL    "Whether to use default value of MCUBOOT_IMAGE_NUMBER")
++if (TFM_PLATFORM_VARIANT STREQUAL "1")
++    set(RSS_LCP_COUNT                          8        CACHE STRING   "Number of LCPs to load")
++elseif(TFM_PLATFORM_VARIANT STREQUAL "2")
++    set(RSS_LCP_COUNT                          4        CACHE STRING   "Number of LCPs to load")
++else()
++    set(RSS_LCP_COUNT                          16       CACHE STRING   "Number of LCPs to load")
++endif()
++
++# Maximum number of MCUBoot images supported by TF-M NV counters and ROTPKs
++if(MCUBOOT_IMAGE_NUMBER GREATER 9)
++    message(FATAL_ERROR "INVALID CONFIG: MCUBOOT_IMAGE_NUMBER value not supported!")
++endif()
++
++# Once all options are set, set common options as fallback
++include(${CMAKE_CURRENT_LIST_DIR}/../common/config.cmake)
+diff --git a/platform/ext/target/arm/rss/kronos/config_tfm_target.h b/platform/ext/target/arm/rss/kronos/config_tfm_target.h
+new file mode 100644
+index 000000000..b70aeda65
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/config_tfm_target.h
+@@ -0,0 +1,32 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#ifndef __CONFIG_TFM_TARGET_H__
++#define __CONFIG_TFM_TARGET_H__
++
++/* Use stored NV seed to provide entropy */
++#if CRYPTO_NV_SEED
++#pragma message("CRYPTO_NV_SEED is redefined to 0.")
++#undef CRYPTO_NV_SEED
++#endif
++#define CRYPTO_NV_SEED                         0
++
++/* Set the initial attestation token profile */
++#if ATTEST_TOKEN_PROFILE_PSA_IOT_1
++#pragma message("ATTEST_TOKEN_PROFILE is redefined to ATTEST_TOKEN_PROFILE_ARM_CCA.")
++#undef ATTEST_TOKEN_PROFILE_PSA_IOT_1
++#elif ATTEST_TOKEN_PROFILE_PSA_2_0_0
++#pragma message("ATTEST_TOKEN_PROFILE is redefined to ATTEST_TOKEN_PROFILE_ARM_CCA.")
++#undef ATTEST_TOKEN_PROFILE_PSA_2_0_0
++#endif
++#if !ATTEST_TOKEN_PROFILE_ARM_CCA
++#pragma message("ATTEST_TOKEN_PROFILE_ARM_CCA is chosen on RSS by default. Please check and set it explicitly.")
++#undef ATTEST_TOKEN_PROFILE_ARM_CCA
++#define ATTEST_TOKEN_PROFILE_ARM_CCA           1
++#endif
++
++#endif /* __CONFIG_TFM_TARGET_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/device/host_device_cfg.h b/platform/ext/target/arm/rss/kronos/device/host_device_cfg.h
+new file mode 100644
+index 000000000..ecf66a238
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/device/host_device_cfg.h
+@@ -0,0 +1,30 @@
++/*
++ * Copyright (c) 2023 Arm Limited. All rights reserved.
++ *
++ * Licensed under the Apache License Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing software
++ * distributed under the License is distributed on an "AS IS" BASIS
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#ifndef __HOST_DEVICE_CFG_H__
++#define __HOST_DEVICE_CFG_H__
++
++/* ARM SCP ATU */
++#define ATU_SCP
++
++/* MHU */
++#define MHU_V3_RSS_TO_AP
++#define MHU_V3_AP_TO_RSS
++
++#define MHU_V3_RSS_TO_SCP
++#define MHU_V3_SCP_TO_RSS
++
++#endif /* __HOST_DEVICE_CFG_H__ */
+\ No newline at end of file
+diff --git a/platform/ext/target/arm/rss/kronos/device/host_device_definition.c b/platform/ext/target/arm/rss/kronos/device/host_device_definition.c
+new file mode 100644
+index 000000000..dab961b35
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/device/host_device_definition.c
+@@ -0,0 +1,154 @@
++/*
++ * Copyright (c) 2023 Arm Limited. All rights reserved.
++ *
++ * Licensed under the Apache License Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing software
++ * distributed under the License is distributed on an "AS IS" BASIS
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/**
++ * \file host_device_definition.c
++ * \brief This file defines exports the structures based on the peripheral
++ * definitions from device_cfg.h.
++ * This file is meant to be used as a helper for baremetal
++ * applications and/or as an example of how to configure the generic
++ * driver structures.
++ */
++
++#include "host_device_definition.h"
++#include "platform_base_address.h"
++#include "host_base_address.h"
++
++#ifdef ATU_SCP
++static const struct atu_dev_cfg_t ATU_DEV_SCP_CFG = {
++    .base = HOST_SCP_ATU_BASE_S};
++struct atu_dev_t ATU_DEV_SCP = {&ATU_DEV_SCP_CFG};
++
++/* List of ATU regions allowed to be mapped in the SCP ATU */
++static const struct atu_region scp_regions[] = {
++    [CMN_CONFIG_SCP_ATU_REGION] = {
++        /* CMN Config region */
++        .start_addr = (uint64_t)0x100000000,
++        .end_addr = (uint64_t)0x13FFFFFFF,
++        .allowed_pas = ATU_REGION_PAS_ROOT,
++    },
++    [CLUSTER_UTIL_SCP_ATU_REGION] = {
++        /* Cluster Utility region */
++        .start_addr = (uint64_t)0x200000000,
++        .end_addr = (uint64_t)0x20FFFFFFF,
++        .allowed_pas = ATU_REGION_PAS_SECURE,
++    },
++    [AP_SHARED_SRAM_SCP_ATU_REGION] = {
++        /* AP shared RAM region */
++        .start_addr = (uint64_t)0x00000000,
++        .end_addr = (uint64_t)0x07FFFFFF,
++        .allowed_pas = ATU_REGION_PAS_SECURE,
++    },
++    [RSM_SCP_ATU_REGION] = {
++        /* RSM region */
++        .start_addr = (uint64_t)0x2F000000,
++        .end_addr = (uint64_t)0x2F3FFFFF,
++        .allowed_pas = ATU_REGION_PAS_SECURE,
++    },
++    [AP_PERIPH_SCP_ATU_REGION] = {
++        /* AP Peripherals region */
++        .start_addr = (uint64_t)0x20000000,
++        .end_addr = (uint64_t)0x2FFFFFFF,
++        .allowed_pas = ATU_REGION_PAS_SECURE,
++    },
++};
++
++/* List of ATU regions to be configured in SCP's ATU */
++struct atu_map scp_atu_regions[] = {
++    [CMN_CONFIG_SCP_ATU_REGION] = {
++        .log_addr = 0xA0000000,
++        /* CMN Config space */
++        .phy_addr = 0x100000000,
++        /* 1 GB */
++        .size = 0x40000000,
++        .access_type = ATU_ACCESS_ROOT,
++    },
++    [CLUSTER_UTIL_SCP_ATU_REGION] = {
++        .log_addr = 0x60000000,
++        /* Cluster Utility region */
++        .phy_addr = 0x200000000,
++        /* 256 MB */
++        .size = 0x10000000,
++        .access_type = ATU_ACCESS_ROOT,
++    },
++    [AP_SHARED_SRAM_SCP_ATU_REGION] = {
++        .log_addr = 0x70000000,
++        /* AP shared SRAM */
++        .phy_addr = 0x00000000,
++        /* 128 MB */
++        .size = 0x08000000,
++    },
++    [RSM_SCP_ATU_REGION] = {
++        .log_addr = 0x78000000,
++        /* RSM shared SRAM */
++        .phy_addr = 0x002F000000,
++        /* 4 MB */
++        .size = 0x400000,
++    },
++    [AP_PERIPH_SCP_ATU_REGION] = {
++        .log_addr = 0x90000000,
++        /* AP peripherals */
++        .phy_addr = 0x20000000,
++        /* 256 MB */
++        .size = 0x10000000,
++    },
++};
++
++/* Struct to access the shared mailbox between SCP and RSS for ATU requests */
++struct mailbox_info scp2rss_mbx_info = {
++    .mailbox_base =
++        (struct mailbox_msg*)(HOST_SCP_RSS_MAILBOX_BASE_S),
++    .type = MAILBOX_TYPE_COMPLETER,
++    .mailbox_size = 128
++};
++
++/* Struct to manage SCP ATU */
++struct atu_dev_info SCP_ATU_INFO = {
++    .atu_dev = &ATU_DEV_SCP,
++    .allowed_regions_list = &scp_regions,
++    .allowed_regions_count = SCP_ATU_REGION_COUNT,
++    .mailbox_info = &scp2rss_mbx_info,
++};
++#endif
++
++/* Message Handling Units (MHU) */
++#ifdef MHU_V3_AP_TO_RSS
++struct mhu_v3_x_dev_t MHU_AP_TO_RSS_DEV = {
++    .base = MHU0_RECEIVER_BASE_S,
++    .frame = MHU_V3_X_MBX_FRAME,
++    .subversion = 0};
++#endif
++
++#ifdef MHU_V3_RSS_TO_AP
++struct mhu_v3_x_dev_t MHU_RSS_TO_AP_DEV = {
++    .base = MHU0_SENDER_BASE_S,
++    .frame = MHU_V3_X_PBX_FRAME,
++    .subversion = 0};
++#endif
++
++#ifdef MHU_V3_SCP_TO_RSS
++struct mhu_v3_x_dev_t MHU_V3_SCP_TO_RSS_DEV = {
++    .base = MHU4_RECEIVER_BASE_NS,
++    .frame = MHU_V3_X_MBX_FRAME,
++    .subversion = 0};
++#endif
++
++#ifdef MHU_V3_RSS_TO_SCP
++struct mhu_v3_x_dev_t MHU_V3_RSS_TO_SCP_DEV = {
++    .base = MHU4_SENDER_BASE_NS,
++    .frame = MHU_V3_X_PBX_FRAME,
++    .subversion = 0};
++#endif
+diff --git a/platform/ext/target/arm/rss/kronos/device/host_device_definition.h b/platform/ext/target/arm/rss/kronos/device/host_device_definition.h
+new file mode 100644
+index 000000000..7bf4966ea
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/device/host_device_definition.h
+@@ -0,0 +1,117 @@
++/*
++ * Copyright (c) 2023 Arm Limited. All rights reserved.
++ *
++ * Licensed under the Apache License Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing software
++ * distributed under the License is distributed on an "AS IS" BASIS
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/**
++ * \file host_device_definition.h
++ * \brief The structure definitions in this file are exported based on the
++ * peripheral definitions from device_cfg.h.
++ * This file is meant to be used as a helper for baremetal
++ * applications and/or as an example of how to configure the generic
++ * driver structures.
++ */
++
++#ifndef __HOST_DEVICE_DEFINITION_H__
++#define __HOST_DEVICE_DEFINITION_H__
++
++#include "host_device_cfg.h"
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++/*
++ * Each chip has 64 GiB AP address range for peripheral as follows:
++ * Chip 0: 0 - 64 GiB
++ * Chip 1: 64 - 128 GiB
++ * Chip 2: 128 - 192 GiB
++ * Chip 3: 192 - 256 GiB
++ */
++#define HOST_REMOTE_CHIP_PERIPH_OFFSET(chip_id) \
++    (64ULL * 1024 * 1024 * 1024 * chip_id)
++
++#ifdef ATU_SCP
++#include "atu_rss_drv.h"
++extern struct atu_dev_t ATU_DEV_SCP;
++
++/* Indices for SCP ATU regions */
++enum SCP_ATU_REGIONS {
++    CMN_CONFIG_SCP_ATU_REGION = 0,
++    CLUSTER_UTIL_SCP_ATU_REGION,
++    AP_SHARED_SRAM_SCP_ATU_REGION,
++    RSM_SCP_ATU_REGION,
++    AP_PERIPH_SCP_ATU_REGION,
++    SCP_ATU_REGION_COUNT,
++};
++
++enum ATU_ACCESS_TYPE {
++    /* Default Access */
++    ATU_ACCESS_DEFAULT = 0,
++    /* Root Access */
++    ATU_ACCESS_ROOT = 2,
++    /* Other access types currently not support by software */
++};
++
++/* Structure used to describe an ATU region for SCP ATU */
++struct atu_map {
++    /* Logical start address */
++    uint32_t log_addr;
++    /* Physical start address */
++    uint64_t phy_addr;
++    /* Size of the ATU region */
++    uint32_t size;
++    /* Access Type */
++    enum ATU_ACCESS_TYPE access_type;
++};
++
++/* List of ATU regions configured by RSS in SCP ATU */
++extern struct atu_map scp_atu_regions[SCP_ATU_REGION_COUNT];
++
++#include "mscp_mailbox.h"
++extern struct mailbox_info scp2rss_mbx_info;
++
++/* SCP ATU Info */
++#include "mscp_atu_request_handler.h"
++extern struct atu_dev_info SCP_ATU_INFO;
++#endif
++
++/* Message Handling Units (MHU) */
++#ifdef MHU_V3_AP_TO_RSS
++#pragma message("Using mhuv3 ap to rss h")
++#include "mhu_v3_x.h"
++extern struct mhu_v3_x_dev_t MHU_AP_TO_RSS_DEV;
++#endif
++
++#ifdef MHU_V3_RSS_TO_AP
++#pragma message("Using mhuv3 rss to ap h")
++#include "mhu_v3_x.h"
++extern struct mhu_v3_x_dev_t MHU_RSS_TO_AP_DEV;
++#endif
++
++#ifdef MHU_V3_SCP_TO_RSS
++#include "mhu_v3_x.h"
++extern struct mhu_v3_x_dev_t MHU_V3_SCP_TO_RSS_DEV;
++#endif
++
++#ifdef MHU_V3_RSS_TO_SCP
++#include "mhu_v3_x.h"
++extern struct mhu_v3_x_dev_t MHU_V3_RSS_TO_SCP_DEV;
++#endif
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif  /* __HOST_DEVICE_DEFINITION_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/device/rss_expansion_device_cfg.h b/platform/ext/target/arm/rss/kronos/device/rss_expansion_device_cfg.h
+new file mode 100644
+index 000000000..65949668f
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/device/rss_expansion_device_cfg.h
+@@ -0,0 +1,32 @@
++/*
++ * Copyright (c) 2023 Arm Limited. All rights reserved.
++ *
++ * Licensed under the Apache License Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing software
++ * distributed under the License is distributed on an "AS IS" BASIS
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#ifndef __RSS_EXPANSION_DEVICE_CFG_H__
++#define __RSS_EXPANSION_DEVICE_CFG_H__
++
++/**
++ * \file rss_expansion_device_cfg.h
++ * \brief
++ * This is the device configuration file with only used peripherals
++ * defined and configured via the secure and/or non-secure base address.
++ */
++
++/* ARM UART PL011 */
++#define DEFAULT_UART_CONTROL 0
++#define DEFAULT_UART_BAUDRATE  38400
++#define RSS_UART0_PL011_S
++
++#endif  /* __RSS_EXPANSION_DEVICE_CFG_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/device/rss_expansion_device_definition.c b/platform/ext/target/arm/rss/kronos/device/rss_expansion_device_definition.c
+new file mode 100644
+index 000000000..b9fc61f98
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/device/rss_expansion_device_definition.c
+@@ -0,0 +1,44 @@
++/*
++ * Copyright (c) 2023 Arm Limited. All rights reserved.
++ *
++ * Licensed under the Apache License Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing software
++ * distributed under the License is distributed on an "AS IS" BASIS
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/**
++ * \file rss_expansion_device_definition.c
++ * \brief This file defines exports the structures based on the peripheral
++ * definitions from device_cfg.h.
++ * This file is meant to be used as a helper for baremetal
++ * applications and/or as an example of how to configure the generic
++ * driver structures.
++ */
++
++#include "rss_expansion_device_definition.h"
++#include "platform_base_address.h"
++
++/* Arm UART PL011 driver structures */
++#ifdef RSS_UART0_PL011_S
++static const struct uart_pl011_dev_cfg_t RSS_UART0_PL011_DEV_CFG_S = {
++    .base = RSS_UART0_BASE_S,
++    .def_baudrate = DEFAULT_UART_BAUDRATE,
++    .def_wlen = UART_PL011_WLEN_8,
++    .def_parity = UART_PL011_PARITY_DISABLED,
++    .def_stopbit = UART_PL011_STOPBIT_1};
++static struct uart_pl011_dev_data_t RSS_UART0_PL011_DEV_DATA_S = {
++    .state = 0,
++    .uart_clk = 0,
++    .baudrate = 0};
++struct uart_pl011_dev_t RSS_UART0_PL011_DEV_S = {
++    &(RSS_UART0_PL011_DEV_CFG_S),
++    &(RSS_UART0_PL011_DEV_DATA_S)};
++#endif
+diff --git a/platform/ext/target/arm/rss/kronos/device/rss_expansion_device_definition.h b/platform/ext/target/arm/rss/kronos/device/rss_expansion_device_definition.h
+new file mode 100644
+index 000000000..2d199d43d
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/device/rss_expansion_device_definition.h
+@@ -0,0 +1,45 @@
++/*
++ * Copyright (c) 2023 Arm Limited. All rights reserved.
++ *
++ * Licensed under the Apache License Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing software
++ * distributed under the License is distributed on an "AS IS" BASIS
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/**
++ * \file rss_expansion_device_definition.h
++ * \brief The structure definitions in this file are exported based on the
++ * peripheral definitions from device_cfg.h.
++ * This file is meant to be used as a helper for baremetal
++ * applications and/or as an example of how to configure the generic
++ * driver structures.
++ */
++
++#ifndef __RSS_EXPANSION_DEVICE_DEFINITION_H__
++#define __RSS_EXPANSION_DEVICE_DEFINITION_H__
++
++#include "rss_expansion_device_cfg.h"
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++/* UART PL011 driver structures */
++#ifdef RSS_UART0_PL011_S
++#include "uart_pl011_drv.h"
++extern struct uart_pl011_dev_t RSS_UART0_PL011_DEV_S;
++#endif
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif  /* __RSS_EXPANSION_DEVICE_DEFINITION_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/firmware_image_id.h b/platform/ext/target/arm/rss/kronos/firmware_image_id.h
+new file mode 100644
+index 000000000..497d3bf90
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/firmware_image_id.h
+@@ -0,0 +1,27 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#ifndef __RSS_FIRMWARE_IMAGE_ID_H__
++#define __RSS_FIRMWARE_IMAGE_ID_H__
++
++/*
++ * ID of firmware images loaded by BL2
++ * Images are loaded by BL2 in reverse order of ID
++ * Cannot use enum as this is included in compiler files.
++ */
++/* RSS firmware */
++#define RSS_FIRMWARE_SECURE_ID       0
++#define RSS_FIRMWARE_NON_SECURE_ID   1
++/* Host Firmware */
++#define RSS_FIRMWARE_AP_BL1_ID       2
++#define RSS_FIRMWARE_LCP_ID          3
++#define RSS_FIRMWARE_MCP_ID          4
++#define RSS_FIRMWARE_SCP_ID          5
++/* Number of firmware loaded by BL2 */
++#define RSS_FIRMWARE_COUNT           6
++
++#endif /* __RSS_FIRMWARE_IMAGE_ID_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/flash_layout.h b/platform/ext/target/arm/rss/kronos/flash_layout.h
+new file mode 100644
+index 000000000..6c74a0981
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/flash_layout.h
+@@ -0,0 +1,189 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#ifndef __FLASH_LAYOUT_H__
++#define __FLASH_LAYOUT_H__
++
++#include "firmware_image_id.h"
++#include "platform_base_address.h"
++#include "size_defs.h"
++
++/* Flash layout on RSS with BL2 (multiple image boot):
++ *
++ * 0x3100_0000 BL2 - MCUBoot (64 KB)
++ * 0x3101_0000 BL2 - MCUBoot (64 KB)
++ * 0x3102_0000 Secure image     primary slot (384 KB)
++ * 0x3108_0000 Non-secure image primary slot (384 KB)
++ * 0x310E_0000 Secure image     secondary slot (384 KB)
++ * 0x3114_0000 Non-secure image secondary slot (384 KB)
++ * 0x311A_0000 SCP BL1 primary slot (512 KB)
++ * 0x3122_0000 SCP BL1 secondary slot (512 KB)
++ * 0x312A_0000 MCP BL1 primary slot (512 KB)
++ * 0x3132_0000 MCP BL1 secondary slot (512 KB)
++ * 0x313A_0000 LCP BL1 primary slot (64 KB)
++ * 0x313B_0000 LCP BL1 secondary slot (64 KB)
++ * 0x312A_0000 AP BL1 primary slot (512 KB)
++ * 0x3132_0000 AP BL1 secondary slot (512 KB)
++ */
++
++/* This header file is included from linker scatter file as well, where only a
++ * limited C constructs are allowed. Therefore it is not possible to include
++ * here the platform_retarget.h to access flash related defines. To resolve this
++ * some of the values are redefined here with different names, these are marked
++ * with comment.
++ */
++
++
++/* Size of a Secure and of a Non-secure image */
++#define FLASH_BL2_PARTITION_SIZE        (SIZE_DEF_BL2_IMAGE) /* BL2 partition */
++#define FLASH_S_PARTITION_SIZE          (SIZE_DEF_S_IMAGE)   /* S   partition */
++#define FLASH_NS_PARTITION_SIZE         (SIZE_DEF_NS_IMAGE)  /* NS  partition */
++#define FLASH_SCP_PARTITION_SIZE        (SIZE_DEF_SCP_IMAGE) /* SCP partition */
++#define FLASH_MCP_PARTITION_SIZE        (SIZE_DEF_MCP_IMAGE) /* MCP  partition */
++#define FLASH_LCP_PARTITION_SIZE        (SIZE_DEF_LCP_IMAGE) /* LCP  partition */
++#define FLASH_AP_BL1_PARTITION_SIZE     (SIZE_DEF_AP_BL1_IMAGE) /* AP BL1  partition */
++#define FLASH_MAX_PARTITION_SIZE        ((FLASH_S_PARTITION_SIZE >   \
++                                          FLASH_NS_PARTITION_SIZE) ? \
++                                         FLASH_S_PARTITION_SIZE :    \
++                                         FLASH_NS_PARTITION_SIZE)
++
++/* Sector size of the flash hardware; same as FLASH0_SECTOR_SIZE */
++#define FLASH_AREA_IMAGE_SECTOR_SIZE    (0x1000)    /* 4 KB */
++/* Same as FLASH0_SIZE */
++#define FLASH_TOTAL_SIZE                (BOOT_FLASH_SIZE)
++
++/* Flash layout info for BL2 bootloader */
++/* Same as FLASH0_BASE_S */
++#define FLASH_BASE_ADDRESS              (BOOT_FLASH)
++
++/* Offset and size definitions of the flash partitions that are handled by the
++ * bootloader. The image swapping is done between IMAGE_PRIMARY and
++ * IMAGE_SECONDARY, SCRATCH is used as a temporary storage during image
++ * swapping.
++ */
++
++/* BL2 primary slot */
++#define FLASH_AREA_0_ID            (1)
++#define FLASH_AREA_0_OFFSET        (0)
++#define FLASH_AREA_0_SIZE          (FLASH_BL2_PARTITION_SIZE)
++/* BL2 secondary slot */
++#define FLASH_AREA_1_ID            (FLASH_AREA_0_ID + 1)
++#define FLASH_AREA_1_OFFSET        (FLASH_AREA_0_OFFSET + FLASH_AREA_0_SIZE)
++#define FLASH_AREA_1_SIZE          (FLASH_BL2_PARTITION_SIZE)
++
++/* Secure image primary slot. */
++#define FLASH_AREA_2_ID            (FLASH_AREA_1_ID + 1)
++#define FLASH_AREA_2_OFFSET        (FLASH_AREA_1_OFFSET + FLASH_AREA_1_SIZE)
++#define FLASH_AREA_2_SIZE          (FLASH_S_PARTITION_SIZE)
++/* Non-secure image primary slot. */
++#define FLASH_AREA_3_ID            (FLASH_AREA_2_ID + 1)
++#define FLASH_AREA_3_OFFSET        (FLASH_AREA_2_OFFSET + FLASH_AREA_2_SIZE)
++#define FLASH_AREA_3_SIZE          (FLASH_NS_PARTITION_SIZE)
++/* Secure image secondary slot. */
++#define FLASH_AREA_4_ID            (FLASH_AREA_3_ID + 1)
++#define FLASH_AREA_4_OFFSET        (FLASH_AREA_3_OFFSET + FLASH_AREA_3_SIZE)
++#define FLASH_AREA_4_SIZE          (FLASH_S_PARTITION_SIZE)
++/* Non-secure image secondary slot. */
++#define FLASH_AREA_5_ID            (FLASH_AREA_4_ID + 1)
++#define FLASH_AREA_5_OFFSET        (FLASH_AREA_4_OFFSET + FLASH_AREA_4_SIZE)
++#define FLASH_AREA_5_SIZE          (FLASH_NS_PARTITION_SIZE)
++
++/* SCP image primary slot */
++#define FLASH_AREA_6_ID            (FLASH_AREA_5_ID + 1)
++#define FLASH_AREA_6_OFFSET        (FLASH_AREA_5_OFFSET + FLASH_AREA_5_SIZE)
++#define FLASH_AREA_6_SIZE          (FLASH_SCP_PARTITION_SIZE)
++/* SCP image primary slot */
++#define FLASH_AREA_7_ID            (FLASH_AREA_6_ID + 1)
++#define FLASH_AREA_7_OFFSET        (FLASH_AREA_6_OFFSET + FLASH_AREA_6_SIZE)
++#define FLASH_AREA_7_SIZE          (FLASH_MCP_PARTITION_SIZE)
++/* MCP image secondary slot */
++#define FLASH_AREA_8_ID            (FLASH_AREA_7_ID + 1)
++#define FLASH_AREA_8_OFFSET        (FLASH_AREA_7_OFFSET + FLASH_AREA_7_SIZE)
++#define FLASH_AREA_8_SIZE          (FLASH_SCP_PARTITION_SIZE)
++/* MCP image secondary slot */
++#define FLASH_AREA_9_ID            (FLASH_AREA_8_ID + 1)
++#define FLASH_AREA_9_OFFSET        (FLASH_AREA_8_OFFSET + FLASH_AREA_8_SIZE)
++#define FLASH_AREA_9_SIZE          (FLASH_MCP_PARTITION_SIZE)
++/* LCP image primary slot */
++#define FLASH_AREA_10_ID            (FLASH_AREA_9_ID + 1)
++#define FLASH_AREA_10_OFFSET        (FLASH_AREA_9_OFFSET + FLASH_AREA_9_SIZE)
++#define FLASH_AREA_10_SIZE          (FLASH_LCP_PARTITION_SIZE)
++/* LCP image secondary slot */
++#define FLASH_AREA_11_ID            (FLASH_AREA_10_ID + 1)
++#define FLASH_AREA_11_OFFSET        (FLASH_AREA_10_OFFSET + FLASH_AREA_10_SIZE)
++#define FLASH_AREA_11_SIZE          (FLASH_LCP_PARTITION_SIZE)
++/* AP BL1 image primary slot */
++#define FLASH_AREA_12_ID            (FLASH_AREA_11_ID + 1)
++#define FLASH_AREA_12_OFFSET        (FLASH_AREA_11_OFFSET + FLASH_AREA_11_SIZE)
++#define FLASH_AREA_12_SIZE          (FLASH_AP_BL1_PARTITION_SIZE)
++/* AP BL1 image secondary slot */
++#define FLASH_AREA_13_ID            (FLASH_AREA_12_ID + 1)
++#define FLASH_AREA_13_OFFSET        (FLASH_AREA_12_OFFSET + FLASH_AREA_12_SIZE)
++#define FLASH_AREA_13_SIZE          (FLASH_AP_BL1_PARTITION_SIZE)
++
++/* Maximum number of image sectors supported by the bootloader. */
++#define MCUBOOT_MAX_IMG_SECTORS    (FLASH_MAX_PARTITION_SIZE / \
++                                    FLASH_AREA_IMAGE_SECTOR_SIZE)
++
++/* Check that all the images can fit in the Flash area. */
++#if (FLASH_AREA_11_OFFSET + FLASH_AREA_13_SIZE > FLASH_TOTAL_SIZE)
++#error "Out of Flash memory!"
++#endif
++
++#define FLASH_AREA_IMAGE_PRIMARY(x) \
++        (((x) == RSS_FIRMWARE_SECURE_ID)     ? FLASH_AREA_2_ID : \
++         ((x) == RSS_FIRMWARE_NON_SECURE_ID) ? FLASH_AREA_3_ID : \
++         ((x) == RSS_FIRMWARE_SCP_ID)        ? FLASH_AREA_6_ID : \
++         ((x) == RSS_FIRMWARE_MCP_ID)        ? FLASH_AREA_8_ID : \
++         ((x) == RSS_FIRMWARE_LCP_ID)        ? FLASH_AREA_10_ID : \
++         ((x) == RSS_FIRMWARE_AP_BL1_ID)     ? FLASH_AREA_12_ID : \
++                                              255)
++#define FLASH_AREA_IMAGE_SECONDARY(x) \
++        (((x) == RSS_FIRMWARE_SECURE_ID)     ? FLASH_AREA_4_ID : \
++         ((x) == RSS_FIRMWARE_NON_SECURE_ID) ? FLASH_AREA_5_ID : \
++         ((x) == RSS_FIRMWARE_SCP_ID)        ? FLASH_AREA_7_ID : \
++         ((x) == RSS_FIRMWARE_MCP_ID)        ? FLASH_AREA_9_ID : \
++         ((x) == RSS_FIRMWARE_LCP_ID)        ? FLASH_AREA_11_ID : \
++         ((x) == RSS_FIRMWARE_AP_BL1_ID)     ? FLASH_AREA_13_ID : \
++                                              255)
++
++/* Scratch area is not used with RAM loading firmware upgrade */
++#define FLASH_AREA_IMAGE_SCRATCH        255
++
++/* Offset and size definition in flash area used by assemble.py */
++#define SECURE_IMAGE_OFFSET             (0x0)
++#define SECURE_IMAGE_MAX_SIZE           FLASH_S_PARTITION_SIZE
++
++#define NON_SECURE_IMAGE_OFFSET         (SECURE_IMAGE_OFFSET + \
++                                         SECURE_IMAGE_MAX_SIZE)
++#define NON_SECURE_IMAGE_MAX_SIZE       FLASH_NS_PARTITION_SIZE
++
++#define S_IMAGE_LOAD_ADDRESS            (VM0_BASE_S)
++#define NS_IMAGE_LOAD_ADDRESS           (VM1_BASE_S + VM1_SIZE - FLASH_NS_PARTITION_SIZE)
++
++#define FLASH_SIC_TABLE_SIZE 0
++
++#define FWU_HOST_IMAGE_BASE_S FLASH_AREA_4_OFFSET
++#define HOST_IMAGE_MAX_SIZE FLASH_AREA_4_SIZE
++
++/* Flash device name used by BL2
++ * Name is defined in flash driver file: Driver_Flash.c
++ */
++#define FLASH_DEV_NAME Driver_FLASH0
++/* Smallest flash programmable unit in bytes */
++#define TFM_HAL_FLASH_PROGRAM_UNIT      (0x1)
++
++#endif /* __FLASH_LAYOUT_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/host_base_address.h b/platform/ext/target/arm/rss/kronos/host_base_address.h
+new file mode 100644
+index 000000000..c64b309c0
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/host_base_address.h
+@@ -0,0 +1,240 @@
++/*
++ * Copyright (c) 2023 Arm Limited. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/**
++ * \file host_base_address.h
++ * \brief This file defines the host memory map addresses accessed by RSS.
++ */
++
++#ifndef __HOST_BASE_ADDRESS_H__
++#define __HOST_BASE_ADDRESS_H__
++
++#include "platform_base_address.h"
++#include "size_defs.h"
++
++#ifndef ALIGN_UP
++#define ALIGN_UP(num, align)    (((num) + ((align) - 1)) & ~((align) - 1))
++#endif
++
++#ifndef ALIGN_DOWN
++#define ALIGN_DOWN(num, align)  ((num) & ~((align) - 1))
++#endif
++
++/* Host Addresses for ATU setup */
++/* ATU regions for loading firmware in BL2. Reused per firmware. Not used outside BL2 */
++#define RSS_ATU_IMG_HDR_LOAD_ID             0 /*ID to use for region loading the header of an image*/
++#define RSS_ATU_IMG_CODE_LOAD_ID            1 /*ID to use for region loading the rest of an image*/
++#define RSS_ATU_FW_INIT_ID                  2 /*ID to use for region initialising firmware*/
++/* ATU regions left open after BL2 to allow continued access so cannot be reused. */
++#define RSS_ATU_SCP_ATU_ID              3 /*ID to use for region mapping to host SCP ATU */
++/* ATU region ID for accessing RSS-SCP shared mailbox */
++#define RSS_ATU_SCP_RSS_MAILBOX_ATU_ID  4
++#define RSS_ATU_AP_RSS_MAILBOX_ATU_ID   5 /*ID to use for region mapping to MHU
++                                            outband msg buffer between AP and RSS */
++
++/* The ATU has a minimum size and all regions are restricted to align with it */
++#define RSS_ATU_PAGE_SIZE           0x2000U /* 8KB */
++
++/*
++ * In flash the image is layed out like so:
++ *
++ * ┌────────┬──────┬─────────┐
++ * │ HEADER │ CODE │ TRAILER │
++ * ├────────┴──────┴─────────┤
++ * │ Flash Image             │
++ * └─────────────────────────┘
++ *
++ * However, when the image is loaded the CODE region needs to be at the start
++ * of the memory for the host firmware to load. To resolve this with one
++ * contiguous copy the HEADER region needs to be at the start of the image in
++ * RSS logical memory but in a different location in physical memory. The ATU
++ * is setup with two regions: ATU HEADER and ATU CODE which are contiguous in
++ * logical memory but separate in physical memory. The image is then setup so
++ * that the boundary between HEADER and CODE regions is the boundary between
++ * the two ATU regions in logical memory.
++ *
++ *                 ┌──────┬─────────┬────────┐
++ * Physical Memory │ CODE │ TRAILER │ HEADER │
++ *                 ├──────┴─────────┴────────┤
++ *                 │ ATU CODE                │
++ *                 └──────────▲─┬────────────┤
++ *                            │ │ ATU HEADER │
++ *                            │ └──────▲─────┘
++ *                        ┌───┼────────┘
++ *                        │   └────────────┐
++ *                 ┌──────┴─────┬──────────┴──────────────┐
++ * Logical Memory  │ ATU HEADER │ ATU CODE                │
++ *                 └───┬────────┼──────┬─────────┬────────┘
++ *                     │ HEADER │ CODE │ TRAILER │
++ *                     └────────┴──────┴─────────┘
++ *
++ * Note: Regions not to scale
++ * Note: Some overlap is expected between ATU CODE and ATU HEADER in physical
++ *       memory as the HEADER is smaller than the ATU page size. This is fine
++ *       as the whole image is shifted and would have fit inside ATU CODE.
++ * Note: The physical memory for MCP is used for all images which allows the
++ *       code on other firmware (particularly LCP) to be large as the memory
++ *       no longer needs to contain the header.
++ */
++
++
++#define RSS_IMG_HDR_ATU_SIZE    ALIGN_UP(BL2_HEADER_SIZE, RSS_ATU_PAGE_SIZE)
++
++/*
++ * RSS ATU Regions for image loading
++ * Note: these need to consistent with values used when signing the images.
++ * Note: MCU Boot requires that the logical addresses do not overlap.
++ */
++
++/* MCP ATU HEADER logical address start */
++#define HOST_MCP_HDR_ATU_BASE_S     HOST_ACCESS_BASE_S
++/* MCP Code region and MCP ATU CODE logical address start */
++#define HOST_MCP_CODE_BASE_S        (HOST_MCP_HDR_ATU_BASE_S + RSS_IMG_HDR_ATU_SIZE)
++/* MCP Image address start, offset so end of HEADER is at end of ATU HEADER */
++#define HOST_MCP_IMG_BASE_S         (HOST_MCP_CODE_BASE_S - BL2_HEADER_SIZE)
++/* MCP ITCM physical address start */
++#define HOST_MCP_PHYS_BASE          0x2000000000000ULL
++/* MCP ATU CODE size (aligned size of MCP image) */
++#define HOST_MCP_ATU_SIZE           ALIGN_UP(SIZE_DEF_MCP_IMAGE, RSS_ATU_PAGE_SIZE)
++/* ATU ID for MCP ATU HEADER region */
++#define HOST_MCP_IMG_HDR_ATU_ID     RSS_ATU_IMG_HDR_LOAD_ID
++/* ATU ID for MCP ATU CODE region */
++#define HOST_MCP_IMG_CODE_ATU_ID    RSS_ATU_IMG_CODE_LOAD_ID
++
++/* SCP ATU HEADER logical address start */
++#define HOST_SCP_HDR_ATU_BASE_S     (HOST_MCP_CODE_BASE_S + HOST_MCP_ATU_SIZE)
++/* SCP Code region and SCP ATU CODE logical address start */
++#define HOST_SCP_CODE_BASE_S        (HOST_SCP_HDR_ATU_BASE_S + RSS_IMG_HDR_ATU_SIZE)
++/* SCP Image address start, offset so end of HEADER is at end of ATU HEADER */
++#define HOST_SCP_IMG_BASE_S         (HOST_SCP_CODE_BASE_S - BL2_HEADER_SIZE)
++/* SCP ITCM physical address start */
++#define HOST_SCP_PHYS_BASE          0x1000000000000ULL
++/* SCP ATU CODE size (aligned size of SCP image) */
++#define HOST_SCP_ATU_SIZE           ALIGN_UP(SIZE_DEF_SCP_IMAGE, RSS_ATU_PAGE_SIZE)
++/* ATU ID for SCP ATU HEADER region */
++#define HOST_SCP_IMG_HDR_ATU_ID     RSS_ATU_IMG_HDR_LOAD_ID
++/* ATU ID for SCP ATU CODE region */
++#define HOST_SCP_IMG_CODE_ATU_ID    RSS_ATU_IMG_CODE_LOAD_ID
++
++/*
++ * All LCP use the same ATU region but map it to a different physical address
++ * The physical address is the cluster utility space in SCP which has an
++ * address translation window for each LCP.
++ * Note: The cluster utility space requires SCP's ATU to be setup correctly.
++ */
++
++/* LCP ATU HEADER logical address start */
++#define HOST_LCP_HDR_ATU_BASE_S     (HOST_SCP_CODE_BASE_S + HOST_SCP_ATU_SIZE)
++/* LCP Code region and LCP ATU CODE logical address start */
++#define HOST_LCP_CODE_BASE_S        (HOST_LCP_HDR_ATU_BASE_S + RSS_IMG_HDR_ATU_SIZE)
++/* LCP Image address start, offset so end of HEADER is at end of ATU HEADER */
++#define HOST_LCP_IMG_BASE_S         (HOST_LCP_CODE_BASE_S - BL2_HEADER_SIZE)
++/* LCP0 ITCM window in SCP address start */
++#define HOST_LCP_0_PHYS_BASE        0x0000200050000ULL
++/* Offset between LCP ITCM windows in SCP */
++#define HOST_LCP_N_PHYS_OFFSET      0x200000U
++/* LCP ITCM window in SCP address start for LCP N*/
++#define HOST_LCP_N_PHYS_BASE(n)     (HOST_LCP_0_PHYS_BASE + HOST_LCP_N_PHYS_OFFSET * n)
++/* LCP ATU CODE size (aligned size of LCP image) */
++#define HOST_LCP_ATU_SIZE           ALIGN_UP(SIZE_DEF_LCP_IMAGE, RSS_ATU_PAGE_SIZE)
++/* ATU ID for LCP ATU HEADER region */
++#define HOST_LCP_IMG_HDR_ATU_ID     RSS_ATU_IMG_HDR_LOAD_ID
++/* ATU ID for LCP ATU CODE region */
++#define HOST_LCP_IMG_CODE_ATU_ID    RSS_ATU_IMG_CODE_LOAD_ID
++
++/* AP BL1 ATU HEADER logical address start */
++#define HOST_AP_BL1_HDR_ATU_BASE_S     (HOST_LCP_CODE_BASE_S + HOST_LCP_ATU_SIZE)
++/*  AP BL1 Code region and SCP ATU CODE logical address start */
++#define HOST_AP_BL1_CODE_BASE_S        (HOST_AP_BL1_HDR_ATU_BASE_S + RSS_IMG_HDR_ATU_SIZE)
++/*  AP BL1 Image address start, offset so end of HEADER is at end of ATU HEADER */
++#define HOST_AP_BL1_IMG_BASE_S         (HOST_AP_BL1_CODE_BASE_S - BL2_HEADER_SIZE)
++/*  AP BL1 ITCM physical address start */
++#define HOST_AP_BL1_PHYS_BASE          0x0000000000000ULL
++/*  AP BL1 ATU CODE size (aligned size of SCP image) */
++#define HOST_AP_BL1_ATU_SIZE           ALIGN_UP(SIZE_DEF_AP_BL1_IMAGE, RSS_ATU_PAGE_SIZE)
++/*  AP BL1 ID for SCP ATU HEADER region */
++#define HOST_AP_BL1_IMG_HDR_ATU_ID     RSS_ATU_IMG_HDR_LOAD_ID
++/*  AP BL1 ID for SCP ATU CODE region */
++#define HOST_AP_BL1_IMG_CODE_ATU_ID    RSS_ATU_IMG_CODE_LOAD_ID
++
++/* ATU HEADER physical address start (mapped so end of region is end of MCP ITCM) */
++#define RSS_HDR_PHYS_BASE      HOST_MCP_PHYS_BASE + HOST_MCP_ATU_SIZE - RSS_IMG_HDR_ATU_SIZE
++
++/* Last rss logical address used for loading images */
++#define RSS_IMAGE_LOADING_END   (HOST_AP_BL1_CODE_BASE_S + HOST_AP_BL1_ATU_SIZE)
++
++/*
++ * RSS ATU Regions for accessing the initiation registers.
++ * These will not be used at the same time so logical addresses can overlap.
++ */
++
++/* MCP initialisation region logical address start */
++#define HOST_MCP_INIT_BASE_S    RSS_IMAGE_LOADING_END
++/* MCP initialisation region physical address start */
++#define HOST_MCP_INIT_PHYS_BASE 0x2000050020000ULL
++/* MCP initialisation region ATU size */
++#define HOST_MCP_INIT_SIZE      ALIGN_UP(0x1000U, RSS_ATU_PAGE_SIZE)
++/* MCP initialisation region ATU id */
++#define HOST_MCP_INIT_ATU_ID    RSS_ATU_FW_INIT_ID
++
++/* SCP initialisation region logical address start */
++#define HOST_SCP_INIT_BASE_S    RSS_IMAGE_LOADING_END
++/* SCP initialisation region physical address start */
++#define HOST_SCP_INIT_PHYS_BASE 0x1000050050000ULL
++/* SCP initialisation region ATU size */
++#define HOST_SCP_INIT_SIZE      ALIGN_UP(0x1000U, RSS_ATU_PAGE_SIZE)
++/* SCP initialisation region ATU id */
++#define HOST_SCP_INIT_ATU_ID    RSS_ATU_FW_INIT_ID
++
++/* Last rss logical address used for initialising firmware */
++#define RSS_HOST_INIT_END       (HOST_SCP_INIT_BASE_S + HOST_SCP_INIT_SIZE)
++
++/*
++ * RSS ATU Regions for communicating with and providing services for SCP
++ * These regions are left open for use in SecureFW so cannot overlap other
++ * regions.
++ */
++
++/* ATU region mapping to access SCP's ATU from RSS */
++#define HOST_SCP_ATU_BASE_S         RSS_HOST_INIT_END
++#define HOST_SCP_ATU_PHYS_BASE      0x1000050010000ULL
++#define HOST_SCP_ATU_ATU_SIZE       ALIGN_UP(0x10000, RSS_ATU_PAGE_SIZE)
++#define HOST_SCP_ATU_ATU_ID         RSS_ATU_SCP_ATU_ID
++
++/* ATU region to access Shared mailbox between SCP and RSS */
++#define HOST_SCP_RSS_MAILBOX_BASE_S \
++    (HOST_SCP_ATU_BASE_S + HOST_SCP_ATU_ATU_SIZE)
++/* Physical address of mailbox located in the RSM Shared RAM region */
++#define HOST_SCP_RSS_MAILBOX_PHYS_BASE 0x2F000000
++#define HOST_SCP_RSS_MAILBOX_ATU_SIZE ALIGN_UP(0x2000, RSS_ATU_PAGE_SIZE)
++#define HOST_SCP_RSS_MAILBOX_ATU_ID RSS_ATU_SCP_RSS_MAILBOX_ATU_ID
++
++/*
++ * ATU region for AP<->RSS MHU outband message buffer
++ * HOST_AP_RSS_MAILBOX_BASE_S: Logical address at which the RSS should access
++ *                             the AP<->RSS outband msg buffer.
++ *
++ * HOST_AP_RSS_MAILBOX_PHYS_BASE: Physical address of outband msg buffer
++ *                                located in the AP Shared RAM region.
++ *
++ * HOST_AP_RSS_MAILBOX_ATU_SIZE: Size of outband msg buffer as defined in TF-A.
++ */
++#define HOST_AP_RSS_MAILBOX_BASE_S     HOST_ACCESS_BASE_NS
++#define HOST_AP_RSS_MAILBOX_PHYS_BASE  UINT64_C(0x86000)
++#define HOST_AP_RSS_MAILBOX_ATU_SIZE   ALIGN_UP(0x1000, RSS_ATU_PAGE_SIZE)
++#define HOST_AP_RSS_MAILBOX_ATU_ID     RSS_ATU_AP_RSS_MAILBOX_ATU_ID
++
++#endif  /* __HOST_BASE_ADDRESS_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/preload.cmake b/platform/ext/target/arm/rss/kronos/preload.cmake
+new file mode 100644
+index 000000000..1a6aeb256
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/preload.cmake
+@@ -0,0 +1,9 @@
++#-------------------------------------------------------------------------------
++# Copyright (c) 2023, Arm Limited. All rights reserved.
++#
++# SPDX-License-Identifier: BSD-3-Clause
++#
++#-------------------------------------------------------------------------------
++
++# Use common preload.cmake
++include(${CMAKE_CURRENT_LIST_DIR}/../common/preload.cmake)
+diff --git a/platform/ext/target/arm/rss/kronos/rss_comms/rss_comms_permissions_hal.c b/platform/ext/target/arm/rss/kronos/rss_comms/rss_comms_permissions_hal.c
+new file mode 100644
+index 000000000..41e9cf49e
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/rss_comms/rss_comms_permissions_hal.c
+@@ -0,0 +1,162 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#include "rss_comms_permissions_hal.h"
++
++#include "psa_manifest/sid.h"
++#include "tfm_hal_platform.h"
++
++#ifdef TFM_PARTITION_INITIAL_ATTESTATION
++#include "tfm_attest_defs.h"
++#endif /* TFM_PARTITION_INITIAL_ATTESTATION */
++#ifdef TFM_PARTITION_MEASURED_BOOT
++#include "measured_boot_defs.h"
++#endif /* TFM_PARTITION_MEASURED_BOOT */
++#ifdef TFM_PARTITION_DELEGATED_ATTESTATION
++#include "tfm_delegated_attest_defs.h"
++#endif /* TFM_PARTITION_DELEGATED_ATTESTATION */
++#ifdef TFM_PARTITION_CRYPTO
++#include "tfm_crypto_defs.h"
++#endif /*TFM_PARTITION_CRYPTO */
++#ifdef TFM_PARTITION_PLATFORM
++#include "tfm_platform_api.h"
++#endif /* TFM_PARTITION_PLATFORM */
++
++#define INVALID_REGION_COUNTER_MAX  128
++#define INVALID_SERVICE_COUNTER_MAX 64
++
++static uint32_t invalid_region_counter = 0;
++static uint32_t invalid_service_counter = 0;
++
++/* Check if the interface is  getting a lot of invalid requests, and shutdown
++ * the system if it exceeds the threshold. This is intended to make fuzzing the
++ * interface difficult.
++ */
++static void counter_check(void) {
++    if (invalid_region_counter > INVALID_REGION_COUNTER_MAX) {
++#ifdef CONFIG_TFM_HALT_ON_CORE_PANIC
++        tfm_hal_system_halt();
++#else
++        tfm_hal_system_reset();
++#endif /* CONFIG_TFM_HALT_ON_CORE_PANIC */
++    }
++
++    if (invalid_service_counter > INVALID_SERVICE_COUNTER_MAX) {
++#ifdef CONFIG_TFM_HALT_ON_CORE_PANIC
++        tfm_hal_system_halt();
++#else
++        tfm_hal_system_reset();
++#endif /* CONFIG_TFM_HALT_ON_CORE_PANIC */
++    }
++
++    return;
++}
++
++/* This interface is accessed only from root world, so we don't care about the
++ * owners of host memory. However, we should still be somewhat discerning about
++ * where data is coming from or going to.
++ */
++enum tfm_plat_err_t comms_permissions_memory_check(uint64_t host_ptr,
++                                                   uint32_t size,
++                                                   bool is_write)
++{
++    /* Is fully within the Secure ROM and is a read */
++    if (host_ptr >= 0x0 && host_ptr + size < 0x80000 && !is_write) {
++        return TFM_PLAT_ERR_SUCCESS;
++    }
++
++    if (host_ptr >= 0x4000000 && host_ptr + size < 0x4080000) {
++        return TFM_PLAT_ERR_SUCCESS;
++    }
++
++    /* Is fully within the Non-secure ROM and is a read */
++    if (host_ptr >= 0x5000000 && host_ptr + size < 0x5080000 && !is_write) {
++        return TFM_PLAT_ERR_SUCCESS;
++    }
++
++    /* Is fully within the Non-secure RAM */
++    if (host_ptr >= 0x6000000 && host_ptr + size < 0x6080000) {
++        return TFM_PLAT_ERR_SUCCESS;
++    }
++
++    invalid_region_counter++;
++    counter_check();
++
++    return TFM_PLAT_ERR_UNSUPPORTED;
++}
++
++enum tfm_plat_err_t comms_permissions_service_check(psa_handle_t handle,
++                                                    const psa_invec *in_vec,
++                                                    size_t in_len,
++                                                    int32_t type)
++{
++    uint32_t function_id = 0;
++
++    switch(handle) {
++#ifdef TFM_PARTITION_INITIAL_ATTESTATION
++    case TFM_ATTESTATION_SERVICE_HANDLE:
++        switch(type) {
++        case TFM_ATTEST_GET_TOKEN:
++        case TFM_ATTEST_GET_TOKEN_SIZE:
++            return TFM_PLAT_ERR_SUCCESS;
++        default:
++            goto out_err;
++        }
++#endif /* TFM_PARTITION_INITIAL_ATTESTATION */
++#ifdef TFM_PARTITION_DELEGATED_ATTESTATION
++    case TFM_DELEGATED_ATTESTATION_HANDLE:
++        switch(type) {
++        case DELEGATED_ATTEST_GET_DELEGATED_KEY:
++        case DELEGATED_ATTEST_GET_PLATFORM_TOKEN:
++            return TFM_PLAT_ERR_SUCCESS;
++        default:
++            goto out_err;
++        }
++#endif /* TFM_PARTITION_DELEGATED_ATTESTATION */
++#ifdef TFM_PARTITION_MEASURED_BOOT
++    case TFM_MEASURED_BOOT_HANDLE:
++        switch(type) {
++        case TFM_MEASURED_BOOT_EXTEND:
++        case TFM_MEASURED_BOOT_READ:
++            return TFM_PLAT_ERR_SUCCESS;
++        default:
++            goto out_err;
++        }
++#endif /* TFM_PARTITION_MEASURED_BOOT */
++#ifdef TFM_PARTITION_CRYPTO
++    case TFM_CRYPTO_HANDLE:
++        if (in_len >= 1) {
++            function_id = ((struct tfm_crypto_pack_iovec *)in_vec[0].base)->function_id;
++            switch(function_id) {
++            case (TFM_CRYPTO_EXPORT_PUBLIC_KEY_SID):
++                return TFM_PLAT_ERR_SUCCESS;
++            default:
++                goto out_err;
++            }
++        }
++        goto out_err;
++#endif /* TFM_PARTITION_CRYPTO */
++#ifdef TFM_PARTITION_PLATFORM
++    case TFM_PLATFORM_SERVICE_HANDLE:
++        switch(type) {
++        case TFM_PLATFORM_API_ID_NV_READ:
++        case TFM_PLATFORM_API_ID_NV_INCREMENT:
++            return TFM_PLAT_ERR_SUCCESS;
++        default:
++            goto out_err;
++        }
++#endif /* TFM_PARTITION_PLATFORM */
++    default:
++        goto out_err;
++    }
++
++out_err:
++    invalid_service_counter++;
++    counter_check();
++
++    return TFM_PLAT_ERR_UNSUPPORTED;
++}
+diff --git a/platform/ext/target/arm/rss/kronos/rss_expansion_base_address.h b/platform/ext/target/arm/rss/kronos/rss_expansion_base_address.h
+new file mode 100644
+index 000000000..6e524424b
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/rss_expansion_base_address.h
+@@ -0,0 +1,39 @@
++/*
++ * Copyright (c) 2023 Arm Limited
++ *
++ * Licensed under the Apache License Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing software
++ * distributed under the License is distributed on an "AS IS" BASIS
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/**
++ * \file platform_base_address.h
++ * \brief This file defines all the peripheral base addresses for RSS platform.
++ */
++
++#ifndef __RSS_EXPANSION_BASE_ADDRESS_H__
++#define __RSS_EXPANSION_BASE_ADDRESS_H__
++
++/* RSS Integration Layer register block */
++#define RSS_INTEG_LAYER_REG_BASE         0x58100000
++
++#define RSS_INTEG_REG_BASE               (RSS_INTEG_LAYER_REG_BASE + 0x010)
++
++/* MSCP ATU Access Permission register */
++#define RSS_ATU_AP                       (RSS_INTEG_LAYER_REG_BASE + 0x014)
++
++#define RSS_SCP_ATU_CFG_BASE             (HOST_SCP_RSS_MAILBOX_BASE_S + 128)
++
++#define RSS_UART0_BASE_S                 0x58101000 /* UART 0 Secure base address */
++
++#define BOOT_FLASH                       0xB0000000 /* Boot flash */
++
++#endif  /* __RSS_EXPANSION_BASE_ADDRESS_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/rss_expansion_peripherals_def.c b/platform/ext/target/arm/rss/kronos/rss_expansion_peripherals_def.c
+new file mode 100644
+index 000000000..583a12fb8
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/rss_expansion_peripherals_def.c
+@@ -0,0 +1,16 @@
++/*
++ * Copyright (c) 2021-2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#include "target_cfg.h"
++#include "cmsis.h"
++
++struct platform_data_t tfm_peripheral_std_uart = {
++        RSS_UART0_BASE_S,
++        RSS_UART0_BASE_S + 0xFFF,
++        PPC_SP_DO_NOT_CONFIGURE,
++        -1
++};
+diff --git a/platform/ext/target/arm/rss/kronos/rss_memory_sizes.h b/platform/ext/target/arm/rss/kronos/rss_memory_sizes.h
+new file mode 100644
+index 000000000..f1c27b9d6
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/rss_memory_sizes.h
+@@ -0,0 +1,35 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#ifndef __RSS_MEMORY_SIZES_H__
++#define __RSS_MEMORY_SIZES_H__
++
++#define VM0_SIZE                         0x00080000 /* 512 KiB */
++#define VM1_SIZE                         0x00080000 /* 512 KiB */
++
++#define BOOT_FLASH_SIZE                  0x00800000 /* 8MB */
++
++/* The total size of the OTP for the RSS */
++#define OTP_TOTAL_SIZE     (0x4000)
++/* How much OTP is reserved for the portion of the DMA Initial Command Sequence
++ * which is located in OTP. This is loaded by directly by the DMA hardware, so
++ * this must match the size configured into the ROM part of the ICS.
++ */
++#define OTP_DMA_ICS_SIZE   (0x400)
++/* How much space in ROM is used for the DMA Initial Command Sequence */
++#define ROM_DMA_ICS_SIZE   (0x1000)
++
++#endif /* __RSS_MEMORY_SIZES_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/size_defs.h b/platform/ext/target/arm/rss/kronos/size_defs.h
+new file mode 100644
+index 000000000..3d7b50127
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/size_defs.h
+@@ -0,0 +1,29 @@
++/*
++ * Copyright (c) 2023 Arm Limited. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/* BL2 */
++#define SIZE_DEF_BL2_IMAGE          (0x20000) /* 128 KB */
++
++/* Secure Firmware */
++#define SIZE_DEF_S_IMAGE            (0x60000) /* 384 KB */
++/* Non-Secure Firmware */
++#define SIZE_DEF_NS_IMAGE           (0x60000) /* 384 KB */
++
++/* Host Firmware */
++#define SIZE_DEF_SCP_IMAGE          (0x80000) /* 512 KB */
++#define SIZE_DEF_MCP_IMAGE          (0x80000) /* 512 KB */
++#define SIZE_DEF_LCP_IMAGE          (0x10000) /* 64 KB */
++#define SIZE_DEF_AP_BL1_IMAGE       (0x80000) /* 512 KB */
+diff --git a/platform/ext/target/arm/rss/kronos/tfm_interrupts.c b/platform/ext/target/arm/rss/kronos/tfm_interrupts.c
+new file mode 100644
+index 000000000..c0be7d901
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/tfm_interrupts.c
+@@ -0,0 +1,103 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#include "cmsis.h"
++#include "host_base_address.h"
++#include "platform_irq.h"
++#include "mhu_v3_x.h"
++#include "device_definition.h"
++#include "mscp_mailbox.h"
++#include "mscp_atu_request_handler.h"
++
++#include <inttypes.h>
++
++enum mhu_scp_rss_doorbell_channel {
++    MHU_SCP_RSS_ATU_REQUEST_CHANNEL_ID=0,
++    MHU_SCP_RSS_SYSTOP_ON_CHANNEL_ID,
++    MHU_SCP_RSS_CHANNEL_COUNT,
++};
++
++volatile bool scp_doorbell = false;
++
++int mhu_scp_rss_atu_request_doorbell_handler(uint32_t value) {
++#ifdef ATU_SCP
++    enum mscp_atu_req_error_t status;
++
++    /* Only flag 0 is used to indicate ATU request */
++    if ((value & 0x1) != 0x1){
++        return 1;
++    }
++
++    /* Handle the ATU requests from MSCP */
++    status = atu_request_handler(&SCP_ATU_INFO);
++    if (status != MSCP_ATU_REQ_ERR_NONE) {
++        return 1;
++    }
++
++    /* Raise RSS->SCP MHUv3 doorbell to notify SCP about the response */
++    status = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, 0, 0x1);
++    if (status != MHU_V_3_X_ERR_NONE) {
++        return 1;
++    }
++
++#endif
++    return 0;
++}
++
++static int mhu_scp_rss_systop_on_doorbell_handler(uint32_t value) {
++    enum mscp_atu_req_error_t status;
++
++    /* Only flag 0 is used to indicate SYSTOP ON */
++    if ((value & 0x1) != 0x1){
++        /* SPMLOG_ERRMSG("[CMU_MHU4_R] Undefined doorbell\r\n"); */
++        return 1;
++    }
++
++    scp_doorbell = true;
++
++    return 0;
++}
++
++/* Array of function pointers to call if a message is received on a channel */
++static int (*mhu_scp_rss_doorbell_vector[MHU_SCP_RSS_CHANNEL_COUNT]) (uint32_t) = {
++    [MHU_SCP_RSS_ATU_REQUEST_CHANNEL_ID] = mhu_scp_rss_atu_request_doorbell_handler,
++    [MHU_SCP_RSS_SYSTOP_ON_CHANNEL_ID]   = mhu_scp_rss_systop_on_doorbell_handler,
++};
++
++/* Function to handle the SCP-->RSS MHUv3 combined MBX interrupt */
++void CMU_MHU4_Receiver_Handler(void)
++{
++    enum mhu_v3_x_channel_type_t ch_type = MHU_V3_X_CHANNEL_TYPE_DBCH;
++    uint32_t ch = 0, value = 0, mask = 0x1;
++    enum mhu_v3_x_error_t status;
++
++    for (ch = 0; ch < MHU_SCP_RSS_CHANNEL_COUNT; ch++) {
++        /* Read the doorbell channel value */
++        status = mhu_v3_x_doorbell_read(&MHU_V3_SCP_TO_RSS_DEV, ch, &value);
++        if (status != MHU_V_3_X_ERR_NONE) {
++            break;
++        }
++
++        if (value != 0){
++            /* Handle the ATU requests from MSCP */
++            status = mhu_scp_rss_doorbell_vector[ch](value);
++            if (status != 0) {
++                /* Update mask value to clear the doorbell */
++                mask = value;
++                break;
++            }
++            break;
++        }
++    }
++
++    /* Clear the pending interrupt */
++    status = mhu_v3_x_doorbell_clear(&MHU_V3_SCP_TO_RSS_DEV, ch, mask);
++    if (status != MHU_V_3_X_ERR_NONE) {
++    }
++
++    NVIC_ClearPendingIRQ(CMU_MHU4_Receiver_IRQn);
++}
+-- 
+2.25.1
+

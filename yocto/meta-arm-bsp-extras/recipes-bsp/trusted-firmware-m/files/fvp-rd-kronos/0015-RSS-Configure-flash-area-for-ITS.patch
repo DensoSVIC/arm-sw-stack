@@ -1,0 +1,189 @@
+From 288ccec40cf0544af139ac3d404b882258b15256 Mon Sep 17 00:00:00 2001
+From: Michael Zhao <michael.zhao@arm.com>
+Date: Sat, 19 Aug 2023 18:55:52 +0800
+Subject: [PATCH] RSS: Configure flash area for ITS
+
+Configure a flash area for ITS service:
+- Allocate 1MB flash space for ITS
+- Map the flash area to memory space with ATU
+
+Upstream-Status: Pending
+Signed-off-by: Michael Zhao <michael.zhao@arm.com>
+---
+ .../target/arm/rss/common/tfm_hal_platform.c  | 36 +++++++++++++++----
+ .../ext/target/arm/rss/kronos/flash_layout.h  | 17 ++++++---
+ .../target/arm/rss/kronos/host_base_address.h | 20 +++++++----
+ 3 files changed, 55 insertions(+), 18 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/common/tfm_hal_platform.c b/platform/ext/target/arm/rss/common/tfm_hal_platform.c
+index 5b975597a4..62977228a8 100644
+--- a/platform/ext/target/arm/rss/common/tfm_hal_platform.c
++++ b/platform/ext/target/arm/rss/common/tfm_hal_platform.c
+@@ -12,23 +12,32 @@
+ #include "uart_stdout.h"
+ #include "device_definition.h"
+ 
+-#ifdef TFM_PARTITION_PROTECTED_STORAGE
++#if defined(TFM_PARTITION_PROTECTED_STORAGE) || \
++    defined(TFM_PARTITION_INTERNAL_TRUSTED_STORAGE)
+ #include "host_base_address.h"
+ #include "size_defs.h"
++#endif /* TFM_PARTITION_PROTECTED_STORAGE or
++        * TFM_PARTITION_INTERNAL_TRUSTED_STORAGE  */
+ 
++#ifdef TFM_PARTITION_PROTECTED_STORAGE
+ #define  RSS_ATU_REGION_PS_SLOT  16
+ #endif /* TFM_PARTITION_PROTECTED_STORAGE */
+ 
++#ifdef TFM_PARTITION_INTERNAL_TRUSTED_STORAGE
++#define RSS_ATU_REGION_ITS_SLOT  17
++#endif /* TFM_PARTITION_INTERNAL_TRUSTED_STORAGE */
++
+ 
+ extern const struct memory_region_limits memory_regions;
+ 
+ enum tfm_hal_status_t tfm_hal_platform_init(void)
+ {
+     enum tfm_plat_err_t plat_err = TFM_PLAT_ERR_SYSTEM_ERR;
+-#ifdef TFM_PARTITION_PROTECTED_STORAGE
+-    enum atu_error_t err;
+-#endif /* TFM_PARTITION_PROTECTED_STORAGE */
+-
++#if defined(TFM_PARTITION_PROTECTED_STORAGE) || \
++    defined(TFM_PARTITION_INTERNAL_TRUSTED_STORAGE)
++    enum atu_error_t atu_err;
++#endif /* TFM_PARTITION_PROTECTED_STORAGE or
++        * TFM_PARTITION_INTERNAL_TRUSTED_STORAGE  */
+ 
+     plat_err = enable_fault_handlers();
+     if (plat_err != TFM_PLAT_ERR_SUCCESS) {
+@@ -65,17 +74,30 @@ enum tfm_hal_status_t tfm_hal_platform_init(void)
+ 
+ #ifdef TFM_PARTITION_PROTECTED_STORAGE
+     /* Initialize PS region */
+-    err = atu_initialize_region(&ATU_DEV_S,
++    atu_err = atu_initialize_region(&ATU_DEV_S,
+                                 RSS_ATU_REGION_PS_SLOT,
+                                 HOST_ACCESS_PS_BASE_S,
+                                 HOST_FLASH0_PS_BASE,
+                                 HOST_FLASH0_PS_SIZE);
+-    if (err != ATU_ERR_NONE) {
++    if (atu_err != ATU_ERR_NONE) {
+         return TFM_HAL_ERROR_GENERIC;
+     }
+ 
+ #endif /* TFM_PARTITION_PROTECTED_STORAGE */
+ 
++#ifdef TFM_PARTITION_INTERNAL_TRUSTED_STORAGE
++    /* Initialize ITS region */
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                RSS_ATU_REGION_ITS_SLOT,
++                                HOST_ACCESS_ITS_BASE_S,
++                                HOST_FLASH0_ITS_BASE,
++                                HOST_FLASH0_ITS_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return TFM_HAL_ERROR_GENERIC;
++    }
++
++#endif /* TFM_PARTITION_INTERNAL_TRUSTED_STORAGE */
++
+     return TFM_HAL_SUCCESS;
+ }
+ 
+diff --git a/platform/ext/target/arm/rss/kronos/flash_layout.h b/platform/ext/target/arm/rss/kronos/flash_layout.h
+index 2885e97a95..2d35a4503f 100644
+--- a/platform/ext/target/arm/rss/kronos/flash_layout.h
++++ b/platform/ext/target/arm/rss/kronos/flash_layout.h
+@@ -207,18 +207,27 @@
+ /* Smallest flash programmable unit in bytes */
+ #define TFM_HAL_FLASH_PROGRAM_UNIT      (0x1)
+ 
+-#ifdef TFM_PARTITION_PROTECTED_STORAGE
++#define FLASH_DEV_NAME_SE_SECURE_FLASH  Driver_FLASH0
++
++
+ /*******************************/
+ /* ITS */
+ /*******************************/
+-#define FLASH_DEV_NAME_SE_SECURE_FLASH  Driver_FLASH0
+-
+ /* Internal Trusted Storage (ITS) Service definitions
+  * Note: Further documentation of these definitions can be found in the
+  * TF-M ITS Integration Guide.
+  */
+ #define TFM_HAL_ITS_FLASH_DRIVER FLASH_DEV_NAME_SE_SECURE_FLASH
+ 
++/* In this target the CMSIS driver requires only the offset from the base
++ * address instead of the full memory address.
++ */
++/* Base address of dedicated flash area for ITS */
++#define TFM_HAL_ITS_FLASH_AREA_ADDR     HOST_ACCESS_ITS_BASE_OFFSET
++/* Size of dedicated flash area for ITS */
++#define TFM_HAL_ITS_FLASH_AREA_SIZE     HOST_FLASH0_ITS_SIZE
++/* Number of physical erase sectors per logical FS block */
++#define TFM_HAL_ITS_SECTORS_PER_BLOCK   (1)
+ /* Smallest flash programmable unit in bytes */
+ #define TFM_HAL_ITS_PROGRAM_UNIT        (1)
+ 
+@@ -242,7 +251,5 @@
+ #define TFM_HAL_PS_SECTORS_PER_BLOCK    (4)
+ /* Smallest flash programmable unit in bytes */
+ #define TFM_HAL_PS_PROGRAM_UNIT         (1)
+-#endif /* TFM_PARTITION_PROTECTED_STORAGE */
+-
+ 
+ #endif /* __FLASH_LAYOUT_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/host_base_address.h b/platform/ext/target/arm/rss/kronos/host_base_address.h
+index 89297f507b..8a365a7264 100644
+--- a/platform/ext/target/arm/rss/kronos/host_base_address.h
++++ b/platform/ext/target/arm/rss/kronos/host_base_address.h
+@@ -258,10 +258,10 @@
+ 
+ /* Safety Island NVM flash layout */
+ /*
+- * ┌─────────────────────┬──────────────────────┐
+- * │ Signed Images       │  Protected Storage   │
+- * │     (64MB)          │       (64KB)         │
+- * └─────────────────────┴──────────────────────┘
++ * ┌─────────────────────┬──────────────────────┬──────────────────────────┐
++ * │    Signed Images    │  Protected Storage   │ Internal Trusted Storage │
++ * │     (64MB)          │       (64KB)         │           (1MB)          │
++ * └─────────────────────┴──────────────────────┴──────────────────────────┘
+  *
+  */
+ /* Safety Island NVM flash base address */
+@@ -270,6 +270,8 @@
+ #define SI_FLASH_IMG_SIZE       0x4000000
+ /* This part is for Protected Storage. 64KB */
+ #define SI_FLASH_PS_SIZE        0x10000
++/* This part is for Internal Trusted Storage. 1MB */
++#define SI_FLASH_ITS_SIZE       0x100000
+ 
+ /* Safety Island NVM flash logical base address using Non-secure ATU region */
+ #define SI_FLASH_BASE_NS_LOG    HOST_ACCESS_BASE_NS
+@@ -285,7 +287,6 @@
+ #define HOST_SI_CL1_SRAM_PHYS_BASE      (HOST_SI_PHYS_BASE + SI_CL1_SRAM_BASE)
+ #define HOST_SI_CL2_SRAM_PHYS_BASE      (HOST_SI_PHYS_BASE + SI_CL2_SRAM_BASE)
+ 
+-#ifdef TFM_PARTITION_PROTECTED_STORAGE
+ /* Region into which to map Protected Storage */
+ #define HOST_ACCESS_PS_BASE_S           (SI_FLASH_BASE_NS_LOG + SI_FLASH_IMG_SIZE)
+ /* The offset is 64MB in SI Flash for PS */
+@@ -294,6 +295,13 @@
+ /* The physical region base for PS */
+ #define HOST_FLASH0_PS_BASE             (SI_FLASH_BASE_NS_PHY + SI_FLASH_IMG_SIZE)
+ #define HOST_FLASH0_PS_SIZE             SI_FLASH_PS_SIZE
+-#endif /* TFM_PARTITION_PROTECTED_STORAGE */
++
++/* ITS region follows PS region */
++#define HOST_ACCESS_ITS_BASE_S          (HOST_ACCESS_PS_BASE_S + HOST_FLASH0_PS_SIZE)
++#define HOST_ACCESS_ITS_BASE_OFFSET     (HOST_ACCESS_PS_BASE_OFFSET + HOST_FLASH0_PS_SIZE)
++
++/* The physical region base and size for ITS */
++#define HOST_FLASH0_ITS_BASE            (HOST_FLASH0_PS_BASE + HOST_FLASH0_PS_SIZE)
++#define HOST_FLASH0_ITS_SIZE            SI_FLASH_ITS_SIZE
+ 
+ #endif  /* __HOST_BASE_ADDRESS_H__ */
+-- 
+2.25.1
+

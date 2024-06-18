@@ -1,0 +1,205 @@
+From d5c8208503ecef7c89a4714e1aad57cde09831c7 Mon Sep 17 00:00:00 2001
+From: Wei Chen <wei.chen@arm.com>
+Date: Wed, 5 Jul 2023 18:05:25 +0100
+Subject: [PATCH] rss/kronos: Wait until secure fw is ready to signal SCP
+
+RSS sends a handshake signal to SCP after loading LCP and AP images so
+that SCP can release LCP and AP out of reset. Once the handshake is
+sent, RSS proceeds to load and launch the secure and non-secure
+firmware. When AP boots, TF-A BL2 will perform a handshake with RSS
+secure firmware via MHUv3 to send the measurement data. A race condition
+may occur when TF-A BL2 sends a handshake before the RSS secure firmware
+has finished loading. To avoid this race condition, send the handshake
+to SCP only when secure firmware is loaded. By doing this, SCP will
+release the AP out of reset only when the secure firmware is loaded.
+
+To make the power on sequence compatible to Kronos, send the AP doorbell
+after the SI reset doorbells.
+
+On Kronos, we remove the SCP -> RSS doorbell SI CL0/1/2 post load
+callbacks from AP BL2. Instead, do the corresponding SCP -> RSS doorbell
+in tfm_multi_core_hal_init(). Also, the latest SCP uses MHU channel
+3, 4, 5 for SI CL0/1/2, also correct them in RSS.
+
+Upstream-Status: Pending
+Signed-off-by: Joel Goddard <joel.goddard@arm.com>
+Signed-off-by: Wei Chen <Wei.Chen@arm.com>
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+---
+ .../arm/rss/common/rss_comms/rss_comms_hal.c  | 63 ++++++++++++++++++-
+ .../target/arm/rss/kronos/bl2/boot_hal_bl2.c  | 45 -------------
+ 2 files changed, 62 insertions(+), 46 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/common/rss_comms/rss_comms_hal.c b/platform/ext/target/arm/rss/common/rss_comms/rss_comms_hal.c
+index 937d6d45d..a2356168f 100644
+--- a/platform/ext/target/arm/rss/common/rss_comms/rss_comms_hal.c
++++ b/platform/ext/target/arm/rss/common/rss_comms/rss_comms_hal.c
+@@ -13,6 +13,7 @@
+ #include "device_definition.h"
+ #include "tfm_spm_log.h"
+ #include "tfm_pools.h"
++#include "tfm_hal_interrupt.h"
+ #include "rss_comms_protocol.h"
+ #include <string.h>
+
+@@ -35,6 +36,12 @@ static enum tfm_plat_err_t initialize_mhu(void)
+         return TFM_PLAT_ERR_SYSTEM_ERR;
+     }
+
++    err = mhu_init_sender(&MHU_V3_RSS_TO_SCP_DEV);
++    if (err != MHU_ERR_NONE) {
++        SPMLOG_ERRMSGVAL("[COMMS] RSS to AP MHU driver init failed: ", err);
++        return TFM_PLAT_ERR_SYSTEM_ERR;
++    }
++
+     err = mhu_init_receiver(&MHU_AP_TO_RSS_DEV);
+     if (err != MHU_ERR_NONE) {
+         SPMLOG_ERRMSGVAL("[COMMS] AP to RSS MHU driver init failed: ", err);
+@@ -198,6 +205,8 @@ out:
+ enum tfm_plat_err_t tfm_multi_core_hal_init(void)
+ {
+     int32_t spm_err;
++    enum mhu_v3_x_error_t mhu_error;
++    enum tfm_plat_err_t tfm_err;
+
+     spm_err = tfm_pool_init(req_pool, POOL_BUFFER_SIZE(req_pool),
+                             sizeof(struct client_request_t),
+@@ -206,5 +215,57 @@ enum tfm_plat_err_t tfm_multi_core_hal_init(void)
+         return TFM_PLAT_ERR_SYSTEM_ERR;
+     }
+
+-    return initialize_mhu();
++    tfm_err = initialize_mhu();
++    if (tfm_err != TFM_PLAT_ERR_SUCCESS) {
++        return tfm_err;
++    }
++
++#ifdef MHU_V3_RSS_TO_SCP
++    SPMLOG_DBGMSG("Telling SCP to reset SI CL0\r\n");
++    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, MHU_SCP_RSS_SI_CL0_CHANNEL_ID, 0x1);
++
++    if (mhu_error != MHU_V_3_X_ERR_NONE) {
++        return mhu_error;
++    }
++    SPMLOG_DBGMSG("BL2: RSS-->SCP doorbell set!\r\n");
++
++    /*
++     * Send doorbell to SCP to indicate that the RSS initialization is
++     * complete and that the SCP can release safety island cluster1
++     */
++    SPMLOG_DBGMSG("Telling SCP to reset SI CL1\r\n");
++    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, MHU_SCP_RSS_SI_CL1_CHANNEL_ID, 0x1);
++
++    if (mhu_error != MHU_V_3_X_ERR_NONE) {
++        return mhu_error;
++    }
++    SPMLOG_DBGMSG("BL2: RSS-->SCP doorbell set!\r\n");
++
++    /*
++     * Send doorbell to SCP to indicate that the RSS initialization is
++     * complete and that the SCP can release safety island cluster2
++     */
++    SPMLOG_DBGMSG("Telling SCP to reset SI CL2\r\n");
++    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, MHU_SCP_RSS_SI_CL2_CHANNEL_ID, 0x1);
++
++    if (mhu_error != MHU_V_3_X_ERR_NONE) {
++        return mhu_error;
++    }
++    SPMLOG_DBGMSG("BL2: RSS-->SCP doorbell set!\r\n");
++
++    /*
++     * Send doorbell to SCP to indicate that the RSS initialization is
++     * complete and that the SCP can release the LCPs and turn on the
++     * primary AP core.
++     */
++    SPMLOG_DBGMSG("Telling SCP to turn on the Primary Compute\r\n");
++    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, MHU_SCP_RSS_SYSTOP_ON_CHANNEL_ID, 0x1);
++
++    if (mhu_error != MHU_V_3_X_ERR_NONE) {
++        return TFM_PLAT_ERR_SYSTEM_ERR;
++    }
++    SPMLOG_DBGMSG("BL2: RSS-->SCP doorbell set!\r\n");
++#endif
++
++    return TFM_PLAT_ERR_SUCCESS;
+ }
+diff --git a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+index dab628636..e40dce912 100644
+--- a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
++++ b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+@@ -1012,18 +1012,6 @@ static int boot_platform_post_load_ap_bl2(void)
+      */
+     memset((void *)HOST_AP_BL2_IMG_BASE_S, 0, BL2_HEADER_SIZE);
+
+-    /*
+-     * Send doorbell to SCP to indicate that the RSS initialization is
+-     * complete and that the SCP can release the LCPs and turn on the
+-     * primary AP core.
+-     */
+-    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, 1, 0x1);
+-
+-    if (mhu_error != MHU_V_3_X_ERR_NONE) {
+-        return mhu_error;
+-    }
+-    BOOT_LOG_INF("BL2: RSS-->SCP doorbell set!");
+-
+     /* Close RSS ATU region configured to access RSS header region for AP BL2 */
+     atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_AP_BL2_IMG_HDR_ATU_ID);
+     if (atu_err != ATU_ERR_NONE) {
+@@ -1086,17 +1074,6 @@ static int boot_platform_post_load_si_cl0(void)
+      * the region may be incidentally overlapping.
+      */
+     memset((void *)HOST_SI_CL0_IMG_BASE_S, 0, BL2_HEADER_SIZE);
+-    /*
+-     * Send doorbell to SCP to indicate that the RSS initialization is
+-     * complete and that the SCP can release safety island cluster0
+-     */
+-    BOOT_LOG_INF("Telling SCP to reset SI CL0");
+-    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, 2, 0x1);
+-
+-    if (mhu_error != MHU_V_3_X_ERR_NONE) {
+-        return mhu_error;
+-    }
+-    BOOT_LOG_INF("BL2: RSS-->SCP doorbell set!");
+
+     /* Close RSS ATU region configured to access RSS header region for SI CL0 */
+     atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_SI_CL0_IMG_HDR_ATU_ID);
+@@ -1161,17 +1138,6 @@ static int boot_platform_post_load_si_cl1(void)
+      * the region may be incidentally overlapping.
+      */
+     memset((void *)HOST_SI_CL1_IMG_BASE_S, 0, BL2_HEADER_SIZE);
+-    /*
+-     * Send doorbell to SCP to indicate that the RSS initialization is
+-     * complete and that the SCP can release safety island cluster1
+-     */
+-    BOOT_LOG_INF("Telling SCP to reset SI CL1");
+-    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, 3, 0x1);
+-
+-    if (mhu_error != MHU_V_3_X_ERR_NONE) {
+-        return mhu_error;
+-    }
+-    BOOT_LOG_INF("BL2: RSS-->SCP doorbell set!");
+
+     /* Close RSS ATU region configured to access RSS header region for SI CL1 */
+     atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_SI_CL1_IMG_HDR_ATU_ID);
+@@ -1237,17 +1203,6 @@ static int boot_platform_post_load_si_cl2(void)
+      * the region may be incidentally overlapping.
+      */
+     memset((void *)HOST_SI_CL2_IMG_BASE_S, 0, BL2_HEADER_SIZE);
+-    /*
+-     * Send doorbell to SCP to indicate that the RSS initialization is
+-     * complete and that the SCP can release safety island cluster2
+-     */
+-	BOOT_LOG_INF("Telling SCP to reset SI CL2");
+-    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, 4, 0x1);
+-
+-    if (mhu_error != MHU_V_3_X_ERR_NONE) {
+-        return mhu_error;
+-    }
+-    BOOT_LOG_INF("BL2: RSS-->SCP doorbell set!");
+
+     /* Close RSS ATU region configured to access RSS header region for SI CL2 */
+     atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_SI_CL2_IMG_HDR_ATU_ID);
+--
+2.25.1
+

@@ -1,0 +1,69 @@
+From fc1174a44da04627ec15260d9f6eced89bec6d7b Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Fri, 5 Jan 2024 10:15:23 +0000
+Subject: [PATCH] RSS: Make Tower NCI and NI710AE tree printing configurable
+
+Make Tower NCI and NI710AE tree printing configurable
+as it is hardcoded to always print it.
+
+Upstream-Status: Pending
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ platform/ext/target/arm/rss/common/CMakeLists.txt              | 2 ++
+ platform/ext/target/arm/rss/common/config.cmake                | 3 +++
+ .../ext/target/arm/rss/common/native_drivers/ni710ae_drv.c     | 1 -
+ .../ext/target/arm/rss/common/native_drivers/tower_nci_drv.c   | 2 --
+ 4 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/common/CMakeLists.txt b/platform/ext/target/arm/rss/common/CMakeLists.txt
+index 7e2a61ba9..2fbf6337d 100644
+--- a/platform/ext/target/arm/rss/common/CMakeLists.txt
++++ b/platform/ext/target/arm/rss/common/CMakeLists.txt
+@@ -293,6 +293,8 @@ target_include_directories(platform_bl2
+ target_compile_definitions(platform_bl2
+     PRIVATE
+         PLAT_LOG_LEVEL=${PLAT_LOG_LEVEL}
++        $<$<BOOL:${PRINT_TOWER_NCI_TREE}>:PRINT_TOWER_NCI_TREE>
++        $<$<BOOL:${PRINT_NI710AE_TREE}>:PRINT_NI710AE_TREE>
+         # Needed for DMA-350 library
+         $<$<BOOL:${PLATFORM_HAS_BOOT_DMA}>:PLATFORM_HAS_BOOT_DMA>
+         $<$<BOOL:${PLATFORM_BOOT_DMA_MIN_SIZE_REQ}>:BOOT_DMA_MIN_SIZE_REQ=${PLATFORM_BOOT_DMA_MIN_SIZE_REQ}>
+diff --git a/platform/ext/target/arm/rss/common/config.cmake b/platform/ext/target/arm/rss/common/config.cmake
+index 2f02162cf..672eef58c 100644
+--- a/platform/ext/target/arm/rss/common/config.cmake
++++ b/platform/ext/target/arm/rss/common/config.cmake
+@@ -92,3 +92,6 @@ if (${CMAKE_BUILD_TYPE} STREQUAL Debug OR ${CMAKE_BUILD_TYPE} STREQUAL RelWithDe
+ else()
+   set(PLAT_LOG_LEVEL                     0        CACHE STRING    "Set platform log level.")
+ endif()
++
++set(PRINT_TOWER_NCI_TREE                 OFF      CACHE BOOL      "Enable Tower NCI Tree printing")
++set(PRINT_NI710AE_TREE                   OFF      CACHE BOOL      "Enable NI710AE Tree printing")
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.c b/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.c
+index 929b543de..ef4b88e27 100644
+--- a/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.c
++++ b/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.c
+@@ -284,7 +284,6 @@ enum ni710ae_err_t ni710ae_apu_initialize_region(
+     return NI710AE_SUCCESS;
+ }
+ 
+-#define PRINT_NI710AE_TREE
+ #ifdef PRINT_NI710AE_TREE
+ void print_ni710ae(struct ni710ae_discovery_tree_t *node, int tab) {
+     if(node == NULL)
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/tower_nci_drv.c b/platform/ext/target/arm/rss/common/native_drivers/tower_nci_drv.c
+index fbe8150f0..86dc8972e 100644
+--- a/platform/ext/target/arm/rss/common/native_drivers/tower_nci_drv.c
++++ b/platform/ext/target/arm/rss/common/native_drivers/tower_nci_drv.c
+@@ -346,8 +346,6 @@ enum tower_nci_err_t tower_nci_apu_initialize_region(
+     return TOWER_NCI_SUCCESS;
+ }
+ 
+-// TODO: Remove print
+-#define PRINT_TOWER_NCI_TREE
+ #ifdef PRINT_TOWER_NCI_TREE
+ void print(struct tower_nci_discovery_tree_t *node, int tab) {
+     if(node == NULL)
+-- 
+2.25.1
+

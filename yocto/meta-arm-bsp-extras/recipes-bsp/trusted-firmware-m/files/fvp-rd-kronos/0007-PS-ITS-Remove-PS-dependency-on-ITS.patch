@@ -1,0 +1,424 @@
+From e3be0696fe74e30dee55611b5497eaaaa19c4278 Mon Sep 17 00:00:00 2001
+From: Maulik  Patel <Maulik.Patel@arm.com>
+Date: Mon, 5 Jun 2023 16:34:43 +0100
+Subject: [PATCH] PS: ITS: Remove PS dependency on ITS
+
+Currently, PS uses ITS services to interact with file system and
+storage driver code. Update the implementation so that PS can use them
+even when ITS service is not enabled.
+
+Upstream-Status: Pending
+Signed-off-by: Maulik Patel <maulik.patel@arm.com>
+Change-Id: I3edd88d77b01adbbce5729d41b8922d73cbd2ba1
+---
+ config/check_config.cmake                     |  5 +-
+ .../services/tfm_ps_integration_guide.rst     | 20 +++--
+ .../tfm_internal_trusted_storage.c            | 85 +++++++++++++++----
+ .../protected_storage/CMakeLists.txt          | 30 ++++++-
+ .../ps_filesystem_interface.c                 | 52 ++++++++++++
+ .../protected_storage/tfm_protected_storage.c | 12 ++-
+ 6 files changed, 176 insertions(+), 28 deletions(-)
+ create mode 100644 secure_fw/partitions/protected_storage/ps_filesystem_interface.c
+
+diff --git a/config/check_config.cmake b/config/check_config.cmake
+index 78f7f6400..b29fc1299 100644
+--- a/config/check_config.cmake
++++ b/config/check_config.cmake
+@@ -77,16 +77,15 @@ tfm_invalid_config(PLATFORM_DEFAULT_NV_COUNTERS AND  NOT PLATFORM_DEFAULT_OTP_WR
+ tfm_invalid_config(TFM_DUMMY_PROVISIONING AND (PLATFORM_DEFAULT_OTP AND NOT PLATFORM_DEFAULT_OTP_WRITEABLE))
+ tfm_invalid_config(TFM_NS_NV_COUNTER_AMOUNT GREATER 3)
+
+-####################### Firmware Update Parttion ###############################
++####################### Firmware Update Partition ###############################
+
+ tfm_invalid_config(NOT PLATFORM_HAS_FIRMWARE_UPDATE_SUPPORT AND TFM_PARTITION_FIRMWARE_UPDATE)
+ tfm_invalid_config(TFM_PARTITION_FIRMWARE_UPDATE AND NOT TFM_PARTITION_PLATFORM)
+ tfm_invalid_config((MCUBOOT_UPGRADE_STRATEGY STREQUAL "DIRECT_XIP" OR MCUBOOT_UPGRADE_STRATEGY STREQUAL "RAM_LOAD") AND TFM_PARTITION_FIRMWARE_UPDATE)
+ tfm_invalid_config(TFM_PARTITION_FIRMWARE_UPDATE AND NOT MCUBOOT_DATA_SHARING)
+
+-####################### Protected Storage Parttion ###############################
++####################### Protected Storage Partition ###############################
+
+-tfm_invalid_config(TFM_PARTITION_PROTECTED_STORAGE AND NOT TFM_PARTITION_INTERNAL_TRUSTED_STORAGE)
+ # PS only uses the platform partition when PS_ROLLBACK_PROTECTION is ON, but
+ # the dependency in the manifest file means the dependency is unconditional
+ tfm_invalid_config(TFM_PARTITION_PROTECTED_STORAGE AND NOT TFM_PARTITION_PLATFORM)
+diff --git a/docs/integration_guide/services/tfm_ps_integration_guide.rst b/docs/integration_guide/services/tfm_ps_integration_guide.rst
+index bbc06362b..7e429b57f 100644
+--- a/docs/integration_guide/services/tfm_ps_integration_guide.rst
++++ b/docs/integration_guide/services/tfm_ps_integration_guide.rst
+@@ -144,12 +144,20 @@ Core Files
+
+ Flash Filesystem and Flash Interfaces
+ =====================================
+-The PS service reuses the non-hierarchical filesystem and flash
+-interfaces provided by the TF-M Internal Trusted Storage service. It
+-stores encrypted, authenticated objects by making service calls to the
+-ITS service. When the ITS service receives requests from the PS
+-partition, it handles the request by using a separate filesystem
+-context.
++
++The non-hierarchical filesystem and flash interfaces reside under
++Internal Trusted Storage service directory. The way PS service uses
++them depends on the config option ``TFM_PARTITION_INTERNAL_TRUSTED_STORAGE``.
++
++When TF-M Internal trusted storage service is active (i.e.
++``TFM_PARTITION_INTERNAL_TRUSTED_STORAGE`` = ON), all file system and storage interfaces
++are built as part of ITS service library. Thus, the PS service stores encrypted, authenticated
++objects by making service calls to the ITS service.
++
++When TF-M Internal trusted storage service is disabled (i.e.
++``TFM_PARTITION_INTERNAL_TRUSTED_STORAGE`` = OFF), all file system and storage interfaces
++are built as part of PS service library. Thus, the PS service stores encrypted, authenticated
++objects by making standard function calls to the file system within its own partition code.
+
+ The ITS filesystem and flash interfaces and their implementation can be found in
+ ``secure_fw/partitions/internal_trusted_storage/flash_fs`` and
+diff --git a/secure_fw/partitions/internal_trusted_storage/tfm_internal_trusted_storage.c b/secure_fw/partitions/internal_trusted_storage/tfm_internal_trusted_storage.c
+index 11c658cc5..2114e63e4 100644
+--- a/secure_fw/partitions/internal_trusted_storage/tfm_internal_trusted_storage.c
++++ b/secure_fw/partitions/internal_trusted_storage/tfm_internal_trusted_storage.c
+@@ -28,10 +28,15 @@
+ #include "ps_object_defs.h"
+ #endif
+
++#ifndef TFM_PARTITION_INTERNAL_TRUSTED_STORAGE
++extern uint8_t *p_psa_src_data;
++extern uint8_t *p_psa_dest_data;
++#endif /* !TFM_PARTITION_INTERNAL_TRUSTED_STORAGE */
++
+ static uint8_t g_fid[ITS_FILE_ID_SIZE];
+ static struct its_file_info_t g_file_info;
+
+-#if PSA_FRAMEWORK_HAS_MM_IOVEC != 1
++#if (PSA_FRAMEWORK_HAS_MM_IOVEC != 1) && defined(TFM_PARTITION_INTERNAL_TRUSTED_STORAGE)
+ /* Buffer to store asset data from the caller.
+  * Note: size must be aligned to the max flash program unit to meet the
+  * alignment requirement of the filesystem.
+@@ -40,6 +45,7 @@ static uint8_t __ALIGNED(4) asset_data[ITS_UTILS_ALIGN(ITS_BUF_SIZE,
+                                           ITS_FLASH_MAX_ALIGNMENT)];
+ #endif
+
++#ifdef TFM_PARTITION_INTERNAL_TRUSTED_STORAGE
+ static its_flash_fs_ctx_t fs_ctx_its;
+ static struct its_flash_fs_config_t fs_cfg_its = {
+     .flash_dev = &ITS_FLASH_DEV,
+@@ -47,6 +53,7 @@ static struct its_flash_fs_config_t fs_cfg_its = {
+     .max_file_size = ITS_UTILS_ALIGN(ITS_MAX_ASSET_SIZE, ITS_FLASH_ALIGNMENT),
+     .max_num_files = ITS_NUM_ASSETS + 1, /* Extra file for atomic replacement */
+ };
++#endif /* TFM_PARTITION_INTERNAL_TRUSTED_STORAGE */
+
+ #ifdef TFM_PARTITION_PROTECTED_STORAGE
+ static its_flash_fs_ctx_t fs_ctx_ps;
+@@ -61,7 +68,12 @@ static struct its_flash_fs_config_t fs_cfg_ps = {
+ static its_flash_fs_ctx_t *get_fs_ctx(int32_t client_id)
+ {
+ #ifdef TFM_PARTITION_PROTECTED_STORAGE
++#ifndef TFM_PARTITION_INTERNAL_TRUSTED_STORAGE
++    (void)client_id;
++    return &fs_ctx_ps;
++#else
+     return (client_id == TFM_SP_PS) ? &fs_ctx_ps : &fs_ctx_its;
++#endif /* !TFM_PARTITION_INTERNAL_TRUSTED_STORAGE */
+ #else
+     (void)client_id;
+     return &fs_ctx_its;
+@@ -83,13 +95,14 @@ static void tfm_its_get_fid(int32_t client_id,
+     memcpy(fid + sizeof(client_id), (const void *)&uid, sizeof(uid));
+ }
+
++#ifdef TFM_PARTITION_INTERNAL_TRUSTED_STORAGE
+ /**
+- * \brief Initialise the static filesystem configurations.
++ * \brief Initialise the static ITS filesystem configurations.
+  *
+  * \return Returns PSA_ERROR_PROGRAMMER_ERROR if there is a configuration error,
+  *         and PSA_SUCCESS otherwise.
+  */
+-static psa_status_t init_fs_cfg(void)
++static psa_status_t init_its_fs_cfg(void)
+ {
+     struct tfm_hal_its_fs_info_t its_fs_info;
+
+@@ -114,7 +127,19 @@ static psa_status_t init_fs_cfg(void)
+                             * its_fs_info.sectors_per_block;
+     fs_cfg_its.num_blocks = its_fs_info.flash_area_size / fs_cfg_its.block_size;
+
++    return PSA_SUCCESS;
++}
++#endif /* TFM_PARTITION_INTERNAL_TRUSTED_STORAGE */
++
+ #ifdef TFM_PARTITION_PROTECTED_STORAGE
++/**
++ * \brief Initialise the static PS filesystem configurations.
++ *
++ * \return Returns PSA_ERROR_PROGRAMMER_ERROR if there is a configuration error,
++ *         and PSA_SUCCESS otherwise.
++ */
++static psa_status_t init_ps_fs_cfg(void)
++{
+     struct tfm_hal_ps_fs_info_t ps_fs_info;
+
+     /* Check the compile-time program unit matches the runtime value */
+@@ -136,16 +161,17 @@ static psa_status_t init_fs_cfg(void)
+     fs_cfg_ps.flash_area_addr = ps_fs_info.flash_area_addr;
+     fs_cfg_ps.block_size = fs_cfg_ps.sector_size * ps_fs_info.sectors_per_block;
+     fs_cfg_ps.num_blocks = ps_fs_info.flash_area_size / fs_cfg_ps.block_size;
+-#endif
+
+     return PSA_SUCCESS;
+ }
++#endif /* TFM_PARTITION_PROTECTED_STORAGE */
+
+ psa_status_t tfm_its_init(void)
+ {
+-    psa_status_t status;
++    psa_status_t status = PSA_SUCCESS;
+
+-    status = init_fs_cfg();
++#ifdef TFM_PARTITION_INTERNAL_TRUSTED_STORAGE
++    status = init_its_fs_cfg();
+     if (status != PSA_SUCCESS) {
+         return status;
+     }
+@@ -184,6 +210,7 @@ psa_status_t tfm_its_init(void)
+         status = its_flash_fs_prepare(&fs_ctx_its);
+     }
+ #endif /* ITS_CREATE_FLASH_LAYOUT */
++#endif /* TFM_PARTITION_INTERNAL_TRUSTED_STORAGE */
+
+ #ifdef TFM_PARTITION_PROTECTED_STORAGE
+     /* Check status of ITS initialisation before continuing with PS */
+@@ -191,6 +218,11 @@ psa_status_t tfm_its_init(void)
+         return status;
+     }
+
++    status = init_ps_fs_cfg();
++    if (status != PSA_SUCCESS) {
++        return status;
++    }
++
+     /* Initialise the PS filesystem context */
+     status = its_flash_fs_init_ctx(&fs_ctx_ps, &fs_cfg_ps, &PS_FLASH_OPS);
+     if (status != PSA_SUCCESS) {
+@@ -251,7 +283,7 @@ psa_status_t tfm_its_set(int32_t client_id,
+                          psa_storage_create_flags_t create_flags)
+ {
+     psa_status_t status;
+-#if PSA_FRAMEWORK_HAS_MM_IOVEC != 1
++#if (PSA_FRAMEWORK_HAS_MM_IOVEC != 1) && defined(TFM_PARTITION_INTERNAL_TRUSTED_STORAGE)
+     size_t write_size;
+     size_t offset;
+ #endif
+@@ -288,11 +320,18 @@ psa_status_t tfm_its_set(int32_t client_id,
+     flags = (uint32_t)create_flags |
+             ITS_FLASH_FS_FLAG_CREATE | ITS_FLASH_FS_FLAG_TRUNCATE;
+
+-#if PSA_FRAMEWORK_HAS_MM_IOVEC == 1
++#ifndef TFM_PARTITION_INTERNAL_TRUSTED_STORAGE
++    /* Write to the file in the file system */
++    status = its_flash_fs_file_write(get_fs_ctx(client_id), g_fid, flags,
++                                     data_length, data_length, 0,
++                                     p_psa_src_data);
++
++#elif (PSA_FRAMEWORK_HAS_MM_IOVEC == 1)
+     /* Write to the file in the file system */
+     status = its_flash_fs_file_write(get_fs_ctx(client_id), g_fid, flags,
+                                      data_length, data_length, 0,
+                                      its_req_mngr_get_vec_base());
++
+ #else
+     offset = 0;
+
+@@ -332,7 +371,8 @@ psa_status_t tfm_its_get(int32_t client_id,
+                          size_t *p_data_length)
+ {
+     psa_status_t status;
+-#if PSA_FRAMEWORK_HAS_MM_IOVEC != 1
++
++#if (PSA_FRAMEWORK_HAS_MM_IOVEC != 1) && defined(TFM_PARTITION_INTERNAL_TRUSTED_STORAGE)
+     size_t read_size;
+ #endif
+
+@@ -367,14 +407,25 @@ psa_status_t tfm_its_get(int32_t client_id,
+
+     /* Update the size of the output data */
+     *p_data_length = data_size;
+-#if PSA_FRAMEWORK_HAS_MM_IOVEC == 1
+-        /* Read file data from the filesystem */
+-        status = its_flash_fs_file_read(get_fs_ctx(client_id), g_fid, data_size,
+-                                        data_offset, its_req_mngr_get_vec_base());
+-        if (status != PSA_SUCCESS) {
+-            *p_data_length = 0;
+-            return status;
+-        }
++
++#ifndef TFM_PARTITION_INTERNAL_TRUSTED_STORAGE
++    /* Read file data from the filesystem */
++    status = its_flash_fs_file_read(get_fs_ctx(client_id), g_fid, data_size,
++                                    data_offset, p_psa_dest_data);
++    if (status != PSA_SUCCESS) {
++        *p_data_length = 0;
++        return status;
++    }
++
++#elif (PSA_FRAMEWORK_HAS_MM_IOVEC == 1)
++    /* Read file data from the filesystem */
++    status = its_flash_fs_file_read(get_fs_ctx(client_id), g_fid, data_size,
++                                    data_offset, its_req_mngr_get_vec_base());
++    if (status != PSA_SUCCESS) {
++        *p_data_length = 0;
++        return status;
++    }
++
+ #else
+
+     /* Iteratively read data from the filesystem and write it to the caller, in
+diff --git a/secure_fw/partitions/protected_storage/CMakeLists.txt b/secure_fw/partitions/protected_storage/CMakeLists.txt
+index ffba6ce92..cbe044ff4 100644
+--- a/secure_fw/partitions/protected_storage/CMakeLists.txt
++++ b/secure_fw/partitions/protected_storage/CMakeLists.txt
+@@ -1,5 +1,5 @@
+ #-------------------------------------------------------------------------------
+-# Copyright (c) 2020-2022, Arm Limited. All rights reserved.
++# Copyright (c) 2020-2023, Arm Limited. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ #
+@@ -39,6 +39,29 @@ target_sources(tfm_app_rot_partition_ps
+         $<$<NOT:$<AND:$<BOOL:${TEST_S_PS}>,$<BOOL:${PS_TEST_NV_COUNTERS}>>>:nv_counters/ps_nv_counters.c>
+ )
+
++if (NOT TFM_PARTITION_INTERNAL_TRUSTED_STORAGE)
++    set(PS_FILESYSTEM_SOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../internal_trusted_storage)
++
++    target_include_directories(tfm_app_rot_partition_ps
++        PRIVATE
++            ${PS_FILESYSTEM_SOURCE_PATH}
++    )
++
++    target_sources(tfm_app_rot_partition_ps
++        PRIVATE
++            ps_filesystem_interface.c
++            ${PS_FILESYSTEM_SOURCE_PATH}/tfm_internal_trusted_storage.c
++            ${PS_FILESYSTEM_SOURCE_PATH}/its_utils.c
++            ${PS_FILESYSTEM_SOURCE_PATH}/flash/its_flash.c
++            ${PS_FILESYSTEM_SOURCE_PATH}/flash/its_flash_nand.c
++            ${PS_FILESYSTEM_SOURCE_PATH}/flash/its_flash_nor.c
++            ${PS_FILESYSTEM_SOURCE_PATH}/flash/its_flash_ram.c
++            ${PS_FILESYSTEM_SOURCE_PATH}/flash_fs/its_flash_fs.c
++            ${PS_FILESYSTEM_SOURCE_PATH}/flash_fs/its_flash_fs_dblock.c
++            ${PS_FILESYSTEM_SOURCE_PATH}/flash_fs/its_flash_fs_mblock.c
++    )
++endif()
++
+ # The generated sources
+ target_sources(tfm_app_rot_partition_ps
+     PRIVATE
+@@ -57,6 +80,11 @@ target_link_libraries(tfm_app_rot_partition_ps
+         tfm_sprt
+ )
+
++target_compile_definitions(tfm_app_rot_partition_ps
++    PRIVATE
++        $<$<BOOL:${TFM_PARTITION_INTERNAL_TRUSTED_STORAGE}>:TFM_PARTITION_INTERNAL_TRUSTED_STORAGE>
++)
++
+ ############################ Partition Defs ####################################
+
+ target_link_libraries(tfm_partitions
+diff --git a/secure_fw/partitions/protected_storage/ps_filesystem_interface.c b/secure_fw/partitions/protected_storage/ps_filesystem_interface.c
+new file mode 100644
+index 000000000..2254efb83
+--- /dev/null
++++ b/secure_fw/partitions/protected_storage/ps_filesystem_interface.c
+@@ -0,0 +1,52 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#include "psa/client.h"
++#include "psa_manifest/sid.h"
++#include "tfm_api.h"
++#include "tfm_its_defs.h"
++#include "psa_manifest/pid.h"
++#include "tfm_internal_trusted_storage.h"
++
++uint8_t *p_psa_src_data;
++uint8_t *p_psa_dest_data;
++
++psa_status_t psa_its_set(psa_storage_uid_t uid,
++                         size_t data_length,
++                         void *p_data,
++                         psa_storage_create_flags_t create_flags)
++{
++    p_psa_src_data = p_data;
++
++    return tfm_its_set(TFM_SP_PS, uid, data_length, create_flags);
++}
++
++psa_status_t psa_its_get(psa_storage_uid_t uid,
++                         size_t data_offset,
++                         size_t data_size,
++                         void *p_data,
++                         size_t *p_data_length)
++{
++    if (p_data_length == NULL) {
++        return PSA_ERROR_INVALID_ARGUMENT;
++    }
++
++    p_psa_dest_data = p_data;
++
++    return tfm_its_get(TFM_SP_PS, uid, data_offset, data_size, p_data_length);
++}
++
++psa_status_t psa_its_get_info(psa_storage_uid_t uid,
++                              struct psa_storage_info_t *p_info)
++{
++    return tfm_its_get_info(TFM_SP_PS, uid, p_info);
++}
++
++psa_status_t psa_its_remove(psa_storage_uid_t uid)
++{
++    return tfm_its_remove(TFM_SP_PS, uid);
++}
+diff --git a/secure_fw/partitions/protected_storage/tfm_protected_storage.c b/secure_fw/partitions/protected_storage/tfm_protected_storage.c
+index b66806d91..fccc4346e 100644
+--- a/secure_fw/partitions/protected_storage/tfm_protected_storage.c
++++ b/secure_fw/partitions/protected_storage/tfm_protected_storage.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2019-2022, Arm Limited. All rights reserved.
++ * Copyright (c) 2019-2023, Arm Limited. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -10,11 +10,21 @@
+ #include "tfm_protected_storage.h"
+ #include "ps_object_system.h"
+ #include "tfm_ps_defs.h"
++#ifndef TFM_PARTITION_INTERNAL_TRUSTED_STORAGE
++#include "tfm_internal_trusted_storage.h"
++#endif /* !TFM_PARTITION_INTERNAL_TRUSTED_STORAGE */
+
+ psa_status_t tfm_ps_init(void)
+ {
+     psa_status_t err;
+
++#ifndef TFM_PARTITION_INTERNAL_TRUSTED_STORAGE
++    err = tfm_its_init();
++    if (err != PSA_SUCCESS) {
++        return err;
++    }
++#endif /* !TFM_PARTITION_INTERNAL_TRUSTED_STORAGE */
++
+     err = ps_system_prepare();
+ #if PS_CREATE_FLASH_LAYOUT
+     /* If PS_CREATE_FLASH_LAYOUT is set to 1, it indicates that it is required to
+--
+2.25.1
+

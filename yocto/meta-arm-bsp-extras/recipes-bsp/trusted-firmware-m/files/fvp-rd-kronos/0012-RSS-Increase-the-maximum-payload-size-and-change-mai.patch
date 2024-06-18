@@ -1,0 +1,60 @@
+From 0c0bd1240555566af878e56f59e6d084ed73dbc6 Mon Sep 17 00:00:00 2001
+From: Jun Zhang <jun.zhang@arm.com>
+Date: Wed, 9 Aug 2023 10:39:27 +0800
+Subject: [PATCH] RSS: Increase the maximum payload size and change mailbox
+ base address
+
+Increase the maximum payload size of rss comms to adapt PS and Crypto
+service. Change the 'HOST_AP_RSS_MAILBOX_PHYS_BASE' address to match the
+shared memory between Trusted Service and RSS.
+
+Upstream-Status: Pending
+Signed-off-by: Jun Zhang <jun.zhang@arm.com>
+---
+ platform/ext/target/arm/rss/common/native_drivers/mhu_v3_x.h | 2 +-
+ platform/ext/target/arm/rss/common/rss_comms/rss_comms.h     | 2 +-
+ platform/ext/target/arm/rss/kronos/host_base_address.h       | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/mhu_v3_x.h b/platform/ext/target/arm/rss/common/native_drivers/mhu_v3_x.h
+index 72ea19349..dc884ff8a 100644
+--- a/platform/ext/target/arm/rss/common/native_drivers/mhu_v3_x.h
++++ b/platform/ext/target/arm/rss/common/native_drivers/mhu_v3_x.h
+@@ -59,7 +59,7 @@ extern "C" {
+ #define MHU3_PBX_DBCH_FLAG_AP_COMMS     UINT32_C(0x2)
+
+ /* Size of shared outband message buffer in bytes */
+-#define MHU3_OUTBAND_BUF_SIZE UINT64_C(0x1000)
++#define MHU3_OUTBAND_BUF_SIZE UINT64_C(0x2000)
+ #define MHU3_OUTBAND_BUF_HEADER_SIZE UINT64_C(0x4)
+
+ /* Base of shared outband mesage buffer */
+diff --git a/platform/ext/target/arm/rss/common/rss_comms/rss_comms.h b/platform/ext/target/arm/rss/common/rss_comms/rss_comms.h
+index 389d8d3eb..b64744963 100644
+--- a/platform/ext/target/arm/rss/common/rss_comms/rss_comms.h
++++ b/platform/ext/target/arm/rss/common/rss_comms/rss_comms.h
+@@ -17,7 +17,7 @@ extern "C" {
+ #endif
+
+  /* size suits to get_attest_token() */
+-#define RSS_COMMS_PAYLOAD_MAX_SIZE (0x40 + 0x800)
++#define RSS_COMMS_PAYLOAD_MAX_SIZE (0x40 + 0x1000)
+
+ /*
+  * Allocated for each client request.
+diff --git a/platform/ext/target/arm/rss/kronos/host_base_address.h b/platform/ext/target/arm/rss/kronos/host_base_address.h
+index 022914f8c..89297f507 100644
+--- a/platform/ext/target/arm/rss/kronos/host_base_address.h
++++ b/platform/ext/target/arm/rss/kronos/host_base_address.h
+@@ -252,7 +252,7 @@
+  */
+ #define HOST_AP_RSS_MAILBOX_BASE_S     \
+     (HOST_SI_CL2_CODE_BASE_S + HOST_SI_CL2_ATU_SIZE)
+-#define HOST_AP_RSS_MAILBOX_PHYS_BASE  UINT64_C(0xA03F0000)
++#define HOST_AP_RSS_MAILBOX_PHYS_BASE  UINT64_C(0xFFFFC000)
+ #define HOST_AP_RSS_MAILBOX_ATU_SIZE   ALIGN_UP(0x1000, RSS_ATU_PAGE_SIZE)
+ #define HOST_AP_RSS_MAILBOX_ATU_ID     RSS_ATU_AP_RSS_MAILBOX_ATU_ID
+
+--
+2.25.1
+

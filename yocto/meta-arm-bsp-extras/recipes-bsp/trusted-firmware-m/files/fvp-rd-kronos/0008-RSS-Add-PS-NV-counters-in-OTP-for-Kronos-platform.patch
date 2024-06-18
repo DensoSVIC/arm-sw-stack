@@ -1,0 +1,135 @@
+From 764b782b2254bb5120abcd3748025d20c5e2b38a Mon Sep 17 00:00:00 2001
+From: Maulik Patel <maulik.patel@arm.com>
+Date: Fri, 7 Jul 2023 14:11:06 +0100
+Subject: [PATCH] RSS: Add PS NV counters in OTP for Kronos platform
+
+Upstream-Status: Pending
+Signed-off-by: Maulik Patel <maulik.patel@arm.com>
+Change-Id: I2e1bfcca57f1195b4d28099f478f3882150514fc
+---
+ .../ext/target/arm/rss/common/CMakeLists.txt    |  1 +
+ .../ext/target/arm/rss/common/nv_counters.c     | 17 +++++++++++++++++
+ platform/ext/target/arm/rss/common/otp_lcm.c    | 15 +++++++++++++++
+ .../target/arm/rss/common/platform_otp_ids.h    |  6 ++++++
+ platform/ext/target/arm/rss/kronos/config.cmake |  2 ++
+ 5 files changed, 41 insertions(+)
+
+diff --git a/platform/ext/target/arm/rss/common/CMakeLists.txt b/platform/ext/target/arm/rss/common/CMakeLists.txt
+index 270d91b0c..d4fbe8951 100644
+--- a/platform/ext/target/arm/rss/common/CMakeLists.txt
++++ b/platform/ext/target/arm/rss/common/CMakeLists.txt
+@@ -184,6 +184,7 @@ target_compile_definitions(platform_s
+         # Needed for DMA-350 library
+         CMSIS_device_header="rss.h"
+         $<$<BOOL:${PLATFORM_SVC_HANDLERS}>:PLATFORM_SVC_HANDLERS>
++        $<$<BOOL:${PLATFORM_HAS_PS_NV_OTP_COUNTERS}>:PLATFORM_HAS_PS_NV_OTP_COUNTERS>
+ )
+
+ target_compile_options(platform_s
+diff --git a/platform/ext/target/arm/rss/common/nv_counters.c b/platform/ext/target/arm/rss/common/nv_counters.c
+index 4262711fe..c3c9b660f 100644
+--- a/platform/ext/target/arm/rss/common/nv_counters.c
++++ b/platform/ext/target/arm/rss/common/nv_counters.c
+@@ -84,6 +84,14 @@ enum tfm_plat_err_t tfm_plat_read_nv_counter(enum tfm_nv_counter_t counter_id,
+     }
+
+     switch (counter_id) {
++#ifdef PLATFORM_HAS_PS_NV_OTP_COUNTERS
++    case (PLAT_NV_COUNTER_PS_0):
++        return read_nv_counter_otp(PLAT_OTP_ID_NV_COUNTER_PS_0, val);
++    case (PLAT_NV_COUNTER_PS_1):
++        return read_nv_counter_otp(PLAT_OTP_ID_NV_COUNTER_PS_1, val);
++    case (PLAT_NV_COUNTER_PS_2):
++        return read_nv_counter_otp(PLAT_OTP_ID_NV_COUNTER_PS_2, val);
++#endif /* PLATFORM_HAS_PS_NV_OTP_COUNTERS */
+     case (PLAT_NV_COUNTER_NS_0):
+         return read_nv_counter_otp(PLAT_OTP_ID_NV_COUNTER_NS_0, val);
+     case (PLAT_NV_COUNTER_NS_1):
+@@ -141,6 +149,15 @@ enum tfm_plat_err_t tfm_plat_set_nv_counter(enum tfm_nv_counter_t counter_id,
+     }
+
+     switch (counter_id) {
++#ifdef PLATFORM_HAS_PS_NV_OTP_COUNTERS
++    case (PLAT_NV_COUNTER_PS_0):
++        return set_nv_counter_otp(PLAT_OTP_ID_NV_COUNTER_PS_0, value);
++    case (PLAT_NV_COUNTER_PS_1):
++        return set_nv_counter_otp(PLAT_OTP_ID_NV_COUNTER_PS_1, value);
++    case (PLAT_NV_COUNTER_PS_2):
++        return set_nv_counter_otp(PLAT_OTP_ID_NV_COUNTER_PS_2, value);
++#endif /* PLATFORM_HAS_PS_NV_OTP_COUNTERS */
++
+     case (PLAT_NV_COUNTER_NS_0):
+         return set_nv_counter_otp(PLAT_OTP_ID_NV_COUNTER_NS_0, value);
+     case (PLAT_NV_COUNTER_NS_1):
+diff --git a/platform/ext/target/arm/rss/common/otp_lcm.c b/platform/ext/target/arm/rss/common/otp_lcm.c
+index c08d0e6a2..b9e2524b9 100644
+--- a/platform/ext/target/arm/rss/common/otp_lcm.c
++++ b/platform/ext/target/arm/rss/common/otp_lcm.c
+@@ -68,6 +68,9 @@ __PACKED_STRUCT plat_user_area_layout_t {
+             __PACKED_STRUCT {
+                 uint32_t bl1_nv_counter[16];
+                 uint32_t bl2_nv_counter[MCUBOOT_IMAGE_NUMBER][16];
++#ifdef PLATFORM_HAS_PS_NV_OTP_COUNTERS
++                uint32_t ps_nv_counter[3][16];
++#endif /* PLATFORM_HAS_PS_NV_OTP_COUNTERS */
+                 uint32_t host_nv_counter[3][16];
+                 uint32_t reprovisioning_bits;
+             } unlocked_area;
+@@ -120,6 +123,12 @@ static const uint16_t otp_offsets[PLAT_OTP_ID_MAX] = {
+     USER_AREA_OFFSET(unlocked_area.bl2_nv_counter[7]),
+     USER_AREA_OFFSET(unlocked_area.bl2_nv_counter[8]),
+
++#ifdef PLATFORM_HAS_PS_NV_OTP_COUNTERS
++    USER_AREA_OFFSET(unlocked_area.ps_nv_counter[0]),
++    USER_AREA_OFFSET(unlocked_area.ps_nv_counter[1]),
++    USER_AREA_OFFSET(unlocked_area.ps_nv_counter[2]),
++#endif /* PLATFORM_HAS_PS_NV_OTP_COUNTERS */
++
+     USER_AREA_OFFSET(unlocked_area.host_nv_counter[0]),
+     USER_AREA_OFFSET(unlocked_area.host_nv_counter[1]),
+     USER_AREA_OFFSET(unlocked_area.host_nv_counter[2]),
+@@ -179,6 +188,12 @@ static const uint16_t otp_sizes[PLAT_OTP_ID_MAX] = {
+     USER_AREA_SIZE(unlocked_area.bl2_nv_counter[7]),
+     USER_AREA_SIZE(unlocked_area.bl2_nv_counter[8]),
+
++#ifdef PLATFORM_HAS_PS_NV_OTP_COUNTERS
++    USER_AREA_SIZE(unlocked_area.ps_nv_counter[0]),
++    USER_AREA_SIZE(unlocked_area.ps_nv_counter[1]),
++    USER_AREA_SIZE(unlocked_area.ps_nv_counter[2]),
++#endif /* PLATFORM_HAS_PS_NV_OTP_COUNTERS */
++
+     USER_AREA_SIZE(unlocked_area.host_nv_counter[0]),
+     USER_AREA_SIZE(unlocked_area.host_nv_counter[1]),
+     USER_AREA_SIZE(unlocked_area.host_nv_counter[2]),
+diff --git a/platform/ext/target/arm/rss/common/platform_otp_ids.h b/platform/ext/target/arm/rss/common/platform_otp_ids.h
+index 12a709749..64600244f 100644
+--- a/platform/ext/target/arm/rss/common/platform_otp_ids.h
++++ b/platform/ext/target/arm/rss/common/platform_otp_ids.h
+@@ -48,6 +48,12 @@ enum tfm_otp_element_id_t {
+     PLAT_OTP_ID_NV_COUNTER_BL2_7,
+     PLAT_OTP_ID_NV_COUNTER_BL2_8,
+
++#ifdef PLATFORM_HAS_PS_NV_OTP_COUNTERS
++    PLAT_OTP_ID_NV_COUNTER_PS_0,
++    PLAT_OTP_ID_NV_COUNTER_PS_1,
++    PLAT_OTP_ID_NV_COUNTER_PS_2,
++#endif /* PLATFORM_HAS_PS_NV_OTP_COUNTERS */
++
+     PLAT_OTP_ID_NV_COUNTER_NS_0,
+     PLAT_OTP_ID_NV_COUNTER_NS_1,
+     PLAT_OTP_ID_NV_COUNTER_NS_2,
+diff --git a/platform/ext/target/arm/rss/kronos/config.cmake b/platform/ext/target/arm/rss/kronos/config.cmake
+index f4a3deb2a..5da95c7c5 100644
+--- a/platform/ext/target/arm/rss/kronos/config.cmake
++++ b/platform/ext/target/arm/rss/kronos/config.cmake
+@@ -27,5 +27,7 @@ if(MCUBOOT_IMAGE_NUMBER GREATER 9)
+     message(FATAL_ERROR "INVALID CONFIG: MCUBOOT_IMAGE_NUMBER value not supported!")
+ endif()
+
++set(PLATFORM_HAS_PS_NV_OTP_COUNTERS            ON  CACHE BOOL   "Platform supports nvm counters for PS in OTP")
++
+ # Once all options are set, set common options as fallback
+ include(${CMAKE_CURRENT_LIST_DIR}/../common/config.cmake)
+--
+2.25.1
+

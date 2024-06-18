@@ -1,0 +1,148 @@
+From 2c886056c8d89e489029146a33d54afc3d5f874b Mon Sep 17 00:00:00 2001
+From: Michael Zhao <michael.zhao@arm.com>
+Date: Sat, 19 Aug 2023 20:08:07 +0800
+Subject: [PATCH] RSS: Enable ITS service
+
+Enable the build option for ITS partition.
+Add ITS partion to the dependency list of PS and Crypto partition.
+
+Upstream-Status: Pending
+Signed-off-by: Michael Zhao <michael.zhao@arm.com>
+---
+ .../arm/rss/common/manifest/tfm_crypto.yaml   | 30 ------------------
+ .../common/manifest/tfm_manifest_list.yaml    | 18 +++++++++--
+ .../manifest/tfm_protected_storage.yaml       | 31 -------------------
+ .../ext/target/arm/rss/kronos/config.cmake    |  4 ++-
+ 4 files changed, 19 insertions(+), 64 deletions(-)
+ delete mode 100644 platform/ext/target/arm/rss/common/manifest/tfm_crypto.yaml
+ delete mode 100644 platform/ext/target/arm/rss/common/manifest/tfm_protected_storage.yaml
+
+diff --git a/platform/ext/target/arm/rss/common/manifest/tfm_crypto.yaml b/platform/ext/target/arm/rss/common/manifest/tfm_crypto.yaml
+deleted file mode 100644
+index a835928754..0000000000
+--- a/platform/ext/target/arm/rss/common/manifest/tfm_crypto.yaml
++++ /dev/null
+@@ -1,30 +0,0 @@
+-#-------------------------------------------------------------------------------
+-# Copyright (c) 2018-2022, Arm Limited. All rights reserved.
+-#
+-# SPDX-License-Identifier: BSD-3-Clause
+-#
+-#-------------------------------------------------------------------------------
+-
+-# Identical to the standard TF-M Crypto manifest except for the removal of the
+-# ITS dependency
+-{
+-  "psa_framework_version": 1.1,
+-  "name": "TFM_SP_CRYPTO",
+-  "type": "PSA-ROT",
+-  "priority": "NORMAL",
+-  "model": "SFN",
+-  "entry_init": "tfm_crypto_init",
+-  "stack_size": "CRYPTO_STACK_SIZE",
+-  "services" : [
+-    {
+-      "name": "TFM_CRYPTO",
+-      "sid": "0x00000080",
+-      "non_secure_clients": true,
+-      "connection_based": false,
+-      "stateless_handle": 1,
+-      "version": 1,
+-      "version_policy": "STRICT",
+-      "mm_iovec": "enable"
+-    },
+-  ],
+-}
+diff --git a/platform/ext/target/arm/rss/common/manifest/tfm_manifest_list.yaml b/platform/ext/target/arm/rss/common/manifest/tfm_manifest_list.yaml
+index d02870b21a..3a7bd8594b 100644
+--- a/platform/ext/target/arm/rss/common/manifest/tfm_manifest_list.yaml
++++ b/platform/ext/target/arm/rss/common/manifest/tfm_manifest_list.yaml
+@@ -39,7 +39,7 @@
+     },
+     {
+       "description": "Protected Storage Partition",
+-      "manifest": "${CMAKE_SOURCE_DIR}/platform/ext/target/arm/rss/common/manifest/tfm_protected_storage.yaml",
++      "manifest": "${CMAKE_SOURCE_DIR}/secure_fw/partitions/protected_storage/tfm_protected_storage.yaml",
+       "output_path": "secure_fw/partitions/protected_storage",
+       "conditional": "TFM_PARTITION_PROTECTED_STORAGE",
+       "version_major": 0,
+@@ -51,9 +51,23 @@
+          ],
+       }
+     },
++    {
++      "description": "TF-M Internal Trusted Storage Partition",
++      "manifest": "${CMAKE_SOURCE_DIR}/secure_fw/partitions/internal_trusted_storage/tfm_internal_trusted_storage.yaml",
++      "output_path": "secure_fw/partitions/internal_trusted_storage",
++      "conditional": "TFM_PARTITION_INTERNAL_TRUSTED_STORAGE",
++      "version_major": 0,
++      "version_minor": 1,
++      "pid": 257,
++      "linker_pattern": {
++        "library_list": [
++           "*tfm_*partition_its.*"
++         ]
++      }
++    },
+     {
+       "description": "TFM Crypto Service",
+-      "manifest": "${CMAKE_SOURCE_DIR}/platform/ext/target/arm/rss/common/manifest/tfm_crypto.yaml",
++      "manifest": "${CMAKE_SOURCE_DIR}/secure_fw/partitions/crypto/tfm_crypto.yaml",
+       "output_path": "secure_fw/partitions/crypto",
+       "conditional": "TFM_PARTITION_CRYPTO",
+       "version_major": 0,
+diff --git a/platform/ext/target/arm/rss/common/manifest/tfm_protected_storage.yaml b/platform/ext/target/arm/rss/common/manifest/tfm_protected_storage.yaml
+deleted file mode 100644
+index 859e774392..0000000000
+--- a/platform/ext/target/arm/rss/common/manifest/tfm_protected_storage.yaml
++++ /dev/null
+@@ -1,31 +0,0 @@
+-#-------------------------------------------------------------------------------
+-# Copyright (c) 2018-2023, Arm Limited. All rights reserved.
+-#
+-# SPDX-License-Identifier: BSD-3-Clause
+-#
+-#-------------------------------------------------------------------------------
+-
+-{
+-  "psa_framework_version": 1.1,
+-  "name": "TFM_SP_PS",
+-  "type": "APPLICATION-ROT",
+-  "priority": "NORMAL",
+-  "model": "SFN",
+-  "entry_init": "tfm_ps_entry",
+-  "stack_size": "PS_STACK_SIZE",
+-  "services" : [
+-    {
+-      "name": "TFM_PROTECTED_STORAGE_SERVICE",
+-      "sid": "0x00000060",
+-      "non_secure_clients": true,
+-      "connection_based": false,
+-      "stateless_handle": 2,
+-      "version": 1,
+-      "version_policy": "STRICT"
+-    }
+-  ],
+-  "dependencies": [
+-    "TFM_CRYPTO",
+-    "TFM_PLATFORM_SERVICE"
+-  ]
+-}
+diff --git a/platform/ext/target/arm/rss/kronos/config.cmake b/platform/ext/target/arm/rss/kronos/config.cmake
+index 0541161618..be6409fab9 100644
+--- a/platform/ext/target/arm/rss/kronos/config.cmake
++++ b/platform/ext/target/arm/rss/kronos/config.cmake
+@@ -31,7 +31,9 @@ set(PLATFORM_HAS_PS_NV_OTP_COUNTERS           ON   CACHE BOOL   "Platform suppor
+ set(TFM_PARTITION_MEASURED_BOOT               OFF  CACHE BOOL   "Disable Measured boot partition")
+ set(TFM_PARTITION_DELEGATED_ATTESTATION       OFF  CACHE BOOL   "Disable Delegated Attestation partition")
+ set(TFM_PARTITION_PROTECTED_STORAGE           ON   CACHE BOOL   "Enable Protected Storage partition")
+-set(TFM_PARTITION_INTERNAL_TRUSTED_STORAGE    OFF  CACHE BOOL   "Disable Internal Trusted Storage partition")
++set(TFM_PARTITION_INTERNAL_TRUSTED_STORAGE    ON   CACHE BOOL   "Enable Internal Trusted Storage partition")
++set(TFM_PARTITION_CRYPTO                      ON   CACHE BOOL   "Enable Crypto partition")
++set(TFM_MBEDCRYPTO_PLATFORM_EXTRA_CONFIG_PATH  ""  CACHE PATH   "Config to append to standard Mbed Crypto config, used by platforms to cnfigure feature support")
+ 
+ # Once all options are set, set common options as fallback
+ include(${CMAKE_CURRENT_LIST_DIR}/../common/config.cmake)
+-- 
+2.25.1
+

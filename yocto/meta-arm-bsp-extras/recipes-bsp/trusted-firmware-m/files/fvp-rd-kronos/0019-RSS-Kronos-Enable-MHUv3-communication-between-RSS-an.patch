@@ -1,0 +1,372 @@
+From 1dcd47344d4dd7ed593db8e7542af0222e88d448 Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Tue, 19 Sep 2023 09:25:07 +0100
+Subject: [PATCH] RSS: Kronos: Enable MHUv3 communication between RSS and
+ Safety Island
+
+1- Add the required MHUv3 devices to enable communication between
+RSS and each Safety Island cluster.
+2- Add the MHUv3 devices interrupt numbers and enable them.
+3- Add the MHUv3 interrupt request handlers.
+
+Upstream-Status: Pending
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ .../arm/rss/common/native_drivers/mhu_v3_x.h  | 29 ++++++++-
+ .../arm/rss/common/rss_comms/rss_comms_hal.c  | 54 +++++++++++++++++
+ .../ext/target/arm/rss/common/target_cfg.c    | 33 ++++++++++
+ .../target/arm/rss/common/tfm_interrupts.c    | 60 +++++++++++++++++++
+ .../arm/rss/kronos/device/host_device_cfg.h   |  6 ++
+ .../kronos/device/host_device_definition.c    | 48 +++++++++++++++
+ .../kronos/device/host_device_definition.h    | 24 ++++++++
+ 7 files changed, 252 insertions(+), 2 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/mhu_v3_x.h b/platform/ext/target/arm/rss/common/native_drivers/mhu_v3_x.h
+index 158663b44..675be3309 100644
+--- a/platform/ext/target/arm/rss/common/native_drivers/mhu_v3_x.h
++++ b/platform/ext/target/arm/rss/common/native_drivers/mhu_v3_x.h
+@@ -59,12 +59,37 @@ extern "C" {
+ /* Flag Value used for AP<->RSS specific doorbell communication */
+ #define MHU3_PBX_DBCH_FLAG_AP_COMMS     UINT32_C(0x2)
+ 
++#if defined(MHU_V3_RSS_SI_CL0) || defined(MHU_V3_RSS_SI_CL1) || \
++    defined(MHU_V3_RSS_SI_CL2)
++/* Flag Value used for SI<->RSS specific doorbell communication */
++#define MHU3_PBX_DBCH_FLAG_SI_COMMS     UINT32_C(0x1)
++#endif /* MHU_V3_RSS_SI_CL0 || MHU_V3_RSS_SI_CL1 || MHU_V3_RSS_SI_CL2 */
++
+ /* Size of shared outband message buffer in bytes */
+-#define MHU3_AP_RSS_OUTBAND_BUF_SIZE UINT64_C(0x2000)
++#define MHU3_AP_RSS_OUTBAND_BUF_SIZE     UINT64_C(0x2000)
++#ifdef MHU_V3_RSS_SI_CL0
++#define MHU3_SI_CL0_RSS_OUTBAND_BUF_SIZE UINT64_C(0x2000)
++#endif /* MHU_V3_RSS_SI_CL0 */
++#ifdef MHU_V3_RSS_SI_CL1
++#define MHU3_SI_CL1_RSS_OUTBAND_BUF_SIZE UINT64_C(0x2000)
++#endif /* MHU_V3_RSS_SI_CL1 */
++#ifdef MHU_V3_RSS_SI_CL2
++#define MHU3_SI_CL2_RSS_OUTBAND_BUF_SIZE UINT64_C(0x2000)
++#endif /* MHU_V3_RSS_SI_CL2 */
++
+ #define MHU3_OUTBAND_BUF_HEADER_SIZE UINT64_C(0x4)
+ 
+ /* Base of shared outband mesage buffer */
+-#define MHU3_AP_RSS_OUTBAND_BUF_BASE HOST_AP_RSS_MAILBOX_BASE_S
++#define MHU3_AP_RSS_OUTBAND_BUF_BASE     HOST_AP_RSS_MAILBOX_BASE_S
++#ifdef MHU_V3_RSS_SI_CL0
++#define MHU3_SI_CL0_RSS_OUTBAND_BUF_BASE HOST_SI_CL0_RSS_MAILBOX_BASE_S
++#endif /* MHU_V3_RSS_SI_CL0 */
++#ifdef MHU_V3_RSS_SI_CL1
++#define MHU3_SI_CL1_RSS_OUTBAND_BUF_BASE HOST_SI_CL1_RSS_MAILBOX_BASE_S
++#endif /* MHU_V3_RSS_SI_CL1 */
++#ifdef MHU_V3_RSS_SI_CL2
++#define MHU3_SI_CL2_RSS_OUTBAND_BUF_BASE HOST_SI_CL2_RSS_MAILBOX_BASE_S
++#endif /* MHU_V3_RSS_SI_CL2 */
+ 
+ /**
+  * \brief MHUv3 error enumeration types.
+diff --git a/platform/ext/target/arm/rss/common/rss_comms/rss_comms_hal.c b/platform/ext/target/arm/rss/common/rss_comms/rss_comms_hal.c
+index d0c2cf131..937d6d45d 100644
+--- a/platform/ext/target/arm/rss/common/rss_comms/rss_comms_hal.c
++++ b/platform/ext/target/arm/rss/common/rss_comms/rss_comms_hal.c
+@@ -41,6 +41,60 @@ static enum tfm_plat_err_t initialize_mhu(void)
+         return TFM_PLAT_ERR_SYSTEM_ERR;
+     }
+ 
++#ifdef MHU_V3_RSS_SI_CL0
++    err = mhu_init_sender(&MHU_RSS_TO_SI_CL0_DEV);
++    if (err != MHU_ERR_NONE) {
++        SPMLOG_ERRMSGVAL(
++            "[COMMS] RSS to Safety Island Cluster 0 MHU driver init failed: ",
++            err);
++        return TFM_PLAT_ERR_SYSTEM_ERR;
++    }
++
++    err = mhu_init_receiver(&MHU_SI_CL0_TO_RSS_DEV);
++    if (err != MHU_ERR_NONE) {
++        SPMLOG_ERRMSGVAL(
++            "[COMMS] Safety Island Cluster 0 to RSS MHU driver init failed: ",
++            err);
++        return TFM_PLAT_ERR_SYSTEM_ERR;
++    }
++#endif /* MHU_V3_RSS_SI_CL0 */
++
++#ifdef MHU_V3_RSS_SI_CL1
++    err = mhu_init_sender(&MHU_RSS_TO_SI_CL1_DEV);
++    if (err != MHU_ERR_NONE) {
++        SPMLOG_ERRMSGVAL(
++            "[COMMS] RSS to Safety Island Cluster 1 MHU driver init failed: ",
++            err);
++        return TFM_PLAT_ERR_SYSTEM_ERR;
++    }
++
++    err = mhu_init_receiver(&MHU_SI_CL1_TO_RSS_DEV);
++    if (err != MHU_ERR_NONE) {
++        SPMLOG_ERRMSGVAL(
++            "[COMMS] Safety Island Cluster 1 to RSS MHU driver init failed: ",
++            err);
++        return TFM_PLAT_ERR_SYSTEM_ERR;
++    }
++#endif /* MHU_V3_RSS_SI_CL1 */
++
++#ifdef MHU_V3_RSS_SI_CL2
++    err = mhu_init_sender(&MHU_RSS_TO_SI_CL2_DEV);
++    if (err != MHU_ERR_NONE) {
++        SPMLOG_ERRMSGVAL(
++            "[COMMS] RSS to Safety Island Cluster 2 MHU driver init failed: ",
++            err);
++        return TFM_PLAT_ERR_SYSTEM_ERR;
++    }
++
++    err = mhu_init_receiver(&MHU_SI_CL2_TO_RSS_DEV);
++    if (err != MHU_ERR_NONE) {
++        SPMLOG_ERRMSGVAL(
++            "[COMMS] Safety Island Cluster 2 to RSS MHU driver init failed: ",
++            err);
++        return TFM_PLAT_ERR_SYSTEM_ERR;
++    }
++#endif /* MHU_V3_RSS_SI_CL2 */
++
+     SPMLOG_DBGMSG("[COMMS] MHU driver initialized successfully.\r\n");
+     return TFM_PLAT_ERR_SUCCESS;
+ }
+diff --git a/platform/ext/target/arm/rss/common/target_cfg.c b/platform/ext/target/arm/rss/common/target_cfg.c
+index 5d100713c..a1a45c814 100644
+--- a/platform/ext/target/arm/rss/common/target_cfg.c
++++ b/platform/ext/target/arm/rss/common/target_cfg.c
+@@ -220,6 +220,21 @@ enum tfm_plat_err_t nvic_interrupt_target_state_cfg(void)
+     NVIC_ClearTargetState(CMU_MHU2_Receiver_IRQn);
+ #endif
+ 
++#ifdef MHU_V3_RSS_SI_CL0
++    /* Target SI CL0-->RSS MHU interrupt to secure state */
++    NVIC_ClearTargetState(CMU_MHU6_Receiver_IRQn);
++#endif
++
++#ifdef MHU_V3_RSS_SI_CL1
++    /* Target SI CL1-->RSS MHU interrupt to secure state */
++    NVIC_ClearTargetState(CMU_MHU7_Receiver_IRQn);
++#endif
++
++#ifdef MHU_V3_RSS_SI_CL2
++    /* Target SI CL2-->RSS MHU interrupt to secure state */
++    NVIC_ClearTargetState(CMU_MHU8_Receiver_IRQn);
++#endif
++
+     return TFM_PLAT_ERR_SUCCESS;
+ }
+ 
+@@ -275,6 +290,24 @@ enum tfm_plat_err_t nvic_interrupt_enable(void)
+     NVIC_EnableIRQ(CMU_MHU2_Receiver_IRQn);
+ #endif
+ 
++#ifdef MHU_V3_RSS_SI_CL0
++    /* Enable SI CL0<-->RSS MHU Interrupt */
++    NVIC_ClearPendingIRQ(CMU_MHU6_Receiver_IRQn);
++    NVIC_EnableIRQ(CMU_MHU6_Receiver_IRQn);
++#endif
++
++#ifdef MHU_V3_RSS_SI_CL1
++    /* Enable SI CL1<-->RSS MHU Interrupt */
++    NVIC_ClearPendingIRQ(CMU_MHU7_Receiver_IRQn);
++    NVIC_EnableIRQ(CMU_MHU7_Receiver_IRQn);
++#endif
++
++#ifdef MHU_V3_RSS_SI_CL2
++    /* Enable SI CL2<-->RSS MHU Interrupt */
++    NVIC_ClearPendingIRQ(CMU_MHU8_Receiver_IRQn);
++    NVIC_EnableIRQ(CMU_MHU8_Receiver_IRQn);
++#endif
++
+     return TFM_PLAT_ERR_SUCCESS;
+ }
+ 
+diff --git a/platform/ext/target/arm/rss/common/tfm_interrupts.c b/platform/ext/target/arm/rss/common/tfm_interrupts.c
+index 41404fcab..1dd85daa1 100644
+--- a/platform/ext/target/arm/rss/common/tfm_interrupts.c
++++ b/platform/ext/target/arm/rss/common/tfm_interrupts.c
+@@ -23,6 +23,21 @@
+ extern struct mhu_v3_x_dev_t MHU_AP_TO_RSS_DEV;
+ extern struct mhu_v3_x_dev_t MHU_RSS_TO_AP_DEV;
+ 
++#ifdef MHU_V3_RSS_SI_CL0
++extern struct mhu_v3_x_dev_t MHU_SI_CL0_TO_RSS_DEV;
++extern struct mhu_v3_x_dev_t MHU_RSS_TO_SI_CL0_DEV;
++#endif /* MHU_V3_RSS_SI_CL0 */
++
++#ifdef MHU_V3_RSS_SI_CL1
++extern struct mhu_v3_x_dev_t MHU_SI_CL1_TO_RSS_DEV;
++extern struct mhu_v3_x_dev_t MHU_RSS_TO_SI_CL1_DEV;
++#endif /* MHU_V3_RSS_SI_CL1 */
++
++#ifdef MHU_V3_RSS_SI_CL2
++extern struct mhu_v3_x_dev_t MHU_SI_CL2_TO_RSS_DEV;
++extern struct mhu_v3_x_dev_t MHU_RSS_TO_SI_CL2_DEV;
++#endif /* MHU_V3_RSS_SI_CL2 */
++
+ static struct irq_t timer0_irq = {0};
+ 
+ void TFM_TIMER0_IRQ_Handler(void)
+@@ -87,6 +102,51 @@ void CMU_MHU2_Receiver_Handler(void)
+      */
+     spm_handle_interrupt(mbox_irq_info.p_pt, mbox_irq_info.p_ildi);
+ }
++
++#ifdef MHU_V3_RSS_SI_CL0
++/* Platform specific inter-processor communication interrupt handler. */
++void CMU_MHU6_Receiver_Handler(void)
++{
++    (void)tfm_multi_core_hal_receive(&MHU_SI_CL0_TO_RSS_DEV,
++                                     &MHU_RSS_TO_SI_CL0_DEV);
++
++    /*
++     * SPM will send a MAILBOX_SIGNAL to the corresponding partition
++     * indicating that a message has arrived and can be processed.
++     */
++    spm_handle_interrupt(mbox_irq_info.p_pt, mbox_irq_info.p_ildi);
++}
++#endif /* MHU_V3_RSS_SI_CL0 */
++
++#ifdef MHU_V3_RSS_SI_CL1
++/* Platform specific inter-processor communication interrupt handler. */
++void CMU_MHU7_Receiver_Handler(void)
++{
++    (void)tfm_multi_core_hal_receive(&MHU_SI_CL1_TO_RSS_DEV,
++                                     &MHU_RSS_TO_SI_CL1_DEV);
++
++    /*
++     * SPM will send a MAILBOX_SIGNAL to the corresponding partition
++     * indicating that a message has arrived and can be processed.
++     */
++    spm_handle_interrupt(mbox_irq_info.p_pt, mbox_irq_info.p_ildi);
++}
++#endif /* MHU_V3_RSS_SI_CL1 */
++
++#ifdef MHU_V3_RSS_SI_CL2
++/* Platform specific inter-processor communication interrupt handler. */
++void CMU_MHU8_Receiver_Handler(void)
++{
++    (void)tfm_multi_core_hal_receive(&MHU_SI_CL2_TO_RSS_DEV,
++                                     &MHU_RSS_TO_SI_CL2_DEV);
++
++    /*
++     * SPM will send a MAILBOX_SIGNAL to the corresponding partition
++     * indicating that a message has arrived and can be processed.
++     */
++    spm_handle_interrupt(mbox_irq_info.p_pt, mbox_irq_info.p_ildi);
++}
++#endif /* MHU_V3_RSS_SI_CL2 */
+ #endif /* TFM_MULTI_CORE_TOPOLOGY */
+ 
+ static struct irq_t dma0_ch0_irq = {0};
+diff --git a/platform/ext/target/arm/rss/kronos/device/host_device_cfg.h b/platform/ext/target/arm/rss/kronos/device/host_device_cfg.h
+index c6142a131..6ffb6c8d7 100644
+--- a/platform/ext/target/arm/rss/kronos/device/host_device_cfg.h
++++ b/platform/ext/target/arm/rss/kronos/device/host_device_cfg.h
+@@ -27,6 +27,12 @@
+ #define MHU_V3_RSS_TO_SCP
+ #define MHU_V3_SCP_TO_RSS
+ 
++#define MHU_V3_RSS_SI_CL0    0U
++
++#define MHU_V3_RSS_SI_CL1    1U
++
++#define MHU_V3_RSS_SI_CL2    2U
++
+ /*External Intel Strata Flash Device*/
+ #define SPI_STRATAFLASHJ3_S
+ 
+diff --git a/platform/ext/target/arm/rss/kronos/device/host_device_definition.c b/platform/ext/target/arm/rss/kronos/device/host_device_definition.c
+index d421118ed..90ee8fb48 100644
+--- a/platform/ext/target/arm/rss/kronos/device/host_device_definition.c
++++ b/platform/ext/target/arm/rss/kronos/device/host_device_definition.c
+@@ -158,3 +158,51 @@ struct mhu_v3_x_dev_t MHU_V3_RSS_TO_SCP_DEV = {
+     .frame = MHU_V3_X_PBX_FRAME,
+     .subversion = 0};
+ #endif
++
++struct mhu_v3_x_dev_t MHU_SI_CL0_TO_RSS_DEV = {
++    .base = MHU6_RECEIVER_BASE_S,
++    .frame = MHU_V3_X_MBX_FRAME,
++    .outband_buf_base = MHU3_SI_CL0_RSS_OUTBAND_BUF_BASE,
++    .outband_buf_size = MHU3_SI_CL0_RSS_OUTBAND_BUF_SIZE,
++    .pbx_dbch_flag = MHU3_PBX_DBCH_FLAG_SI_COMMS,
++    .subversion = 0};
++
++struct mhu_v3_x_dev_t MHU_RSS_TO_SI_CL0_DEV = {
++    .base = MHU6_SENDER_BASE_S,
++    .frame = MHU_V3_X_PBX_FRAME,
++    .outband_buf_base = MHU3_SI_CL0_RSS_OUTBAND_BUF_BASE,
++    .outband_buf_size = MHU3_SI_CL0_RSS_OUTBAND_BUF_SIZE,
++    .pbx_dbch_flag = MHU3_PBX_DBCH_FLAG_SI_COMMS,
++    .subversion = 0};
++
++struct mhu_v3_x_dev_t MHU_SI_CL1_TO_RSS_DEV = {
++    .base = MHU7_RECEIVER_BASE_S,
++    .frame = MHU_V3_X_MBX_FRAME,
++    .outband_buf_base = MHU3_SI_CL1_RSS_OUTBAND_BUF_BASE,
++    .outband_buf_size = MHU3_SI_CL1_RSS_OUTBAND_BUF_SIZE,
++    .pbx_dbch_flag = MHU3_PBX_DBCH_FLAG_SI_COMMS,
++    .subversion = 0};
++
++struct mhu_v3_x_dev_t MHU_RSS_TO_SI_CL1_DEV = {
++    .base = MHU7_SENDER_BASE_S,
++    .frame = MHU_V3_X_PBX_FRAME,
++    .outband_buf_base = MHU3_SI_CL1_RSS_OUTBAND_BUF_BASE,
++    .outband_buf_size = MHU3_SI_CL1_RSS_OUTBAND_BUF_SIZE,
++    .pbx_dbch_flag = MHU3_PBX_DBCH_FLAG_SI_COMMS,
++    .subversion = 0};
++
++struct mhu_v3_x_dev_t MHU_SI_CL2_TO_RSS_DEV = {
++    .base = MHU8_RECEIVER_BASE_S,
++    .frame = MHU_V3_X_MBX_FRAME,
++    .outband_buf_base = MHU3_SI_CL2_RSS_OUTBAND_BUF_BASE,
++    .outband_buf_size = MHU3_SI_CL2_RSS_OUTBAND_BUF_SIZE,
++    .pbx_dbch_flag = MHU3_PBX_DBCH_FLAG_SI_COMMS,
++    .subversion = 0};
++
++struct mhu_v3_x_dev_t MHU_RSS_TO_SI_CL2_DEV = {
++    .base = MHU8_SENDER_BASE_S,
++    .frame = MHU_V3_X_PBX_FRAME,
++    .outband_buf_base = MHU3_SI_CL2_RSS_OUTBAND_BUF_BASE,
++    .outband_buf_size = MHU3_SI_CL2_RSS_OUTBAND_BUF_SIZE,
++    .pbx_dbch_flag = MHU3_PBX_DBCH_FLAG_SI_COMMS,
++    .subversion = 0};
+diff --git a/platform/ext/target/arm/rss/kronos/device/host_device_definition.h b/platform/ext/target/arm/rss/kronos/device/host_device_definition.h
+index 7bf4966ea..2722ab085 100644
+--- a/platform/ext/target/arm/rss/kronos/device/host_device_definition.h
++++ b/platform/ext/target/arm/rss/kronos/device/host_device_definition.h
+@@ -110,6 +110,30 @@ extern struct mhu_v3_x_dev_t MHU_V3_SCP_TO_RSS_DEV;
+ extern struct mhu_v3_x_dev_t MHU_V3_RSS_TO_SCP_DEV;
+ #endif
+ 
++#pragma message("Using mhuv3 si cl0 to rss h")
++#include "mhu_v3_x.h"
++extern struct mhu_v3_x_dev_t MHU_SI_CL0_TO_RSS_DEV;
++
++#pragma message("Using mhuv3 rss to si cl0 h")
++#include "mhu_v3_x.h"
++extern struct mhu_v3_x_dev_t MHU_RSS_TO_SI_CL0_DEV;
++
++#pragma message("Using mhuv3 si cl1 to rss h")
++#include "mhu_v3_x.h"
++extern struct mhu_v3_x_dev_t MHU_SI_CL1_TO_RSS_DEV;
++
++#pragma message("Using mhuv3 rss to si cl1 h")
++#include "mhu_v3_x.h"
++extern struct mhu_v3_x_dev_t MHU_RSS_TO_SI_CL1_DEV;
++
++#pragma message("Using mhuv3 si cl2 to rss h")
++#include "mhu_v3_x.h"
++extern struct mhu_v3_x_dev_t MHU_SI_CL2_TO_RSS_DEV;
++
++#pragma message("Using mhuv3 rss to si cl2 h")
++#include "mhu_v3_x.h"
++extern struct mhu_v3_x_dev_t MHU_RSS_TO_SI_CL2_DEV;
++
+ #ifdef __cplusplus
+ }
+ #endif
+-- 
+2.25.1
+

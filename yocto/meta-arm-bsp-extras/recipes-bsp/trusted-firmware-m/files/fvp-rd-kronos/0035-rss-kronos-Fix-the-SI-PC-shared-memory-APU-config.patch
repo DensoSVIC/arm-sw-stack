@@ -1,0 +1,69 @@
+From c88910803b6e1ac2708077d660cb14087b187614 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Thu, 9 Nov 2023 17:24:01 +0800
+Subject: [PATCH] rss/kronos: Fix the SI-PC shared memory APU config
+
+Since the shared memory between Safety Island (SI) and Primary
+Compute (PC) will be accessed by both SI and PC, make related
+interfaces non-secure accessable. Also extend the memory region
+of the SI-PC shared memory interfaces to 128MB, which is the
+maximum possible value from the specification.
+
+Upstream-Status: Pending
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+---
+ platform/ext/target/arm/rss/kronos/ni710ae_lib.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/kronos/ni710ae_lib.c b/platform/ext/target/arm/rss/kronos/ni710ae_lib.c
+index af1aad435..018ae88e2 100644
+--- a/platform/ext/target/arm/rss/kronos/ni710ae_lib.c
++++ b/platform/ext/target/arm/rss/kronos/ni710ae_lib.c
+@@ -246,7 +246,7 @@ program_si_apu_runtime(struct ni710ae_discovery_tree_t* dis_tree,
+         /* ethernet_ctrl_1 */
+         { 0x8200000, 0x82FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 8, },
+         /* pc_shrd */
+-        { 0x200000000, 0x2000FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 9, },
++        { 0x200000000, 0x207FFFFFF, NCI_FOREGROUND, NCI_ALL_PERM, 9, },
+         /* base_periphs */
+         /* sysctrl */
+         { 0x2A6A0000, 0x2A6CFFFF, NCI_FOREGROUND, NCI_SEC_RW, 10, },
+@@ -314,7 +314,7 @@ program_si_apu_runtime(struct ni710ae_discovery_tree_t* dis_tree,
+         /* SRAM1 */
+         { 0x48000000, 0x4FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 6, },
+         /* pc_shrd */
+-        { 0x200000000, 0x2000FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 7, },
++        { 0x200000000, 0x207FFFFFF, NCI_FOREGROUND, NCI_ALL_PERM, 7, },
+         /* base_periphs */
+         /* sysctrl */
+         { 0x2A6A0000, 0x2A6CFFFF, NCI_FOREGROUND, NCI_SEC_RW, 8, },
+@@ -382,7 +382,7 @@ program_si_apu_runtime(struct ni710ae_discovery_tree_t* dis_tree,
+         /* SRAM1 */
+         { 0x48000000, 0x4FFFFFFF, NCI_FOREGROUND, NCI_SEC_RW, 6, },
+         /* pc_shrd */
+-        { 0x200000000, 0x2000FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 7, },
++        { 0x200000000, 0x207FFFFFF, NCI_FOREGROUND, NCI_ALL_PERM, 7, },
+         /* base_periphs */
+         /* sysctrl */
+         { 0x2A6A0000, 0x2A6CFFFF, NCI_FOREGROUND, NCI_SEC_RW, 8, },
+@@ -461,7 +461,7 @@ program_si_apu_runtime(struct ni710ae_discovery_tree_t* dis_tree,
+     };
+ 
+     struct apu_region_cfgs asni_pc_shrd[] = {
+-        { 0x200000000, 0x2000FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++        { 0x200000000, 0x207FFFFFF, NCI_FOREGROUND, NCI_ALL_PERM, 0, },
+     };
+ 
+     struct apu_region_cfgs asni_rss_mm[] = {
+@@ -537,7 +537,7 @@ program_si_apu_runtime(struct ni710ae_discovery_tree_t* dis_tree,
+     };
+ 
+     struct apu_region_cfgs amni_sram_shrd[] = {
+-        { 0x200000000, 0x2000FFFFF, NCI_FOREGROUND, NCI_SEC_RW, 0, },
++        { 0x200000000, 0x207FFFFFF, NCI_FOREGROUND, NCI_ALL_PERM, 0, },
+     };
+ 
+     struct apu_cfgs apu_table[] = {
+-- 
+2.25.1
+

@@ -1,0 +1,39 @@
+From ab774fe019174a1ac9487b9437ea68a618ce14c4 Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Wed, 29 Nov 2023 11:40:37 +0000
+Subject: [PATCH] rss/kronos: Increment ITS number of assets
+
+The current number of assets for Internal Trusted Storage is
+not making use of all the available storage.
+
+Increase the number of assets so we are able to store more data.
+
+Upstream-Status: Pending
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ platform/ext/target/arm/rss/kronos/config_tfm_target.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/platform/ext/target/arm/rss/kronos/config_tfm_target.h b/platform/ext/target/arm/rss/kronos/config_tfm_target.h
+index 0c070b564..0b9030ad7 100644
+--- a/platform/ext/target/arm/rss/kronos/config_tfm_target.h
++++ b/platform/ext/target/arm/rss/kronos/config_tfm_target.h
+@@ -29,9 +29,15 @@
+ #define ATTEST_TOKEN_PROFILE_ARM_CCA           1
+ #endif
+ 
++/* The maximum number of assets to be stored in the Internal Trusted Storage area. */
++#undef ITS_NUM_ASSETS
++#define ITS_NUM_ASSETS                         20
++
++/* The maximum number of assets to be stored in the Protected Storage area. */
+ #undef PS_NUM_ASSETS
+ #define PS_NUM_ASSETS                          20
+ 
++/* Size of output buffer in platform service. */
+ #undef PLATFORM_SERVICE_OUTPUT_BUFFER_SIZE
+ #define PLATFORM_SERVICE_OUTPUT_BUFFER_SIZE    256
+ 
+-- 
+2.25.1
+

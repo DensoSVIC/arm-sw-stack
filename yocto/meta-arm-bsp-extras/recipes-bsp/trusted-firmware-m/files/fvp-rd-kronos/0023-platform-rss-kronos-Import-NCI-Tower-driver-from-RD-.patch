@@ -1,0 +1,1472 @@
+From 1e95c5e1c19301352fed9829a934b400d21472e3 Mon Sep 17 00:00:00 2001
+From: Henry Wang <Henry.Wang@arm.com>
+Date: Thu, 21 Sep 2023 14:03:02 +0800
+Subject: [PATCH] platform/rss/kronos: Import NCI-Tower driver from
+ RD-Fremont-928
+
+Port NCI-Tower driver from RD-Infra-928 release.
+
+Upstream-Status: Pending
+Signed-off-by: Henry Wang <Henry.Wang@arm.com>
+Signed-off-by: Wei Chen <wei.chen@arm.com>
+---
+ .../rss/common/native_drivers/tower_nci_drv.c | 174 +++---
+ .../rss/common/native_drivers/tower_nci_drv.h |  63 +-
+ .../rss/common/native_drivers/tower_nci_reg.h |  52 +-
+ .../ext/target/arm/rss/kronos/CMakeLists.txt  |   1 +
+ .../target/arm/rss/kronos/bl2/boot_hal_bl2.c  | 118 +++-
+ .../target/arm/rss/kronos/host_base_address.h |  13 +
+ .../ext/target/arm/rss/kronos/tower_nci_lib.c | 568 ++++++++++++++++++
+ .../ext/target/arm/rss/kronos/tower_nci_lib.h |  33 +
+ 8 files changed, 899 insertions(+), 123 deletions(-)
+ create mode 100644 platform/ext/target/arm/rss/kronos/tower_nci_lib.c
+ create mode 100644 platform/ext/target/arm/rss/kronos/tower_nci_lib.h
+
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/tower_nci_drv.c b/platform/ext/target/arm/rss/common/native_drivers/tower_nci_drv.c
+index 3f2d16691..fbe8150f0 100644
+--- a/platform/ext/target/arm/rss/common/native_drivers/tower_nci_drv.c
++++ b/platform/ext/target/arm/rss/common/native_drivers/tower_nci_drv.c
+@@ -10,11 +10,6 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ 
+-#define PSAM_REGION_SELECT(register, region) \
+-        *((&(register)) + ((0x10 * (region)) >> 2))
+-#define APU_REGION_SELECT(register, region) \
+-        (*((&(register)) + ((0x20 * (region)) >> 2)))
+-
+ #define TOWER_NCI_TYPE_IS_DOMAIN(type)                          \
+     ((type) == TOWER_NCI_CFGNI) || ((type) == TOWER_NCI_VD) ||  \
+     ((type) == TOWER_NCI_PD) || ((type) == TOWER_NCI_CD)
+@@ -51,7 +46,6 @@ typedef struct {
+                       sub_feature[];
+ }tower_nci_component_cfg_hdr;
+ 
+-
+ /*
+  * PSAM Programming
+  */
+@@ -65,15 +59,15 @@ enum tower_nci_err_t tower_nci_psam_nhregion_init(
+     }
+ 
+     // Set base address
+-    PSAM_REGION_SELECT(reg->nh_region_cfg0, region) = (base_addr & 0xFFFFF000);
+-    PSAM_REGION_SELECT(reg->nh_region_cfg1, region) = (base_addr >> 32);
++    reg->nh_region[region].cfg0 = (base_addr & 0xFFFFF000);
++    reg->nh_region[region].cfg1 = (base_addr >> 32);
+     // Set end address
+-    PSAM_REGION_SELECT(reg->nh_region_cfg2, region) = (end_addr & 0xFFFFF000);
+-    PSAM_REGION_SELECT(reg->nh_region_cfg3, region) = (end_addr >> 32);
++    reg->nh_region[region].cfg2 = (end_addr & 0xFFFFF000);
++    reg->nh_region[region].cfg3 = (end_addr >> 32);
+     // Set region valid.
+-    PSAM_REGION_SELECT(reg->nh_region_cfg0, region) |= 0x1;
++    reg->nh_region[region].cfg0 |= 0x1;
+     // Set ID for the Target interface.
+-    PSAM_REGION_SELECT(reg->nh_region_cfg2, region) |= target_id & 0x7F;
++    reg->nh_region[region].cfg2 |= target_id & 0x7F;
+ 
+     return TOWER_NCI_SUCCESS;
+ }
+@@ -98,7 +92,7 @@ enum tower_nci_err_t tower_nci_psam_enable(struct tower_nci_psam_dev_t *dev)
+         return TOWER_NCI_ERR_INVALID_ARG;
+     }
+ 
+-    reg->sam_status = 0x1;
++    reg->sam_status |= 0x1;
+ 
+     return TOWER_NCI_SUCCESS;
+ }
+@@ -110,7 +104,7 @@ enum tower_nci_err_t tower_nci_psam_disable(struct tower_nci_psam_dev_t *dev)
+         return TOWER_NCI_ERR_INVALID_ARG;
+     }
+ 
+-    reg->sam_status = 0x0;
++    reg->sam_status &= 0xFFE;
+ 
+     return TOWER_NCI_SUCCESS;
+ }
+@@ -128,11 +122,11 @@ enum tower_nci_err_t tower_nci_apu_set_addr_range(
+     }
+ 
+     // Set base address
+-    APU_REGION_SELECT(reg->prbar_h, region) = base_addr >> 32;
+-    APU_REGION_SELECT(reg->prbar_l, region) = (0xFFFFFFC0 & base_addr);
++    reg->region[region].prbar_h = base_addr >> 32;
++    reg->region[region].prbar_l = (0xFFFFFFC0 & base_addr);
+     // Set end address
+-    APU_REGION_SELECT(reg->prlar_h, region) = end_addr >> 32;
+-    APU_REGION_SELECT(reg->prlar_l, region) = (0xFFFFFFC0 & end_addr);
++    reg->region[region].prlar_h = end_addr >> 32;
++    reg->region[region].prlar_l = (0xFFFFFFC0 & end_addr);
+ 
+     return TOWER_NCI_SUCCESS;
+ }
+@@ -147,26 +141,26 @@ enum tower_nci_err_t tower_nci_apu_set_access_perms(
+     }
+ 
+     if (id_select & T_NCI_ID_0_SELECT) {
+-        APU_REGION_SELECT(reg->prid_l, region) =
+-                    (APU_REGION_SELECT(reg->prid_l, region) & 0xFFFF00FF) |
++        reg->region[region].prid_l =
++                    (reg->region[region].prid_l & 0xFFFF00FF) |
+                     ((permission << 8) & 0x0000FF00);
+     }
+ 
+     if (id_select & T_NCI_ID_1_SELECT) {
+-        APU_REGION_SELECT(reg->prid_l, region) =
+-                    (APU_REGION_SELECT(reg->prid_l, region) & 0x00FFFFFF) |
++        reg->region[region].prid_l =
++                    (reg->region[region].prid_l & 0x00FFFFFF) |
+                     ((permission << 24) & 0xFF000000);
+     }
+ 
+     if (id_select & T_NCI_ID_2_SELECT) {
+-        APU_REGION_SELECT(reg->prid_h, region) =
+-                    (APU_REGION_SELECT(reg->prid_h, region) & 0xFFFF00FF) |
++        reg->region[region].prid_h =
++                    (reg->region[region].prid_h & 0xFFFF00FF) |
+                     ((permission << 8) & 0x0000FF00);
+     }
+ 
+     if (id_select & T_NCI_ID_2_SELECT) {
+-        APU_REGION_SELECT(reg->prid_h, region) =
+-                    (APU_REGION_SELECT(reg->prid_h, region) & 0x00FFFFFF) |
++        reg->region[region].prid_h =
++                    (reg->region[region].prid_h & 0x00FFFFFF) |
+                     ((permission << 24) & 0xFF000000);
+     }
+ 
+@@ -181,7 +175,7 @@ enum tower_nci_err_t tower_nci_apu_set_lock(struct tower_nci_apu_dev_t *dev,
+         return TOWER_NCI_ERR_INVALID_ARG;
+     }
+ 
+-    APU_REGION_SELECT(reg->prbar_l, region) |= (0x4 & (lock << 2));
++    reg->region[region].prbar_l |= (0x4 & (lock << 2));
+ 
+     return TOWER_NCI_SUCCESS;
+ }
+@@ -194,7 +188,7 @@ enum tower_nci_err_t tower_nci_apu_set_br(struct tower_nci_apu_dev_t *dev,
+         return TOWER_NCI_ERR_INVALID_ARG;
+     }
+ 
+-    APU_REGION_SELECT(reg->prbar_l, region) |= (0x2 & (background << 1));
++    reg->region[region].prbar_l |= (0x2 & (background << 1));
+ 
+     return TOWER_NCI_SUCCESS;
+ }
+@@ -207,7 +201,7 @@ enum tower_nci_err_t tower_nci_apu_set_region_enable(
+         return TOWER_NCI_ERR_INVALID_ARG;
+     }
+ 
+-    APU_REGION_SELECT(reg->prbar_l, region) |= 0x1;
++    reg->region[region].prbar_l |= 0x1;
+ 
+     return TOWER_NCI_SUCCESS;
+ }
+@@ -220,7 +214,7 @@ enum tower_nci_err_t tower_nci_apu_set_id_valid(struct tower_nci_apu_dev_t *dev,
+         return TOWER_NCI_ERR_INVALID_ARG;
+     }
+ 
+-    APU_REGION_SELECT(reg->prlar_l, region) |= (0xF | valid);
++    reg->region[region].prlar_l |= (0xF & valid);
+ 
+     return TOWER_NCI_SUCCESS;
+ }
+@@ -259,26 +253,26 @@ enum tower_nci_err_t tower_nci_apu_assign_id(struct tower_nci_apu_dev_t *dev,
+     }
+ 
+     if (id_select & T_NCI_ID_0_SELECT) {
+-        APU_REGION_SELECT(reg->prid_l, region) =
+-                    (APU_REGION_SELECT(reg->prid_l, region) & 0xFFFFFF00) |
++        reg->region[region].prid_l =
++                    (reg->region[region].prid_l & 0xFFFFFF00) |
+                     (id_value & 0x000000FF);
+     }
+ 
+     if (id_select & T_NCI_ID_1_SELECT) {
+-        APU_REGION_SELECT(reg->prid_l, region) =
+-                    (APU_REGION_SELECT(reg->prid_l, region) & 0xFF00FFFF) |
++        reg->region[region].prid_l =
++                    (reg->region[region].prid_l & 0xFF00FFFF) |
+                     ((id_value << 16) & 0x00FF0000);
+     }
+ 
+     if (id_select & T_NCI_ID_2_SELECT) {
+-        APU_REGION_SELECT(reg->prid_h, region) =
+-                    (APU_REGION_SELECT(reg->prid_h, region) & 0xFFFFFF00) |
++        reg->region[region].prid_h =
++                    (reg->region[region].prid_h & 0xFFFFFF00) |
+                     (id_value & 0x000000FF);
+     }
+ 
+     if (id_select & T_NCI_ID_3_SELECT) {
+-        APU_REGION_SELECT(reg->prid_h, region) =
+-                    (APU_REGION_SELECT(reg->prid_h, region) & 0xFF00FFFF) |
++        reg->region[region].prid_h =
++                    (reg->region[region].prid_h & 0xFF00FFFF) |
+                     ((id_value << 16) & 0x00FF0000);
+     }
+ 
+@@ -288,10 +282,14 @@ enum tower_nci_err_t tower_nci_apu_assign_id(struct tower_nci_apu_dev_t *dev,
+ enum tower_nci_err_t tower_nci_apu_initialize_region(
+                         struct tower_nci_apu_dev_t *dev, uint32_t region,
+                         uint64_t base_addr, uint64_t end_addr,
+-                        enum tower_nci_apu_br_type_t background, uint32_t permission,
+-                        uint32_t id_select, uint32_t valid)
++                        enum tower_nci_apu_br_type_t background,
++                        uint32_t permissions[4], uint8_t entity_ids[4],
++                        uint32_t id_valid,
++                        enum tower_nci_apu_region_enable_type_t region_enable,
++                        enum tower_nci_apu_lock_type_t lock)
+ {
+     enum tower_nci_err_t err;
++    uint32_t id_idx, id_select;
+ 
+     if (dev == NULL) {
+         return TOWER_NCI_ERR_INVALID_ARG;
+@@ -307,16 +305,44 @@ enum tower_nci_err_t tower_nci_apu_initialize_region(
+         return err;
+     }
+ 
+-    err = tower_nci_apu_set_id_valid(dev, region, valid);
++    err = tower_nci_apu_set_id_valid(dev, region, id_valid);
+     if (err != TOWER_NCI_SUCCESS) {
+         return err;
+     }
+ 
+-    err = tower_nci_apu_set_access_perms(dev, region, permission, id_select);
+-    if (err != TOWER_NCI_SUCCESS) {
+-        return err;
++    for (id_idx = 0; id_idx < 4; ++id_idx) {
++        switch (id_idx)
++        {
++        case 0: id_select = T_NCI_ID_0_SELECT; break;
++        case 1: id_select = T_NCI_ID_1_SELECT; break;
++        case 2: id_select = T_NCI_ID_2_SELECT; break;
++        case 3: id_select = T_NCI_ID_3_SELECT; break;
++        }
++
++        err = tower_nci_apu_set_access_perms(dev, region, permissions[id_idx],
++                                             id_select);
++        if (err != TOWER_NCI_SUCCESS) {
++            return err;
++        }
++
++        err = tower_nci_apu_assign_id(dev, region, entity_ids[id_idx],
++                                      id_select);
++        if (err != TOWER_NCI_SUCCESS) {
++            return err;
++        }
++    }
++
++    if (region_enable = T_NCI_REGION_ENABLE) {
++        err = tower_nci_apu_set_region_enable(dev, region);
++        if (err != TOWER_NCI_SUCCESS) {
++            return 1;
++        }
+     }
+ 
++    err = tower_nci_apu_set_lock(dev, region, lock);
++    if (err != TOWER_NCI_SUCCESS) {
++        return 1;
++    }
+     return TOWER_NCI_SUCCESS;
+ }
+ 
+@@ -326,8 +352,11 @@ enum tower_nci_err_t tower_nci_apu_initialize_region(
+ void print(struct tower_nci_discovery_tree_t *node, int tab) {
+     if(node == NULL)
+         return;
++
++    print(node->sibling, tab);
++
+     for (int i = 0; i < tab; ++i) {
+-        printf("  ");
++        printf("\t");
+     }
+     switch(node->type) {
+         case TOWER_NCI_CFGNI: printf("CFGNI"); break;
+@@ -342,19 +371,23 @@ void print(struct tower_nci_discovery_tree_t *node, int tab) {
+         case TOWER_NCI_PMNI: printf("PMNI"); break;
+         case TOWER_NCI_PSAM: printf("PSAM"); break;
+         case TOWER_NCI_APU: printf("APU"); break;
++        case TOWER_NCI_FCU: printf("FCU"); break;
++        case TOWER_NCI_IDM: printf("IDM"); break;
++        case TOWER_NCI_FMU: printf("FMU"); break;
+     }
+-    printf(" -> %lx addr: %lx\r\n", (uint32_t)node->id, (uint32_t)node->address);
++    printf("[%d] -> 0x%lx\r\n", (uint32_t)node->id, (uint32_t)node->address);
+ 
+     print(node->child, tab+1);
+-    print(node->sibling, tab);
+ }
+ #endif
+ 
+ /*
+  * Tower NCI Discovery
+  */
+-enum tower_nci_err_t tower_nci_discovery(struct tower_nci_discovery_tree_t *cfg_node,
+-                                         const uint32_t periph_base)
++enum tower_nci_err_t tower_nci_discovery(
++                    struct tower_nci_discovery_tree_t *cfg_node,
++                    const uint32_t periph_base,
++                    uint8_t (*pruning_function)(uint16_t, uint16_t, uint16_t))
+ {
+     uint16_t type = 0, id = 0;
+     uint32_t address, child_count, c_idx = 0;
+@@ -365,25 +398,20 @@ enum tower_nci_err_t tower_nci_discovery(struct tower_nci_discovery_tree_t *cfg_
+ 
+     enum tower_nci_err_t err;
+ 
+-    /* TODO:
+-     *  The following checks for the FMU component and skips addition of FMU
+-     *  node to the discovery tree.
+-     *
+-     *  Currently, FVP has a bug while reading the offset at 0xFFE0 - faults out
+-     *  while reading the value. Once this issue debugged when can enable this
+-     *  check.
+-     */
+-    // if((cfg_node->type != TOWER_NCI_CFGNI) &&
+-    //    (*(uint32_t *)(hdr_base + 0xFFE0) != 0)) {
+-    //     /* Skipping FMUs */
+-    //     return TOWER_NCI_SUCCESS;
+-    // }
++    /* FMU check requires Tower NCI's config node granularity to be 64KB */
++    if((cfg_node->type != TOWER_NCI_CFGNI) &&
++       (*(uint32_t *)(hdr_base + 0xFFE0) != 0)) {
++        cfg_node->type = TOWER_NCI_FMU;
++        cfg_node->id = 0;
++        return TOWER_NCI_SUCCESS;
++    }
+ 
++    /* Fetch number of children */
+     if (TOWER_NCI_TYPE_IS_DOMAIN(cfg_node->type)) {
+         child_count = ((tower_nci_domain_cfg_hdr *)(hdr_base))->child_node_info;
+     } else if (TOWER_NCI_TYPE_IS_COMPONENT(cfg_node->type)) {
+         if (cfg_node == TOWER_NCI_PMU) {
+-            // PMU doesn't have children
++            /* Skipping because PMU doesn't have children */
+             return TOWER_NCI_SUCCESS;
+         }
+         child_count = ((tower_nci_component_cfg_hdr *)(hdr_base))->
+@@ -395,6 +423,11 @@ enum tower_nci_err_t tower_nci_discovery(struct tower_nci_discovery_tree_t *cfg_
+     }
+ 
+     for(; c_idx < child_count; ++c_idx) {
++        /* Skip discovering node based on the pruning function */
++        if ((*pruning_function)(cfg_node->type, cfg_node->id, c_idx) != 0) {
++            return TOWER_NCI_SUCCESS;
++        }
++
+         if (TOWER_NCI_TYPE_IS_DOMAIN(cfg_node->type)) {
+             address = ((tower_nci_domain_cfg_hdr *)hdr_base)->x_pointers[c_idx];
+             tower_nci_domain_cfg_hdr *child_hdr = periph_base + address;
+@@ -405,14 +438,14 @@ enum tower_nci_err_t tower_nci_discovery(struct tower_nci_discovery_tree_t *cfg_
+                                                             cfg_node->address;
+             address = child_hdr->sub_feature[c_idx].pointer;
+             switch(child_hdr->sub_feature[c_idx].type) {
+-                case 0x0: type = TOWER_NCI_APU; break;
+-                case 0x1: type = TOWER_NCI_PSAM; break;
+-                case 0x2: type = TOWER_NCI_FCU; break;
+-                case 0x3: type = TOWER_NCI_IDM; break;
+-                default: return TOWER_NCI_ERR;
++            case 0x0: type = TOWER_NCI_APU; break;
++            case 0x1: type = TOWER_NCI_PSAM; break;
++            case 0x2: type = TOWER_NCI_FCU; break;
++            case 0x3: type = TOWER_NCI_IDM; break;
++            default: return TOWER_NCI_ERR;
+             }
++            id = cfg_node->id;
+         }
+-
+         node = calloc(sizeof(struct tower_nci_discovery_tree_t), 1);
+ 
+         memcpy(node,
+@@ -426,12 +459,11 @@ enum tower_nci_err_t tower_nci_discovery(struct tower_nci_discovery_tree_t *cfg_
+         cfg_node->children++;
+         sibling = node;
+ 
+-        err = tower_nci_discovery(node, periph_base);
++        err = tower_nci_discovery(node, periph_base, pruning_function);
+         if (err != TOWER_NCI_SUCCESS) {
+             return err;
+         }
+     }
+-
+ //Todo: Remove print call
+ #ifdef PRINT_TOWER_NCI_TREE
+     if(cfg_node->type == 0) print(cfg_node, 0);
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/tower_nci_drv.h b/platform/ext/target/arm/rss/common/native_drivers/tower_nci_drv.h
+index 4fe502e40..1c3bef1a0 100644
+--- a/platform/ext/target/arm/rss/common/native_drivers/tower_nci_drv.h
++++ b/platform/ext/target/arm/rss/common/native_drivers/tower_nci_drv.h
+@@ -41,9 +41,7 @@ struct tower_nci_dev_t {
+     void *const base;
+ };
+ 
+-/**
+- * \brief Tower NCI Discovery tree structure
+- */
++/*  Tower NCI Discovery tree structure */
+ struct tower_nci_discovery_tree_t {
+     uint16_t type;
+     uint16_t id;
+@@ -54,6 +52,14 @@ struct tower_nci_discovery_tree_t {
+     struct tower_nci_discovery_tree_t *sibling;
+ };
+ 
++/**
++ * \brief Tower NCI Discovery prune node structure
++ */
++struct tower_nci_prune_node_t {
++    uint16_t type;
++    uint16_t id;
++};
++
+ /**
+  * \brief Tower NCI node type enumerations
+  */
+@@ -70,11 +76,13 @@ enum tower_nci_node_type_t {
+     TOWER_NCI_HSNI,
+     TOWER_NCI_HMNI,
+     TOWER_NCI_PMNI,
+-    // Sub-features
++    // Sub-features - Implementation defined
+     TOWER_NCI_PSAM,
+     TOWER_NCI_APU,
+     TOWER_NCI_FCU,
+-    TOWER_NCI_IDM
++    TOWER_NCI_IDM,
++    // FMU - Implementation defined
++    TOWER_NCI_FMU
+ };
+ 
+ /**
+@@ -130,12 +138,13 @@ enum tower_nci_apu_entity_valid_type_t {
+     T_NCI_ID_1_VALID = 0b0010,
+     T_NCI_ID_2_VALID = 0b0100,
+     T_NCI_ID_3_VALID = 0b1000,
+-    T_NCI_VALID_ALL_IDS = T_NCI_ID_0_VALID | T_NCI_ID_1_VALID |
+-                          T_NCI_ID_2_VALID | T_NCI_ID_3_VALID
++    T_NCI_ID_VALID_ALL = T_NCI_ID_0_VALID | T_NCI_ID_1_VALID |
++                         T_NCI_ID_2_VALID | T_NCI_ID_3_VALID,
++    T_NCI_ID_VALID_NONE = 0,
+ };
+ 
+ /**
+- * \brief Tower NCI APU lcok type enumerations
++ * \brief Tower NCI APU lock type enumerations
+  */
+ enum tower_nci_apu_lock_type_t {
+     /* program specific values */
+@@ -143,6 +152,15 @@ enum tower_nci_apu_lock_type_t {
+     T_NCI_LOCK = 0x1,
+ };
+ 
++/**
++ * \brief Tower NCI APU region enable type enumerations
++ */
++enum tower_nci_apu_region_enable_type_t {
++    /* program specific values */
++    T_NCI_REGION_DISABLE = 0x0,
++    T_NCI_REGION_ENABLE = 0x1,
++};
++
+ /**
+  * \brief Initialize non-stripped region.
+  *
+@@ -307,13 +325,14 @@ enum tower_nci_err_t tower_nci_apu_assign_id(struct tower_nci_apu_dev_t *dev,
+  * \param[in] end_addr      End address of the region
+  * \param[in] background    Specify if the region is backgroun or a foreground
+  *                          region \ref tower_nci_apu_br_type_t
+- * \param[in] permission    Or'ing of required access permissions
++ * \param[in] permissions   Array of Or'ed access permissions for all entity
+  *                          \ref tower_nci_apu_access_perm_type_t
+- * \param[in] id_select     Or'ing of entity id's where these permission needs
+- *                          to be applied \ref tower_nci_apu_entity_type_t
++ * \param[in] entity_ids    Array of entity ids
++ * \param[in] id_valid      Or'ing of entity id's where these ids are valid
++ *                          \ref tower_nci_apu_entity_valid_type_t
++ * \param[in] region_enable Specify if the region needs to be enabled or not.
++ *                          \ref tower_nci_apu_region_enable_type_t
+  * \param[in] lock          Lock or Unlock an APU region \ref tower_nci_apu_lock_type_t
+- * \param[in] valid         Or'ing of entity id's where these ids are valid
+- *                          \ref tower_nci_apu_entity_type_t
+  *
+  * \return Returns error code as specified in \ref tower_nci_err_t
+  */
+@@ -321,20 +340,26 @@ enum tower_nci_err_t tower_nci_apu_initialize_region(
+                         struct tower_nci_apu_dev_t *dev, uint32_t region,
+                         uint64_t base_addr, uint64_t end_addr,
+                         enum tower_nci_apu_br_type_t background,
+-                        uint32_t permission, uint32_t id_select,
+-                        uint32_t valid);
++                        uint32_t permissions[4], uint8_t entity_ids[4],
++                        uint32_t id_valid,
++                        enum tower_nci_apu_region_enable_type_t region_enable,
++                        enum tower_nci_apu_lock_type_t lock);
+ 
+ /**
+  * \brief Executes Tower NCI discovery flow
+  *
+- * \param[in] cfg_node      Tower NCI Discovery struct \ref tower_nci_discovery_tree_t
+- * \param[in] periph_base   Tower NCI base address, same as CFGNI0 address
++ * \param[in] cfg_node          Tower NCI Discovery struct \ref tower_nci_discovery_tree_t
++ * \param[in] periph_base       Tower NCI base address, same as CFGNI0 address
++ * \param[in] pruning_function  Pointer to pruning callback function. Takes node type and
++ *                              node id respectively. Should return 1 to skip the node
++ *                              discovery, else 0
+  *
+  * \return Returns error code as specified in \ref tower_nci_err_t
+  */
+ enum tower_nci_err_t tower_nci_discovery(
+-                        struct tower_nci_discovery_tree_t *cfg_node,
+-                        const uint32_t periph_base);
++                    struct tower_nci_discovery_tree_t *cfg_node,
++                    const uint32_t periph_base,
++                    uint8_t (*pruning_function)(uint16_t, uint16_t, uint16_t));
+ 
+ /**
+  * \brief Fetches sub-feature base address based on the parent component ID and
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/tower_nci_reg.h b/platform/ext/target/arm/rss/common/native_drivers/tower_nci_reg.h
+index ce625e881..a61b9cd77 100644
+--- a/platform/ext/target/arm/rss/common/native_drivers/tower_nci_reg.h
++++ b/platform/ext/target/arm/rss/common/native_drivers/tower_nci_reg.h
+@@ -16,43 +16,47 @@
+ struct tower_nci_psam_reg_map_t {
+     volatile uint32_t sam_unit_info;
+     volatile uint32_t sam_status;
+-             uint32_t reserved__0[2];
++             uint32_t reserved_0[2];
+     volatile uint32_t htg_addr_mask_l;
+     volatile uint32_t htg_addr_mask_u;
+     volatile uint32_t axid_mask;
+-             uint32_t reserved_0;
++             uint32_t reserved_1;
+     volatile uint32_t cmp_addr_mask_l;
+     volatile uint32_t cmp_addr_mask_u;
+-             uint32_t reserved_1[2];
++             uint32_t reserved_2[2];
+     volatile uint32_t generic_config_reg0;
+     volatile uint32_t generic_config_reg1;
+-             uint32_t reserved_2[50];
+-    volatile uint32_t nh_region_cfg0;
+-    volatile uint32_t nh_region_cfg1;
+-    volatile uint32_t nh_region_cfg2;
+-    volatile uint32_t nh_region_cfg3;
+-             uint32_t reserved_3[508];
+-    volatile uint32_t htg_region_cfg0;
+-    volatile uint32_t htg_region_cfg1;
+-    volatile uint32_t htg_region_cfg2;
+-    volatile uint32_t htg_region_cfg3;
+-             uint32_t reserved_4[124];
+-    volatile uint32_t htg_tgtid_cfg;
+-             uint32_t reserved_5[127];
+-    volatile uint32_t np2_top_addr_cfg;
++             uint32_t reserved_3[50];
++    struct {
++        volatile uint32_t cfg0;
++        volatile uint32_t cfg1;
++        volatile uint32_t cfg2;
++        volatile uint32_t cfg3;
++    } nh_region[128];
++    struct {
++        volatile uint32_t cfg0;
++        volatile uint32_t cfg1;
++        volatile uint32_t cfg2;
++        volatile uint32_t cfg3;
++    } htg_region[32];
++    volatile uint32_t htg_tgtid_cfg[32];
++    volatile uint32_t np2_top_addr_cfg[32];
+ };
+ 
+ /**
+  * \brief Tower NCI APU register map
+  */
+ struct tower_nci_apu_reg_map_t {
+-    volatile uint32_t prbar_l;
+-    volatile uint32_t prbar_h;
+-    volatile uint32_t prlar_l;
+-    volatile uint32_t prlar_h;
+-    volatile uint32_t prid_l;
+-    volatile uint32_t prid_h;
+-             uint32_t reserved_1[1016];
++    struct {
++        volatile uint32_t prbar_l;
++        volatile uint32_t prbar_h;
++        volatile uint32_t prlar_l;
++        volatile uint32_t prlar_h;
++        volatile uint32_t prid_l;
++        volatile uint32_t prid_h;
++        volatile uint32_t reserved_0[2];
++    } region[32];
++    volatile uint32_t reserved_1[766];
+     volatile uint32_t apu_ctlr;
+     volatile uint32_t apu_iidr;
+ };
+diff --git a/platform/ext/target/arm/rss/kronos/CMakeLists.txt b/platform/ext/target/arm/rss/kronos/CMakeLists.txt
+index a087bd93d..428a647d9 100644
+--- a/platform/ext/target/arm/rss/kronos/CMakeLists.txt
++++ b/platform/ext/target/arm/rss/kronos/CMakeLists.txt
+@@ -109,6 +109,7 @@ target_sources(platform_bl2
+         ${CMAKE_CURRENT_LIST_DIR}/../common/mscp_mailbox.c
+         ${PLATFORM_DIR}/ext/target/arm/drivers/usart/pl011/uart_pl011_drv.c
+         tfm_interrupts.c
++        tower_nci_lib.c
+         fainlight_gic_lib.c
+         ${PLATFORM_DIR}/ext/target/arm/drivers/flash/strata/spi_strataflashj3_flash_lib.c
+ )
+diff --git a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+index 568513884..d3d3adfff 100644
+--- a/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
++++ b/platform/ext/target/arm/rss/kronos/bl2/boot_hal_bl2.c
+@@ -27,6 +27,7 @@
+ #include "size_defs.h"
+ #include "tfm_boot_status.h"
+ #include "tfm_plat_defs.h"
++#include "tower_nci_lib.h"
+ #include "fainlight_gic_lib.h"
+ #ifdef CRYPTO_HW_ACCELERATOR
+ #include "crypto_hw.h"
+@@ -234,12 +235,105 @@ free_atu:
+     return 0;
+ }
+ 
++int32_t tower_nci_sysctrl_init(void)
++{
++    enum atu_error_t atu_err;
++    enum atu_roba_t roba_value;
++    uint32_t err;
++
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_SYSCTRL_TOWER_NCI_ATU_ID,
++                                    HOST_SYSCTRL_TOWER_NCI_BASE,
++                                    (HOST_REMOTE_CHIP_PERIPH_OFFSET(chip_id) +
++                                     HOST_SYSCTRL_TOWER_NCI_PHYS_BASE),
++                                    HOST_SYSCTRL_TOWER_NCI_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    roba_value = ATU_ROBA_SET_0;
++    atu_err = set_axnsc(&ATU_DEV_S, roba_value, HOST_SYSCTRL_TOWER_NCI_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        BOOT_LOG_INF("BL2: Unable to modify AxNSE");
++        return atu_err;
++    }
++
++    roba_value = ATU_ROBA_SET_0;
++    atu_err = set_axprot1(&ATU_DEV_S, roba_value, HOST_SYSCTRL_TOWER_NCI_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        BOOT_LOG_INF("BL2: Unable to modify AxPROT1");
++        return atu_err;
++    }
++
++    err = program_sysctrl_tower_nci(HOST_SYSCTRL_TOWER_NCI_BASE,
++                                    HOST_REMOTE_CHIP_PERIPH_OFFSET(chip_id));
++    if (err != 0) {
++        BOOT_LOG_INF("BL2: Error programming System Control Tower NCI");
++        return 1;
++    }
++
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_SYSCTRL_TOWER_NCI_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    return 0;
++}
++
++int32_t tower_nci_periph_init(void) {
++    enum atu_error_t atu_err;
++    enum atu_roba_t roba_value;
++    uint32_t err;
++
++    atu_err = atu_initialize_region(&ATU_DEV_S,
++                                    HOST_PERIPH_TOWER_NCI_ATU_ID,
++                                    HOST_PERIPH_TOWER_NCI_BASE,
++                                    (HOST_REMOTE_CHIP_PERIPH_OFFSET(chip_id) +
++                                     HOST_PERIPH_TOWER_NCI_PHYS_BASE),
++                                    HOST_PERIPH_TOWER_NCI_SIZE);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    roba_value = ATU_ROBA_SET_0;
++    atu_err = set_axnsc(&ATU_DEV_S, roba_value, HOST_PERIPH_TOWER_NCI_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        BOOT_LOG_INF("BL2: Unable to modify AxNSE");
++        return atu_err;
++    }
++
++    roba_value = ATU_ROBA_SET_0;
++    atu_err = set_axprot1(&ATU_DEV_S, roba_value, HOST_PERIPH_TOWER_NCI_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        BOOT_LOG_INF("BL2: Unable to modify AxPROT1");
++        return atu_err;
++    }
++
++    err = program_periph_tower_nci(HOST_PERIPH_TOWER_NCI_BASE);
++    if (err != 0) {
++        BOOT_LOG_INF("BL2: Error programming Periph Tower NCI");
++        return 1;
++    }
++
++    atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_PERIPH_TOWER_NCI_ATU_ID);
++    if (atu_err != ATU_ERR_NONE) {
++        return 1;
++    }
++
++    return 0;
++}
++
+ int32_t boot_platform_init(void)
+ {
+     int32_t result;
+ 
+     read_chip_id();
+ 
++    result = tower_nci_sysctrl_init();
++    if (result != ARM_DRIVER_OK) {
++        return 1;
++    }
++
+     result = gic_multiple_view_init();
+     if (result != ARM_DRIVER_OK) {
+         return 1;
+@@ -652,7 +746,7 @@ static int boot_platform_post_load_scp(void)
+     /* Clear the header from the header region but avoid removing anything that
+      * the region may be incidentally overlapping.
+      */
+-    memset(HOST_SCP_IMG_BASE_S, 0, BL2_HEADER_SIZE);
++    memset((void *)HOST_SCP_IMG_BASE_S, 0, BL2_HEADER_SIZE);
+ 
+     scp_init->cpuwait = 0x1;
+     scp_init->cpuwait = 0x0;
+@@ -706,8 +800,14 @@ static int boot_platform_pre_load_lcp(void)
+         }
+     }
+ 
++    /* Perform Peripheral Block Tower NCI programming */
++    err = tower_nci_periph_init();
++    if (err != 0) {
++        return 1;
++    }
++
+     /* Intialize LCP boot measurements */
+-    lcp_measurement = calloc(PSA_HASH_LENGTH(MEASURED_BOOT_HASH_ALG),
++    lcp_measurement = (void *)calloc(PSA_HASH_LENGTH(MEASURED_BOOT_HASH_ALG),
+                             sizeof(uint8_t));
+     lcp_measurement_metadata =
+             calloc(1, sizeof(struct boot_measurement_metadata));
+@@ -754,7 +854,7 @@ static int boot_platform_post_load_lcp(void)
+     /* Clear the header from the header region but avoid removing anything that
+      * the region may be incidentally overlapping.
+      */
+-    memset(HOST_LCP_IMG_BASE_S, 0, BL2_HEADER_SIZE);
++    memset((void *)HOST_LCP_IMG_BASE_S, 0, BL2_HEADER_SIZE);
+ 
+     /* Close RSS ATU region configured to access LCP SRAM code region */
+     atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_LCP_IMG_CODE_ATU_ID);
+@@ -780,7 +880,7 @@ static int boot_platform_post_load_lcp(void)
+ 
+         /* Cleaning 'rsp' to avoid accidentally loading
+          * the NS image in case of a fault injection attack. */
+-        memset(&rsp, 0, sizeof(struct boot_rsp));
++        memset((void *)&rsp, 0, sizeof(struct boot_rsp));
+ 
+         FIH_CALL(boot_go_for_image_id, fih_rc, &rsp, RSS_FIRMWARE_LCP_ID);
+         if (FIH_NOT_EQ(fih_rc, FIH_SUCCESS)) {
+@@ -791,7 +891,7 @@ static int boot_platform_post_load_lcp(void)
+         /* Clear the header from the header region but avoid removing anything that
+          * the region may be incidentally overlapping.
+          */
+-        memset(HOST_LCP_IMG_BASE_S, 0, BL2_HEADER_SIZE);
++        memset((void *)HOST_LCP_IMG_BASE_S, 0, BL2_HEADER_SIZE);
+ 
+         /* Close RSS ATU region configured to access LCP SRAM code region */
+         atu_err = atu_uninitialize_region(&ATU_DEV_S, HOST_LCP_IMG_CODE_ATU_ID);
+@@ -869,7 +969,7 @@ static int boot_platform_post_load_ap_bl2(void)
+     /* Clear the header from the header region but avoid removing anything that
+      * the region may be incidentally overlapping.
+      */
+-    memset(HOST_AP_BL2_IMG_BASE_S, 0, BL2_HEADER_SIZE);
++    memset((void *)HOST_AP_BL2_IMG_BASE_S, 0, BL2_HEADER_SIZE);
+ 
+     /*
+      * Send doorbell to SCP to indicate that the RSS initialization is
+@@ -944,7 +1044,7 @@ static int boot_platform_post_load_si_cl0(void)
+     /* Clear the header from the header region but avoid removing anything that
+      * the region may be incidentally overlapping.
+      */
+-    memset(HOST_SI_CL0_IMG_BASE_S, 0, BL2_HEADER_SIZE);
++    memset((void *)HOST_SI_CL0_IMG_BASE_S, 0, BL2_HEADER_SIZE);
+     /*
+      * Send doorbell to SCP to indicate that the RSS initialization is
+      * complete and that the SCP can release safety island cluster0
+@@ -1019,7 +1119,7 @@ static int boot_platform_post_load_si_cl1(void)
+     /* Clear the header from the header region but avoid removing anything that
+      * the region may be incidentally overlapping.
+      */
+-    memset(HOST_SI_CL1_IMG_BASE_S, 0, BL2_HEADER_SIZE);
++    memset((void *)HOST_SI_CL1_IMG_BASE_S, 0, BL2_HEADER_SIZE);
+     /*
+      * Send doorbell to SCP to indicate that the RSS initialization is
+      * complete and that the SCP can release safety island cluster1
+@@ -1094,7 +1194,7 @@ static int boot_platform_post_load_si_cl2(void)
+     /* Clear the header from the header region but avoid removing anything that
+      * the region may be incidentally overlapping.
+      */
+-    memset(HOST_SI_CL2_IMG_BASE_S, 0, BL2_HEADER_SIZE);
++    memset((void *)HOST_SI_CL2_IMG_BASE_S, 0, BL2_HEADER_SIZE);
+     /*
+      * Send doorbell to SCP to indicate that the RSS initialization is
+      * complete and that the SCP can release safety island cluster2
+diff --git a/platform/ext/target/arm/rss/kronos/host_base_address.h b/platform/ext/target/arm/rss/kronos/host_base_address.h
+index fb4105f38..976f9d6ad 100644
+--- a/platform/ext/target/arm/rss/kronos/host_base_address.h
++++ b/platform/ext/target/arm/rss/kronos/host_base_address.h
+@@ -56,6 +56,7 @@
+                                                */
+ /* ID to use for region mapping to GIC fainlight MMIO pages. */
+ #define RSS_ATU_FAINLIGHT_GIC_ID        10
++#define RSS_ATU_TOWER_NCI_ID            12
+ 
+ /* The ATU has a minimum size and all regions are restricted to align with it */
+ #define RSS_ATU_PAGE_SIZE           0x2000U /* 8KB */
+@@ -251,6 +252,18 @@
+ #define HOST_SCP_RSS_MAILBOX_ATU_SIZE ALIGN_UP(0x2000, RSS_ATU_PAGE_SIZE)
+ #define HOST_SCP_RSS_MAILBOX_ATU_ID RSS_ATU_SCP_RSS_MAILBOX_ATU_ID
+ 
++/* ATU region mapping to access System Control Tower NCI */
++#define HOST_SYSCTRL_TOWER_NCI_BASE         (HOST_SCP_RSS_MAILBOX_BASE_S + HOST_SCP_RSS_MAILBOX_ATU_SIZE)
++#define HOST_SYSCTRL_TOWER_NCI_PHYS_BASE    0x000020000000ULL
++#define HOST_SYSCTRL_TOWER_NCI_SIZE         0x1000000
++#define HOST_SYSCTRL_TOWER_NCI_ATU_ID       RSS_ATU_TOWER_NCI_ID
++
++/* ATU region mapping to access Peripheral Block Tower NCI */
++#define HOST_PERIPH_TOWER_NCI_BASE         HOST_ACCESS_BASE_NS
++#define HOST_PERIPH_TOWER_NCI_PHYS_BASE    0x000022000000ULL
++#define HOST_PERIPH_TOWER_NCI_SIZE         0x1000000
++#define HOST_PERIPH_TOWER_NCI_ATU_ID       RSS_ATU_TOWER_NCI_ID
++
+ /*
+  * ATU region for AP<->RSS MHU outband message buffer
+  * HOST_AP_RSS_MAILBOX_BASE_S: Logical address at which the RSS should access
+diff --git a/platform/ext/target/arm/rss/kronos/tower_nci_lib.c b/platform/ext/target/arm/rss/kronos/tower_nci_lib.c
+new file mode 100644
+index 000000000..c2686425e
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/tower_nci_lib.c
+@@ -0,0 +1,568 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++#include "bootutil/bootutil_log.h"
++#include "tower_nci_drv.h"
++#include "tower_nci_lib.h"
++#include "host_device_definition.h"
++
++#include <stddef.h>
++
++#define PSAM_TUPLE(cfg, type, id)                                           \
++    {                                                                       \
++        .sam = {.base = nci_addr + tower_nci_fetch_offset_address(dis_tree, \
++                                            type, id, TOWER_NCI_PSAM) },    \
++        .nh_region_count = sizeof(cfg) / sizeof(struct psam_region_cfgs),   \
++        .regions = cfg,                                                     \
++    }
++
++#define APU_TUPLE(cfg, type, id)                                            \
++    {                                                                       \
++        .apu = {.base = nci_addr + tower_nci_fetch_offset_address(dis_tree, \
++                                            type, id, TOWER_NCI_APU) },     \
++        .region_count = sizeof(cfg) / sizeof(struct apu_region_cfgs),       \
++        .regions = cfg,                                                     \
++    }
++
++/* Interface ID of xSNI components */
++enum sysctrl_xSNI_ids {
++    SYSCTRL_APP_ASNI_ID = 0x0,
++    SYSCTRL_LCP_ASNI_ID,
++    SYSCTRL_MCP_ASNI_ID,
++    SYSCTRL_RSS_MAIN_ASNI_ID,
++    SYSCTRL_RSS_SCP_ASNI_ID,
++    SYSCTRL_SCP_ASNI_ID
++};
++
++/* Interface ID of xMNI components */
++enum sysctrl_xMNI_ids {
++    SYSCTRL_APP_AMNI_ID = 0x0,
++    SYSCTRL_APP_MCP_AMNI_ID,
++    SYSCTRL_APP_SCP_AMNI_ID,
++    SYSCTRL_LCP_AMNI_ID,
++    SYSCTRL_LCP_SCP_AMNI_ID,
++    SYSCTRL_RSM_AMNI_ID,
++    SYSCTRL_RSS_MCP_AMNI_ID,
++    SYSCTRL_RSS_SCP_AMNI_ID,
++    SYSCTRL_CMN_PMNI_ID,
++    SYSCTRL_RSM_PMNI_ID,
++    SYSCTRL_TCU_PMNI_ID,
++
++    SYSCTRL_CONFIG_SPACE_ID = 0xF
++};
++
++/* APU IDs of the initiator for filter access */
++enum sysctrl_apu_filter_ids {
++    SYSCTRL_MCP_APU_ID = 0x3C,
++    SYSCTRL_SCP_APU_ID = 0x3D,
++    SYSCTRL_RSS_APU_ID = 0x3E,
++    SYSCTRL_DAP_APU_ID = 0x3F,
++};
++
++/* Interface ID of Peripheral xMNI components */
++enum periph_xMNI_ids {
++    PERIPH_RAM_AMNI_ID = 0x0,
++    PERIPH_ECCREG_PMNI_ID,
++    PERIPH_GTIMERCTRL_PMNI_ID,
++    PERIPH_NSGENWDOG_PMNI_ID,
++    PERIPH_NSGTIMER_PMNI_ID,
++    PERIPH_NSUART0_PMNI_ID,
++    PERIPH_NSUART1_PMNI_ID,
++    PERIPH_ROOTGENWDOG_PMNI_ID,
++    PERIPH_SECGENWDOG_PMNI_ID,
++    PERIPH_SECGTIMER_PMNI_ID,
++    PERIPH_SECUART_PMNI_ID
++};
++
++/* PSAM region config structure */
++struct psam_region_cfgs {
++    uint64_t base_addr;
++    uint64_t end_addr;
++    uint64_t tgt_id;
++    uint64_t region;
++};
++
++/* APU region config structure */
++struct apu_region_cfgs {
++    uint64_t base_addr;
++    uint64_t end_addr;
++    uint32_t br;
++    uint32_t perms;
++    uint32_t region;
++};
++
++/* PSAM config structure */
++struct psam_cfgs {
++    struct tower_nci_psam_dev_t sam;
++    int nh_region_count;
++    struct psam_region_cfgs* regions;
++};
++
++/* PSAM config structure */
++struct apu_cfgs {
++    struct tower_nci_apu_dev_t apu;
++    int region_count;
++    struct apu_region_cfgs* regions;
++};
++
++uint32_t program_psam_table(struct psam_cfgs psam_table[], int psam_table_count)
++{
++    enum tower_nci_err_t err = 0;
++    struct psam_region_cfgs* r_map;
++    uint32_t p_idx, r_idx;
++
++    for (p_idx = 0; p_idx < psam_table_count; ++p_idx) {
++        for (r_idx = 0; r_idx < psam_table[p_idx].nh_region_count; ++r_idx) {
++            r_map = &psam_table[p_idx].regions[r_idx];
++            err = tower_nci_psam_nhregion_init(&psam_table[p_idx].sam,
++                                               r_map->base_addr,
++                                               r_map->end_addr, r_map->tgt_id,
++                                               r_map->region);
++            if (err != TOWER_NCI_SUCCESS) {
++                return 1;
++            }
++        }
++    }
++
++    for (p_idx = 0; p_idx < psam_table_count; ++p_idx) {
++        err = tower_nci_psam_enable(&psam_table[p_idx].sam);
++        if (err != TOWER_NCI_SUCCESS) {
++            return 1;
++        }
++    }
++
++    return err;
++}
++
++uint32_t program_apu_table(struct apu_cfgs apu_table[], int apu_table_count)
++{
++    enum tower_nci_err_t err = 0;
++    struct apu_region_cfgs* r_map;
++    uint32_t a_idx, r_idx, id_idx;
++    uint8_t entity_ids[4] = { 0, 0, 0, 0 };
++
++    for (a_idx = 0; a_idx < apu_table_count; ++a_idx) {
++        for (r_idx = 0; r_idx < apu_table[a_idx].region_count; ++r_idx) {
++            r_map = &apu_table[a_idx].regions[r_idx];
++            uint32_t permissions[4] = { r_map->perms, 0, 0, 0 };
++            err = tower_nci_apu_initialize_region(&apu_table[a_idx].apu,
++                                                  r_map->region,
++                                                  r_map->base_addr,
++                                                  r_map->end_addr, r_map->br,
++                                                  permissions, entity_ids,
++                                                  T_NCI_ID_VALID_NONE,
++                                                  T_NCI_REGION_ENABLE,
++                                                  T_NCI_UNLOCK);
++            if (err != TOWER_NCI_SUCCESS) {
++                return 1;
++            }
++        }
++
++        err = tower_nci_apu_sync_err_enable(&apu_table[a_idx].apu);
++        if (err != TOWER_NCI_SUCCESS) {
++            return 1;
++        }
++
++        err = tower_nci_apu_enable(&apu_table[a_idx].apu);
++        if (err != TOWER_NCI_SUCCESS) {
++            return 1;
++        }
++    }
++
++    return err;
++}
++
++/* Program PSAM for the platform System Control Tower NCI */
++uint32_t program_sysctrl_psam(struct tower_nci_discovery_tree_t* dis_tree,
++                              uint32_t nci_addr, uint64_t chip_addr_offset)
++{
++    struct mhu_send_frame_t {
++        uint64_t base_0, end_0;
++        uint64_t base_1, end_1;
++        uint64_t base_2, end_2;
++    } mhu_send_frame_rss, mhu_send_frame_scp, mhu_send_frame_mcp;
++
++    switch (chip_addr_offset) {
++        case 0x0000000000 :
++                mhu_send_frame_rss = (struct mhu_send_frame_t)
++                                  {0x000102ACC0000ULL, 0x000102ACCFFFFULL,
++                                   0x000202ACC0000ULL, 0x000202ACCFFFFULL,
++                                   0x000302ACC0000ULL, 0x000302ACCFFFFULL};
++                mhu_send_frame_scp = (struct mhu_send_frame_t)
++                                  {0x000102AC00000ULL, 0x000102AC0FFFFULL,
++                                   0x000202AC00000ULL, 0x000202AC0FFFFULL,
++                                   0x000302AC00000ULL, 0x000302AC0FFFFULL};
++                mhu_send_frame_mcp = (struct mhu_send_frame_t)
++                                  {0x000102A600000ULL, 0x000102AC6FFFFULL,
++                                   0x000202A600000ULL, 0x000202AC6FFFFULL,
++                                   0x000302A600000ULL, 0x000302AC6FFFFULL};
++                break;
++        case 0x1000000000 :
++                mhu_send_frame_rss = (struct mhu_send_frame_t)
++                                  {0x000002ACC0000ULL, 0x000002ACCFFFFULL,
++                                   0x000202ACD0000ULL, 0x000202ACDFFFFULL,
++                                   0x000302ACD0000ULL, 0x000302ACDFFFFULL};
++                mhu_send_frame_scp = (struct mhu_send_frame_t)
++                                  {0x000002AC00000ULL, 0x000002AC0FFFFULL,
++                                   0x000202AC10000ULL, 0x000202AC1FFFFULL,
++                                   0x000302AC10000ULL, 0x000302AC1FFFFULL};
++                mhu_send_frame_mcp = (struct mhu_send_frame_t)
++                                  {0x000002AC60000ULL, 0x000002AC6FFFFULL,
++                                   0x000202AC60000ULL, 0x000202AC6FFFFULL,
++                                   0x000302AC60000ULL, 0x000302AC6FFFFULL};
++                break;
++        case 0x2000000000 :
++                mhu_send_frame_rss = (struct mhu_send_frame_t)
++                                  {0x000002AC20000ULL, 0x000002AC2FFFFULL,
++                                   0x000102AC20000ULL, 0x000102AC2FFFFULL,
++                                   0x000302ACE0000ULL, 0x000302ACEFFFFULL};
++                mhu_send_frame_scp = (struct mhu_send_frame_t)
++                                  {0x000002AC10000ULL, 0x000002AC1FFFFULL,
++                                   0x000102AC10000ULL, 0x000102AC1FFFFULL,
++                                   0x000302AC20000ULL, 0x000302AC2FFFFULL};
++                mhu_send_frame_mcp = (struct mhu_send_frame_t)
++                                  {0x000002AC60000ULL, 0x000002AC6FFFFULL,
++                                   0x000102AC60000ULL, 0x000102AC6FFFFULL,
++                                   0x000302AC60000ULL, 0x000302AC6FFFFULL};
++                break;
++        case 0x3000000000 :
++                mhu_send_frame_rss = (struct mhu_send_frame_t)
++                                  {0x000002ACE0000ULL, 0x000002ACEFFFFULL,
++                                   0x000102ACE0000ULL, 0x000102ACEFFFFULL,
++                                   0x000202ACE0000ULL, 0x000202ACEFFFFULL};
++                mhu_send_frame_scp = (struct mhu_send_frame_t)
++                                  {0x000002AC20000ULL, 0x000002AC2FFFFULL,
++                                   0x000102AC20000ULL, 0x000102AC2FFFFULL,
++                                   0x000202AC20000ULL, 0x000202AC2FFFFULL};
++                mhu_send_frame_mcp = (struct mhu_send_frame_t)
++                                  {0x000002AC60000ULL, 0x000002AC6FFFFULL,
++                                   0x000102AC60000ULL, 0x000102AC6FFFFULL,
++                                   0x000202AC60000ULL, 0x000202AC6FFFFULL};
++                break;
++        default:
++                BOOT_LOG_ERR("Chip Address invalid!");
++                return 1;
++    }
++    struct psam_region_cfgs rss_main_axis[] = {
++        { 0x0000000000000 + chip_addr_offset, 0x000001FFFFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID    , 0  },
++        { 0x0000020000000 + chip_addr_offset, 0x0000020FFFFFF + chip_addr_offset, SYSCTRL_CONFIG_SPACE_ID, 1  },
++        { 0x0000021000000 + chip_addr_offset, 0x000002A5AFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID    , 2  },
++        { 0x000002A5B0000 + chip_addr_offset, 0x000002A60FFFF + chip_addr_offset, SYSCTRL_RSM_PMNI_ID    , 3  },
++        { 0x000002A610000 + chip_addr_offset, 0x000002ACBFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID    , 4  },
++        { 0x000002ACF0000 + chip_addr_offset, 0x000002EFFFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID    , 5  },
++        { 0x000002F000000 + chip_addr_offset, 0x000002F3FFFFF + chip_addr_offset, SYSCTRL_RSM_AMNI_ID    , 6  },
++        { 0x000002F400000 + chip_addr_offset, 0x00000FFFFFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID    , 7  },
++        { 0x0000100000000 + chip_addr_offset, 0x000017FFFFFFF + chip_addr_offset, SYSCTRL_CMN_PMNI_ID    , 8  },
++        { 0x0000180000000 + chip_addr_offset, 0x00002FFFFFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID    , 9  },
++        { 0x0000300000000 + chip_addr_offset, 0x0000307FFFFFF + chip_addr_offset, SYSCTRL_TCU_PMNI_ID    , 10 },
++        { 0x0000308000000 + chip_addr_offset, 0x0000FFFFFFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID    , 11 },
++        { mhu_send_frame_rss.base_0,          mhu_send_frame_rss.end_0,           SYSCTRL_APP_AMNI_ID    , 12 },
++        { mhu_send_frame_rss.base_1,          mhu_send_frame_rss.end_1,           SYSCTRL_APP_AMNI_ID    , 13 },
++        { mhu_send_frame_rss.base_2,          mhu_send_frame_rss.end_2,           SYSCTRL_APP_AMNI_ID    , 14 },
++        { 0x0004000000000,                    0x0FFFFFFFFFFFF,                    SYSCTRL_APP_AMNI_ID    , 15 },
++        { 0x1000000000000,                    0x10000FFFFFFFF,                    SYSCTRL_RSS_SCP_AMNI_ID, 16 },
++        { 0x2000000000000,                    0x20000FFFFFFFF,                    SYSCTRL_RSS_MCP_AMNI_ID, 17 }
++    };
++
++    struct psam_region_cfgs scp_axis[] = {
++        { 0x0000000000000 + chip_addr_offset, 0x000002A5AFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID,    0  },
++        { 0x000002A5B0000 + chip_addr_offset, 0x000002A60FFFF + chip_addr_offset, SYSCTRL_RSM_PMNI_ID,    1  },
++        { 0x000002A610000 + chip_addr_offset, 0x000002ABFFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID,    2  },
++        { 0x000002AC30000 + chip_addr_offset, 0x000002EFFFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID,    3  },
++        { 0x000002F000000 + chip_addr_offset, 0x000002F3FFFFF + chip_addr_offset, SYSCTRL_RSM_AMNI_ID,    4  },
++        { 0x000002F400000 + chip_addr_offset, 0x00000FFFFFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID,    5  },
++        { 0x0000100000000 + chip_addr_offset, 0x000017FFFFFFF + chip_addr_offset, SYSCTRL_CMN_PMNI_ID,    6  },
++        { 0x0000180000000 + chip_addr_offset, 0x0000FFFFFFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID,    7  },
++        { mhu_send_frame_scp.base_0,          mhu_send_frame_scp.end_0,           SYSCTRL_APP_AMNI_ID,    8  },
++        { mhu_send_frame_scp.base_1,          mhu_send_frame_scp.end_1,           SYSCTRL_APP_AMNI_ID,    9  },
++        { mhu_send_frame_scp.base_2,          mhu_send_frame_scp.end_2,           SYSCTRL_APP_AMNI_ID,    10 },
++        { 0x0004000000000,                    0x0FFFFFFFFFFFF,                    SYSCTRL_APP_AMNI_ID,    11 },
++    };
++
++    struct psam_region_cfgs mcp_axis[] = {
++        { 0x0000000000000 + chip_addr_offset, 0x000002A42FFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID,     0  },
++        { 0x000002A430000 + chip_addr_offset, 0x000002A43FFFF + chip_addr_offset, SYSCTRL_APP_SCP_AMNI_ID, 1  },
++        { 0x000002A440000 + chip_addr_offset, 0x000002A49FFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID,     2  },
++        { 0x000002A4A0000 + chip_addr_offset, 0x000002A4AFFFF + chip_addr_offset, SYSCTRL_APP_SCP_AMNI_ID, 3  },
++        { 0x000002A4B0000 + chip_addr_offset, 0x000002A5AFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID,     4  },
++        { 0x000002A5B0000 + chip_addr_offset, 0x000002A60FFFF + chip_addr_offset, SYSCTRL_RSM_PMNI_ID,     5  },
++        { 0x000002A610000 + chip_addr_offset, 0x000002A7FFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID,     6  },
++        { 0x000002A800000 + chip_addr_offset, 0x000002A80FFFF + chip_addr_offset, SYSCTRL_APP_SCP_AMNI_ID, 7  },
++        { 0x000002A810000 + chip_addr_offset, 0x000002AC5FFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID,     8  },
++        { 0x000002AC90000 + chip_addr_offset, 0x000002EFFFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID,     9  },
++        { 0x000002F000000 + chip_addr_offset, 0x000002F3FFFFF + chip_addr_offset, SYSCTRL_RSM_AMNI_ID,     10 },
++        { 0x000002F400000 + chip_addr_offset, 0x00000FFFFFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID,     11 },
++        { 0x0000100000000 + chip_addr_offset, 0x000017FFFFFFF + chip_addr_offset, SYSCTRL_CMN_PMNI_ID,     12 },
++        { 0x0000180000000 + chip_addr_offset, 0x00001BFFFFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID,     13 },
++        { 0x00001C0000000 + chip_addr_offset, 0x00001FFFFFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID,     14 },
++        { 0x0000240000000 + chip_addr_offset, 0x00002FFFFFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID,     15 },
++        { 0x0000308000000 + chip_addr_offset, 0x0000FFFFFFFFF + chip_addr_offset, SYSCTRL_APP_AMNI_ID,     16 },
++        { mhu_send_frame_mcp.base_0,          mhu_send_frame_mcp.end_0,           SYSCTRL_APP_AMNI_ID,     17 },
++        { mhu_send_frame_mcp.base_1,          mhu_send_frame_mcp.end_1,           SYSCTRL_APP_AMNI_ID,     18 },
++        { mhu_send_frame_mcp.base_2,          mhu_send_frame_mcp.end_2,           SYSCTRL_APP_AMNI_ID,     19 },
++        { 0x0004000000000,                    0x0FFFFFFFFFFFF,                    SYSCTRL_APP_AMNI_ID,     20 },
++    };
++
++    struct psam_region_cfgs app_axis[] = {
++        { 0x000002A430000, 0x000002A95FFFF, SYSCTRL_APP_SCP_AMNI_ID, 0 },
++        { 0x000002AA00000, 0x000002AA5FFFF, SYSCTRL_APP_MCP_AMNI_ID, 1 },
++        { 0x000002AB00000, 0x000002AC2FFFF, SYSCTRL_APP_SCP_AMNI_ID, 2 },
++        { 0x000002AC60000, 0x000002AC8FFFF, SYSCTRL_APP_MCP_AMNI_ID, 3 },
++        { 0x000002ACC0000, 0x000002B12FFFF, SYSCTRL_APP_SCP_AMNI_ID, 4 },
++    };
++
++    struct psam_region_cfgs lcp_axis[] = {
++        { 0x000000000000, 0x0000FFFFFFFF, SYSCTRL_LCP_SCP_AMNI_ID, 0 },
++    };
++
++    struct psam_region_cfgs rss_scp_axis[] = {
++        { 0x000000000000, 0x0000001FFFFF, SYSCTRL_LCP_AMNI_ID, 0 },
++    };
++
++    struct psam_cfgs psam_table[] = {
++        PSAM_TUPLE(rss_main_axis, TOWER_NCI_ASNI, SYSCTRL_RSS_MAIN_ASNI_ID),
++        PSAM_TUPLE(scp_axis,      TOWER_NCI_ASNI, SYSCTRL_SCP_ASNI_ID),
++        PSAM_TUPLE(mcp_axis,      TOWER_NCI_ASNI, SYSCTRL_MCP_ASNI_ID),
++        PSAM_TUPLE(app_axis,      TOWER_NCI_ASNI, SYSCTRL_APP_ASNI_ID),
++        PSAM_TUPLE(lcp_axis,      TOWER_NCI_ASNI, SYSCTRL_LCP_ASNI_ID),
++        PSAM_TUPLE(rss_scp_axis,  TOWER_NCI_ASNI, SYSCTRL_RSS_SCP_ASNI_ID),
++    };
++
++    if (program_psam_table(psam_table, sizeof(psam_table) /
++                                      sizeof(struct psam_cfgs)) != 0) {
++        return 1;
++    }
++
++    BOOT_LOG_INF("System Control Block PSAM programming done");
++
++    return 0;
++}
++
++/* Program APU for the platform System Control Tower NCI */
++uint32_t program_sysctrl_apu(struct tower_nci_discovery_tree_t* dis_tree,
++                             uint64_t nci_addr, uint64_t chip_addr_offset)
++{
++    struct apu_region_cfgs mcp_axis[] = {
++        { 0x000000000000, 0x00002A42FFFF,  T_NCI_FOREGROUND, T_NCI_ALL_PERM, 0 },
++        { 0x00002A430000, 0x00002A43FFFF,  T_NCI_FOREGROUND, T_NCI_ROOT_RW,  1 },
++        { 0x00002A440000, 0x0FFFFFFFFFFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM, 2 },
++    };
++
++    struct apu_region_cfgs app_axis[] = {
++        { 0x00002A430000, 0x00002A43FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW,                  0  },
++        { 0x00002A440000, 0x00002A93FFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM,                 1 },
++        { 0x00002A940000, 0x00002A95FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW,                  2 },
++        { 0x00002A960000, 0x00002AA3FFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM,                 3 },
++        { 0x00002AA40000, 0x00002AA5FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW,                  4 },
++        { 0x00002AA60000, 0x00002AB3FFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM,                 5 },
++        { 0x00002AB40000, 0x00002AB5FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW,                  6 },
++        { 0x00002AB60000, 0x00002AB7FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW | T_NCI_REALM_RW, 7 },
++        { 0x00002AB80000, 0x00002ABFFFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM,                 8 },
++        { 0x00002AC00000, 0x00002ACEFFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW,                  9 },
++        { 0x00002ACF0000, 0x00002B09FFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM,                 10 },
++        { 0x00002B100000, 0x00002B12FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW,                  11 },
++    };
++
++    struct apu_region_cfgs rsm_axim[] = {
++        { 0x00002F000000 + chip_addr_offset, 0x00002F1FFFFF + chip_addr_offset, T_NCI_FOREGROUND, T_NCI_ALL_PERM,  1 },
++        { 0x00002F200000 + chip_addr_offset, 0x00002F3FFFFF + chip_addr_offset, T_NCI_FOREGROUND, T_NCI_ALL_PERM,  2 },
++    };
++
++    struct apu_region_cfgs rsm_apbm[] = {
++        { 0x00002A5B0000 + chip_addr_offset, 0x00002A5BFFFF + chip_addr_offset, T_NCI_FOREGROUND, T_NCI_SEC_RW | T_NCI_ROOT_RW, 0 },
++        { 0x00002A5C0000 + chip_addr_offset, 0x00002A5CFFFF + chip_addr_offset, T_NCI_FOREGROUND, T_NCI_ALL_PERM,               1 },
++        { 0x00002A5D0000 + chip_addr_offset, 0x00002A5DFFFF + chip_addr_offset, T_NCI_FOREGROUND, T_NCI_SEC_RW | T_NCI_ROOT_RW, 2 },
++        { 0x00002A5E0000 + chip_addr_offset, 0x00002A5EFFFF + chip_addr_offset, T_NCI_FOREGROUND, T_NCI_ALL_PERM,               3 },
++        { 0x00002A5F0000 + chip_addr_offset, 0x00002A5FFFFF + chip_addr_offset, T_NCI_FOREGROUND, T_NCI_SEC_RW | T_NCI_ROOT_RW, 4 },
++        { 0x00002A600000 + chip_addr_offset, 0x00002A60FFFF + chip_addr_offset, T_NCI_FOREGROUND, T_NCI_ALL_PERM,               5 },
++    };
++
++    struct apu_region_cfgs lcp_axim[] = {
++        { 0x000000, 0x02FFFF, T_NCI_FOREGROUND, T_NCI_SEC_RW | T_NCI_ROOT_RW,                  0 },
++        { 0x030000, 0x05FFFF, T_NCI_FOREGROUND, T_NCI_SEC_RW,                                  1 },
++        { 0x060000, 0x18FFFF, T_NCI_FOREGROUND, T_NCI_SEC_RW | T_NCI_ROOT_RW,                  2 },
++        { 0x190000, 0x19FFFF, T_NCI_FOREGROUND, T_NCI_N_SEC_RW | T_NCI_SEC_RW | T_NCI_ROOT_RW, 3 },
++        { 0x1A0000, 0x1FFFFF, T_NCI_FOREGROUND, T_NCI_SEC_RW | T_NCI_ROOT_RW,                  4 },
++    };
++
++    struct apu_region_cfgs lcp_axis[] = {
++        { 0x000000000000, 0xFFFFFFFFFFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM, 0, },
++    };
++
++    struct apu_region_cfgs rss_scp_axim[] = {
++        { 0x1000000000000, 0x10000FFFFFFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM, 0, },
++    };
++
++    struct apu_region_cfgs rss_mcp_axim[] = {
++        { 0x2000000000000, 0x20000FFFFFFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM, 0, },
++    };
++
++    struct apu_cfgs apu_table[] = {
++        APU_TUPLE(mcp_axis,     TOWER_NCI_ASNI, SYSCTRL_MCP_ASNI_ID),
++        APU_TUPLE(app_axis,     TOWER_NCI_ASNI, SYSCTRL_APP_ASNI_ID),
++        APU_TUPLE(rsm_axim,     TOWER_NCI_AMNI, SYSCTRL_RSM_AMNI_ID),
++        APU_TUPLE(rsm_apbm,     TOWER_NCI_PMNI, SYSCTRL_RSM_PMNI_ID),
++        APU_TUPLE(lcp_axim,     TOWER_NCI_AMNI, SYSCTRL_LCP_AMNI_ID),
++        APU_TUPLE(lcp_axis,     TOWER_NCI_ASNI, SYSCTRL_LCP_ASNI_ID),
++        APU_TUPLE(rss_scp_axim, TOWER_NCI_AMNI, SYSCTRL_RSS_SCP_AMNI_ID),
++        APU_TUPLE(rss_mcp_axim, TOWER_NCI_AMNI, SYSCTRL_RSS_MCP_AMNI_ID),
++    };
++
++    if (program_apu_table(apu_table, sizeof(apu_table) /
++                                     sizeof(struct apu_cfgs)) != 0) {
++        return 1;
++    }
++
++    BOOT_LOG_INF("System Control Block APU programming done");
++
++    return 0;
++}
++
++uint32_t program_periph_apu(struct tower_nci_discovery_tree_t* dis_tree,
++                            uint64_t nci_addr)
++{
++    // RAM APU
++    struct apu_region_cfgs ram_axim[] = {
++        { 0x0000000000, 0x0007FFFFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM, 0 },
++    };
++
++    // UART APUs
++    struct apu_region_cfgs nsuart0_apbm[] = {
++        { 0x002A400000, 0x002A40FFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM, 0 },
++    };
++
++    struct apu_region_cfgs secuart_apbm[] = {
++        { 0x002A410000, 0x002A41FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW | T_NCI_SEC_RW, 0 },
++    };
++
++    struct apu_region_cfgs nsuart1_apbm[] = {
++        { 0x002A420000, 0x002A42FFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM, 0 },
++    };
++
++    // WDOG APUs
++    struct apu_region_cfgs nsgenwdog_apbm[] = {
++        { 0x002A440000, 0x002A44FFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM, 0 },
++        { 0x002A450000, 0x002A45FFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM, 1 },
++    };
++
++    struct apu_region_cfgs rootgenwdog_apbm[] = {
++        { 0x002A460000, 0x002A46FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW, 0 },
++        { 0x002A470000, 0x002A47FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW, 1 },
++    };
++
++    struct apu_region_cfgs secgenwdog_apbm[] = {
++        { 0x002A480000, 0x002A48FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW | T_NCI_SEC_RW, 0 },
++        { 0x002A490000, 0x002A49FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW | T_NCI_SEC_RW, 1 },
++    };
++
++    // ECCREG APU
++    struct apu_region_cfgs eccreg_apbm[] = {
++        { 0x002A4B0000, 0x002A4BFFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW | T_NCI_SEC_RW,   0  },
++        { 0x002A4C0000, 0x002A4CFFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM,                 1  },
++        { 0x002A4D0000, 0x002A4DFFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW,                  2  },
++        { 0x002A4E0000, 0x002A4EFFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW | T_NCI_REALM_RW, 3  },
++        { 0x002A4F0000, 0x002A4FFFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW | T_NCI_SEC_RW,   4  },
++        { 0x002A500000, 0x002A50FFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM,                 5  },
++        { 0x002A510000, 0x002A51FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW,                  6  },
++        { 0x002A520000, 0x002A52FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW | T_NCI_REALM_RW, 7  },
++        { 0x002A530000, 0x002A53FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW | T_NCI_SEC_RW,   8  },
++        { 0x002A540000, 0x002A54FFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM,                 9  },
++        { 0x002A550000, 0x002A55FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW,                  10 },
++        { 0x002A560000, 0x002A56FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW | T_NCI_REALM_RW, 11 },
++        { 0x002A570000, 0x002A57FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW | T_NCI_SEC_RW,   12 },
++        { 0x002A580000, 0x002A58FFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM,                 13 },
++        { 0x002A590000, 0x002A59FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW,                  14 },
++        { 0x002A5A0000, 0x002A5AFFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW | T_NCI_REALM_RW, 15 },
++    };
++
++    // GTIMER APUs
++    struct apu_region_cfgs gtimerctrl_apbm[] = {
++        { 0x002A810000, 0x002A81FFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM, 0 },
++    };
++
++    struct apu_region_cfgs secgtimer_apbm[] = {
++        { 0x002A820000, 0x002A82FFFF, T_NCI_FOREGROUND, T_NCI_ROOT_RW | T_NCI_SEC_RW, 0 },
++    };
++
++    struct apu_region_cfgs nsgtimer_apbm[] = {
++        { 0x002A830000, 0x002A83FFFF, T_NCI_FOREGROUND, T_NCI_ALL_PERM, 0 },
++    };
++
++    struct apu_cfgs apu_table[] = {
++        APU_TUPLE(ram_axim,         TOWER_NCI_AMNI, PERIPH_RAM_AMNI_ID        ),
++        APU_TUPLE(nsuart0_apbm,     TOWER_NCI_PMNI, PERIPH_NSUART0_PMNI_ID    ),
++        APU_TUPLE(secuart_apbm,     TOWER_NCI_PMNI, PERIPH_SECUART_PMNI_ID    ),
++        APU_TUPLE(nsuart1_apbm,     TOWER_NCI_PMNI, PERIPH_NSUART1_PMNI_ID    ),
++        APU_TUPLE(nsgenwdog_apbm,   TOWER_NCI_PMNI, PERIPH_NSGENWDOG_PMNI_ID  ),
++        APU_TUPLE(rootgenwdog_apbm, TOWER_NCI_PMNI, PERIPH_ROOTGENWDOG_PMNI_ID),
++        APU_TUPLE(secgenwdog_apbm,  TOWER_NCI_PMNI, PERIPH_SECGENWDOG_PMNI_ID ),
++        APU_TUPLE(eccreg_apbm,      TOWER_NCI_PMNI, PERIPH_ECCREG_PMNI_ID     ),
++        APU_TUPLE(gtimerctrl_apbm,  TOWER_NCI_PMNI, PERIPH_GTIMERCTRL_PMNI_ID ),
++        APU_TUPLE(secgtimer_apbm,   TOWER_NCI_PMNI, PERIPH_SECGTIMER_PMNI_ID  ),
++        APU_TUPLE(nsgtimer_apbm,    TOWER_NCI_PMNI, PERIPH_NSGTIMER_PMNI_ID   ),
++    };
++
++    if (program_apu_table(apu_table, sizeof(apu_table) /
++                                     sizeof(struct apu_cfgs)) != 0) {
++        return 1;
++    }
++
++    BOOT_LOG_INF("Peripheral Block APU programming done");
++
++    return 0;
++}
++
++
++uint8_t prune_node_cb(uint16_t type, uint16_t id, uint16_t child_idx)
++{
++    return 0;
++}
++
++uint32_t program_sysctrl_tower_nci(uint32_t nci_addr, uint64_t chip_addr_offset)
++{
++    struct tower_nci_discovery_tree_t dis_tree = {
++        .type = TOWER_NCI_CFGNI,
++        .id = 0,
++        .address = 0x0,
++        .sibling = NULL,
++    };
++
++    tower_nci_discovery(&dis_tree, nci_addr, &prune_node_cb);
++
++    if (program_sysctrl_psam(&dis_tree, nci_addr, chip_addr_offset) ||
++        program_sysctrl_apu(&dis_tree, nci_addr, chip_addr_offset))
++    {
++        free_discovery_tree(dis_tree.child);
++        return 1;
++    }
++
++    free_discovery_tree(dis_tree.child);
++
++    return 0;
++}
++
++uint32_t program_periph_tower_nci(uint32_t nci_addr) {
++    struct tower_nci_discovery_tree_t dis_tree = {
++        .type = TOWER_NCI_CFGNI,
++        .id = 0,
++        .address = 0x0,
++        .sibling = NULL,
++    };
++
++    tower_nci_discovery(&dis_tree, nci_addr, &prune_node_cb);
++
++    if (program_periph_apu(&dis_tree, nci_addr)) {
++        free_discovery_tree(dis_tree.child);
++        return 1;
++    }
++
++    free_discovery_tree(dis_tree.child);
++
++    return 0;
++}
++
++#undef PSAM_TUPLE
++#undef APU_TUPLE
+diff --git a/platform/ext/target/arm/rss/kronos/tower_nci_lib.h b/platform/ext/target/arm/rss/kronos/tower_nci_lib.h
+new file mode 100644
+index 000000000..8fbccfea4
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/tower_nci_lib.h
+@@ -0,0 +1,33 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#ifndef __TOWER_NCI_LIB_H__
++#define __TOWER_NCI_LIB_H__
++
++#include <stdint.h>
++
++/**
++ * \brief Programs Tower NCI PSAM and APU
++ *
++ * \param[in] nci_addr          Tower NCI base address
++ * \param[in] chip_addr_offset  Offset address based on current Chip ID
++ *
++ * \return Returns 1 if there is an error, else 0.
++ */
++uint32_t program_sysctrl_tower_nci(uint32_t nci_addr,
++                                   uint64_t chip_addr_offset);
++
++/**
++ * \brief Program Tower NCI peripheral block APUs
++ *
++ * \param[in] nci_addr          Periph Tower NCI base address
++ *
++ * \return Returns 1 if there is an error, else 0.
++ */
++uint32_t program_periph_tower_nci(uint32_t nci_addr);
++
++#endif __TOWER_NCI_LIB_H__
+-- 
+2.25.1
+

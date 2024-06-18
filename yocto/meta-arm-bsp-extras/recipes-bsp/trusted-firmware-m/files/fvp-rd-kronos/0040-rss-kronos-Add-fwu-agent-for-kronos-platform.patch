@@ -1,0 +1,1219 @@
+From 953a0c95d2d1c1f52573a2c7903b570d48fc849d Mon Sep 17 00:00:00 2001
+From: Jun Zhang <jun.zhang@arm.com>
+Date: Fri, 20 Oct 2023 23:18:36 +0800
+Subject: [PATCH] rss/kronos: Add fwu agent for kronos platform
+
+The fwu agent is used to as an agent to R/W
+metadata/private metadata to flash, handle requests
+from Trusted Service to do some FWU related work.
+The agent code is referenced from corstone1000
+platform in Trusted-Firmware-M source code[0].
+
+[0]:
+platform/ext/target/arm/corstone1000/fw_update_agent/*
+
+Upstream-Status: Pending
+Signed-off-by: Jun Zhang <jun.zhang@arm.com>
+---
+ .../ext/target/arm/rss/common/CMakeLists.txt  |   3 +
+ .../arm/rss/common/bl1/boot_hal_bl1_2.c       |  15 +-
+ .../rss/common/provisioning/CMakeLists.txt    |   6 +
+ .../common/provisioning/bl1_provisioning.c    |  10 +
+ .../provisioning/bundle_cm/CMakeLists.txt     |   2 +
+ .../ext/target/arm/rss/kronos/CMakeLists.txt  |  10 +
+ .../ext/target/arm/rss/kronos/flash_layout.h  |  20 +
+ .../rss/kronos/fw_update_agent/fwu_agent.c    | 432 ++++++++++++++++++
+ .../rss/kronos/fw_update_agent/fwu_agent.h    |  37 ++
+ .../fw_update_agent/uefi_capsule_parser.c     | 169 +++++++
+ .../fw_update_agent/uefi_capsule_parser.h     |  31 ++
+ .../arm/rss/kronos/fw_update_agent/uefi_fmp.c | 205 +++++++++
+ .../arm/rss/kronos/fw_update_agent/uefi_fmp.h |  52 +++
+ 13 files changed, 991 insertions(+), 1 deletion(-)
+ create mode 100644 platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.c
+ create mode 100644 platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.h
+ create mode 100644 platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c
+ create mode 100644 platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.h
+ create mode 100644 platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_fmp.c
+ create mode 100644 platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_fmp.h
+
+diff --git a/platform/ext/target/arm/rss/common/CMakeLists.txt b/platform/ext/target/arm/rss/common/CMakeLists.txt
+index 4399280c6..4d9da7ebe 100644
+--- a/platform/ext/target/arm/rss/common/CMakeLists.txt
++++ b/platform/ext/target/arm/rss/common/CMakeLists.txt
+@@ -371,6 +371,7 @@ target_sources(platform_bl1_2
+     PRIVATE
+         ./bl1/boot_hal_bl1_2.c
+         ./rss_key_derivation.c
++        $<$<BOOL:${TFM_FWU_AGENT}>:${TARGET_PLATFORM_PATH}/fw_update_agent/fwu_agent.c>
+ )
+ 
+ target_include_directories(platform_bl1_2
+@@ -380,6 +381,7 @@ target_include_directories(platform_bl1_2
+         ${PLATFORM_DIR}/ext/target/arm/drivers/flash/strata
+         $<$<NOT:$<BOOL:${RSS_DEBUG_UART}>>:${PLATFORM_DIR}/ext/target/arm/drivers/usart/pl011>
+     PRIVATE
++        ../fw_update_agent
+         .
+ )
+ 
+@@ -387,6 +389,7 @@ target_compile_definitions(platform_bl1_2
+     PUBLIC
+         $<$<AND:$<BOOL:${CONFIG_TFM_BOOT_STORE_MEASUREMENTS}>,$<BOOL:${TFM_PARTITION_MEASURED_BOOT}>>:MEASURED_BOOT_API>
+         $<$<BOOL:${RSS_AMOUNT}>:RSS_AMOUNT=${RSS_AMOUNT}>
++        $<$<BOOL:${TFM_FWU_AGENT}>:TFM_FWU_AGENT>
+ )
+ 
+ if(RSS_USE_HOST_FLASH)
+diff --git a/platform/ext/target/arm/rss/common/bl1/boot_hal_bl1_2.c b/platform/ext/target/arm/rss/common/bl1/boot_hal_bl1_2.c
+index e9a71bbee..6989e3126 100644
+--- a/platform/ext/target/arm/rss/common/bl1/boot_hal_bl1_2.c
++++ b/platform/ext/target/arm/rss/common/bl1/boot_hal_bl1_2.c
+@@ -4,7 +4,6 @@
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+  */
+-
+ #include "boot_hal.h"
+ #include "region.h"
+ #include "device_definition.h"
+@@ -31,6 +30,9 @@
+ #endif
+ #include "tfm_plat_nv_counters.h"
+ #include "rss_key_derivation.h"
++#ifdef TFM_FWU_AGENT
++#include "fwu_agent.h"
++#endif /* TFM_FWU_AGENT */
+ 
+ uint32_t image_offsets[2];
+ 
+@@ -53,6 +55,17 @@ uint32_t bl1_image_get_flash_offset(uint32_t image_id)
+ }
+ #endif
+ 
++#ifdef TFM_FWU_AGENT
++uint32_t bl1_image_get_flash_offset(uint32_t image_id)
++{
++    uint32_t bl2_offset = 0;
++    (void) image_id;
++
++    bl1_get_active_bl2_image(&bl2_offset);
++    return bl2_offset;
++}
++#endif /* TFM_FWU_AGENT */
++
+ static int32_t init_atu_regions(void)
+ {
+     enum atu_error_t err;
+diff --git a/platform/ext/target/arm/rss/common/provisioning/CMakeLists.txt b/platform/ext/target/arm/rss/common/provisioning/CMakeLists.txt
+index 9af419c1c..5e0af35cb 100644
+--- a/platform/ext/target/arm/rss/common/provisioning/CMakeLists.txt
++++ b/platform/ext/target/arm/rss/common/provisioning/CMakeLists.txt
+@@ -26,4 +26,10 @@ target_sources(bl1_1_lib
+ target_include_directories(bl1_1_lib
+     INTERFACE
+         ./bundle_common
++        $<$<BOOL:${TFM_FWU_AGENT}>:${TARGET_PLATFORM_PATH}/fw_update_agent/fwu_agent.h>
++)
++
++target_compile_definitions(bl1_1_lib
++    INTERFACE
++        $<$<BOOL:${TFM_FWU_AGENT}>:TFM_FWU_AGENT>
+ )
+diff --git a/platform/ext/target/arm/rss/common/provisioning/bl1_provisioning.c b/platform/ext/target/arm/rss/common/provisioning/bl1_provisioning.c
+index 14f468cac..8920a81ed 100644
+--- a/platform/ext/target/arm/rss/common/provisioning/bl1_provisioning.c
++++ b/platform/ext/target/arm/rss/common/provisioning/bl1_provisioning.c
+@@ -14,6 +14,9 @@
+ #include "tfm_hal_platform.h"
+ #include <string.h>
+ #include "platform_regs.h"
++#ifdef TFM_FWU_AGENT
++#include "fwu_agent.h"
++#endif /* TFM_FWU_AGENT */
+ 
+ enum rss_gpio_val_t {
+     RSS_GPIO_STATE_VIRGIN_IDLE = 0x1,
+@@ -112,6 +115,13 @@ static enum tfm_plat_err_t provision_assembly_and_test(void)
+            (void *)&cm_encrypted_bundle->values,
+            PROVISIONING_BUNDLE_VALUES_SIZE + PROVISIONING_BUNDLE_DATA_SIZE);
+ 
++#ifdef TFM_FWU_AGENT
++    err = fwu_metadata_provision();
++    if (err != FWU_AGENT_SUCCESS) {
++        return 1;
++    }
++#endif /* TFM_FWU_AGENT */
++
+     BL1_LOG("[INF] Running CM provisioning bundle\r\n");
+     err = ((enum tfm_plat_err_t (*)(void))(PROVISIONING_BUNDLE_CODE_START | 0b1))();
+     if (err != TFM_PLAT_ERR_SUCCESS) {
+diff --git a/platform/ext/target/arm/rss/common/provisioning/bundle_cm/CMakeLists.txt b/platform/ext/target/arm/rss/common/provisioning/bundle_cm/CMakeLists.txt
+index a11ab8e08..74cc24c60 100644
+--- a/platform/ext/target/arm/rss/common/provisioning/bundle_cm/CMakeLists.txt
++++ b/platform/ext/target/arm/rss/common/provisioning/bundle_cm/CMakeLists.txt
+@@ -35,11 +35,13 @@ target_sources(cm_provisioning_bundle
+     PRIVATE
+         ./cm_provisioning_code.c
+         $<$<BOOL:${TFM_DUMMY_PROVISIONING}>:./cm_dummy_provisioning_data.c>
++        $<$<BOOL:${TFM_FWU_AGENT}>:${TARGET_PLATFORM_PATH}/fw_update_agent/fwu_agent.c>
+ )
+ 
+ target_include_directories(cm_provisioning_bundle
+     PRIVATE
+         ../bundle_common
++        $<$<BOOL:${TFM_FWU_AGENT}>:${TARGET_PLATFORM_PATH}/fw_update_agent/fwu_agent.h>
+ )
+ 
+ target_link_libraries(cm_provisioning_bundle
+diff --git a/platform/ext/target/arm/rss/kronos/CMakeLists.txt b/platform/ext/target/arm/rss/kronos/CMakeLists.txt
+index 7082ed9fa..5c1341e14 100644
+--- a/platform/ext/target/arm/rss/kronos/CMakeLists.txt
++++ b/platform/ext/target/arm/rss/kronos/CMakeLists.txt
+@@ -40,6 +40,8 @@ target_include_directories(platform_s
+         ${PLATFORM_DIR}/ext/target/arm/drivers/usart/pl011
+         ${PLATFORM_DIR}/ext/target/arm/drivers/flash/common
+         ${PLATFORM_DIR}/ext/target/arm/drivers/flash/strata
++        fw_update_agent
++        soft_crc
+ )
+ 
+ target_sources(platform_s
+@@ -55,6 +57,8 @@ target_sources(platform_s
+         rss_expansion_peripherals_def.c
+         rss_comms/rss_comms_permissions_hal.c
+         ${PLATFORM_DIR}/ext/target/arm/drivers/flash/strata/spi_strataflashj3_flash_lib.c
++        fw_update_agent/fwu_agent.c
++        soft_crc/soft_crc.c
+ )
+ 
+ target_sources(tfm_s
+@@ -120,6 +124,7 @@ target_sources(platform_bl2
+         soft_crc/soft_crc.c
+         partition/partition.c
+         partition/gpt.c
++        fw_update_agent/fwu_agent.c
+ )
+ 
+ target_compile_definitions(platform_bl2
+@@ -147,6 +152,7 @@ target_include_directories(platform_bl2
+         io
+         soft_crc
+         partition
++        fw_update_agent
+ )
+ 
+ target_compile_definitions(platform_bl2
+@@ -165,6 +171,8 @@ target_sources(platform_bl1_1
+         device/rss_expansion_device_definition.c
+         ${PLATFORM_DIR}/ext/target/arm/drivers/usart/pl011/uart_pl011_drv.c
+         ${PLATFORM_DIR}/ext/target/arm/drivers/flash/strata/spi_strataflashj3_flash_lib.c
++        ./fw_update_agent/fwu_agent.c
++        ./soft_crc/soft_crc.c
+ )
+ 
+ target_include_directories(platform_bl1_1_interface
+@@ -175,6 +183,8 @@ target_include_directories(platform_bl1_1_interface
+         ${PLATFORM_DIR}/ext/target/arm/drivers/usart/pl011
+         ${PLATFORM_DIR}/ext/target/arm/drivers/flash/common
+         ${PLATFORM_DIR}/ext/target/arm/drivers/flash/strata
++        ./fw_update_agent
++        ./soft_crc
+ )
+ 
+ #=========================== MHUv3 Dependent Code ===============================#
+diff --git a/platform/ext/target/arm/rss/kronos/flash_layout.h b/platform/ext/target/arm/rss/kronos/flash_layout.h
+index 20359e93b..fdfe2870e 100644
+--- a/platform/ext/target/arm/rss/kronos/flash_layout.h
++++ b/platform/ext/target/arm/rss/kronos/flash_layout.h
+@@ -252,6 +252,26 @@
+ /* Smallest flash programmable unit in bytes */
+ #define TFM_HAL_PS_PROGRAM_UNIT         (1)
+ 
++/* FWU Configurations */
+ #define NR_OF_FW_BANKS                  (2)
++#define NR_OF_IMAGES_IN_FW_BANK         (7)
++
++/* Space in flash to store metadata and uefi variables */
++#define FWU_METADATA_FLASH_DEV          (FLASH_DEV_NAME)
++#define FWU_METADATA_FLASH_SECTOR_SIZE  ((0x00001000))
++
++#define FWU_METADATA_REPLICA_1_OFFSET   (0x5000)  /* 40th LBA */
++#define FWU_METADATA_REPLICA_2_OFFSET   (FWU_METADATA_REPLICA_1_OFFSET + \
++                                         FWU_METADATA_FLASH_SECTOR_SIZE)
++
++#define FWU_PRIVATE_METADATA_REPLICA_1_OFFSET   (FWU_METADATA_REPLICA_2_OFFSET + \
++                                                 FWU_METADATA_FLASH_SECTOR_SIZE)
++#define FWU_PRIVATE_METADATA_REPLICA_2_OFFSET   (FWU_PRIVATE_METADATA_REPLICA_1_OFFSET + \
++                                                 FWU_METADATA_FLASH_SECTOR_SIZE)
++
++/* Static Configurations of the Flash */
++#define BL2_PARTITION_SIZE              FLASH_BL2_PARTITION_SIZE   /* 128 KB */
++#define BL2_BANK_0_OFFSET               (0x9000)                   /* 72nd LBA */
++#define BL2_BANK_1_OFFSET               (0x1002000)                /* 32784th LBA */
+ 
+ #endif /* __FLASH_LAYOUT_H__ */
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.c b/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.c
+new file mode 100644
+index 000000000..6d48314b4
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.c
+@@ -0,0 +1,432 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#include <stdint.h>
++#include <string.h>
++#include "fwu_agent.h"
++#include "Driver_Flash.h"
++#include "flash_layout.h"
++#include "region_defs.h"
++#include "uefi_capsule_parser.h"
++#include "platform_base_address.h"
++#include "tfm_plat_nv_counters.h"
++#include "tfm_plat_defs.h"
++#include "uefi_fmp.h"
++#include "uart_stdout.h"
++#include "soft_crc/soft_crc.h"
++
++/* Properties of image in a bank */
++struct fwu_image_properties {
++
++        /* UUID of the image in this bank */
++        uuid_t img_uuid;
++
++        /* [0]: bit describing the image acceptance status –
++         *      1 means the image is accepted
++         * [31:1]: MBZ
++         */
++        uint32_t accepted;
++
++        /* NOTE: using the reserved field */
++        /* image version */
++        uint32_t version;
++
++} __packed;
++
++/* Image entry information */
++struct fwu_image_entry {
++
++        /* UUID identifying the image type */
++        uuid_t img_type_uuid;
++
++        /* UUID of the storage volume where the image is located */
++        uuid_t location_uuid;
++
++        /* Properties of images with img_type_uuid in the different FW banks */
++        struct fwu_image_properties img_props[NR_OF_FW_BANKS];
++
++} __packed;
++
++struct fwu_metadata {
++
++        /* Metadata CRC value */
++        uint32_t crc_32;
++
++        /* Metadata version */
++        uint32_t version;
++
++        /* Bank index with which device boots */
++        uint32_t active_index;
++
++        /* Previous bank index with which device booted successfully */
++        uint32_t previous_active_index;
++
++        /* Image entry information */
++        struct fwu_image_entry img_entry[NR_OF_IMAGES_IN_FW_BANK];
++
++} __packed;
++
++/* This is Kronos speific metadata for OTA.
++ * Private metadata is written at next sector following
++ * FWU METADATA location */
++struct fwu_private_metadata {
++
++       /* boot_index: The bank from which system is booted from */
++       uint32_t boot_index;
++
++       /* counter: Tracking number of boot attempted so far */
++       uint32_t boot_attempted;
++
++       /* staged nv_counter: Temprary location before written to the otp */
++       uint32_t nv_counter[NR_OF_IMAGES_IN_FW_BANK];
++
++       /* FMP information */
++       uint32_t fmp_version;
++       uint32_t fmp_last_attempt_version;
++       uint32_t fmp_last_attempt_status;
++
++} __packed;
++
++#define MAX_BOOT_ATTEMPTS_PER_BANK 3
++
++struct fwu_metadata _metadata;
++
++int is_initialized = 0;
++
++capsule_image_info_t capsule_info;
++
++enum fwu_agent_state_t {
++    FWU_AGENT_STATE_UNKNOWN = -1,
++    FWU_AGENT_STATE_REGULAR = 0,
++    FWU_AGENT_STATE_TRIAL,
++};
++
++struct efi_guid full_capsule_image_guid = {
++    .time_low = 0xe2bb9c06,
++    .time_mid = 0x70e9,
++    .time_hi_and_version = 0x4b14,
++    .clock_seq_and_node = {0x97, 0xa3, 0x5a, 0x79, 0x13, 0x17, 0x6e, 0x3f}
++};
++
++#define IMAGE_ACCEPTED          (1)
++#define IMAGE_NOT_ACCEPTED      (0)
++#define BANK_0                  (0)
++#define BANK_1                  (1)
++#define IMAGE_0                 (0)
++#define IMAGE_1                 (1)
++#define IMAGE_2                 (2)
++#define IMAGE_3                 (3)
++#define IMAGE_END               (IMAGE_3)
++#define IMAGE_ALL               (IMAGE_END + 1)
++#define IMAGE_NOT_RECOGNIZED    (-1)
++#define INVALID_VERSION         (0xffffffff)
++
++#ifndef FWU_METADATA_FLASH_DEV
++    #ifndef FLASH_DEV_NAME
++    #error "FWU_METADATA_FLASH_DEV or FLASH_DEV_NAME must be defined in flash_layout.h"
++    #else
++    #define FWU_METADATA_FLASH_DEV FLASH_DEV_NAME
++    #endif
++#endif
++
++/* Import the CMSIS flash device driver */
++extern ARM_DRIVER_FLASH FWU_METADATA_FLASH_DEV;
++
++#define HOST_ACK_TIMEOUT_SEC    (6 * 60) /* About 360 seconds, not exact */
++
++void bl1_get_active_bl2_image(uint32_t *offset)
++{
++    FWU_LOG_MSG("%s: enter\n\r", __func__);
++
++    if (fwu_metadata_init()) {
++        FWU_ASSERT(0);
++    }
++
++    /* This is the hardcode for debugging temporarily. */
++    *offset = BL2_BANK_0_OFFSET;
++
++    return;
++}
++
++static enum fwu_agent_error_t private_metadata_read(
++        struct fwu_private_metadata* p_metadata)
++{
++    int32_t ret;
++
++    FWU_LOG_MSG("%s: enter\n\r", __func__);
++
++    if (!p_metadata) {
++        return FWU_AGENT_ERROR;
++    }
++
++    ret = FWU_METADATA_FLASH_DEV.ReadData(FWU_PRIVATE_METADATA_REPLICA_1_OFFSET, p_metadata,
++                                          sizeof(struct fwu_private_metadata));
++    if (ret != sizeof(struct fwu_private_metadata)) {
++        return FWU_AGENT_ERROR;
++    }
++
++    FWU_LOG_MSG("%s: success: boot_index = %u\n\r", __func__,
++                        p_metadata->boot_index);
++
++    return FWU_AGENT_SUCCESS;
++}
++
++static enum fwu_agent_error_t private_metadata_write(
++        struct fwu_private_metadata* p_metadata)
++{
++    int32_t ret;
++
++    FWU_LOG_MSG("%s: enter: boot_index = %u\n\r", __func__,
++                        p_metadata->boot_index);
++
++    if (!p_metadata) {
++        return FWU_AGENT_ERROR;
++    }
++
++    ret = FWU_METADATA_FLASH_DEV.EraseSector(FWU_PRIVATE_METADATA_REPLICA_1_OFFSET);
++    if (ret != ARM_DRIVER_OK) {
++        return FWU_AGENT_ERROR;
++    }
++
++    ret = FWU_METADATA_FLASH_DEV.ProgramData(FWU_PRIVATE_METADATA_REPLICA_1_OFFSET,
++                                p_metadata, sizeof(struct fwu_private_metadata));
++    if (ret != sizeof(struct fwu_private_metadata)) {
++        return FWU_AGENT_ERROR;
++    }
++
++    FWU_LOG_MSG("%s: success\n\r", __func__);
++    return FWU_AGENT_SUCCESS;
++}
++
++static enum fwu_agent_error_t metadata_write(
++                        struct fwu_metadata *p_metadata)
++{
++    int32_t ret;
++
++    FWU_LOG_MSG("%s: enter: flash addr = %u, size = %d\n\r", __func__,
++                  FWU_METADATA_REPLICA_1_OFFSET, sizeof(struct fwu_metadata));
++
++    if (!p_metadata) {
++        return FWU_AGENT_ERROR;
++    }
++
++    ret = FWU_METADATA_FLASH_DEV.EraseSector(FWU_METADATA_REPLICA_1_OFFSET);
++    if (ret != ARM_DRIVER_OK) {
++        return FWU_AGENT_ERROR;
++    }
++
++    ret = FWU_METADATA_FLASH_DEV.ProgramData(FWU_METADATA_REPLICA_1_OFFSET,
++                                p_metadata, sizeof(struct fwu_metadata));
++    if (ret != sizeof(struct fwu_metadata)) {
++        return FWU_AGENT_ERROR;
++    }
++
++    FWU_LOG_MSG("%s: enter: flash addr = %u, size = %d\n\r", __func__,
++                  FWU_METADATA_REPLICA_2_OFFSET, sizeof(struct fwu_metadata));
++
++    ret = FWU_METADATA_FLASH_DEV.EraseSector(FWU_METADATA_REPLICA_2_OFFSET);
++    if (ret != ARM_DRIVER_OK) {
++        return FWU_AGENT_ERROR;
++    }
++
++    ret = FWU_METADATA_FLASH_DEV.ProgramData(FWU_METADATA_REPLICA_2_OFFSET,
++                                p_metadata, sizeof(struct fwu_metadata));
++    if (ret != sizeof(struct fwu_metadata)) {
++        return FWU_AGENT_ERROR;
++    }
++
++    FWU_LOG_MSG("%s: enter: flash addr = %u, size = %d\n\r", __func__,
++                  FWU_METADATA_REPLICA_2_OFFSET, sizeof(struct fwu_metadata));
++
++    ret = FWU_METADATA_FLASH_DEV.EraseSector(FWU_METADATA_REPLICA_2_OFFSET);
++    if (ret != ARM_DRIVER_OK) {
++        return FWU_AGENT_ERROR;
++    }
++
++    ret = FWU_METADATA_FLASH_DEV.ProgramData(FWU_METADATA_REPLICA_2_OFFSET,
++                                p_metadata, sizeof(struct fwu_metadata));
++    if (ret != sizeof(struct fwu_metadata)) {
++        return FWU_AGENT_ERROR;
++    }
++
++    FWU_LOG_MSG("%s: success: active = %u, previous = %d\n\r", __func__,
++                  p_metadata->active_index, p_metadata->previous_active_index);
++    return FWU_AGENT_SUCCESS;
++}
++
++static enum fwu_agent_error_t metadata_validate(struct fwu_metadata *p_metadata)
++{
++    int32_t ret;
++    uint32_t calculated_crc32;
++
++    FWU_LOG_MSG("%s: enter:\n\r", __func__);
++
++    if (!p_metadata) {
++        return FWU_AGENT_ERROR;
++    }
++
++    calculated_crc32 = crc32((uint8_t *)&(p_metadata->version),
++                             sizeof(struct fwu_metadata) - sizeof(uint32_t));
++
++    if (p_metadata->crc_32 != calculated_crc32) {
++        FWU_LOG_MSG("%s: failed: crc32 calculated: 0x%x, given: 0x%x\n\r", __func__,
++                    calculated_crc32, p_metadata->crc_32);
++        return FWU_AGENT_ERROR;
++    }
++
++    FWU_LOG_MSG("%s: success\n\r", __func__);
++
++    return FWU_AGENT_SUCCESS;
++}
++
++static enum fwu_agent_error_t metadata_read(struct fwu_metadata *p_metadata)
++{
++    int32_t ret;
++
++    FWU_LOG_MSG("%s: enter: flash addr = %u, size = %d\n\r", __func__,
++                  FWU_METADATA_REPLICA_1_OFFSET, sizeof(struct fwu_metadata));
++
++    if (!p_metadata) {
++        return FWU_AGENT_ERROR;
++    }
++
++    ret = FWU_METADATA_FLASH_DEV.ReadData(FWU_METADATA_REPLICA_1_OFFSET,
++                                p_metadata, sizeof(struct fwu_metadata));
++    if (ret != sizeof(struct fwu_metadata)) {
++        return FWU_AGENT_ERROR;
++    }
++
++    if (metadata_validate(p_metadata) != FWU_AGENT_SUCCESS) {
++        return FWU_AGENT_ERROR;
++    }
++
++    FWU_LOG_MSG("%s: success: active = %u, previous = %d\n\r", __func__,
++                  p_metadata->active_index, p_metadata->previous_active_index);
++
++    return FWU_AGENT_SUCCESS;
++}
++
++enum fwu_agent_error_t fwu_metadata_init(void)
++{
++    int32_t ret;
++    ARM_FLASH_INFO* flash_info;
++
++    FWU_LOG_MSG("%s: enter\n\r", __func__);
++
++    if (is_initialized) {
++        return FWU_AGENT_SUCCESS;
++    }
++
++    /* Code assumes everything fits into a sector */
++    if (sizeof(struct fwu_metadata) > FWU_METADATA_FLASH_SECTOR_SIZE) {
++        return FWU_AGENT_ERROR;
++    }
++
++    if (sizeof(struct fwu_private_metadata) > FWU_METADATA_FLASH_SECTOR_SIZE) {
++        return FWU_AGENT_ERROR;
++    }
++
++    ret = FWU_METADATA_FLASH_DEV.Initialize(NULL);
++    if (ret != ARM_DRIVER_OK) {
++        return FWU_AGENT_ERROR;
++    }
++
++    flash_info = FWU_METADATA_FLASH_DEV.GetInfo();
++    if (flash_info->program_unit != 1) {
++        FWU_METADATA_FLASH_DEV.Uninitialize();
++        return FWU_AGENT_ERROR;
++    }
++
++    is_initialized = 1;
++
++    FWU_LOG_MSG("%s: is_initialized = %d\n\r", __func__, is_initialized);
++
++    return FWU_AGENT_SUCCESS;
++}
++
++enum fwu_agent_error_t fwu_metadata_provision(void)
++{
++    enum fwu_agent_error_t ret;
++    struct fwu_private_metadata priv_metadata;
++    uint8_t image_version = FWU_IMAGE_INITIAL_VERSION;
++
++    ret = fwu_metadata_init();
++    if (ret) {
++        return ret;
++    }
++    /*
++     * Check by chance if the previous reboot had a firmware data.
++     * If yes, then don't initialize metadata.
++     */
++    metadata_read(&_metadata);
++    if(_metadata.active_index < 2 || _metadata.previous_active_index <2){
++        if(_metadata.active_index ^ _metadata.previous_active_index)
++            return FWU_AGENT_SUCCESS;
++    }
++    /* Provision FWU Agent Metadata */
++    memset(&_metadata, 0, sizeof(struct fwu_metadata));
++
++    _metadata.version = 1;
++    _metadata.active_index = BANK_0;
++    _metadata.previous_active_index = BANK_1;
++
++    /* Bank-0 is the place where images are located at the
++     * start of device lifecycle.
++     */
++    for (uint8_t i = 0; i < NR_OF_IMAGES_IN_FW_BANK; i++) {
++
++        _metadata.img_entry[i].img_props[BANK_0].accepted = IMAGE_ACCEPTED;
++        _metadata.img_entry[i].img_props[BANK_0].version = image_version;
++
++        _metadata.img_entry[i].img_props[BANK_1].accepted = IMAGE_NOT_ACCEPTED;
++        _metadata.img_entry[i].img_props[BANK_1].version = INVALID_VERSION;
++    }
++
++    /* Calculate CRC32 for fwu metadata */
++    _metadata.crc_32 = crc32((uint8_t *)&_metadata.version,
++                             sizeof(struct fwu_metadata) - sizeof(uint32_t));
++
++    ret = metadata_write(&_metadata);
++    if (ret) {
++        return ret;
++    }
++
++    memset(&_metadata, 0, sizeof(struct fwu_metadata));
++    ret = metadata_read(&_metadata);
++    if (ret) {
++        return ret;
++    }
++    FWU_LOG_MSG("%s: provisioned values: active = %u, previous = %d\n\r",
++             __func__, _metadata.active_index, _metadata.previous_active_index);
++
++    /* Provision Private metadata for update agent which is shared
++       beween BL1 and RSS runtime */
++    memset(&priv_metadata, 0, sizeof(struct fwu_private_metadata));
++
++    priv_metadata.boot_index = BANK_0;
++    priv_metadata.boot_attempted = 0;
++
++    priv_metadata.fmp_version = FWU_IMAGE_INITIAL_VERSION;
++    priv_metadata.fmp_last_attempt_version = FWU_IMAGE_INITIAL_VERSION;
++    priv_metadata.fmp_last_attempt_status = LAST_ATTEMPT_STATUS_SUCCESS;
++
++    ret = private_metadata_write(&priv_metadata);
++    if (ret) {
++        return ret;
++    }
++
++    memset(&priv_metadata, 0, sizeof(struct fwu_private_metadata));
++    ret = private_metadata_read(&priv_metadata);
++    if (ret) {
++        return ret;
++    }
++    FWU_LOG_MSG("%s: provisioned values: boot_index = %u\n\r", __func__,
++                        priv_metadata.boot_index);
++
++    FWU_LOG_MSG("%s: FWU METADATA PROVISIONED.\n\r", __func__);
++    return FWU_AGENT_SUCCESS;
++}
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.h b/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.h
+new file mode 100644
+index 000000000..66963dbe6
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/fwu_agent.h
+@@ -0,0 +1,37 @@
++/*
++ * Copyright (c) 2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#ifndef FWU_AGENT_H
++#define FWU_AGENT_H
++
++#ifdef ENABLE_FWU_AGENT_DEBUG_LOGS
++    #include <stdio.h>
++    #define FWU_LOG_MSG(f_, ...) printf((f_), ##__VA_ARGS__)
++#else
++    #define FWU_LOG_MSG(f_, ...)
++#endif
++
++enum fwu_agent_error_t {
++        FWU_AGENT_SUCCESS = 0,
++        FWU_AGENT_ERROR = (-1)
++};
++
++#define FWU_ASSERT(_c_)                                                        \
++                if (!(_c_)) {                                                  \
++                    FWU_LOG_MSG("%s:%d assert hit\n\r", __func__, __LINE__);   \
++                    while(1) {};                                               \
++                }                                                              \
++
++/* Version used for the very first image of the device. */
++#define FWU_IMAGE_INITIAL_VERSION 0
++
++enum fwu_agent_error_t fwu_metadata_provision(void);
++enum fwu_agent_error_t fwu_metadata_init(void);
++
++void bl1_get_active_bl2_image(uint32_t *bank_offset);
++
++#endif /* FWU_AGENT_H */
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c
+new file mode 100644
+index 000000000..4d77e05ee
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c
+@@ -0,0 +1,169 @@
++/*
++ * Copyright (c) 2021,2023 Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#include "uefi_capsule_parser.h"
++#include "fwu_agent.h"
++#include <string.h>
++
++/*
++Update Capsule Structure (UEFI spec 2.9 1004)
++    EFI_CAPSULE_HEADER
++    ...
++    ...
++    ...
++    CAPSULE_BODY
++        efi_firmware_management_capsule_header
++        Optional Driver 1 (item_offset[0])
++        Optional Driver 2 (item_offset[1])
++            Payload 1 (item_offset[2])
++                efi_firmware_management_capsule_iamge_header
++                Binary Update image (Image_length == update_image_size)
++                Vendor Code bytes  (Data lenght == update_vendorcode_size)
++            Payload 2 (item_offset[3])
++            ...
++            ...
++            Payload n (item_offset[embedded_driver_count + payload_item_count -1])
++*/
++
++typedef struct {
++    struct efi_guid         capsule_guid;
++    uint32_t                header_size;
++    uint32_t                flags;
++    uint32_t                capsule_image_size;
++} efi_capsule_header_t;
++
++typedef struct {
++    uint32_t                version;
++    uint16_t                embedded_driver_count;
++    uint16_t                payload_item_count;
++    uint64_t                item_offset_list[];
++} efi_firmware_management_capsule_header_t;
++
++typedef struct {
++    uint32_t                version;
++    struct efi_guid         update_image_type_id;
++    uint8_t                 update_image_index;
++    uint8_t                 reserved_bytes[3];
++    uint32_t                update_image_size;
++    uint32_t                update_vendorcode_size;
++    uint64_t                update_hardware_instance; //introduced in v2
++    uint64_t                image_capsule_support; //introduced in v3
++} efi_firmware_management_capsule_image_header_t;
++
++typedef struct {
++    uint32_t                signature;
++    uint32_t                header_size;
++    uint32_t                fw_version;
++    uint32_t                lowest_supported_version;
++} fmp_payload_header_t;
++
++#define ANYSIZE_ARRAY 0
++
++typedef struct {
++    uint32_t                dwLength;
++    uint16_t                wRevision;
++    uint16_t                wCertificateType;
++    uint8_t                 bCertificate[ANYSIZE_ARRAY];
++} WIN_CERTIFICATE;
++
++typedef struct {
++    WIN_CERTIFICATE         hdr;
++    struct efi_guid         cert_type;
++    uint8_t                 cert_data[ANYSIZE_ARRAY];
++} win_certificate_uefi_guid_t;
++
++typedef struct {
++    uint64_t                    monotonic_count;
++    win_certificate_uefi_guid_t   auth_info;
++} efi_firmware_image_authentication_t;
++
++enum uefi_capsule_error_t uefi_capsule_retrieve_images(void* capsule_ptr,
++        capsule_image_info_t* images_info)
++{
++    char *ptr = (char*)capsule_ptr;
++    efi_capsule_header_t* capsule_header;
++    efi_firmware_management_capsule_header_t* fmp_capsule_header;
++    efi_firmware_management_capsule_image_header_t* image_header;
++    efi_firmware_image_authentication_t* image_auth;
++    fmp_payload_header_t *fmp_payload_header;
++    uint32_t total_size;
++    uint32_t image_count;
++    uint32_t auth_size;
++
++    FWU_LOG_MSG("%s: enter, capsule ptr = 0x%p\n\r", __func__, capsule_ptr);
++
++    if (!capsule_ptr) {
++        return UEFI_CAPSULE_PARSER_ERROR;
++    }
++
++    capsule_header = (efi_capsule_header_t*)ptr;
++    ptr += sizeof(efi_capsule_header_t) + sizeof(uint32_t);
++    fmp_capsule_header = (efi_firmware_management_capsule_header_t*)ptr;
++
++    fmp_payload_header = fmp_capsule_header + sizeof(*fmp_capsule_header);
++
++    total_size = capsule_header->capsule_image_size;
++    image_count = fmp_capsule_header->payload_item_count;
++    images_info->nr_image = image_count;
++
++    FWU_LOG_MSG("%s: capsule size = %u, image count = %u\n\r", __func__,
++                        total_size, image_count);
++
++    if ((image_count == 0) || (image_count > NR_OF_IMAGES_IN_FW_BANK)) {
++        return UEFI_CAPSULE_PARSER_ERROR;
++    }
++
++    for (int i = 0; i < image_count; i++) {
++
++        image_header = (efi_firmware_management_capsule_image_header_t*)(ptr +
++                                fmp_capsule_header->item_offset_list[i]);
++
++        images_info->size[i] = image_header->update_image_size;
++        images_info->version[i] = fmp_payload_header->fw_version;
++        FWU_LOG_MSG("%s: image %i version = %u\n\r", __func__, i,
++                                images_info->version[i]);
++#ifdef AUTHENTICATED_CAPSULE
++        image_auth = (efi_firmware_image_authentication_t*)(
++                        (char*)image_header +
++                        sizeof (efi_firmware_management_capsule_image_header_t)
++                     );
++        auth_size = sizeof(uint64_t) /* monotonic_count */  +
++                    image_auth->auth_info.hdr.dwLength /* WIN_CERTIFICATE + cert_data */ +
++                    sizeof(struct efi_guid) /* cert_type */;
++
++        FWU_LOG_MSG("%s: auth size = %u\n\r", __func__, auth_size);
++
++        images_info->size[i] -= auth_size;
++
++        images_info->image[i] = (
++                (char*)image_header +
++                sizeof(efi_firmware_management_capsule_image_header_t) +
++                auth_size);
++#else
++        images_info->image[i] = (
++                (char*)image_header +
++                sizeof(efi_firmware_management_capsule_image_header_t) +
++                sizeof(*fmp_payload_header));
++#endif
++        memcpy(&images_info->guid[i], &(image_header->update_image_type_id),
++                                                        sizeof(struct efi_guid));
++
++        FWU_LOG_MSG("%s: image %d at %p, size=%u\n\r", __func__, i,
++                        images_info->image[i], images_info->size[i]);
++
++        if ((fmp_capsule_header->item_offset_list[i] +
++             sizeof(efi_firmware_management_capsule_image_header_t) +
++             image_header->update_image_size) > total_size)
++        {
++            return UEFI_CAPSULE_PARSER_ERROR;
++        }
++
++    }
++
++    FWU_LOG_MSG("%s: exit\n\r", __func__);
++    return UEFI_CAPSULE_PARSER_SUCCESS;
++}
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.h b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.h
+new file mode 100644
+index 000000000..07b1247e5
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.h
+@@ -0,0 +1,31 @@
++/*
++ * Copyright (c) 2021,2023 Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#ifndef UEFI_CAPSULE_PARSER_H
++#define UEFI_CAPSULE_PARSER_H
++
++#include <stdint.h>
++#include "flash_layout.h"
++#include "partition/uuid.h"
++
++enum uefi_capsule_error_t {
++    UEFI_CAPSULE_PARSER_SUCCESS = 0,
++    UEFI_CAPSULE_PARSER_ERROR = (-1)
++};
++
++typedef struct capsule_image_info {
++    uint32_t nr_image;
++    void *image[NR_OF_IMAGES_IN_FW_BANK];
++    struct efi_guid guid[NR_OF_IMAGES_IN_FW_BANK];
++    uint32_t size[NR_OF_IMAGES_IN_FW_BANK];
++    uint32_t version[NR_OF_IMAGES_IN_FW_BANK];
++} capsule_image_info_t;
++
++enum uefi_capsule_error_t uefi_capsule_retrieve_images(void* capsule_ptr,
++        capsule_image_info_t* images_info);
++
++#endif /* UEFI_CAPSULE_PARSER_H */
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_fmp.c b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_fmp.c
+new file mode 100644
+index 000000000..e7a0198d3
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_fmp.c
+@@ -0,0 +1,205 @@
++/*
++ * Copyright (c) 2022-2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#include <string.h>
++#include <stdbool.h>
++#include "cmsis.h"
++#include "uefi_fmp.h"
++#include "partition/uuid.h"
++
++/* The count will increase when partial update is supported.
++ * At present, only full WIC is considered as updatable image.
++ */
++#define NUMBER_OF_FMP_IMAGES 1
++#define NO_OF_FMP_VARIABLES_PER_IMAGE   6
++
++#define UEFI_ARCHITECTURE_64
++
++#ifdef UEFI_ARCHITECTURE_64
++typedef uint64_t uefi_ptr_t;
++typedef uint64_t efi_uintn_t;
++#else
++typedef uint32_t uefi_ptr_t;
++typedef uint32_t efi_uintn_t;
++#endif
++
++/* Below macro definations and struct declarations taken from UEFI spec 2.9 */
++
++/*
++ * Image Attribute Definitions
++ */
++#define IMAGE_ATTRIBUTE_IMAGE_UPDATABLE            0x00000001
++#define IMAGE_ATTRIBUTE_RESET_REQUIRED             0x00000002
++#define IMAGE_ATTRIBUTE_AUTHENTICATION_REQUIRED    0x00000004
++#define IMAGE_ATTRIBUTE_IN_USE                     0x00000008
++#define IMAGE_ATTRIBUTE_UEFI_IMAGE                 0x00000010
++#define IMAGE_ATTRIBUTE_DEPENDENCY                 0x00000020
++
++typedef uint32_t DescriptorVersion_t;
++typedef uint32_t DescriptorSize_t;
++typedef uint8_t DescriptorCount_t;
++
++typedef __PACKED_STRUCT {
++    uint8_t ImageIndex;
++    struct efi_guid ImageTypeId;
++    uint64_t ImageId;
++    uefi_ptr_t PtrImageIdName;
++    uint32_t Version;
++    uefi_ptr_t PtrVersionName;
++    efi_uintn_t Size;
++    uint64_t AttributesSupported;
++    uint64_t AttributesSetting;
++    uint64_t Compatibilities;
++    /* Introduced with DescriptorVersion 2+ */
++    uint32_t LowestSupportedImageVersion;
++    /* Introduced with DescriptorVersion 3+ */
++    uint32_t LastAttemptVersion;
++    uint32_t LastAttemptStatus;
++    uint64_t HardwareInstance;
++    /* Introduced with DescriptorVersion 4+ */
++    uefi_ptr_t PtrDependencies;
++} EFI_FIRMWARE_IMAGE_DESCRIPTOR;
++
++typedef __PACKED_STRUCT {
++    DescriptorVersion_t DescriptorVersion;
++    DescriptorSize_t DescriptorsSize;
++    DescriptorCount_t DescriptorCount;
++    EFI_FIRMWARE_IMAGE_DESCRIPTOR ImageDescriptor;
++    uint16_t *ImageName;
++    uint32_t ImageNameSize;
++    uint16_t *ImageVersionName;
++    uint32_t ImageVersionNameSize;
++} EFI_FIRMWARE_MANAGEMENT_PROTOCOL_IMAGE_INFO;
++
++static uint16_t kronos_image_name0[] = { 'K', 'R', 'O', 'N', 'O', 'S', '\0' };
++static uint16_t kronos_version_name0[] = { 'K', 'R', 'O', 'N', 'O', 'S', '\0'};
++
++static EFI_FIRMWARE_MANAGEMENT_PROTOCOL_IMAGE_INFO fmp_info[NUMBER_OF_FMP_IMAGES];
++
++extern struct efi_guid full_capsule_image_guid;
++
++static bool is_fmp_info_initialized = false;
++
++static void init_fmp_info(void)
++{
++    memset(fmp_info, 0,
++     sizeof(EFI_FIRMWARE_MANAGEMENT_PROTOCOL_IMAGE_INFO) * NUMBER_OF_FMP_IMAGES);
++
++    /* Fill information for the WIC.
++     * Add further details when partial image is supported.
++     */
++
++    fmp_info[0].DescriptorVersion = 4;
++    fmp_info[0].DescriptorCount = NUMBER_OF_FMP_IMAGES;
++    fmp_info[0].DescriptorsSize =
++                 sizeof(EFI_FIRMWARE_IMAGE_DESCRIPTOR) +
++                 sizeof(kronos_image_name0) + sizeof(kronos_version_name0);
++
++    fmp_info[0].ImageDescriptor.ImageIndex = 1;
++
++    memcpy(&fmp_info[0].ImageDescriptor.ImageTypeId, &full_capsule_image_guid,
++            sizeof(struct efi_guid));
++
++    fmp_info[0].ImageDescriptor.ImageId = 1;
++    fmp_info[0].ImageDescriptor.Version = FWU_IMAGE_INITIAL_VERSION;
++    fmp_info[0].ImageDescriptor.AttributesSupported = 1;
++    fmp_info[0].ImageDescriptor.AttributesSetting = (
++            IMAGE_ATTRIBUTE_IMAGE_UPDATABLE | IMAGE_ATTRIBUTE_RESET_REQUIRED);
++    fmp_info[0].ImageDescriptor.LowestSupportedImageVersion =
++            FWU_IMAGE_INITIAL_VERSION;
++    fmp_info[0].ImageDescriptor.LastAttemptVersion = FWU_IMAGE_INITIAL_VERSION;
++    fmp_info[0].ImageDescriptor.LastAttemptStatus = LAST_ATTEMPT_STATUS_SUCCESS;
++
++    fmp_info[0].ImageName = kronos_image_name0;
++    fmp_info[0].ImageNameSize = sizeof(kronos_image_name0);
++    fmp_info[0].ImageVersionName = kronos_version_name0;
++    fmp_info[0].ImageVersionNameSize = sizeof(kronos_version_name0);
++
++    is_fmp_info_initialized = true;
++
++    return;
++}
++
++#define NO_OF_FMP_VARIABLES    (NUMBER_OF_FMP_IMAGES * NO_OF_FMP_VARIABLES_PER_IMAGE)
++
++static enum fwu_agent_error_t pack_image_info(void *buffer, uint32_t size)
++{
++    typedef __PACKED_STRUCT {
++        uint32_t variable_count;
++        uint32_t variable_size[NO_OF_FMP_VARIABLES];
++        uint8_t variable[];
++    } packed_buffer_t;
++
++    packed_buffer_t *packed_buffer = buffer;
++    int runner = 0;
++    int index = 0;
++    int current_size = sizeof(packed_buffer_t);
++    int size_requirement_1 = 0;
++    int size_requirement_2 = 0;
++
++    if (size < current_size) {
++        FWU_LOG_MSG("%s:%d Buffer too small.\n\r", __func__, __LINE__);
++        return FWU_AGENT_ERROR;
++    }
++
++    packed_buffer->variable_count = NO_OF_FMP_VARIABLES;
++
++    for (int i = 0; i < NUMBER_OF_FMP_IMAGES; i++) {
++
++       packed_buffer->variable_size[index++] = sizeof(DescriptorVersion_t);
++       packed_buffer->variable_size[index++] = sizeof(DescriptorSize_t);
++       packed_buffer->variable_size[index++] = sizeof(DescriptorCount_t);
++       packed_buffer->variable_size[index++] = sizeof(EFI_FIRMWARE_IMAGE_DESCRIPTOR);
++       packed_buffer->variable_size[index++] = fmp_info[i].ImageNameSize;
++       packed_buffer->variable_size[index++] = fmp_info[i].ImageVersionNameSize;
++
++       size_requirement_1 = sizeof(DescriptorVersion_t) + sizeof(DescriptorSize_t) +
++              sizeof(DescriptorCount_t) + sizeof(EFI_FIRMWARE_IMAGE_DESCRIPTOR);
++
++       size_requirement_2 = fmp_info[i].ImageNameSize + fmp_info[i].ImageVersionNameSize;
++
++       current_size += size_requirement_1 + size_requirement_2;
++
++       if (size < current_size) {
++           FWU_LOG_MSG("%s:%d Buffer too small.\n\r", __func__, __LINE__);
++           return FWU_AGENT_ERROR;
++       }
++
++       FWU_LOG_MSG("%s:%d ImageInfo size = %u, ImageName size = %u, "
++               "ImageVersionName size = %u\n\r", __func__, __LINE__,
++               sizeof(EFI_FIRMWARE_IMAGE_DESCRIPTOR), fmp_info[i].ImageNameSize,
++               fmp_info[i].ImageVersionNameSize);
++
++       memcpy(&packed_buffer->variable[runner], &fmp_info[i], size_requirement_1);
++       runner += size_requirement_1;
++
++       memcpy(&packed_buffer->variable[runner], fmp_info[i].ImageName,
++                                       fmp_info[i].ImageNameSize);
++       runner += fmp_info[i].ImageNameSize;
++
++       memcpy(&packed_buffer->variable[runner], fmp_info[i].ImageVersionName,
++                                       fmp_info[i].ImageVersionNameSize);
++       runner += fmp_info[i].ImageVersionNameSize;
++
++    }
++
++    return FWU_AGENT_SUCCESS;
++}
++
++enum fwu_agent_error_t fmp_get_image_info(void *buffer, uint32_t size)
++{
++    enum fwu_agent_error_t status;
++
++    FWU_LOG_MSG("%s:%d Enter\n\r", __func__, __LINE__);
++
++    status = pack_image_info(buffer, size);
++
++    FWU_LOG_MSG("%s:%d Exit\n\r", __func__, __LINE__);
++
++    return status;
++}
++
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_fmp.h b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_fmp.h
+new file mode 100644
+index 000000000..40ff25736
+--- /dev/null
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_fmp.h
+@@ -0,0 +1,52 @@
++/*
++ * Copyright (c) 2022-2023, Arm Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ */
++
++#ifndef UEFI_FMP_H
++#define UEFI_FMP_H
++
++#include <stdint.h>
++#include "fwu_agent.h"
++
++/*
++ * Last Attempt Status Value
++ */
++
++#define LAST_ATTEMPT_STATUS_SUCCESS                                     0x00000000
++#define LAST_ATTEMPT_STATUS_ERROR_UNSUCCESSFUL                          0x00000001
++#define LAST_ATTEMPT_STATUS_ERROR_INSUFFICIENT_RESOURCES                0x00000002
++#define LAST_ATTEMPT_STATUS_ERROR_INCORRECT_VERSION                     0x00000003
++#define LAST_ATTEMPT_STATUS_ERROR_INVALID_FORMAT                        0x00000004
++#define LAST_ATTEMPT_STATUS_ERROR_AUTH_ERROR                            0x00000005
++#define LAST_ATTEMPT_STATUS_ERROR_PWR_EVT_AC                            0x00000006
++#define LAST_ATTEMPT_STATUS_ERROR_PWR_EVT_BATT                          0x00000007
++#define LAST_ATTEMPT_STATUS_ERROR_UNSATISFIED_DEPENDENCIES              0x00000008
++/* The LastAttemptStatus values of 0x1000 - 0x4000 are reserved for vendor usage. */
++#define LAST_ATTEMPT_STATUS_ERROR_UNSUCCESSFUL_VENDOR_RANGE_MIN         0x00001000
++#define LAST_ATTEMPT_STATUS_ERROR_UNSUCCESSFUL_VENDOR_RANGE_MAX         0x00004000
++
++/*
++ * Updates FMP information for the image matched by guid.
++ *
++ * guid : guid of the image
++ * current_version: current versions for the image
++ * attempt_version: attempted versions for the image
++ *
++ */
++enum fwu_agent_error_t fmp_set_image_info(struct efi_guid *guid,
++                     uint32_t current_version, uint32_t attempt_version,
++                     uint32_t last_attempt_status);
++
++/*
++ * Return fmp image information for all the updable images.
++ *
++ * buffer : pointer to the out buffer
++ * size : size of the buffer
++ *
++ */
++enum fwu_agent_error_t fmp_get_image_info(void *buffer, uint32_t size);
++
++#endif /* UEFI_FMP_H */
+-- 
+2.25.1
+
