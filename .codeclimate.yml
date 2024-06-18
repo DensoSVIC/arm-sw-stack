@@ -41,6 +41,7 @@ plugins:
       - ".rubocop.yml"
       - "**.patch"
       - "**.svg"
+      - "**.S"
       - "/public"
     dict_path: ".dictionary"
   yamllint:

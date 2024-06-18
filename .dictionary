@@ -476,6 +476,7 @@ nonterminating
 nooelint
 nopt
 noreboot
+nostdlib
 nosve
 NOTFOUND
 notifyid
@@ -484,6 +485,7 @@ NRDY
 nspe
 numpy
 NVRAM
+objcopy
 OBJS
 ODDFRM
 OECMAKE
