@@ -683,6 +683,7 @@ subvolume
 sufix
 suggestedvar
 swiotlb
+symvers
 sysconfdir
 sysctls
 sysctrl
@@ -717,6 +718,7 @@ txdone
 TXENA
 txpoll
 typeof
+uapi
 uart
 uartclk
 ubfx

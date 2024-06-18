@@ -10,6 +10,8 @@ PREFERRED_VERSION_zephyr-kernel = "3.5.0"
 ZEPHYR_INHERIT_CLASSES:append = " zephyr-arm-safety-island"
 ZEPHYR_TOOLCHAIN_VARIANT = "zephyr"
 
+PREFERRED_VERSION_arm-tstee = "1.1.2"
+
 SAFETY_ISLAND_C0_RECIPE ??= "zephyr-app-si-cl0"
 SAFETY_ISLAND_C1_RECIPE ??= "zephyr-app-si-cl1"
 SAFETY_ISLAND_C2_RECIPE ??= "zephyr-app-si-cl2"
