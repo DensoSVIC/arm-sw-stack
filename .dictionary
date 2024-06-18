@@ -55,6 +55,7 @@ beginline
 behaviour
 bindgen
 bindir
+binname
 bitbake
 bitbang
 bitfield
@@ -194,6 +195,7 @@ DTLS
 dtsi
 dunfell
 DVFS
+eabi
 earlycon
 earlyprintk
 EBBR
