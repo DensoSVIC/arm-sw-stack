@@ -1,0 +1,132 @@
+From c6879d6f57adc26b3da1eb03463a4390663299c6 Mon Sep 17 00:00:00 2001
+From: Qi Feng <qi.feng@arm.com>
+Date: Wed, 22 Nov 2023 15:38:04 +0800
+Subject: [PATCH] plat: Rename symbol names to common ones
+
+The kronos platform uses symbols provided by corstone1000. Rename the
+symbol names to common ones to reflect the fact.
+
+Signed-off-by: Qi Feng <qi.feng@arm.com>
+Upstream-Status: Inappropriate [Design is to revisted]
+---
+ .../provider/capsule_update_provider.c               | 12 ++++++------
+ .../service/capsule_update/provider/component.cmake  |  2 +-
+ ...corstone1000_fmp_service.c => plat_fmp_service.c} |  6 +++---
+ ...corstone1000_fmp_service.h => plat_fmp_service.h} |  6 +++---
+ 4 files changed, 13 insertions(+), 13 deletions(-)
+ rename components/service/capsule_update/provider/{corstone1000_fmp_service.c => plat_fmp_service.c} (98%)
+ rename components/service/capsule_update/provider/{corstone1000_fmp_service.h => plat_fmp_service.h} (77%)
+
+diff --git a/components/service/capsule_update/provider/capsule_update_provider.c b/components/service/capsule_update/provider/capsule_update_provider.c
+index 6809249..50ee103 100644
+--- a/components/service/capsule_update/provider/capsule_update_provider.c
++++ b/components/service/capsule_update/provider/capsule_update_provider.c
+@@ -11,15 +11,15 @@
+ #include <protocols/service/capsule_update/capsule_update_proto.h>
+ #include <protocols/rpc/common/packed-c/status.h>
+ #include "capsule_update_provider.h"
+-#include "corstone1000_fmp_service.h"
++#include "plat_fmp_service.h"
+ 
+ 
+ #define CAPSULE_UPDATE_REQUEST (0x1)
+ #define KERNEL_STARTED_EVENT   (0x2)
+ 
+-enum corstone1000_ioctl_id_t {
+-	IOCTL_CORSTONE1000_FWU_FLASH_IMAGES = 0,
+-	IOCTL_CORSTONE1000_FWU_HOST_ACK,
++enum plat_ioctl_id_t {
++	IOCTL_PLAT_FWU_FLASH_IMAGES = 0,
++	IOCTL_PLAT_FWU_HOST_ACK,
+ };
+ 
+ /* Service request handlers */
+@@ -77,14 +77,14 @@ static rpc_status_t event_handler(uint32_t opcode, struct rpc_caller *caller)
+ 	switch(opcode) {
+ 		case CAPSULE_UPDATE_REQUEST:
+ 		/* Openamp call with IOCTL for firmware update*/
+-		ioctl_id = IOCTL_CORSTONE1000_FWU_FLASH_IMAGES;
++		ioctl_id = IOCTL_PLAT_FWU_FLASH_IMAGES;
+ 		psa_call(caller,TFM_PLATFORM_SERVICE_HANDLE, TFM_PLATFORM_API_ID_IOCTL,
+ 			in_vec,IOVEC_LEN(in_vec), NULL, 0);
+ 		set_fmp_image_info(caller);
+ 		break;
+ 
+ 		case KERNEL_STARTED_EVENT:
+-		ioctl_id = IOCTL_CORSTONE1000_FWU_HOST_ACK;
++		ioctl_id = IOCTL_PLAT_FWU_HOST_ACK;
+ 		/*openamp call with IOCTL for kernel start*/
+ 		
+ 		psa_call(caller,TFM_PLATFORM_SERVICE_HANDLE, TFM_PLATFORM_API_ID_IOCTL,
+diff --git a/components/service/capsule_update/provider/component.cmake b/components/service/capsule_update/provider/component.cmake
+index 6b06014..d6a3304 100644
+--- a/components/service/capsule_update/provider/component.cmake
++++ b/components/service/capsule_update/provider/component.cmake
+@@ -10,5 +10,5 @@ endif()
+ 
+ target_sources(${TGT} PRIVATE
+ 	"${CMAKE_CURRENT_LIST_DIR}/capsule_update_provider.c"
+-	"${CMAKE_CURRENT_LIST_DIR}/corstone1000_fmp_service.c"
++	"${CMAKE_CURRENT_LIST_DIR}/plat_fmp_service.c"
+ 	)
+diff --git a/components/service/capsule_update/provider/corstone1000_fmp_service.c b/components/service/capsule_update/provider/plat_fmp_service.c
+similarity index 98%
+rename from components/service/capsule_update/provider/corstone1000_fmp_service.c
+rename to components/service/capsule_update/provider/plat_fmp_service.c
+index d811af9..7067c18 100644
+--- a/components/service/capsule_update/provider/corstone1000_fmp_service.c
++++ b/components/service/capsule_update/provider/plat_fmp_service.c
+@@ -4,7 +4,7 @@
+  * SPDX-License-Identifier: BSD-3-Clause
+  */
+ 
+-#include "corstone1000_fmp_service.h"
++#include "plat_fmp_service.h"
+ #include <psa/client.h>
+ #include <psa/sid.h>
+ #include <psa/storage_common.h>
+@@ -209,7 +209,7 @@ static variable_data_t fmp_variables_data[FMP_VARIABLES_COUNT];
+ 
+ #define IMAGE_INFO_BUFFER_SIZE	256
+ static char image_info_buffer[IMAGE_INFO_BUFFER_SIZE];
+-#define IOCTL_CORSTONE1000_FMP_IMAGE_INFO	2
++#define IOCTL_PLAT_FMP_IMAGE_INFO	2
+ 
+ static psa_status_t unpack_image_info(void *buffer, uint32_t size)
+ {
+@@ -242,7 +242,7 @@ static psa_status_t get_image_info(struct rpc_caller *caller)
+ {
+     psa_status_t status;
+     psa_handle_t handle;
+-    uint32_t ioctl_id = IOCTL_CORSTONE1000_FMP_IMAGE_INFO;
++    uint32_t ioctl_id = IOCTL_PLAT_FMP_IMAGE_INFO;
+ 
+     struct psa_invec in_vec[] = {
+ 	{ .base = &ioctl_id, .len = sizeof(ioctl_id) },
+diff --git a/components/service/capsule_update/provider/corstone1000_fmp_service.h b/components/service/capsule_update/provider/plat_fmp_service.h
+similarity index 77%
+rename from components/service/capsule_update/provider/corstone1000_fmp_service.h
+rename to components/service/capsule_update/provider/plat_fmp_service.h
+index 963223e..1dff506 100644
+--- a/components/service/capsule_update/provider/corstone1000_fmp_service.h
++++ b/components/service/capsule_update/provider/plat_fmp_service.h
+@@ -4,8 +4,8 @@
+  * SPDX-License-Identifier: BSD-3-Clause
+  */
+ 
+-#ifndef CORSTONE1000_FMP_SERVICE_H
+-#define CORSTONE1000_FMP_SERVICE_H
++#ifndef PLAT_FMP_SERVICE_H
++#define PLAT_FMP_SERVICE_H
+ 
+ #ifdef __cplusplus
+ extern "C" {
+@@ -22,4 +22,4 @@ void set_fmp_image_info(struct rpc_caller *caller);
+ } /* extern "C" */
+ #endif
+ 
+-#endif /* CORSTONE1000_FMP_SERVICE_H */
++#endif /* PLAT_FMP_SERVICE_H */
+-- 
+2.25.1
+

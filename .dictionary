@@ -24,6 +24,7 @@ alsa
 AMBA
 ANEG
 APIs
+apitest
 ArmAutoSolutions
 armffa
 armlmd
@@ -479,6 +480,7 @@ multilineident
 Multiview
 nameservice
 nanbield
+nanopb
 nativesdk
 Neoverse
 netback
@@ -528,6 +530,7 @@ OPENMAP
 openvswitch
 oper
 optee
+opteesp
 OSINDICATIONS
 outband
 outdir
@@ -587,7 +590,9 @@ PRMS
 procinfo
 PRODUCTID
 protid
+protvars
 prtad
+psatest
 PSCI
 pstate
 ptable

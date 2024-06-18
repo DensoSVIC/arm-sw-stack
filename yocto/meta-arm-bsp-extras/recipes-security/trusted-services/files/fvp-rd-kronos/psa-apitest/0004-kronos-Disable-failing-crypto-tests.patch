@@ -1,0 +1,49 @@
+From 0726af71c65bf8871f499d9cbab4b2f7bd7d5833 Mon Sep 17 00:00:00 2001
+From: Jiamei Xie <jiamei.xie@arm.com>
+Date: Tue, 29 Aug 2023 17:28:04 +0800
+Subject: [PATCH] kronos: Disable failing crypto tests
+
+The below crypto tests are not supported in kronos, remove them:
+  - psa_raw_key_agreement
+  - psa_aead_generate_nonce
+  - psa_hash_suspend
+  - psa_hash_resume
+
+Upstream-Status: Inappropriate [Kronos-specific]
+Signed-off-by: Jiamei Xie <jiamei.xie@arm.com>
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ api-tests/dev_apis/crypto/testsuite.db | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/api-tests/dev_apis/crypto/testsuite.db b/api-tests/dev_apis/crypto/testsuite.db
+index 2f09dcd..635d77b 100644
+--- a/api-tests/dev_apis/crypto/testsuite.db
++++ b/api-tests/dev_apis/crypto/testsuite.db
+@@ -62,7 +62,6 @@ test_c039
+ test_c040
+ test_c041
+ test_c042
+-test_c043
+ test_c044
+ test_c045
+ test_c046
+@@ -73,7 +72,6 @@ test_c050
+ test_c051
+ test_c052
+ test_c053
+-test_c054
+ test_c055
+ test_c056
+ test_c057
+@@ -81,7 +79,5 @@ test_c058
+ test_c059
+ test_c060
+ test_c061
+-test_c062, skip
+-test_c063, skip
+ 
+ (END)
+-- 
+2.25.1
+

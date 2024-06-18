@@ -1,0 +1,62 @@
+From 6a6047289aea642846fff7c4bd9673d1fb5b116e Mon Sep 17 00:00:00 2001
+From: Jun Zhang <jun.zhang@arm.com>
+Date: Tue, 15 Aug 2023 15:39:28 +0800
+Subject: [PATCH] Add new rpc caller for Crypto Service on kronos platform
+
+The new rpc caller is based on rss_comms acted as
+conversion layer and MHU v3 acted as transport layer.
+
+Upstream-Status: Pending
+Signed-off-by: Michael Zhao <michael.zhao@arm.com>
+Signed-off-by: Jun Zhang <jun.zhang@arm.com>
+---
+ deployments/se-proxy/infra/kronos/infra.cmake     |  2 +-
+ .../se-proxy/infra/kronos/service_proxy_factory.c | 15 ++++++++++++---
+ 2 files changed, 13 insertions(+), 4 deletions(-)
+
+diff --git a/deployments/se-proxy/infra/kronos/infra.cmake b/deployments/se-proxy/infra/kronos/infra.cmake
+index 084ce06..e6c363d 100644
+--- a/deployments/se-proxy/infra/kronos/infra.cmake
++++ b/deployments/se-proxy/infra/kronos/infra.cmake
+@@ -21,7 +21,7 @@ add_components(TARGET "se-proxy"
+ 	"components/service/secure_storage/backend/secure_storage_ipc"
+ 	"components/service/attestation/reporter/stub"
+ 	"components/service/attestation/key_mngr/stub"
+-	"components/service/crypto/backend/stub"
++	"components/service/crypto/backend/psa_ipc"
+ 	"components/service/crypto/client/psa"
+ 	"components/service/secure_storage/backend/mock_store"
+ )
+diff --git a/deployments/se-proxy/infra/kronos/service_proxy_factory.c b/deployments/se-proxy/infra/kronos/service_proxy_factory.c
+index 7524c87..154558e 100644
+--- a/deployments/se-proxy/infra/kronos/service_proxy_factory.c
++++ b/deployments/se-proxy/infra/kronos/service_proxy_factory.c
+@@ -43,13 +43,22 @@ struct rpc_interface *crypto_proxy_create(void)
+ {
+ 	struct rpc_interface *crypto_iface = NULL;
+ 	struct crypto_provider *crypto_provider;
++	struct rpc_caller *crypto_caller;
+
+-	if (stub_crypto_backend_init() == PSA_SUCCESS) {
++	crypto_caller = rss_comms_caller_init(&rss_comms);
++	if (!crypto_caller) {
++		EMSG("crypto caller is null\n");
++		return NULL;
++	}
+
+-		crypto_provider = crypto_provider_factory_create();
+-		crypto_iface = service_provider_get_rpc_interface(&crypto_provider->base_provider);
++	if (crypto_ipc_backend_init(&rss_comms.rpc_caller) != PSA_SUCCESS) {
++		EMSG("crypto ipc backend init failed\n");
++		return NULL;
+ 	}
+
++	crypto_provider = crypto_provider_factory_create();
++	crypto_iface = service_provider_get_rpc_interface(&crypto_provider->base_provider);
++
+ 	return crypto_iface;
+ }
+
+--
+2.25.1
+

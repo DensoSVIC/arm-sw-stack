@@ -1,0 +1,31 @@
+From 37ee8ec358d5ef0ec9daf5ab1ec29fbe9bfa93b9 Mon Sep 17 00:00:00 2001
+From: Robbie Cao <robbie.cao@arm.com>
+Date: Sun, 10 Dec 2023 22:03:46 +0800
+Subject: [PATCH] Plat: kronos: Add ns-interrupts-action for OP-TEE 3.22
+
+Add the ns-interrupts-action for OP-TEE 3.22 and
+also change the legacy-elf-format to elf-format.
+
+Upstream-Status: Pending
+Signed-off-by: Robbie Cao <robbie.cao@arm.com>
+---
+ .../se-proxy/config/kronos-opteesp/default_se-proxy.dts.in     | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/deployments/se-proxy/config/kronos-opteesp/default_se-proxy.dts.in b/deployments/se-proxy/config/kronos-opteesp/default_se-proxy.dts.in
+index ea78f22..18a6c86 100644
+--- a/deployments/se-proxy/config/kronos-opteesp/default_se-proxy.dts.in
++++ b/deployments/se-proxy/config/kronos-opteesp/default_se-proxy.dts.in
+@@ -16,7 +16,8 @@
+ 	execution-state = <0>; /* AArch64 */
+ 	xlat-granule = <0>; /* 4KiB */
+ 	messaging-method = <3>; /* Direct messaging only */
+-	legacy-elf-format = <1>;
++	ns-interrupts-action = <2>; /* Non-secure interrupts are signaled */
++	elf-format = <1>;
+ 
+ 	device-regions {
+ 		compatible = "arm,ffa-manifest-device-regions";
+-- 
+2.25.1
+

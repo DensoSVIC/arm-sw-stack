@@ -1,0 +1,542 @@
+From f080e289bef24ae6f5bb5647d0b78bb1f1e0aad5 Mon Sep 17 00:00:00 2001
+From: Jingzhao Ni <Jingzhao.Ni@arm.com>
+Date: Tue, 17 Oct 2023 16:34:38 +0800
+Subject: [PATCH] Modify the device name from xx-virtio to xx-shmem
+
+In Kronos platform, the rss_comms_virtio is a rpc channel that is used for
+communication between TS and RSS. But, it is not implemented by virtio
+mechanism. At the same time, an out-of-band shared-memory is defined to
+transfer data between both ends.
+
+In this patch:
+1. Modify the name from xx-virtio to xx-shm in dts and C code.
+2. Modify the name of C code files.
+2. Modify the build option for new file.
+3. Update the rss_comms caller function
+
+Upstream-Status: Pending
+Signed-off-by: Jingzhao Ni <Jingzhao.Ni@arm.com>
+---
+ .../messaging/rss_comms/sp/component.cmake    |   2 +-
+ .../rss_comms/sp/rss_comms_messenger.c        |   5 +-
+ .../rss_comms/sp/rss_comms_messenger.h        |   2 +-
+ .../messaging/rss_comms/sp/rss_comms_shm.c    | 110 +++++++++++++++++
+ .../{rss_comms_virtio.h => rss_comms_shm.h}   |  20 ++-
+ .../messaging/rss_comms/sp/rss_comms_virtio.c | 114 ------------------
+ .../rss_comms/caller/sp/rss_comms_caller.c    |  21 ++--
+ components/rpc/rss_comms/service_rss_comms.c  |  46 +++----
+ .../kronos-opteesp/default_se-proxy.dts.in    |   2 +-
+ 9 files changed, 155 insertions(+), 167 deletions(-)
+ create mode 100644 components/messaging/rss_comms/sp/rss_comms_shm.c
+ rename components/messaging/rss_comms/sp/{rss_comms_virtio.h => rss_comms_shm.h} (60%)
+ delete mode 100644 components/messaging/rss_comms/sp/rss_comms_virtio.c
+
+diff --git a/components/messaging/rss_comms/sp/component.cmake b/components/messaging/rss_comms/sp/component.cmake
+index f797713..225d248 100644
+--- a/components/messaging/rss_comms/sp/component.cmake
++++ b/components/messaging/rss_comms/sp/component.cmake
+@@ -14,7 +14,7 @@ set_property(TARGET ${TGT} APPEND PROPERTY PUBLIC_HEADER
+ 
+ target_sources(${TGT} PRIVATE
+ 	"${CMAKE_CURRENT_LIST_DIR}/rss_comms_messenger.c"
+-	"${CMAKE_CURRENT_LIST_DIR}/rss_comms_virtio.c"
++	"${CMAKE_CURRENT_LIST_DIR}/rss_comms_shm.c"
+ 	"${CMAKE_CURRENT_LIST_DIR}/rss_comms_mhu.c"
+ 	)
+ 
+diff --git a/components/messaging/rss_comms/sp/rss_comms_messenger.c b/components/messaging/rss_comms/sp/rss_comms_messenger.c
+index 8b591f1..2934d1a 100644
+--- a/components/messaging/rss_comms/sp/rss_comms_messenger.c
++++ b/components/messaging/rss_comms/sp/rss_comms_messenger.c
+@@ -10,14 +10,13 @@
+ #include "rss_comms_messenger.h"
+ #include "rss_comms_messenger_api.h"
+ #include "rss_comms_mhu.h"
+-#include "rss_comms_virtio.h"
+ #include <protocols/rpc/common/packed-c/status.h>
+ 
+ static const struct rss_comms_platform_ops rss_comms_ops = {
+ 	.transport_init = rss_comms_mhu_init,
+ 	.transport_deinit = rss_comms_mhu_deinit,
+-	.platform_init = rss_comms_virtio_init,
+-	.platform_deinit = rss_comms_virtio_deinit,
++	.platform_init = rss_comms_init,
++	.platform_deinit = rss_comms_deinit,
+ };
+ 
+ int rss_comms_messenger_init(struct rss_comms_messenger *rss_comms_msg)
+diff --git a/components/messaging/rss_comms/sp/rss_comms_messenger.h b/components/messaging/rss_comms/sp/rss_comms_messenger.h
+index 91b5322..b842944 100644
+--- a/components/messaging/rss_comms/sp/rss_comms_messenger.h
++++ b/components/messaging/rss_comms/sp/rss_comms_messenger.h
+@@ -10,7 +10,7 @@
+ #include <stddef.h>
+ #include <stdint.h>
+ #include "rss_comms_mhu.h"
+-#include "rss_comms_virtio.h"
++#include "rss_comms_shm.h"
+ 
+ struct rss_comms_platform_ops {
+ 	int (*transport_init)(struct rss_comms_messenger *rss_comms_msg);
+diff --git a/components/messaging/rss_comms/sp/rss_comms_shm.c b/components/messaging/rss_comms/sp/rss_comms_shm.c
+new file mode 100644
+index 0000000..ca515b6
+--- /dev/null
++++ b/components/messaging/rss_comms/sp/rss_comms_shm.c
+@@ -0,0 +1,110 @@
++/*
++ * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++#include <platform/interface/device_region.h>
++#include <config/interface/config_store.h>
++#include <config/interface/config_blob.h>
++#include <errno.h>
++#include <stdlib.h>
++#include <stdint.h>
++#include <limits.h>
++#include <stddef.h>
++#include <trace.h>
++#include "rss_comms_caller.h"
++#include "rss_comms_shm.h"
++
++
++static int rss_comms_get_shmem(const char *dev,
++				     struct device_region *dev_region)
++{
++	bool found;
++
++	found = config_store_query(CONFIG_CLASSIFIER_DEVICE_REGION, dev, 0,
++				   dev_region, sizeof(*dev_region));
++	if (!found) {
++		EMSG("[RSS-COMMS] shm: device region not found: %s\n", dev);
++		return -EINVAL;
++	}
++
++	if (dev_region->base_addr == 0 || dev_region->io_region_size == 0) {
++		EMSG("[RSS-COMMS] shm: device region not valid\n");
++		return -EINVAL;
++	}
++
++	IMSG("rss_comms: shm: device region found: %s addr: 0x%lx size: %ld\n",
++	     dev, dev_region->base_addr, dev_region->io_region_size);
++
++	return  0;
++}
++
++static void rss_comms_shm_set(struct rss_comms_shm *shm,
++				   struct device_region *shm_region)
++{
++	shm->shm_addr = shm_region->base_addr;
++	shm->shm_size = shm_region->io_region_size;
++
++	IMSG("SHEM: base: 0x%0lx size: %ld",
++	     shm->shm_addr, shm->shm_size);
++}
++
++int rss_comms_init(struct rss_comms_messenger *rss_comms_msg)
++{
++	struct device_region shm_info;
++	struct rss_comms_shm *rss_shm;
++	int ret;
++
++	if (!rss_comms_msg) {
++		EMSG("[RSS-COMMS] rss comms messenger is null\n");
++		return -1;
++	}
++
++	if (rss_comms_msg->platform) {
++		IMSG("[RSS-COMMS] rss comms platform already initialized\n");
++		return 0;
++	}
++
++	rss_shm = malloc(sizeof(*rss_shm));
++	if (!rss_shm) {
++		EMSG("[RSS-COMMS] rss comms malloc dev failed\n");
++		return -ENOMEM;
++	}
++
++	rss_shm->rss_comms_msg = rss_comms_msg;
++
++	ret = rss_comms_get_shmem("rss_comms-shm", &shm_info);
++	if (ret < 0) {
++		EMSG("[RSS-COMMS] rss comms shared-memory mapping failed");
++		goto failed;
++	}
++
++	rss_comms_shm_set(rss_shm, &shm_info);
++
++	rss_comms_msg->platform = rss_shm;
++
++	return 0;
++
++failed:
++	free(rss_shm);
++
++	return ret;
++}
++
++int rss_comms_deinit(struct rss_comms_messenger *rss_comms_msg)
++{
++
++	struct rss_comms_shm *rss_shm;
++
++	if (!rss_comms_msg->platform)
++		return 0;
++
++	rss_shm = rss_comms_msg->platform;
++
++	free(rss_shm);
++
++	rss_comms_msg->platform = NULL;
++
++	return 0;
++}
+diff --git a/components/messaging/rss_comms/sp/rss_comms_virtio.h b/components/messaging/rss_comms/sp/rss_comms_shm.h
+similarity index 60%
+rename from components/messaging/rss_comms/sp/rss_comms_virtio.h
+rename to components/messaging/rss_comms/sp/rss_comms_shm.h
+index cceb7a4..2fd3aff 100644
+--- a/components/messaging/rss_comms/sp/rss_comms_virtio.h
++++ b/components/messaging/rss_comms/sp/rss_comms_shm.h
+@@ -4,8 +4,8 @@
+  * SPDX-License-Identifier: BSD-3-Clause
+  */
+ 
+-#ifndef __RSS_COMMS_VIRTIO_H__
+-#define __RSS_COMMS_VIRTIO_H__
++#ifndef __RSS_COMMS_SHM_H__
++#define __RSS_COMMS_SHM_H__
+ 
+ #include <stddef.h>
+ #include "rss_comms_caller.h"
+@@ -18,19 +18,15 @@ union __packed __attribute__((aligned(4))) rss_comms_io_buffer_t {
+ 	struct serialized_rss_comms_reply_t reply;
+ };
+ 
+-struct rss_comms_virtio_shm {
+-	uintptr_t base_addr;
+-	size_t size;
+-};
+-
+-struct rss_comms_virtio {
++struct rss_comms_shm {
+ 	struct rss_comms_messenger *rss_comms_msg;
+-	struct rss_comms_virtio_shm shm;
+ 	union rss_comms_io_buffer_t io_buf;
+ 	size_t msg_size;
++	uintptr_t shm_addr;
++	size_t shm_size;
+ };
+ 
+-int rss_comms_virtio_init(struct rss_comms_messenger *rss_comms_msg);
+-int rss_comms_virtio_deinit(struct rss_comms_messenger *rss_comms_msg);
++int rss_comms_init(struct rss_comms_messenger *rss_comms_msg);
++int rss_comms_deinit(struct rss_comms_messenger *rss_comms_msg);
+ 
+-#endif /* __RSS_COMMS_VIRTIO_H__ */
++#endif /* __RSS_COMMS_SHM_H__ */
+diff --git a/components/messaging/rss_comms/sp/rss_comms_virtio.c b/components/messaging/rss_comms/sp/rss_comms_virtio.c
+deleted file mode 100644
+index 664f36f..0000000
+--- a/components/messaging/rss_comms/sp/rss_comms_virtio.c
++++ /dev/null
+@@ -1,114 +0,0 @@
+-/*
+- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- */
+-
+-#include <platform/interface/device_region.h>
+-#include <config/interface/config_store.h>
+-#include <config/interface/config_blob.h>
+-#include <errno.h>
+-#include <stdlib.h>
+-#include <stdint.h>
+-#include <limits.h>
+-#include <stddef.h>
+-#include <trace.h>
+-#include "rss_comms_caller.h"
+-#include "rss_comms_virtio.h"
+-
+-#define RSS_COMMS_SHEM_PHYS 0xA03F0000
+-
+-
+-static int rss_comms_virtio_device_get(const char *dev,
+-				     struct device_region *dev_region)
+-{
+-	bool found;
+-
+-	found = config_store_query(CONFIG_CLASSIFIER_DEVICE_REGION, dev, 0,
+-				   dev_region, sizeof(*dev_region));
+-	if (!found) {
+-		EMSG("[RSS-COMMS] virtio: device region not found: %s\n", dev);
+-		return -EINVAL;
+-	}
+-
+-	if (dev_region->base_addr == 0 || dev_region->io_region_size == 0) {
+-		EMSG("[RSS-COMMS] virtio: device region not valid\n");
+-		return -EINVAL;
+-	}
+-
+-	IMSG("rss_comms: virtio: device region found: %s addr: 0x%lx size: %ld\n",
+-	     dev, dev_region->base_addr, dev_region->io_region_size);
+-
+-	return  0;
+-}
+-
+-static void rss_comms_virtio_shm_set(struct rss_comms_virtio *virtio,
+-				   struct device_region *virtio_region)
+-{
+-	struct rss_comms_virtio_shm *shm = &virtio->shm;
+-
+-	shm->base_addr = virtio_region->base_addr;
+-	shm->size = virtio_region->io_region_size;
+-
+-	IMSG("SHEM: base: 0x%0lx size: 0x%0lx size: %ld",
+-	     shm->base_addr, shm->size, shm->size);
+-}
+-
+-int rss_comms_virtio_init(struct rss_comms_messenger *rss_comms_msg)
+-{
+-	struct device_region virtio_dev;
+-	struct rss_comms_virtio *virtio;
+-	int ret;
+-
+-	if (!rss_comms_msg) {
+-		EMSG("[RSS-COMMS] rss comms messenger is null\n");
+-		return -1;
+-	}
+-
+-	if (rss_comms_msg->platform) {
+-		IMSG("[RSS-COMMS] rss comms platform already initialized\n");
+-		return 0;
+-	}
+-
+-	virtio = malloc(sizeof(*virtio));
+-	if (!virtio) {
+-		EMSG("[RSS-COMMS] rss comms malloc virtio failed\n");
+-		return -ENOMEM;
+-	}
+-
+-	virtio->rss_comms_msg = rss_comms_msg;
+-
+-	ret = rss_comms_virtio_device_get("rss_comms-virtio", &virtio_dev);
+-	if (ret < 0) {
+-		EMSG("[RSS-COMMS] rss comms virtio memory mapping failed");
+-		goto free_virtio;
+-	}
+-
+-	rss_comms_virtio_shm_set(virtio, &virtio_dev);
+-
+-	rss_comms_msg->platform = virtio;
+-
+-	return 0;
+-
+-free_virtio:
+-	free(virtio);
+-
+-	return ret;
+-}
+-
+-int rss_comms_virtio_deinit(struct rss_comms_messenger *rss_comms_msg)
+-{
+-
+-	struct rss_comms_virtio *virtio;
+-
+-	if (!rss_comms_msg->platform)
+-		return 0;
+-
+-	virtio = rss_comms_msg->platform;
+-
+-	free(virtio);
+-
+-	rss_comms_msg->platform = NULL;
+-
+-	return 0;
+-}
+diff --git a/components/rpc/rss_comms/caller/sp/rss_comms_caller.c b/components/rpc/rss_comms/caller/sp/rss_comms_caller.c
+index bc3052a..60aa2c5 100644
+--- a/components/rpc/rss_comms/caller/sp/rss_comms_caller.c
++++ b/components/rpc/rss_comms/caller/sp/rss_comms_caller.c
+@@ -8,7 +8,6 @@
+ #include <trace.h>
+ #include "rss_comms_caller.h"
+ #include "rss_comms_mhu.h"
+-#include "rss_comms_virtio.h"
+ #include <protocols/rpc/common/packed-c/status.h>
+ #include <platform/drivers/arm/mhu_driver/mhu_v3_x.h>
+ 
+@@ -20,10 +19,9 @@ static rpc_status_t rss_comms_call_invoke(void *context, rpc_call_handle handle,
+ 	struct mhu_v3_x_dev_t *rx_dev;
+ 	struct mhu_v3_x_dev_t *tx_dev;
+ 	struct rss_comms_mhu *mhu;
+-	struct rss_comms_virtio *virtio;
+-	struct rss_comms_virtio_shm *shm;
++	struct rss_comms_shm *rss_shm;
+ 	union rss_comms_io_buffer_t io_buf;
+-	struct rss_comms_messenger *rpmsg;
++	struct rss_comms_messenger *msg;
+ 	enum mhu_error_t err;
+ 
+ 	(void)opcode;
+@@ -33,20 +31,19 @@ static rpc_status_t rss_comms_call_invoke(void *context, rpc_call_handle handle,
+ 		return TS_RPC_ERROR_INVALID_PARAMETER;
+ 	}
+ 
+-	rpmsg = &rss_comms->rss_comms_msg;
+-	if (!rpmsg->transport) {
++	msg = &rss_comms->rss_comms_msg;
++	if (!msg->transport) {
+ 		EMSG("[RSS-COMMS] transport is null\n");
+ 		return PSA_ERROR_GENERIC_ERROR;
+ 	}
+ 
+-	mhu = rpmsg->transport;
++	mhu = msg->transport;
+ 	rx_dev = &mhu->rx_dev;
+ 	tx_dev = &mhu->tx_dev;
+-	virtio = rpmsg->platform;
+-	shm = &virtio->shm;
+-	io_buf = virtio->io_buf;
++	rss_shm = msg->platform;
++	io_buf = rss_shm->io_buf;
+ 
+-	err = mhu_send_data(tx_dev, shm->base_addr, (uint8_t *)&io_buf.msg, virtio->msg_size);
++	err = mhu_send_data(tx_dev, rss_shm->shm_addr, (uint8_t *)&io_buf.msg, rss_shm->msg_size);
+ 	if (err != MHU_ERR_NONE) {
+ 		EMSG("[RSS-COMMS] mhu send data failed!\n");
+ 		return PSA_ERROR_COMMUNICATION_FAILURE;
+@@ -60,7 +57,7 @@ static rpc_status_t rss_comms_call_invoke(void *context, rpc_call_handle handle,
+ 	memset(&io_buf.msg, 0xA5, msg_size);
+ #endif
+ 
+-	err = mhu_receive_data(rx_dev, shm->base_addr, (uint8_t *)&io_buf.reply, resp_len);
++	err = mhu_receive_data(rx_dev, rss_shm->shm_addr, (uint8_t *)&io_buf.reply, resp_len);
+ 	if (err != MHU_ERR_NONE) {
+ 		EMSG("[RSS-COMMS] mhu receive data failed!\n");
+ 		return PSA_ERROR_COMMUNICATION_FAILURE;
+diff --git a/components/rpc/rss_comms/service_rss_comms.c b/components/rpc/rss_comms/service_rss_comms.c
+index b90f697..5ace987 100644
+--- a/components/rpc/rss_comms/service_rss_comms.c
++++ b/components/rpc/rss_comms/service_rss_comms.c
+@@ -75,13 +75,13 @@ psa_status_t __psa_call(struct rpc_caller *caller, psa_handle_t handle,
+ 	 * functions not being reentrant becomes a problem.
+ 	 */
+ 	union rss_comms_io_buffer_t io_buf;
+-	struct rss_comms_messenger *rpmsg;
++	struct rss_comms_messenger *msg;
+ 	psa_status_t psa_status = PSA_SUCCESS;
+ 	static uint8_t seq_num = 1U;
+ 	psa_status_t status;
+ 	size_t reply_size = sizeof(io_buf.reply);
+ 	psa_status_t return_val;
+-	struct rss_comms_virtio *virtio;
++	struct rss_comms_shm *rss_shm;
+ 	struct rss_comms_caller *rss_comms;
+ 	rpc_call_handle rpc_handle;
+ 	rpc_handle = caller;
+@@ -100,37 +100,37 @@ psa_status_t __psa_call(struct rpc_caller *caller, psa_handle_t handle,
+ 		return PSA_ERROR_GENERIC_ERROR;
+ 	}
+ 
+-	rpmsg = &rss_comms->rss_comms_msg;
+-	if (!rpmsg->transport) {
++	msg = &rss_comms->rss_comms_msg;
++	if (!msg->transport) {
+ 		EMSG("[RSS-COMMS] psa_call messenger is null\n");
+ 		return PSA_ERROR_GENERIC_ERROR;
+ 	}
+ 
+-	virtio = (struct rss_comms_virtio *)rpmsg->platform;
++	rss_shm = (struct rss_comms_shm *)msg->platform;
+ 
+ 	if (type > INT16_MAX || type < INT16_MIN || in_len > PSA_MAX_IOVEC
+ 	    || out_len > PSA_MAX_IOVEC) {
+ 		return PSA_ERROR_INVALID_ARGUMENT;
+ 	}
+ 
+-	virtio->io_buf.msg.header.seq_num = seq_num;
++	rss_shm->io_buf.msg.header.seq_num = seq_num;
+ 	/* No need to distinguish callers (currently concurrent calls are not supported). */
+-	virtio->io_buf.msg.header.client_id = client_id;
+-	virtio->io_buf.msg.header.protocol_ver = select_protocol_version(in_vec, in_len, out_vec, out_len);
++	rss_shm->io_buf.msg.header.client_id = client_id;
++	rss_shm->io_buf.msg.header.protocol_ver = select_protocol_version(in_vec, in_len, out_vec, out_len);
+ 
+ 	status = rss_protocol_serialize_msg(handle, type, in_vec, in_len, out_vec,
+-					    out_len, &virtio->io_buf.msg, &msg_size);
++					    out_len, &rss_shm->io_buf.msg, &msg_size);
+ 	if (status != PSA_SUCCESS) {
+ 		EMSG("psa_call: serialize msg failed: %d\n", status);
+ 		return status;
+ 	}
+ 
+-	virtio->msg_size = msg_size;
++	rss_shm->msg_size = msg_size;
+ 
+-	IMSG("[RSS-COMMS] Sending message\n");
+-	IMSG("protocol_ver=%u\n", virtio->io_buf.msg.header.protocol_ver);
+-	IMSG("seq_num=%u\n", virtio->io_buf.msg.header.seq_num);
+-	IMSG("client_id=%u\n", virtio->io_buf.msg.header.client_id);
++	DMSG("[RSS-COMMS] Sending message\n");
++	DMSG("protocol_ver=%u\n", rss_shm->io_buf.msg.header.protocol_ver);
++	DMSG("seq_num=%u\n", rss_shm->io_buf.msg.header.seq_num);
++	DMSG("client_id=%u\n", rss_shm->io_buf.msg.header.client_id);
+ 
+ 	ret = rpc_caller_invoke(caller, rpc_handle, 0, &psa_status, &resp,  &reply_size);
+ 	if (ret != TS_RPC_CALL_ACCEPTED) {
+@@ -138,25 +138,25 @@ psa_status_t __psa_call(struct rpc_caller *caller, psa_handle_t handle,
+ 		return PSA_ERROR_GENERIC_ERROR;
+ 	}
+ 
+-	virtio->io_buf.reply = *(struct serialized_rss_comms_reply_t *)resp;
++	rss_shm->io_buf.reply = *(struct serialized_rss_comms_reply_t *)resp;
+ 
+-	IMSG("[RSS-COMMS] Received reply\n");
+-	IMSG("protocol_ver=%u\n", virtio->io_buf.reply.header.protocol_ver);
+-	IMSG("seq_num=%u\n", virtio->io_buf.reply.header.seq_num);
+-	IMSG("client_id=%u\n", virtio->io_buf.reply.header.client_id);
+-	IMSG("reply_size=%lu\n", reply_size);
++	DMSG("[RSS-COMMS] Received reply\n");
++	DMSG("protocol_ver=%u\n", rss_shm->io_buf.reply.header.protocol_ver);
++	DMSG("seq_num=%u\n", rss_shm->io_buf.reply.header.seq_num);
++	DMSG("client_id=%u\n", rss_shm->io_buf.reply.header.client_id);
++	DMSG("reply_size=%lu\n", reply_size);
+ 
+ 	status = rss_protocol_deserialize_reply(out_vec, out_len, &return_val,
+-						&virtio->io_buf.reply, reply_size);
++						&rss_shm->io_buf.reply, reply_size);
+ 	if (status != PSA_SUCCESS) {
+ 		EMSG("psa_call: protocol deserialize reply failed: %d\n", status);
+ 		return status;
+ 	}
+ 
+-	IMSG("return_val=%d\n", return_val);
++	DMSG("return_val=%d\n", return_val);
+ 
+ 	/* Clear the MHU message buffer to remove assets from memory */
+-	memset(&virtio->io_buf, 0x0, sizeof(virtio->io_buf));
++	memset(&rss_shm->io_buf, 0x0, sizeof(rss_shm->io_buf));
+ 
+ 	seq_num++;
+ 
+diff --git a/deployments/se-proxy/config/kronos-opteesp/default_se-proxy.dts.in b/deployments/se-proxy/config/kronos-opteesp/default_se-proxy.dts.in
+index 6f6e776..ea78f22 100644
+--- a/deployments/se-proxy/config/kronos-opteesp/default_se-proxy.dts.in
++++ b/deployments/se-proxy/config/kronos-opteesp/default_se-proxy.dts.in
+@@ -33,7 +33,7 @@
+ 			pages-count = <16>;
+ 			attributes = <0x3>; /* read-write */
+ 		};
+-		rss_comms-virtio {
++		rss_comms-shm {
+ 			/* Armv8 A Foundation Platform values */
+ 			base-address = <0x00000000 0xFFFFC000>; /* shared memory for the communication between TS and RSS */
+ 			pages-count = <16>;
+-- 
+2.25.1
+
