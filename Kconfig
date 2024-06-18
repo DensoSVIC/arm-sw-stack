@@ -92,6 +92,14 @@ config RUN_DISTROS_UNATTENDED_TESTS
 # Set up Kas #
 ##############
 
+config MACHINE
+    string
+    default "fvp-rd-kronos"
+
+config KAS_INCLUDE_BSP
+    string
+    default "yocto/kas/arm-bsp-extras.yml"
+
 config KAS_INCLUDE_ARCHITECTURE
     string
     default "yocto/kas/virtualization.yml" if ARCHITECTURE_VIRTUALIZATION

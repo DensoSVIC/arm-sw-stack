@@ -11,8 +11,6 @@ header:
     - yocto/kas/arm-safety-island.yml
     - repo: meta-cassini
       file: kas/cassini.yml
-    - repo: meta-arm
-      file: kas/fvp-rd-kronos.yml
     - yocto/kas/ref-stack-pinned-repos.yml
 
 repos:
