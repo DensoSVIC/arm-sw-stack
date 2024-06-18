@@ -36,6 +36,7 @@ Asym
 Audrow
 autoboot
 autoload
+automount
 Autonegotiation
 autosectionlabel
 autotools
@@ -96,6 +97,7 @@ CCAP
 CCARGS
 ccsidr
 cdev
+cfgrvbaraddr
 CFLAGS
 CHACHA
 chainloader
@@ -196,6 +198,7 @@ DomU1
 DomU2
 domus
 DOVERLAY
+downloadfilename
 DPLX
 DPYTHON
 DRBG
@@ -259,6 +262,7 @@ fancyhead
 fancyhf
 fancypagestyle
 fasteoi
+fastsim
 fatfs
 fatload
 fbaa
@@ -269,8 +273,10 @@ FILESEXTRAPATHS
 filesystems
 finit
 fiptool
+flashloader
 fmu
 fmus
+fname
 footrulewidth
 fprintf
 freeable
@@ -278,6 +284,7 @@ fstype
 FSTYPES
 fullfill
 funtionalities
+fvpboot
 genericarm
 genericarm64
 genid
@@ -335,6 +342,7 @@ ifdef
 ifndef
 iidr
 IMAGEDEPENDS
+IMAGETYPE
 imgtool
 importlib
 inappropriatemsg
@@ -494,6 +502,7 @@ nanbield
 nanopb
 nativesdk
 Neoverse
+neoversev
 netback
 netdev
 netfilter
@@ -530,6 +539,7 @@ OBJS
 ODDFRM
 OECMAKE
 OECONF
+OEFVP
 oefvpsshtarget
 oemake
 oeqa
@@ -571,6 +581,7 @@ PCSA
 pdbcw
 pdelay
 pdev
+periph
 phandle
 phandles
 physinfo
@@ -608,6 +619,7 @@ prtad
 psatest
 PSCI
 pstate
+pswd
 ptable
 ptest
 ptestrunner
@@ -635,6 +647,7 @@ readl
 readme
 readreg
 refclk
+regs
 releasename
 releasenotes
 remoteproc
@@ -663,6 +676,7 @@ rsvd
 runfvp
 runmake
 runstate
+rvbars
 rvdev
 RXEN
 rxlen
@@ -818,8 +832,10 @@ vifname
 virglrenderer
 VIRT
 virtio
+virtioblockdevice
 virtiorng
 virtqueue
+visualisation
 VLAN
 vLPI
 vmap

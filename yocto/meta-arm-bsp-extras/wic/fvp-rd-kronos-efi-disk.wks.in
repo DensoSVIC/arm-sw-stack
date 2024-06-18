@@ -1,0 +1,11 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: MIT
+
+part /boot --label boot --active --align 1024 --use-uuid --part-type EF00 --source bootimg-efi --sourceparams="loader=${EFI_PROVIDER}"
+
+part / --label root --align 1024 --use-uuid --source rootfs --fstype=ext4
+
+bootloader --ptable gpt --timeout=1 --append="${GRUB_LINUX_APPEND}"
