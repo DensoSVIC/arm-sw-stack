@@ -1,0 +1,30 @@
+From cf56eaab5abf2273e613920f352e65c16d1118f9 Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Mon, 8 Jan 2024 14:42:39 +0000
+Subject: [PATCH] core:arm: Remove hardcoded log level value
+
+CFG_TEE_CORE_LOG_LEVEL is hardcoded to the value 4,
+remove this hardcoded value to be able to set it from
+meta-arm.
+
+Upstream-Status: Pending [Not submitted to upstream yet]
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ core/arch/arm/plat-rdkronos/conf.mk | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/core/arch/arm/plat-rdkronos/conf.mk b/core/arch/arm/plat-rdkronos/conf.mk
+index 69f924361..f2908183c 100644
+--- a/core/arch/arm/plat-rdkronos/conf.mk
++++ b/core/arch/arm/plat-rdkronos/conf.mk
+@@ -5,7 +5,6 @@ platform-cflags-debug-info = -gdwarf-4
+ platform-aflags-debug-info = -gdwarf-4
+ 
+ CFG_DEBUG_INFO = y
+-CFG_TEE_CORE_LOG_LEVEL = 4
+ 
+ CFG_ARM64_core ?= y
+ 
+-- 
+2.25.1
+
