@@ -6,7 +6,7 @@
 
 # Validate layers are Yocto Project Compatible
 check-layers:
-  extends: .kas_build_arm_auto_solutions
+  extends: .kas_build_sw_ref_stack
   script:
     - echo "Validate layer $LAYER is Yocto Project compatible"
     - kas shell --update --force-checkout

@@ -20,7 +20,7 @@
     GROUP_ID:
 
 # Extend the kas base build to enable to use of repos that are not yet public
-.kas_build_arm_auto_solutions:
+.kas_build_sw_ref_stack:
   extends:
     - .kas_build
   variables:
@@ -73,8 +73,8 @@
     - mkdir --verbose --parents
         $IMAGE_DIR
 
-.kas_image_build_arm_auto_solutions:
-  extends: .kas_build_arm_auto_solutions
+.kas_image_build_sw_ref_stack:
+  extends: .kas_build_sw_ref_stack
   parallel:
     matrix:
       - BUILD_HOST_ARCH: [arm64, x86_64]
@@ -130,22 +130,22 @@ build-retention:
       --async=true ${FVP_SERVER_IMAGE_BUILD_PATH}
 
 Image-Build-baremetal:
-  extends: .kas_image_build_arm_auto_solutions
+  extends: .kas_image_build_sw_ref_stack
   variables:
     KAS_CONFIGS: baremetal
 
 Image-Build-baremetal-si0-bridge-ethernet0:
-  extends: .kas_image_build_arm_auto_solutions
+  extends: .kas_image_build_sw_ref_stack
   variables:
     KAS_CONFIGS: baremetal/si0-bridge-ethernet0
 
 Image-Build-baremetal-cam:
-  extends: .kas_image_build_arm_auto_solutions
+  extends: .kas_image_build_sw_ref_stack
   variables:
     KAS_CONFIGS: baremetal/cam
 
 Image-Build-baremetal-hipc-validation:
-  extends: .kas_image_build_arm_auto_solutions
+  extends: .kas_image_build_sw_ref_stack
   variables:
     KAS_CONFIGS: baremetal/hipc-validation
     DEPLOY_DIR: $CI_PROJECT_DIR/work/build/tmp_baremetal/deploy
@@ -153,12 +153,12 @@ Image-Build-baremetal-hipc-validation:
     GENERATE_BUILD_INFO_JOB: "true"
 
 Image-Build-baremetal-si-psa-storage-tests:
-  extends: .kas_image_build_arm_auto_solutions
+  extends: .kas_image_build_sw_ref_stack
   variables:
     KAS_CONFIGS: baremetal/si-psa-storage-tests
 
 Image-Build-baremetal-si-psa-crypto-tests:
-  extends: .kas_image_build_arm_auto_solutions
+  extends: .kas_image_build_sw_ref_stack
   variables:
     KAS_CONFIGS: baremetal/si-psa-crypto-tests
 
@@ -180,22 +180,22 @@ fvp-summary-render:
   when: always
 
 Image-Build-virtualization:
-  extends: .kas_image_build_arm_auto_solutions
+  extends: .kas_image_build_sw_ref_stack
   variables:
     KAS_CONFIGS: virtualization
 
 Image-Build-virtualization-hipc-validation:
-  extends: .kas_image_build_arm_auto_solutions
+  extends: .kas_image_build_sw_ref_stack
   variables:
     KAS_CONFIGS: virtualization/hipc-validation
 
 Image-Build-virtualization-cam:
-  extends: .kas_image_build_arm_auto_solutions
+  extends: .kas_image_build_sw_ref_stack
   variables:
     KAS_CONFIGS: virtualization/cam
 
 Image-Build-virtualization-nosve:
-  extends: .kas_image_build_arm_auto_solutions
+  extends: .kas_image_build_sw_ref_stack
   variables:
     KAS_CONFIGS: virtualization/nosve
 
