@@ -2913,9 +2913,9 @@ This Software Stack currently supports three Linux distributions: `Debian Stable
 
 .. note::
 
-  The installation of a Linux distribution requires some manual interaction, for
-  example, some necessary selections or confirmations, entering the user and
-  password, etc.
+  The manual installation of a Linux distribution requires some manual
+  interaction, for example, some necessary selections or confirmations,
+  entering the user and password, etc.
 
   The whole installation process takes a long time (possibly up to 10 hours, or
   even longer).
@@ -2931,10 +2931,18 @@ Software Stack.
 Debian
 ------
 
+Distro Unattended Installation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Not supported in the current release.
+
+Distro Manual Installation
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 To install Debian, you can refer to the `Debian GNU/Linux Installation Guide`_.
 
 Distro Installation Media Preparation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To run the configuration menu:
 
@@ -2957,7 +2965,7 @@ To build the Arm SystemReady IR Linux distros installation tests:
 |
 
 Distro Installation
-^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~
 
 Run the following command to start the installation:
 
@@ -3059,10 +3067,18 @@ installation process and how to solve it:
 openSUSE
 --------
 
+Distro Unattended Installation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Not supported in the current release.
+
+Distro Manual Installation
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 To install openSUSE, you can refer to the `openSUSE Installation Guide`_.
 
 Distro Installation Media Preparation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To run the configuration menu:
 
@@ -3085,7 +3101,7 @@ To build the Arm SystemReady IR Linux distros installation tests:
 |
 
 Distro Installation
-^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~
 
 Run the following command to start the installation:
 
@@ -3158,10 +3174,17 @@ Select ``Installation`` to start the installation process.
 Fedora
 ------
 
-To install Fedora, you can refer to the `Fedora Installation Guide`_.
+Distro Unattended Installation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Distro Installation Media Preparation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+In this test we have modified the installation ISO image to add the kickstart
+configuration file inside it. This required editing the ``grub.cfg`` file inside
+the ISO image to locate the kickstart configuration file (:meta-arm-repo:`meta\
+-arm-systemready/recipes-test/arm-systemready-linux-distros/unattended-boot\
+-conf/Fedora/ks.cfg`).
+
+Distro Installation
+~~~~~~~~~~~~~~~~~~~
 
 To run the configuration menu:
 
@@ -3176,7 +3199,82 @@ To build the Arm SystemReady IR Linux distros installation tests:
    ``Use-Case`` menu.
 2. Select ``Build``.
 
-.. image:: ../images/build_config_sr_distro_fedora.*
+.. image:: ../images/build_config_sr_distro_fedora_unattended.*
+   :align: center
+   :width: 60 %
+   :alt: Arm Auto Solutions Build Configuration Menu - Fedora Linux Distro Installation
+
+|
+
+  A similar output to the following indicates when the installation is finished, which will take
+  around 12 hours:
+
+  .. code-block:: text
+
+     Transitioned to on
+     Installation status: Loading the installer, kernel and initrd...
+     Installation status: Setting up the installation environment...
+     Installation status: Installing the software packages...
+     Installation status: Fedora installation finished successfully.
+     Transitioned to off
+     RESULTS:
+     RESULTS - arm_systemready_fedora_unattended.SystemReadyFedoraUnattendedTest.test_fedora_unattended: PASSED (38743.47s)
+     SUMMARY:
+     arm-systemready-linux-distros-fedora () - Ran 1 test in 38743.478s
+
+* Log in
+
+  After the installation is finished, run the following command to log
+  into the Linux shell:
+
+  .. code-block:: text
+
+     kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
+  
+  Log into the Linux shell with the user created during the installation
+  using the username ``user`` and the password ``unsafe``.
+
+* Terminate the FVP
+
+  To shut down the FVP and terminate the emulation automatically, run the
+  following command.
+
+      .. code-block:: text
+
+         sudo shutdown now
+
+  The below message indicates the shutdown process is complete.
+
+      .. code-block:: text
+
+         reboot: Power down
+
+  Subsequently running the FVP will boot into Fedora.
+
+Distro Manual Installation
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To install Fedora, you can refer to the `Fedora Installation Guide`_.
+
+Distro Installation Media Preparation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To run the configuration menu:
+
+.. code-block:: text
+
+  kas menu sw-ref-stack/Kconfig
+
+To build the Arm SystemReady IR Linux distros installation tests:
+
+1. Select ``Fedora Linux Distro Installation`` under
+   ``Linux Distribution Installation (Debian, openSUSE and Fedora)``
+   from the ``Use-Case`` menu.
+2. Unselect ``Run Unattended Installation`` under
+   ``Distros Unattended Installation Setup`` menu.
+3. Select ``Build``.
+
+.. image:: ../images/build_config_sr_distro_fedora_manual.*
    :align: center
    :width: 60 %
    :alt: Arm Auto Solutions Build Configuration Menu - Fedora Linux Distro Installation
@@ -3184,7 +3282,7 @@ To build the Arm SystemReady IR Linux distros installation tests:
 |
 
 Distro Installation
-^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~
 
 Run the following command to start the installation:
 

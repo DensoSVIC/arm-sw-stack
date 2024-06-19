@@ -80,6 +80,14 @@ config RUN_TESTS
     bool "Run Automated Validation"
     default n
 
+comment "Distros Unattended Installation Setup"
+    depends on USE_CASE_LINUX_DISTRO_FEDORA
+
+config RUN_DISTROS_UNATTENDED_TESTS
+    depends on USE_CASE_LINUX_DISTRO_FEDORA
+    bool "Run Unattended Installation"
+    default y
+
 ##############
 # Set up Kas #
 ##############
@@ -104,7 +112,13 @@ config KAS_INCLUDE_APPLICATION
 if RUN_TESTS
     config TESTIMAGE_AUTO
         string
-        default "1" if RUN_TESTS
+        default "1"
+endif
+
+if RUN_DISTROS_UNATTENDED_TESTS
+    config DISTRO_UNATTENDED_INST_TESTS
+        string
+        default "1"
 endif
 
 config ARM_FVP_EULA_ACCEPT
