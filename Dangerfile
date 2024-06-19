@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -26,3 +26,11 @@ end
 # Warn about remaining TODO's
 todoist.warn_for_todos
 todoist.print_todos_table
+
+jira_desc_regexp = /(Relates to|Resolves|Closes|Fixes) [A-Z]+-[0-9]+/
+jira_regexp = /[A-Z]+-[0-9]+/
+warn "This MR description does not reference a JIRA issue" \
+  unless gitlab.mr_body =~ jira_desc_regexp or gitlab.branch_for_head =~ jira_regexp
+
+has_milestone = gitlab.mr_json["milestone"] != nil
+warn "This MR does not have a milestone assigned" unless has_milestone
