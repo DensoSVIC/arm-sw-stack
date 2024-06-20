@@ -55,6 +55,10 @@ RSS
 The `Runtime Security Engine (RSE)`_ is a security subsystem, which
 additionally adds an isolated environment to provide platform security services.
 
+.. note::
+  Runtime Security Subsystem (RSS) has been renamed to Runtime Security Engine
+  (RSE) since TF-M v2.1.0.
+
 The RSS serves as the Root of Trust for the system, offering critical platform
 security services and holding and protecting the most sensitive assets in the
 system.
@@ -91,6 +95,12 @@ relevant external components.
 
 The :ref:`design_secure_services` section provides more details of the RSS
 Runtime and the relevant components.
+
+.. note::
+  The release version of TF-M specified in this documentation can be different
+  from that integrated in Kronos implementation.
+  Refer to the TF-M documentation plaintext in `Trusted Firmware-M repository`_
+  if any mismatch occurs.
 
 Memory Map
 ==========

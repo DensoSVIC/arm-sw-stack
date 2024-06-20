@@ -152,7 +152,7 @@ meta_arm_version = os.environ.get(
 # Common variables for rst_prolog
 actuation_version = "v2.0"
 cassini_version = "scarthgap-dev"
-critical_application_monitoring_version = "main"
+critical_application_monitoring_version = "latest"
 fvp_version = "11.25.3"
 kas_version = "4.3.2"
 linux_version = "6.6"
@@ -167,6 +167,7 @@ systemready_ir_acs_version = "2.1.0"
 trusted_firmware_a_version = "2.8.0"
 trusted_firmware_m_base_version = "main branch post v1.8.1"
 trusted_firmware_m_version = "53aa78efef274b9e46e63b429078ae1863609728"
+trusted_firmware_m_doc_version = "tf-mv2.1.0"
 trusted_services_base_version = "main branch, pre v1.0.0"
 trusted_services_doc_version = "integration"
 trusted_services_version = "08b3d39471f4914186bd23793dc920e83b0e3197"
@@ -286,6 +287,7 @@ rst_prolog = f"""
 .. _PREEMPT_RT patch: https://wiki.linuxfoundation.org/realtime/start
 .. _PSA Arch Tests: https://github.com/ARM-software/psa-arch-tests
 .. _PSA Crypto API: https://arm-software.github.io/psa-api/crypto/{psa_crypto_api_version}
+.. _PSA Crypto APIs Architecture Test Suite: https://github.com/ARM-software/psa-arch-tests/blob/{psa_arch_tests_version}/api-tests/docs/psa_crypto_testlist.md
 .. _PSA Secure Storage API: https://arm-software.github.io/psa-api/storage/{psa_storage_api_version}
 .. _PSA Secure Storage APIs Architecture Test Suite: https://github.com/ARM-software/psa-arch-tests/blob/{psa_arch_tests_version}/api-tests/docs/psa_storage_testlist.md
 .. _Parsec Secure Element Driver: https://github.com/parallaxsecond/parsec-se-driver
@@ -293,8 +295,8 @@ rst_prolog = f"""
 .. _Platform Security Firmware Update Specification: https://developer.arm.com/documentation/den0118/latest
 .. _Power Control System Architecture (PCSA): https://developer.arm.com/documentation/den0050/latest
 .. _Pure Pursuit: https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/pure-pursuit.html
-.. _RSS provisioning: https://tf-m-user-guide.trustedfirmware.org/platform/arm/rse/rse_provisioning.html
-.. _Runtime Security Engine (RSE): https://tf-m-user-guide.trustedfirmware.org/platform/arm/rse/readme.html
+.. _RSS provisioning: https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/platform/arm/rse/rse_provisioning.html
+.. _Runtime Security Engine (RSE): https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/platform/arm/rse/readme.html
 .. _SCP-firmware repository: https://github.com/ARM-software/SCP-firmware/tree/{scp_firmware_version}
 .. _SE Proxy SP: https://trusted-services.readthedocs.io/en/latest/deployments/secure-partitions.html#se-proxy
 .. _SMM Gateway SP: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/secure-partitions.html#smm-gateway
@@ -304,17 +306,17 @@ rst_prolog = f"""
 .. _Security Interface Extension (SIE): https://developer.arm.com/documentation/102872/0100
 .. _SVE2 guide: https://developer.arm.com/documentation/102340/0100/Introducing-SVE2
 .. _System Control Processor (SCP) Firmware: https://developer.arm.com/documentation/den0050/latest
-.. _TF-M Crypto Service: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/tfm_crypto_design.html
-.. _TF-M Internal Trusted Storage Service: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/tfm_its_service.html
-.. _TF-M Secure Services: https://tf-m-user-guide.trustedfirmware.org/design_docs/services/index.html
-.. _TF-M Secure boot: https://tf-m-user-guide.trustedfirmware.org/design_docs/booting/tfm_secure_boot.html
+.. _TF-M Crypto Service: https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/design_docs/services/tfm_crypto_design.html
+.. _TF-M Internal Trusted Storage Service: https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/design_docs/services/tfm_its_service.html
+.. _TF-M Secure Services: https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/design_docs/services/index.html
+.. _TF-M Secure boot: https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/design_docs/booting/tfm_secure_boot.html
 .. _Tmux Documentation: https://man7.org/linux/man-pages/man1/tmux.1.html
 .. _TrustZone: https://www.arm.com/technologies/trustzone-for-cortex-a/tee-reference-documentation
 .. _Trusted Firmware-A (TF-A): https://trustedfirmware-a.readthedocs.io
 .. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/+/v{trusted_firmware_a_version}
-.. _Trusted Firmware-M (TF-M): https://tf-m-user-guide.trustedfirmware.org
-.. _Trusted Firmware-M PSA Protected Storage Interfaces: https://tf-m-user-guide.trustedfirmware.org/integration_guide/services/tfm_its_integration_guide.html#psa-internal-trusted-storage-interfaces
-.. _Trusted Firmware-M PSA Internal Trusted Storage Interfaces: https://tf-m-user-guide.trustedfirmware.org/integration_guide/services/tfm_ps_integration_guide.html#psa-protected-storage-interfaces
+.. _Trusted Firmware-M (TF-M): https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}
+.. _Trusted Firmware-M PSA Protected Storage Interfaces: https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/integration_guide/services/tfm_ps_integration_guide.html#psa-protected-storage-interfaces
+.. _Trusted Firmware-M PSA Internal Trusted Storage Interfaces: https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/integration_guide/services/tfm_its_integration_guide.html#psa-internal-trusted-storage-interfaces
 .. _Trusted Firmware-M repository: https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git/+/{trusted_firmware_m_version}
 .. _Trusted Services Test Executables: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/test-executables.html
 .. _Trusted Services repository: https://git.trustedfirmware.org/TS/trusted-services/+/{trusted_services_version}
