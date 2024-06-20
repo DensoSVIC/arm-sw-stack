@@ -23,6 +23,7 @@ repos:
     url: https://gitlab.com/Linaro/cassini/meta-cassini
     path: layers/meta-cassini
     branch: scarthgap-dev
+    commit: d800128c6e27e7f23f2dd924436ca27a4821cdd5
     layers:
       meta-cassini-distro:
       meta-cassini-bsp: excluded
