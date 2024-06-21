@@ -1,0 +1,27 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2024 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: MIT
+
+---
+header:
+  version: 16
+  includes:
+    - yocto/kas/base.yml
+
+repos:
+  sw-ref-stack:
+    layers:
+      yocto/meta-arm-safety-island:
+
+  meta-zephyr:
+    url: https://git.yoctoproject.org/git/meta-zephyr
+    path: layers/meta-zephyr
+    layers:
+      meta-zephyr-core:
+
+  meta-openembedded:
+    layers:
+      meta-oe:
+      meta-python:
