@@ -11,7 +11,7 @@ mainmenu "Arm Automotive Solutions Build Config"
 comment "End-User License Agreement"
 
 config ARM_FVP_EULA_ACCEPT_CHOICE
-    bool "Accept the END USER LICENSE AGREEMENT FOR ARM SOFTWARE DEVELOPMENT TOOLS"
+    bool "Accept the END USER LICENSE AGREEMENT FOR ARM ECOSYSTEM MODELS"
     default n
     help
       Please refer to "https://developer.arm.com/downloads/-/arm-ecosystem-fvps/eula"
