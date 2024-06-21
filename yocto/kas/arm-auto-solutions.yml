@@ -1,0 +1,64 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: MIT
+
+---
+header:
+  version: 16
+  includes:
+    - yocto/kas/base.yml
+    - repo: meta-cassini
+      file: kas/cassini.yml
+    - repo: meta-arm
+      file: kas/fvp-rd-kronos.yml
+    - yocto/kas/ref-stack-pinned-repos.yml
+
+repos:
+  meta-cassini:
+    url: https://gitlab.com/Linaro/cassini/meta-cassini
+    path: layers/meta-cassini
+    branch: scarthgap-dev
+    commit: d800128c6e27e7f23f2dd924436ca27a4821cdd5
+    layers:
+      meta-cassini-distro:
+      meta-cassini-bsp: excluded
+
+  sw-ref-stack:
+    layers:
+      yocto/meta-arm-auto-solutions:
+
+  meta-arm:
+    url: >-
+      https://gitlab.arm.com/automotive-and-industrial/kronos-ref-stack/meta-arm
+    path: layers/meta-arm
+    layers:
+      meta-arm: included
+      meta-arm-toolchain: included
+      meta-arm-bsp: included
+
+  meta-security:
+    patches:
+      0001-parsec-Bump-trusted-services:
+
+  meta-zephyr:
+    url: https://git.yoctoproject.org/git/meta-zephyr
+    path: layers/meta-zephyr
+    layers:
+      meta-zephyr-core:
+
+env:
+  TESTIMAGE_AUTO:
+  SVE_DISABLE_FLAG:
+
+local_conf_header:
+  cassini: |
+    CASSINI_GENERIC_ARM64_FILESYSTEM = "0"
+    DISTRO_FEATURES:append = " ipv6"
+    DISTRO_FEATURES:remove = "k3s"
+    KERNEL_CLASSES:remove = "k3s_kernelcfg_check containers_kernelcfg_check"
+  arm-auto-solutions-extra-features: |
+    EXTRA_IMAGE_FEATURES:append = " actuation"
+
+distro: cassini

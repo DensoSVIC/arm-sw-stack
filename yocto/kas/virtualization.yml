@@ -8,7 +8,7 @@
 header:
   version: 16
   includes:
-    - yocto/kas/base.yml
+    - yocto/kas/arm-auto-solutions.yml
 
 repos:
   poky:
