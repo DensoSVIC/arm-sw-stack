@@ -15,6 +15,7 @@ check-layers:
           "yocto-check-layer-wrapper
             $CI_PROJECT_DIR/yocto/$LAYER
             --dependency
+              $CI_PROJECT_DIR/yocto/meta-arm-safety-island
               $KAS_WORK_DIR/layers/meta-arm/meta-arm
               $KAS_WORK_DIR/layers/meta-arm/meta-arm-bsp
               $KAS_WORK_DIR/layers/meta-arm/meta-arm-toolchain
@@ -33,7 +34,7 @@ check-layers:
   parallel:
     matrix:
       - MACHINE: fvp-rd-kronos
-        LAYER: [meta-arm-auto-solutions]
+        LAYER: [meta-arm-auto-solutions, meta-arm-safety-island]
 
   variables:
     TESTIMAGE_AUTO: "0"
