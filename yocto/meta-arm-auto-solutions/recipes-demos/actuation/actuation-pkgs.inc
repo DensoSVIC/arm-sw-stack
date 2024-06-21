@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-require actuation-common.inc
+require recipes-demos/actuation/actuation-common.inc
 
 DEPENDS += "\
     ament-cmake-auto-native \
