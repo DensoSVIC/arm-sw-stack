@@ -4,4 +4,4 @@
 #
 # SPDX-License-Identifier: MIT
 
-include recipes-kernel/zephyr-kernel/zephyr-${MACHINE}.inc
+require recipes-kernel/zephyr-kernel/zephyr-arm-safety-island.inc
