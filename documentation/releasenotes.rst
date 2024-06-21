@@ -15,6 +15,8 @@ Unreleased
 New Features
 ============
 
+None.
+
 Changed
 =======
 
@@ -24,6 +26,26 @@ Changed
 * Added Fedora 39.1.5 distribution to comply with the SystemReady IR v2.1 requirements.
 * Added compiler tuning for Cortex-R82 to the Zephyr toolchain
 * Upgraded from Yocto nanbield to scarthgap
+
+.. _releasenotes_limitations:
+
+Limitations
+===========
+
+  * Same as `v1.0 Limitations`_.
+
+Resolved and Known Issues
+=========================
+
+.. _releasenotes_knownissues:
+
+Known Issues
+------------
+
+  * For Heterogeneous Inter-Processor Communication (HIPC), during ping between
+    Clusters, a transient issue is observed where ICMP replies take longer time
+    to reach the originating Cluster.
+  * Same as `v1.0 Known Issues`_.
 
 ****
 v1.0
@@ -139,7 +161,7 @@ Changed
 
 Initial version.
 
-.. _releasenotes_limitations:
+.. _v1.0 Limitations:
 
 Limitations
 ===========
@@ -167,7 +189,7 @@ Limitations
 Resolved and Known Issues
 =========================
 
-.. _releasenotes_knownissues:
+.. _v1.0 Known Issues:
 
 Known Issues
 ------------
