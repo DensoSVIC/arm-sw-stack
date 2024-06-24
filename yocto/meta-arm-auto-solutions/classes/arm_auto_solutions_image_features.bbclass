@@ -131,10 +131,11 @@ FEATURE_PACKAGES_hipc-validation:virtualization = "linuxptp"
 
 require ${@bb.utils.contains('EXTRA_IMAGE_FEATURES', 'virtualization', "conf/distro/include/arm-auto-solutions-virtualization.inc", '', d)}
 
-ZEPHYR_APP_SAFETY_ISLAND_CL0 = "bridge"
+ZEPHYR_APP_SAFETY_ISLAND_CL0:actuation = "bridge"
+ZEPHYR_APP_SAFETY_ISLAND_CL0:si0-bridge-ethernet0 = "bridge"
 ZEPHYR_APP_SAFETY_ISLAND_CL0:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL0:si-psa-crypto-tests = "psa-crypto-tests"
-ZEPHYR_APP_SAFETY_ISLAND_CL1 = "fault-mgmt"
+ZEPHYR_APP_SAFETY_ISLAND_CL1:actuation = "fault-mgmt"
 ZEPHYR_APP_SAFETY_ISLAND_CL1:cam = "cam"
 ZEPHYR_APP_SAFETY_ISLAND_CL1:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL1:si0-bridge-ethernet0 = "zperf"
