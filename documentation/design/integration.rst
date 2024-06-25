@@ -18,10 +18,10 @@ is |yocto version|.
 meta-arm-auto-solutions Yocto Layer
 ***********************************
 
-The ``meta-arm-auto-solutions`` layer primarily depends on the ``meta-arm-bsp``
-layer which implements the ``fvp-rd-kronos`` bitbake ``MACHINE`` definition to
-enable the Arm Automotive Solutions to run on the Arm Kronos Reference Design
-FVP (FVP_RD_Kronos).
+The ``meta-arm-auto-solutions`` layer depends on the ``meta-arm-bsp`` layer
+which implements the ``fvp-rd-kronos`` bitbake ``MACHINE`` definition to enable
+the Arm Automotive Solutions to run on the Arm Kronos Reference Design FVP
+(FVP_RD_Kronos).
 
 The layer ``meta-arm-auto-solutions`` is based on the `Cassini`_ distribution.
 It also contains a set of bitbake bbclasses, recipes and libraries to build,
@@ -31,6 +31,17 @@ as described in :ref:`Reference Software Stack Overview
 <overview_reference_software_stack_overview>`.
 
 The layer source code can be found at :repo:`yocto/meta-arm-auto-solutions`.
+
+**********************************
+meta-arm-safety-island Yocto Layer
+**********************************
+
+The layer ``meta-arm-safety-island`` integrates the applications for the Safety
+Island using base configuration from the ``meta-zephyr-core`` Yocto layer. It
+also contains recipes for the Linux kernel modules for inter-processor
+communication with the Safety Island.
+
+The layer source code can be found at :repo:`yocto/meta-arm-safety-island`.
 
 Yocto Build Configuration
 =========================

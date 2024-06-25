@@ -26,6 +26,7 @@ Changed
 * Added Fedora 39.1.5 distribution to comply with the SystemReady IR v2.1 requirements.
 * Added compiler tuning for Cortex-R82 to the Zephyr toolchain
 * Upgraded from Yocto nanbield to scarthgap
+* Introduced the Yocto layer meta-arm-safety-island
 
 .. _releasenotes_limitations:
 

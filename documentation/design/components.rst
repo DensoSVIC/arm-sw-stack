@@ -776,7 +776,7 @@ The out-of-tree driver for MHUv3 device is located at
 :repo:`components/safety_island/zephyr/src/drivers/mbox`.
 
 Additional patches are located at
-:repo:`yocto/meta-arm-auto-solutions/recipes-kernel/zephyr-kernel/files/zephyr`
+:repo:`yocto/meta-arm-safety-island/recipes-kernel/zephyr-kernel/files/zephyr`
 related to:
 
  * Configuring the MPU region
