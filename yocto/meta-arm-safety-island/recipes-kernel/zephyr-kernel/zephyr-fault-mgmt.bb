@@ -1,6 +1,3 @@
-# nooelint: oelint.var.mandatoryvar - The SRC_URI is found in a common .inc file
-# in meta-zephyr.
-#
 # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #

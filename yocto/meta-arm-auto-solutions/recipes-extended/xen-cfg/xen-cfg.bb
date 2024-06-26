@@ -1,6 +1,3 @@
-# nooelint: oelint.var.mandatoryvar - There is no source file
-# The "source" is in the do_deploy task.
-#
 # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #

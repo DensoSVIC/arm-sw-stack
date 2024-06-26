@@ -115,5 +115,7 @@ plugins:
       # Having custom reasoning after Patches with
       # Upstream-Status: Inappropriate is desired
       - oelint.file.inappropriatemsg
+      # The check does not support variables in included files.
+      - oelint.var.mandatoryvar
     exclude_patterns:
       - "/public"

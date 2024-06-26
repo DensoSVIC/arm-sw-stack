@@ -1,5 +1,3 @@
-# nooelint: oelint.var.mandatoryvar - This recipe has no source files
-#
 # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
