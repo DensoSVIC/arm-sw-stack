@@ -41,14 +41,6 @@ repos:
       meta-arm-toolchain: included
       meta-arm-bsp: included
 
-  meta-openembedded:
-    commit: a72010b414ee3d73888ac9cb4e310e8f05e13aea
-    patches:
-      0001-python3-twisted-prepend-split-PACKAGES:
-        repo: sw-ref-stack
-        path: >-
-          yocto/kas/patches/0001-python3-twisted-prepend-split-PACKAGES.patch
-
   meta-security:
     patches:
       0001-parsec-Bump-trusted-services:
