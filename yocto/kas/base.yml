@@ -56,8 +56,6 @@ env:
   SVE_DISABLE_FLAG:
 
 local_conf_header:
-  meta-arm-auto-solutions-error-qa: |
-    ERROR_QA:layer-meta-arm-auto-solutions:append = " patch-status"
   cassini: |
     CASSINI_GENERIC_ARM64_FILESYSTEM = "0"
     DISTRO_FEATURES:append = " ipv6"
