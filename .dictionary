@@ -657,6 +657,7 @@ SRCPV
 SRCREV
 srcurichecksum
 srcuridomains
+srcurioptions
 SSBD
 SSBS
 sstate

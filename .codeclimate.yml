@@ -117,5 +117,7 @@ plugins:
       - oelint.file.inappropriatemsg
       # The check does not support variables in included files.
       - oelint.var.mandatoryvar
+      # The check does not support user and pswd fields for HTTP URLs
+      - oelint.vars.srcurioptions
     exclude_patterns:
       - "/public"
