@@ -161,7 +161,7 @@
 			interrupts = <GIC_SPI 96 IRQ_TYPE_LEVEL IRQ_CRITICAL_PRIORITY>,
 					<GIC_SPI 102 IRQ_TYPE_LEVEL IRQ_DEFAULT_PRIORITY>;
 			interrupt-names = "critical", "non_critical";
-			upstream = <&pc_gic_fmu>;
+			upstream = <&pc_gic_fmu>, <&si_gic_fmu>;
 			safety = <&ssu>;
 			status = "disabled";
 		};
@@ -169,6 +169,12 @@
 		pc_gic_fmu: fmu@2a570000 {
 			compatible = "arm,fmu";
 			reg = <0x0 0x2a570000 0x1000>;
+			status = "disabled";
+		};
+
+		si_gic_fmu: fmu@2a530000 {
+			compatible = "arm,fmu";
+			reg = <0x0 0x2a530000 0x1000>;
 			status = "disabled";
 		};
 
