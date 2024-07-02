@@ -4,15 +4,14 @@
 #
 # SPDX-License-Identifier: MIT
 
-from oeqa.runtime.case import OERuntimeTestCase
+from oeqa.runtime.cases.test_10_safety_island_c0 import SafetyIslandTestBase
 from oeqa.core.decorator.data import skipIfNotInDataVar
 import pexpect
 
 
-class SIPSAArchTests(OERuntimeTestCase):
+class SIPSAArchTests(SafetyIslandTestBase):
 
     def check_si_psa(self, console):
-        self.target.transition('on')
         self.target.expect(console,
                            r"TOTAL SIM ERROR : 0\r\n"
                            r"TOTAL FAILED    : 0\r\n", timeout=1800)

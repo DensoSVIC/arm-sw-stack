@@ -7,11 +7,16 @@
 from oeqa.runtime.case import OERuntimeTestCase
 
 
-class SafetyIslandC0Test(OERuntimeTestCase):
+class SafetyIslandTestBase(OERuntimeTestCase):
+    def setUp(self):
+        super().setUp()
+        self.target.transition('on')
+
+
+class SafetyIslandC0Test(SafetyIslandTestBase):
     console = 'safety_island_c0'
 
     def test_cluster0(self):
-        self.target.transition('on')
         self.target.expect(self.console,
                            r'Hello World! [\w_]+_safety_island',
                            timeout=120)
