@@ -29,10 +29,15 @@ class LinuxShutdownTest(OERuntimeTestCase):
         self.target.expect(self.rss_console,
                            r'System shutdown complete',
                            timeout=450)
-        # Give the FVP some time to shutdown
-        sleep(30)
+
         # Verify there were no errors in any of the consoles
         self.assertNotIn(b'[ERR]', self.target.before(self.rss_console))
+
+        # Timeout has been set to 300s to give FVP enough time to shutdown,
+        # verify that there are no errors after 'System shutdown complete'
+        self.target.expect(self.rss_console, pexpect.EOF, timeout=300)
+        self.assertNotIn(b'[ERR]', self.target.before(self.rss_console))
+
         self.target.expect(self.scp_console, pexpect.EOF)
         self.assertNotIn(b'[ERROR]', self.target.before(self.scp_console))
         self.target.expect(self.tfa_console, pexpect.EOF)
