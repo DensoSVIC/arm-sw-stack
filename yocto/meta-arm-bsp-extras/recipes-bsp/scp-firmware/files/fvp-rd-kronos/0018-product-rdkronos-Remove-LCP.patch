@@ -1,0 +1,1243 @@
+From db16697a92f5d64992484d97b977ebc21f154f6e Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Tue, 25 Jun 2024 15:37:28 +0100
+Subject: [PATCH] product/rdkronos: Remove LCP
+
+Remove all the related LCP code and references from the platform
+code as it will not be a part of Kronos anymore.
+
+Upstream-Status: Inappropriate [Diverges from upstream]
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ .../rdkronos/include/lcp_platform_transport.h | 22 -----
+ product/rdkronos/lcp_ramfw/CMakeLists.txt     | 44 ---------
+ product/rdkronos/lcp_ramfw/Firmware.cmake     | 45 ---------
+ .../lcp_ramfw/Toolchain-ArmClang.cmake        | 21 ----
+ .../rdkronos/lcp_ramfw/Toolchain-Clang.cmake  | 17 ----
+ .../rdkronos/lcp_ramfw/Toolchain-GNU.cmake    | 18 ----
+ .../rdkronos/lcp_ramfw/config_armv8m_mpu.c    | 86 -----------------
+ product/rdkronos/lcp_ramfw/config_clock.c     | 10 --
+ .../rdkronos/lcp_ramfw/config_dvfs_handler.c  | 58 -----------
+ product/rdkronos/lcp_ramfw/config_mhu3.c      | 73 --------------
+ product/rdkronos/lcp_ramfw/config_pl011.c     | 32 -------
+ product/rdkronos/lcp_ramfw/config_transport.c | 96 -------------------
+ product/rdkronos/lcp_ramfw/fmw_memory.h       | 30 ------
+ product/rdkronos/lcp_ramfw/fmw_notification.h | 16 ----
+ .../rdkronos/lcp_ramfw/include/fmw_cmsis.h    | 15 ---
+ .../lcp_ramfw/include/fmw_cmsis_lcp.h         | 56 -----------
+ .../rdkronos/lcp_ramfw/include/lcp_device.h   | 36 -------
+ product/rdkronos/lcp_ramfw/include/lcp_mhu3.h | 21 ----
+ product/rdkronos/lcp_ramfw/include/lcp_mmap.h | 87 -----------------
+ .../module/mod_lcp_platform/CMakeLists.txt    | 11 ---
+ .../module/mod_lcp_platform/Module.cmake      | 10 --
+ .../mod_lcp_platform/src/mod_lcp_platform.c   | 69 -------------
+ .../scp_platform/src/mod_scp_platform.c       | 42 +-------
+ product/rdkronos/product.mk                   |  3 +-
+ .../rdkronos/scp_ramfw/include/scp_css_mmap.h | 49 +++-------
+ 25 files changed, 18 insertions(+), 949 deletions(-)
+ delete mode 100644 product/rdkronos/include/lcp_platform_transport.h
+ delete mode 100644 product/rdkronos/lcp_ramfw/CMakeLists.txt
+ delete mode 100644 product/rdkronos/lcp_ramfw/Firmware.cmake
+ delete mode 100644 product/rdkronos/lcp_ramfw/Toolchain-ArmClang.cmake
+ delete mode 100644 product/rdkronos/lcp_ramfw/Toolchain-Clang.cmake
+ delete mode 100644 product/rdkronos/lcp_ramfw/Toolchain-GNU.cmake
+ delete mode 100644 product/rdkronos/lcp_ramfw/config_armv8m_mpu.c
+ delete mode 100644 product/rdkronos/lcp_ramfw/config_clock.c
+ delete mode 100644 product/rdkronos/lcp_ramfw/config_dvfs_handler.c
+ delete mode 100644 product/rdkronos/lcp_ramfw/config_mhu3.c
+ delete mode 100644 product/rdkronos/lcp_ramfw/config_pl011.c
+ delete mode 100644 product/rdkronos/lcp_ramfw/config_transport.c
+ delete mode 100644 product/rdkronos/lcp_ramfw/fmw_memory.h
+ delete mode 100644 product/rdkronos/lcp_ramfw/fmw_notification.h
+ delete mode 100644 product/rdkronos/lcp_ramfw/include/fmw_cmsis.h
+ delete mode 100644 product/rdkronos/lcp_ramfw/include/fmw_cmsis_lcp.h
+ delete mode 100644 product/rdkronos/lcp_ramfw/include/lcp_device.h
+ delete mode 100644 product/rdkronos/lcp_ramfw/include/lcp_mhu3.h
+ delete mode 100644 product/rdkronos/lcp_ramfw/include/lcp_mmap.h
+ delete mode 100644 product/rdkronos/module/mod_lcp_platform/CMakeLists.txt
+ delete mode 100644 product/rdkronos/module/mod_lcp_platform/Module.cmake
+ delete mode 100644 product/rdkronos/module/mod_lcp_platform/src/mod_lcp_platform.c
+
+diff --git a/product/rdkronos/include/lcp_platform_transport.h b/product/rdkronos/include/lcp_platform_transport.h
+deleted file mode 100644
+index 6052592b6..000000000
+--- a/product/rdkronos/include/lcp_platform_transport.h
++++ /dev/null
+@@ -1,22 +0,0 @@
+-/*
+- * Arm SCP/MCP Software
+- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- *
+- * Description:
+- *     Definitions for Transport module configuration.
+- */
+-
+-#ifndef PLATFORM_TRANSPORT_H
+-#define PLATFORM_TRANSPORT_H
+-
+-/* Transport indices */
+-enum lcp_platform_transport_idx {
+-    LCP_PLATFORM_TRANSPORT_IDX_DVFS_SET_LVL,
+-    LCP_PLATFORM_TRANSPORT_IDX_DVFS_SET_LIM_MIN,
+-    LCP_PLATFORM_TRANSPORT_IDX_DVFS_SET_LIM_MAX,
+-    LCP_PLATFORM_TRANSPORT_IDX_COUNT,
+-};
+-
+-#endif /* PLATFORM_TRANSPORT_H */
+diff --git a/product/rdkronos/lcp_ramfw/CMakeLists.txt b/product/rdkronos/lcp_ramfw/CMakeLists.txt
+deleted file mode 100644
+index 06b44b576..000000000
+--- a/product/rdkronos/lcp_ramfw/CMakeLists.txt
++++ /dev/null
+@@ -1,44 +0,0 @@
+-#
+-# Arm SCP/MCP Software
+-# Copyright (c) 2022 - 2023, Arm Limited and Contributors. All rights reserved.
+-#
+-# SPDX-License-Identifier: BSD-3-Clause
+-#
+-
+-#
+-# Create the firmware target.
+-#
+-
+-add_executable(rdkronos-lcp-bl2)
+-
+-target_include_directories(
+-    rdkronos-lcp-bl2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../include"
+-                    "${CMAKE_CURRENT_SOURCE_DIR}"
+-                    "${CMAKE_CURRENT_SOURCE_DIR}/include")
+-
+-# cmake-lint: disable=E1122
+-
+-target_sources(
+-    rdkronos-lcp-bl2
+-    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/config_armv8m_mpu.c"
+-            "${CMAKE_CURRENT_SOURCE_DIR}/config_pl011.c"
+-            "${CMAKE_CURRENT_SOURCE_DIR}/config_clock.c"
+-            "${CMAKE_CURRENT_SOURCE_DIR}/config_transport.c"
+-            "${CMAKE_CURRENT_SOURCE_DIR}/config_mhu3.c"
+-            "${CMAKE_CURRENT_SOURCE_DIR}/config_dvfs_handler.c"
+-            )
+-
+-#
+-# Some of our firmware includes require CMSIS.
+-#
+-
+-target_link_libraries(rdkronos-lcp-bl2 PUBLIC cmsis::core-m)
+-
+-#
+-# We explicitly add the CMSIS include directories to our interface include
+-# directories. Each module target adds these include directories to their own,
+-# allowing them to include any firmware includes we expose.
+-#
+-
+-target_include_directories(rdkronos-lcp-bl2
+-    PUBLIC $<TARGET_PROPERTY:cmsis::core-m,INTERFACE_INCLUDE_DIRECTORIES>)
+diff --git a/product/rdkronos/lcp_ramfw/Firmware.cmake b/product/rdkronos/lcp_ramfw/Firmware.cmake
+deleted file mode 100644
+index 071fdd1aa..000000000
+--- a/product/rdkronos/lcp_ramfw/Firmware.cmake
++++ /dev/null
+@@ -1,45 +0,0 @@
+-#
+-# Arm SCP/MCP Software
+-# Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+-#
+-# SPDX-License-Identifier: BSD-3-Clause
+-#
+-
+-#
+-# Configure the build system.
+-#
+-
+-set(SCP_FIRMWARE "rdkronos-lcp-bl2")
+-
+-set(SCP_FIRMWARE_TARGET "rdkronos-lcp-bl2")
+-
+-set(SCP_TOOLCHAIN_INIT "GNU")
+-
+-set(SCP_GENERATE_FLAT_BINARY_INIT TRUE)
+-
+-set(SCP_ENABLE_NOTIFICATIONS_INIT TRUE)
+-
+-set(SCP_ENABLE_IPO_INIT FALSE)
+-
+-set(SCP_ARCHITECTURE "arm-m")
+-
+-set(SCP_ENABLE_DEBUGGER_INIT FALSE)
+-
+-set(SCP_TARGET_EXCLUDE_SCMI_PERF_PROTOCOL_OPS TRUE)
+-
+-list(PREPEND SCP_MODULE_PATHS
+-    "${CMAKE_CURRENT_LIST_DIR}/../module/mod_lcp_platform")
+-list(PREPEND SCP_MODULE_PATHS "${CMAKE_SOURCE_DIR}/module/mhu3")
+-list(PREPEND SCP_MODULE_PATHS "${CMAKE_SOURCE_DIR}/module/dvfs_handler")
+-
+-# The order of the modules in the following list is the order in which the
+-# modules are initialized, bound, started during the pre-runtime phase.
+-# any change in the order will cause firmware initialization errors.
+-
+-list(APPEND SCP_MODULES "armv8m-mpu")
+-list(APPEND SCP_MODULES "lcp-platform")
+-list(APPEND SCP_MODULES "pl011")
+-list(APPEND SCP_MODULES "clock")
+-list(APPEND SCP_MODULES "transport")
+-list(APPEND SCP_MODULES "mhu3")
+-list(APPEND SCP_MODULES "dvfs-handler")
+diff --git a/product/rdkronos/lcp_ramfw/Toolchain-ArmClang.cmake b/product/rdkronos/lcp_ramfw/Toolchain-ArmClang.cmake
+deleted file mode 100644
+index 3f8207600..000000000
+--- a/product/rdkronos/lcp_ramfw/Toolchain-ArmClang.cmake
++++ /dev/null
+@@ -1,21 +0,0 @@
+-#
+-# Arm SCP/MCP Software
+-# Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+-#
+-# SPDX-License-Identifier: BSD-3-Clause
+-#
+-
+-# cmake-lint: disable=C0301
+-
+-include_guard()
+-
+-# No Helium, no FPU, No DSP features
+-set(CMAKE_SYSTEM_ARCH "armv8.1-m.main")
+-
+-set(CMAKE_ASM_COMPILER_TARGET "arm-arm-none-eabi")
+-set(CMAKE_C_COMPILER_TARGET "arm-arm-none-eabi")
+-set(CMAKE_CXX_COMPILER_TARGET "arm-arm-none-eabi")
+-
+-include(
+-    "${CMAKE_CURRENT_LIST_DIR}/../../../cmake/Toolchain/ArmClang-Baremetal.cmake"
+-)
+diff --git a/product/rdkronos/lcp_ramfw/Toolchain-Clang.cmake b/product/rdkronos/lcp_ramfw/Toolchain-Clang.cmake
+deleted file mode 100644
+index 87ffe67a3..000000000
+--- a/product/rdkronos/lcp_ramfw/Toolchain-Clang.cmake
++++ /dev/null
+@@ -1,17 +0,0 @@
+-#
+-# Arm SCP/MCP Software
+-# Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+-#
+-# SPDX-License-Identifier: BSD-3-Clause
+-#
+-
+-include_guard()
+-
+-set(CMAKE_SYSTEM_PROCESSOR "cortex-m55+nodsp")
+-
+-set(CMAKE_ASM_COMPILER_TARGET "arm-arm-none-eabi")
+-set(CMAKE_C_COMPILER_TARGET "arm-arm-none-eabi")
+-set(CMAKE_CXX_COMPILER_TARGET "arm-arm-none-eabi")
+-
+-include(
+-    "${CMAKE_CURRENT_LIST_DIR}/../../../cmake/Toolchain/Clang-Baremetal.cmake")
+diff --git a/product/rdkronos/lcp_ramfw/Toolchain-GNU.cmake b/product/rdkronos/lcp_ramfw/Toolchain-GNU.cmake
+deleted file mode 100644
+index 2f620ced3..000000000
+--- a/product/rdkronos/lcp_ramfw/Toolchain-GNU.cmake
++++ /dev/null
+@@ -1,18 +0,0 @@
+-#
+-# Arm SCP/MCP Software
+-# Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+-#
+-# SPDX-License-Identifier: BSD-3-Clause
+-#
+-
+-include_guard()
+-
+-set(CMAKE_SYSTEM_PROCESSOR "cortex-m55+nodsp")
+-set(CMAKE_TOOLCHAIN_PREFIX "arm-none-eabi-")
+-
+-set(CMAKE_ASM_COMPILER_TARGET "arm-none-eabi")
+-set(CMAKE_C_COMPILER_TARGET "arm-none-eabi")
+-set(CMAKE_CXX_COMPILER_TARGET "arm-none-eabi")
+-
+-include(
+-    "${CMAKE_CURRENT_LIST_DIR}/../../../cmake/Toolchain/GNU-Baremetal.cmake")
+diff --git a/product/rdkronos/lcp_ramfw/config_armv8m_mpu.c b/product/rdkronos/lcp_ramfw/config_armv8m_mpu.c
+deleted file mode 100644
+index 856ca8e3a..000000000
+--- a/product/rdkronos/lcp_ramfw/config_armv8m_mpu.c
++++ /dev/null
+@@ -1,86 +0,0 @@
+-/*
+- * Arm SCP/MCP Software
+- * Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- */
+-
+-#include "lcp_mmap.h"
+-#include "mod_armv8m_mpu.h"
+-
+-#include <fwk_macros.h>
+-#include <fwk_module.h>
+-
+-#include <fmw_cmsis.h>
+-
+-static const uint8_t attributes[] = {
+-    /* Device memory, non Gathering, non Re-ordering, non Early Write
+-       Acknowledgement */
+-    [MPU_ATTR_0] =
+-        ARM_MPU_ATTR(ARM_MPU_ATTR_DEVICE, ARM_MPU_ATTR_DEVICE_nGnRnE),
+-    /* Normal memory, non Cacheable */
+-    [MPU_ATTR_1] =
+-        ARM_MPU_ATTR(ARM_MPU_ATTR_NON_CACHEABLE, ARM_MPU_ATTR_NON_CACHEABLE),
+-};
+-
+-static const ARM_MPU_Region_t regions[] = {
+-    {
+-        /* LCP_CORE_TCM_REGION*/
+-        .RBAR = ARM_MPU_RBAR(
+-            LCP_CORE_ITCM_REGION_START, /* BASE */
+-            ARM_MPU_SH_NON, /* SH */
+-            0, /* RO */
+-            0, /* NP */
+-            0 /* XN */),
+-        .RLAR = ARM_MPU_RLAR(LCP_CORE_ITCM_REGION_END, MPU_ATTR_1),
+-    },
+-    {
+-        /* LCP_CORE_DTCM_REGION*/
+-        .RBAR = ARM_MPU_RBAR(
+-            LCP_CORE_DTCM_REGION_START, /* BASE */
+-            ARM_MPU_SH_INNER, /* SH */
+-            0, /* RO */
+-            0, /* NP */
+-            1 /* XN */),
+-        .RLAR = ARM_MPU_RLAR(LCP_CORE_DTCM_REGION_END, MPU_ATTR_1),
+-    },
+-    {
+-        /* LCP_CORE_PERIPERAL_REGION */
+-        .RBAR = ARM_MPU_RBAR(
+-            LCP_CORE_PERIPHERAL_REGION_START, /* BASE */
+-            ARM_MPU_SH_NON, /* SH */
+-            0, /* RO */
+-            0, /* NP */
+-            1 /* XN */),
+-        .RLAR = ARM_MPU_RLAR(LCP_CORE_PERIPHERAL_REGION_END, MPU_ATTR_0),
+-    },
+-    {
+-        /* LCP_SRAM_REGION*/
+-        .RBAR = ARM_MPU_RBAR(
+-            LCP_SRAM_REGION_START, /* BASE */
+-            ARM_MPU_SH_OUTER, /* SH */
+-            0, /* RO */
+-            0, /* NP */
+-            1 /* XN */),
+-        .RLAR = ARM_MPU_RLAR(LCP_SRAM_REGION_END, MPU_ATTR_1),
+-    },
+-    {
+-        /* LCP_DEVICE_REGION */
+-        .RBAR = ARM_MPU_RBAR(
+-            LCP_DEVICE_REGION_START, /* BASE */
+-            ARM_MPU_SH_OUTER, /* SH */
+-            0, /* RO */
+-            0, /* NP */
+-            1 /* XN */),
+-        .RLAR = ARM_MPU_RLAR(LCP_DEVICE_REGION_END, MPU_ATTR_0),
+-    },
+-};
+-
+-const struct fwk_module_config config_armv8m_mpu = {
+-    .data = &((struct mod_armv8m_mpu_config){
+-        .region_count = FWK_ARRAY_SIZE(regions),
+-        .regions = regions,
+-        .attributes_count = FWK_ARRAY_SIZE(attributes),
+-        .attributes = attributes,
+-    }),
+-};
+diff --git a/product/rdkronos/lcp_ramfw/config_clock.c b/product/rdkronos/lcp_ramfw/config_clock.c
+deleted file mode 100644
+index dbabc312e..000000000
+--- a/product/rdkronos/lcp_ramfw/config_clock.c
++++ /dev/null
+@@ -1,10 +0,0 @@
+-/*
+- * Arm SCP/MCP Software
+- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- */
+-
+-#include <fwk_module.h>
+-
+-const struct fwk_module_config config_clock = { 0 };
+diff --git a/product/rdkronos/lcp_ramfw/config_dvfs_handler.c b/product/rdkronos/lcp_ramfw/config_dvfs_handler.c
+deleted file mode 100644
+index 647e58744..000000000
+--- a/product/rdkronos/lcp_ramfw/config_dvfs_handler.c
++++ /dev/null
+@@ -1,58 +0,0 @@
+-/*
+- * Arm SCP/MCP Software
+- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- */
+-
+-#include <lcp_mhu3.h>
+-#include <lcp_mmap.h>
+-
+-#include <mod_dvfs_handler.h>
+-
+-#include <fwk_element.h>
+-#include <fwk_id.h>
+-#include <fwk_module.h>
+-#include <fwk_module_idx.h>
+-
+-static struct mod_dvfs_handler_opp dvfs_handler_opps[] = {
+-    { .level = 85UL, .frequency = 1700 * FWK_MHZ, .voltage = 850000 },
+-    { .level = 100UL, .frequency = 2000 * FWK_MHZ, .voltage = 900000 },
+-    { .level = 115UL, .frequency = 2300 * FWK_MHZ, .voltage = 950000 },
+-    { .level = 130UL, .frequency = 2600 * FWK_MHZ, .voltage = 950000 },
+-    { .level = 145UL, .frequency = 2900 * FWK_MHZ, .voltage = 1000000 },
+-    { .level = 160UL, .frequency = 3200 * FWK_MHZ, .voltage = 1050000 },
+-    { 0 }
+-};
+-
+-static const struct fwk_element element_table[] = {
+-    [0] = {
+-        .name = "CPU-Domain",
+-        .data = &((struct mod_dvfs_handler_config) {
+-            .sustained_idx = 4,
+-            .dvfs_handler_addr = LCP_DVFS_FRAME_BASE,
+-            .opps = dvfs_handler_opps,
+-#ifdef BUILD_HAS_FAST_CHANNELS
+-            .dvfs_fch_set_level = FWK_ID_ELEMENT_INIT(
+-                FWK_MODULE_IDX_MHU3,
+-                MHU3_DEVICE_IDX_LCP_AP_FCH_DVFS_SET_LVL),
+-	    .dvfs_fch_set_limit_min = FWK_ID_ELEMENT_INIT(
+-                FWK_MODULE_IDX_MHU3,
+-                MHU3_DEVICE_IDX_LCP_AP_FCH_DVFS_SET_LIM_MIN),
+-	    .dvfs_fch_set_limit_max = FWK_ID_ELEMENT_INIT(
+-                FWK_MODULE_IDX_MHU3,
+-                MHU3_DEVICE_IDX_LCP_AP_FCH_DVFS_SET_LIM_MAX),
+-#endif
+-        }),
+-    },
+-    [1] = { 0 },
+-};
+-
+-static const struct fwk_element *dvfs_handler_get_element_table(fwk_id_t module_id)
+-{
+-    return element_table;
+-}
+-
+-const struct fwk_module_config config_dvfs_handler = {
+-    .elements = FWK_MODULE_DYNAMIC_ELEMENTS(dvfs_handler_get_element_table)
+-};
+diff --git a/product/rdkronos/lcp_ramfw/config_mhu3.c b/product/rdkronos/lcp_ramfw/config_mhu3.c
+deleted file mode 100644
+index ba6adb82d..000000000
+--- a/product/rdkronos/lcp_ramfw/config_mhu3.c
++++ /dev/null
+@@ -1,73 +0,0 @@
+-/*
+- * Arm SCP/MCP Software
+- * Copyright (c) 2022 - 2023, Arm Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- *
+- * Description:
+- *     Configuration data for module 'mhu3'.
+- */
+-
+-#include <lcp_mhu3.h>
+-#include <lcp_mmap.h>
+-
+-#include <mod_mhu3.h>
+-
+-#include <fwk_element.h>
+-#include <fwk_id.h>
+-#include <fwk_module.h>
+-
+-#include <fmw_cmsis.h>
+-
+-#include <stddef.h>
+-
+-enum mhu3_device2lcp_irq {
+-    MHU3_AP2LCP_IRQ_PBX_COMBINED = 48,
+-};
+-
+-struct mod_mhu3_channel_config lcp_ap_channel_config[] = {
+-    /* FCH_IDX 0, FCH_GROUP_NUM 0, FCH_DIRECTION in */
+-    MOD_MHU3_INIT_FCH(0, 0, MOD_MHU3_FCH_DIR_IN),
+-    MOD_MHU3_INIT_FCH(1, 0, MOD_MHU3_FCH_DIR_IN),
+-    MOD_MHU3_INIT_FCH(2, 0, MOD_MHU3_FCH_DIR_IN),
+-};
+-
+-static const struct fwk_element element_table[] = {
+-    [MHU3_DEVICE_IDX_LCP_AP_FCH_DVFS_SET_LVL] = {
+-        .name = "AP-LCP FCH DVFS SET LEVEL",
+-        .sub_element_count = 1,
+-        .data = &(struct mod_mhu3_device_config) {
+-            .irq = (unsigned int) MHU3_AP2LCP_IRQ_PBX_COMBINED,
+-            .in = LCP_AP_MHU_MBX_BASE,
+-            .channels = &lcp_ap_channel_config[0],
+-        },
+-    },
+-    [MHU3_DEVICE_IDX_LCP_AP_FCH_DVFS_SET_LIM_MIN] = {
+-        .name = "AP-LCP FCH DVFS SET LIMIT MIN",
+-        .sub_element_count = 1,
+-        .data = &(struct mod_mhu3_device_config) {
+-            .irq = (unsigned int) MHU3_AP2LCP_IRQ_PBX_COMBINED,
+-            .in = LCP_AP_MHU_MBX_BASE,
+-            .channels = &lcp_ap_channel_config[1],
+-        },
+-    },
+-    [MHU3_DEVICE_IDX_LCP_AP_FCH_DVFS_SET_LIM_MAX] = {
+-        .name = "AP-LCP FCH DVFS SET LIMIT MAX",
+-        .sub_element_count = 1,
+-        .data = &(struct mod_mhu3_device_config) {
+-            .irq = (unsigned int) MHU3_AP2LCP_IRQ_PBX_COMBINED,
+-            .in = LCP_AP_MHU_MBX_BASE,
+-            .channels = &lcp_ap_channel_config[2],
+-        },
+-    },
+-    [MHU3_DEVICE_IDX_COUNT] = { 0 },
+-};
+-
+-static const struct fwk_element *get_element_table(fwk_id_t module_id)
+-{
+-    return element_table;
+-}
+-
+-struct fwk_module_config config_mhu3 = {
+-    .elements = FWK_MODULE_DYNAMIC_ELEMENTS(get_element_table),
+-};
+diff --git a/product/rdkronos/lcp_ramfw/config_pl011.c b/product/rdkronos/lcp_ramfw/config_pl011.c
+deleted file mode 100644
+index fae0e50ce..000000000
+--- a/product/rdkronos/lcp_ramfw/config_pl011.c
++++ /dev/null
+@@ -1,32 +0,0 @@
+-/*
+- * Arm SCP/MCP Software
+- * Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- */
+-
+-#include "lcp_mmap.h"
+-
+-#include <mod_pl011.h>
+-
+-#include <fwk_element.h>
+-#include <fwk_id.h>
+-#include <fwk_macros.h>
+-#include <fwk_module.h>
+-
+-struct fwk_module_config config_pl011 = {
+-    .elements = FWK_MODULE_STATIC_ELEMENTS({
+-        [0] = {
+-            .name = "lcp-uart",
+-            .data =
+-                &(struct mod_pl011_element_cfg){
+-                    .reg_base = LCP_UART_BASE,
+-                    .baud_rate_bps = 115200,
+-                    .clock_rate_hz = 24 * FWK_MHZ,
+-                    .clock_id = FWK_ID_NONE_INIT,
+-                },
+-        },
+-
+-        [1] = { 0 },
+-    }),
+-};
+diff --git a/product/rdkronos/lcp_ramfw/config_transport.c b/product/rdkronos/lcp_ramfw/config_transport.c
+deleted file mode 100644
+index c9224687f..000000000
+--- a/product/rdkronos/lcp_ramfw/config_transport.c
++++ /dev/null
+@@ -1,96 +0,0 @@
+-/*
+- * Arm SCP/MCP Software
+- * Copyright (c) 2022 - 2023, Arm Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- */
+-
+-#include <lcp_mhu3.h>
+-#include <lcp_mmap.h>
+-#include <lcp_platform_transport.h>
+-
+-#include <mod_mhu3.h>
+-#include <mod_transport.h>
+-
+-#include <fwk_element.h>
+-#include <fwk_id.h>
+-#include <fwk_module.h>
+-#include <fwk_module_idx.h>
+-
+-#include <stdint.h>
+-
+-static const struct fwk_element transport_element_table[] = {
+-    [LCP_PLATFORM_TRANSPORT_IDX_DVFS_SET_LVL] = {
+-        .name = "AP2LCP_TRANSPORT DVFS SET LEVEL",
+-        .data = &((
+-            struct mod_transport_channel_config) {
+-#ifdef BUILD_HAS_FAST_CHANNELS
+-            .transport_type = MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_FAST_CHANNELS,
+-#endif
+-            .channel_type = MOD_TRANSPORT_CHANNEL_TYPE_COMPLETER,
+-#ifdef BUILD_HAS_FAST_CHANNELS
+-            .driver_id =
+-                FWK_ID_SUB_ELEMENT_INIT(
+-                    FWK_MODULE_IDX_MHU3,
+-                    MHU3_DEVICE_IDX_LCP_AP_FCH_DVFS_SET_LVL,
+-                    0),
+-            .driver_api_id =
+-                FWK_ID_API_INIT(
+-                    FWK_MODULE_IDX_MHU3,
+-                    MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
+-#endif
+-        }),
+-    },
+-    [LCP_PLATFORM_TRANSPORT_IDX_DVFS_SET_LIM_MIN] = {
+-        .name = "AP2LCP_TRANSPORT DVFS SET LIMIT MIN",
+-        .data = &((
+-            struct mod_transport_channel_config) {
+-#ifdef BUILD_HAS_FAST_CHANNELS
+-            .transport_type = MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_FAST_CHANNELS,
+-#endif
+-            .channel_type = MOD_TRANSPORT_CHANNEL_TYPE_COMPLETER,
+-#ifdef BUILD_HAS_FAST_CHANNELS
+-            .driver_id =
+-                FWK_ID_SUB_ELEMENT_INIT(
+-                    FWK_MODULE_IDX_MHU3,
+-                    MHU3_DEVICE_IDX_LCP_AP_FCH_DVFS_SET_LIM_MIN,
+-                    0),
+-            .driver_api_id =
+-                FWK_ID_API_INIT(
+-                    FWK_MODULE_IDX_MHU3,
+-                    MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
+-#endif
+-        }),
+-    },
+-    [LCP_PLATFORM_TRANSPORT_IDX_DVFS_SET_LIM_MAX] = {
+-        .name = "AP2LCP_TRANSPORT DVFS SET LIMIT MAX",
+-        .data = &((
+-            struct mod_transport_channel_config) {
+-#ifdef BUILD_HAS_FAST_CHANNELS
+-            .transport_type = MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_FAST_CHANNELS,
+-#endif
+-            .channel_type = MOD_TRANSPORT_CHANNEL_TYPE_COMPLETER,
+-#ifdef BUILD_HAS_FAST_CHANNELS
+-            .driver_id =
+-                FWK_ID_SUB_ELEMENT_INIT(
+-                    FWK_MODULE_IDX_MHU3,
+-                    MHU3_DEVICE_IDX_LCP_AP_FCH_DVFS_SET_LIM_MAX,
+-                    0),
+-            .driver_api_id =
+-                FWK_ID_API_INIT(
+-                    FWK_MODULE_IDX_MHU3,
+-                    MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
+-#endif
+-        }),
+-    },
+-    [LCP_PLATFORM_TRANSPORT_IDX_COUNT] = { 0 },
+-};
+-
+-static const struct fwk_element *transport_get_element_table(fwk_id_t module_id)
+-{
+-    return transport_element_table;
+-}
+-
+-const struct fwk_module_config config_transport = {
+-    .elements = FWK_MODULE_DYNAMIC_ELEMENTS(transport_get_element_table),
+-};
+diff --git a/product/rdkronos/lcp_ramfw/fmw_memory.h b/product/rdkronos/lcp_ramfw/fmw_memory.h
+deleted file mode 100644
+index 335d4c568..000000000
+--- a/product/rdkronos/lcp_ramfw/fmw_memory.h
++++ /dev/null
+@@ -1,30 +0,0 @@
+-/*
+- * Arm SCP/MCP Software
+- * Copyright (c) 2022-2023, Arm Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- *
+- * Description:
+- *     RAM firmware memory layout for the linker script.
+- */
+-
+-#ifndef FMW_MEMORY_H
+-#define FMW_MEMORY_H
+-
+-#include "lcp_mmap.h"
+-
+-#define FMW_MEM_MODE ARCH_MEM_MODE_DUAL_REGION_RELOCATION
+-
+-/*
+- * RAM instruction memory
+- */
+-#define FMW_MEM0_SIZE LCP_ITCM_SIZE
+-#define FMW_MEM0_BASE LCP_ITCM_S_BASE
+-
+-/*
+- * RAM data memory
+- */
+-#define FMW_MEM1_SIZE LCP_DTCM_SIZE
+-#define FMW_MEM1_BASE LCP_DTCM_S_BASE
+-
+-#endif /* FMW_MEMORY_H */
+diff --git a/product/rdkronos/lcp_ramfw/fmw_notification.h b/product/rdkronos/lcp_ramfw/fmw_notification.h
+deleted file mode 100644
+index ceffa1787..000000000
+--- a/product/rdkronos/lcp_ramfw/fmw_notification.h
++++ /dev/null
+@@ -1,16 +0,0 @@
+-/*
+- * Arm SCP/MCP Software
+- * Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- *
+- * Description:
+- *     RAM firmware notification configuration.
+- */
+-
+-#ifndef FMW_NOTIFICATION_H
+-#define FMW_NOTIFICATION_H
+-
+-#define FMW_NOTIFICATION_MAX 128
+-
+-#endif /* FMW_NOTIFICATION_H */
+diff --git a/product/rdkronos/lcp_ramfw/include/fmw_cmsis.h b/product/rdkronos/lcp_ramfw/include/fmw_cmsis.h
+deleted file mode 100644
+index 77a7ea19e..000000000
+--- a/product/rdkronos/lcp_ramfw/include/fmw_cmsis.h
++++ /dev/null
+@@ -1,15 +0,0 @@
+-/*
+- * Arm SCP/MCP Software
+- * Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- */
+-
+-#ifndef FMW_CMSIS_H
+-#define FMW_CMSIS_H
+-
+-#include "fmw_cmsis_lcp.h"
+-
+-extern uint32_t SystemCoreClock;
+-
+-#endif /* FMW_CMSIS_H */
+diff --git a/product/rdkronos/lcp_ramfw/include/fmw_cmsis_lcp.h b/product/rdkronos/lcp_ramfw/include/fmw_cmsis_lcp.h
+deleted file mode 100644
+index bced17f75..000000000
+--- a/product/rdkronos/lcp_ramfw/include/fmw_cmsis_lcp.h
++++ /dev/null
+@@ -1,56 +0,0 @@
+-/*
+- * Arm SCP/MCP Software
+- * Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- */
+-
+-#ifndef FMW_CMSIS_LCP_H
+-#define FMW_CMSIS_LCP_H
+-
+-#include <stdint.h>
+-
+-#define __CHECK_DEVICE_DEFINES
+-#define __CM55_REV             0x0000U
+-#define __FPU_PRESENT          0U
+-#define __MPU_PRESENT          1U
+-#define __VTOR_PRESENT         1U
+-#define __PMU_PRESENT          0U
+-#define __DSP_PRESENT          0U
+-#define __ICACHE_PRESENT       0U
+-#define __DCACHE_PRESENT       0U
+-#define __DTCM_PRESENT         0U
+-#define __NVIC_PRIO_BITS       3U
+-#define __SAUREGION_PRESENT    0U
+-#define __Vendor_SysTickConfig 0U
+-
+-typedef enum IRQn {
+-    Reset_IRQn = -15,
+-    NonMaskableInt_IRQn = -14,
+-    HardFault_IRQn = -13,
+-    MemoryManagement_IRQn = -12,
+-    BusFault_IRQn = -11,
+-    UsageFault_IRQn = -10,
+-    SecureFault_IRQn = -9,
+-    SVCall_IRQn = -5,
+-    DebugMonitor_IRQn = -4,
+-    PendSV_IRQn = -2,
+-    SysTick_IRQn = -1,
+-
+-    WDG_RST_RQST_IRQ = 0, /* Watchdog reset request */
+-    WDG_INT_IRQ = 1, /* Watchdog interrupt */
+-    RESERVED2_IRQ = 2, /* Reserved */
+-    TIMER_IRQ = 3, /* Timer */
+-    RESERVED4_IRQ = 4, /* Reserved */
+-    RESERVED5_IRQ = 5, /* Reserved */
+-    RESERVED6_IRQ = 6, /* Reserved */
+-    RESERVED7_IRQ = 7, /* Reserved */
+-    RESERVED8_IRQ = 8, /* Reserved */
+-    RESERVED9_IRQ = 9, /* Reserved */
+-
+-    IRQn_MAX = INT16_MAX,
+-} IRQn_Type;
+-
+-#include <core_cm55.h>
+-
+-#endif /* FMW_CMSIS_LCP_H */
+diff --git a/product/rdkronos/lcp_ramfw/include/lcp_device.h b/product/rdkronos/lcp_ramfw/include/lcp_device.h
+deleted file mode 100644
+index 5b2331c0e..000000000
+--- a/product/rdkronos/lcp_ramfw/include/lcp_device.h
++++ /dev/null
+@@ -1,36 +0,0 @@
+-/*
+- * Arm SCP/MCP Software
+- * Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- */
+-
+-#ifndef LCP_DEVICE_H
+-#define LCP_DEVICE_H
+-
+-#include <lcp_mmap.h>
+-
+-#include <fmw_cmsis_lcp.h>
+-
+-#include <stdint.h>
+-
+-#define CTRL_ENABLE_POS      0U
+-#define CTRL_EXTR_EN_POS     1U
+-#define CTRL_EXTR_IS_CLK_POS 2U
+-#define CTRL_INT_EN_POS      3U
+-
+-#define CTRL_ENABLE_MASK      (1UL << CTRL_ENABLE_POS)
+-#define CTRL_EXTR_EN_POS_MASK (1UL << CTRL_EXTR_EN_POS)
+-#define CTRL_EXTR_IS_CLK_MASK (1UL << CTRL_EXTR_IS_CLK_POS)
+-#define CTRL_INT_EN_MASK      (1UL << CTRL_INT_EN_POS)
+-
+-struct lcp_timer_reg_str {
+-    FWK_RW uint32_t CTRL;
+-    FWK_RW uint32_t VALUE;
+-    FWK_RW uint32_t RELOAD;
+-    FWK_RW uint32_t INTSTATUS;
+-};
+-
+-#define LCP_TIMER_REG_S ((struct lcp_timer_reg_str *)LCP_TIMER_BASE_S)
+-
+-#endif /* LCP_DEVICE_H */
+diff --git a/product/rdkronos/lcp_ramfw/include/lcp_mhu3.h b/product/rdkronos/lcp_ramfw/include/lcp_mhu3.h
+deleted file mode 100644
+index 4b3cd740b..000000000
+--- a/product/rdkronos/lcp_ramfw/include/lcp_mhu3.h
++++ /dev/null
+@@ -1,21 +0,0 @@
+-/*
+- * Arm SCP/MCP Software
+- * Copyright (c) 2022 - 2023, Arm Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- *
+- * Description:
+- *     MHU module device indexes.
+- */
+-
+-#ifndef SCP_MHU3_H
+-#define SCP_MHU3_H
+-
+-enum kronos_mhu_devices {
+-    MHU3_DEVICE_IDX_LCP_AP_FCH_DVFS_SET_LVL,
+-    MHU3_DEVICE_IDX_LCP_AP_FCH_DVFS_SET_LIM_MIN,
+-    MHU3_DEVICE_IDX_LCP_AP_FCH_DVFS_SET_LIM_MAX,
+-    MHU3_DEVICE_IDX_COUNT,
+-};
+-
+-#endif /* SCP_MHU3_H */
+diff --git a/product/rdkronos/lcp_ramfw/include/lcp_mmap.h b/product/rdkronos/lcp_ramfw/include/lcp_mmap.h
+deleted file mode 100644
+index 401ac2568..000000000
+--- a/product/rdkronos/lcp_ramfw/include/lcp_mmap.h
++++ /dev/null
+@@ -1,87 +0,0 @@
+-/*
+- * Arm SCP/MCP Software
+- * Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- *
+- * Description:
+- *     Software defined memory map for LCP core.
+- */
+-
+-#ifndef LCP_SOFTWARE_MMAP_H
+-#define LCP_SOFTWARE_MMAP_H
+-
+-#include <fwk_macros.h>
+-
+-#define LCP_ITCM_SIZE (64 * 1024)
+-#define LCP_DTCM_SIZE (32 * 1024)
+-
+-#define LCP_ITCM_S_BASE  0x10000000
+-#define LCP_DTCM_S_BASE  0x30000000
+-
+-#define LCP_CORE_ITCM_REGION_START LCP_ITCM_S_BASE
+-#define LCP_CORE_ITCM_REGION_END   (LCP_ITCM_S_BASE + LCP_ITCM_SIZE - 1)
+-
+-#define LCP_CORE_DTCM_REGION_START LCP_DTCM_S_BASE
+-#define LCP_CORE_DTCM_REGION_END   (LCP_DTCM_S_BASE + LCP_DTCM_SIZE - 1)
+-
+-#define LCP_CORE_PERIPHERAL_REGION_START 0x30010000
+-#define LCP_CORE_PERIPHERAL_REGION_END   0x6FFFFFFF
+-
+-#define LCP_SRAM_REGION_START 0x70000000
+-#define LCP_SRAM_REGION_END   0xB007FFFF
+-
+-#define LCP_DEVICE_REGION_START 0xB0080000
+-#define LCP_DEVICE_REGION_END   0xFFFFFFFF
+-
+-#define LCP_TIMER_BASE_NS UINT32_C(0x48000000)
+-#define LCP_TIMER_BASE_S  UINT32_C(0x5802F000)
+-
+-#define LCP_AP_MHU_MBX_BASE 0xB00E0000
+-
+-#define LCP_UART_BASE 0xB2000000
+-
+-#define SCP_MHU3_PBX_MBX_SIZE (64 * 1024)
+-
+-#define LCP_SCP_MHU_BASE 0xB3000000
+-
+-#define LCP0_SCP_MHU_PBX_BASE  LCP_SCP_MHU_BASE
+-#define LCP0_SCP_MHU_MBX_BASE  (LCP0_SCP_MHU_PBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP1_SCP_MHU_PBX_BASE  (LCP0_SCP_MHU_MBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP1_SCP_MHU_MBX_BASE  (LCP1_SCP_MHU_PBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP2_SCP_MHU_PBX_BASE  (LCP1_SCP_MHU_MBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP2_SCP_MHU_MBX_BASE  (LCP2_SCP_MHU_PBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP3_SCP_MHU_PBX_BASE  (LCP2_SCP_MHU_MBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP3_SCP_MHU_MBX_BASE  (LCP3_SCP_MHU_PBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP4_SCP_MHU_PBX_BASE  (LCP3_SCP_MHU_MBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP4_SCP_MHU_MBX_BASE  (LCP4_SCP_MHU_PBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP5_SCP_MHU_PBX_BASE  (LCP4_SCP_MHU_MBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP5_SCP_MHU_MBX_BASE  (LCP5_SCP_MHU_PBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP6_SCP_MHU_PBX_BASE  (LCP5_SCP_MHU_MBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP6_SCP_MHU_MBX_BASE  (LCP6_SCP_MHU_PBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP7_SCP_MHU_PBX_BASE  (LCP6_SCP_MHU_MBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP7_SCP_MHU_MBX_BASE  (LCP7_SCP_MHU_PBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP8_SCP_MHU_PBX_BASE  (LCP7_SCP_MHU_MBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP8_SCP_MHU_MBX_BASE  (LCP8_SCP_MHU_PBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP9_SCP_MHU_PBX_BASE  (LCP8_SCP_MHU_MBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP9_SCP_MHU_MBX_BASE  (LCP9_SCP_MHU_PBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP10_SCP_MHU_PBX_BASE (LCP9_SCP_MHU_MBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP10_SCP_MHU_MBX_BASE (LCP10_SCP_MHU_PBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP11_SCP_MHU_PBX_BASE (LCP10_SCP_MHU_MBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP11_SCP_MHU_MBX_BASE (LCP11_SCP_MHU_PBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP12_SCP_MHU_PBX_BASE (LCP11_SCP_MHU_MBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP12_SCP_MHU_MBX_BASE (LCP12_SCP_MHU_PBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP13_SCP_MHU_PBX_BASE (LCP12_SCP_MHU_MBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP13_SCP_MHU_MBX_BASE (LCP13_SCP_MHU_PBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP14_SCP_MHU_PBX_BASE (LCP13_SCP_MHU_MBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP14_SCP_MHU_MBX_BASE (LCP14_SCP_MHU_PBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP15_SCP_MHU_PBX_BASE (LCP14_SCP_MHU_MBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-#define LCP15_SCP_MHU_MBX_BASE (LCP15_SCP_MHU_PBX_BASE + SCP_MHU3_PBX_MBX_SIZE)
+-
+-#define LCP_EXTEND_CTRL_FRAME_BASE 0xB0083000
+-#define LCP_CFG_BASE               LCP_EXTEND_CTRL_FRAME_BASE + 0x000
+-#define LCP_RST_SYN_BASE           LCP_EXTEND_CTRL_FRAME_BASE + 0x010
+-
+-#define LCP_DVFS_FRAME_BASE        0xB0081000
+-
+-#endif /* LCP_SOFTWARE_MMAP_H */
+diff --git a/product/rdkronos/module/mod_lcp_platform/CMakeLists.txt b/product/rdkronos/module/mod_lcp_platform/CMakeLists.txt
+deleted file mode 100644
+index f805e7711..000000000
+--- a/product/rdkronos/module/mod_lcp_platform/CMakeLists.txt
++++ /dev/null
+@@ -1,11 +0,0 @@
+-#
+-# Arm SCP/MCP Software
+-# Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+-#
+-# SPDX-License-Identifier: BSD-3-Clause
+-#
+-
+-add_library(${SCP_MODULE_TARGET} SCP_MODULE)
+-
+-target_sources(${SCP_MODULE_TARGET}
+-               PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/mod_lcp_platform.c")
+diff --git a/product/rdkronos/module/mod_lcp_platform/Module.cmake b/product/rdkronos/module/mod_lcp_platform/Module.cmake
+deleted file mode 100644
+index 2011d81aa..000000000
+--- a/product/rdkronos/module/mod_lcp_platform/Module.cmake
++++ /dev/null
+@@ -1,10 +0,0 @@
+-#
+-# Arm SCP/MCP Software
+-# Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
+-#
+-# SPDX-License-Identifier: BSD-3-Clause
+-#
+-
+-set(SCP_MODULE "lcp-platform")
+-
+-set(SCP_MODULE_TARGET "module-lcp-platform")
+diff --git a/product/rdkronos/module/mod_lcp_platform/src/mod_lcp_platform.c b/product/rdkronos/module/mod_lcp_platform/src/mod_lcp_platform.c
+deleted file mode 100644
+index 8b5253c05..000000000
+--- a/product/rdkronos/module/mod_lcp_platform/src/mod_lcp_platform.c
++++ /dev/null
+@@ -1,69 +0,0 @@
+-/*
+- * Arm SCP/MCP Software
+- * Copyright (c) 2022-2023, Arm Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- */
+-#include <lcp_device.h>
+-
+-#include <fwk_id.h>
+-#include <fwk_interrupt.h>
+-#include <fwk_log.h>
+-#include <fwk_module.h>
+-#include <fwk_module_idx.h>
+-#include <fwk_status.h>
+-
+-#define MOD_NAME "[LCP_PLATFORM] "
+-#define LCP_TIMER_RELOAD 0xFFFFFU
+-
+-volatile struct {
+-    uint32_t counter;
+-} lcp_platform_ctx;
+-
+-void timer_isr()
+-{
+-    lcp_platform_ctx.counter++;
+-    /* clear interrupt flag */
+-    LCP_TIMER_REG_S->INTSTATUS = 1U;
+-}
+-
+-void mod_lcp_config_timer()
+-{
+-    LCP_TIMER_REG_S->CTRL = CTRL_ENABLE_MASK | CTRL_INT_EN_MASK;
+-
+-    LCP_TIMER_REG_S->RELOAD = LCP_TIMER_RELOAD;
+-}
+-
+-static int mod_lcp_platform_init(
+-    fwk_id_t module_id,
+-    unsigned int element_count,
+-    const void *unused)
+-{
+-    /* No elements support */
+-    if (element_count > 0) {
+-        return FWK_E_DATA;
+-    }
+-
+-    return FWK_SUCCESS;
+-}
+-
+-static int mod_lcp_platform_start(fwk_id_t id)
+-{
+-    fwk_interrupt_set_isr(TIMER_IRQ, timer_isr);
+-
+-    fwk_interrupt_enable(TIMER_IRQ);
+-
+-    mod_lcp_config_timer();
+-
+-    FWK_LOG_INFO(MOD_NAME "LCP RAM firmware initialized");
+-
+-    return FWK_SUCCESS;
+-}
+-
+-const struct fwk_module module_lcp_platform = {
+-    .type = FWK_MODULE_TYPE_SERVICE,
+-    .init = mod_lcp_platform_init,
+-    .start = mod_lcp_platform_start,
+-};
+-
+-const struct fwk_module_config config_lcp_platform = { 0 };
+diff --git a/product/rdkronos/module/scp_platform/src/mod_scp_platform.c b/product/rdkronos/module/scp_platform/src/mod_scp_platform.c
+index 0f5c908ad..4cea07d84 100644
+--- a/product/rdkronos/module/scp_platform/src/mod_scp_platform.c
++++ b/product/rdkronos/module/scp_platform/src/mod_scp_platform.c
+@@ -151,41 +151,6 @@ void program_ap_rvbar()
+     }
+ }
+ 
+-/* Helper function to program the LCP UART access */
+-void enable_lcp_uart(uint8_t lcp_idx)
+-{
+-    volatile uint32_t *lcp_uart_ctrl_reg;
+-
+-    /*
+-     * Allow LCP to access the UART.
+-     */
+-    lcp_uart_ctrl_reg =
+-        (volatile uint32_t *)(SCP_LCP_EXTERNAL_CONTROL(lcp_idx) + 0x020);
+-
+-    *lcp_uart_ctrl_reg |= (0x1);
+-}
+-
+-/* Helper function to release LCPs */
+-void release_lcp()
+-{
+-    volatile uint32_t *cpu_wait;
+-    uint8_t lcp_idx = 0;
+-
+-    /*
+-     * Allow LCP0 to access the UART. If all the LCPs are allowed to access
+-     * the UART at the same time, the output will be unreadable. Hence,
+-     * restrict the LCP UART to single LCP for now.
+-     */
+-    enable_lcp_uart(lcp_idx);
+-
+-    /* Release all the LCPs */
+-    for (; lcp_idx < platform_get_core_count(); lcp_idx++) {
+-        cpu_wait = (volatile uint32_t *)(SCP_LCP_CONTROL(lcp_idx) +
+-                SCP_LCP_CONTROL_CPU_WAIT_OFFSET);
+-        *cpu_wait &= ~1;
+-    }
+-}
+-
+ /*
+  *  SCMI Messaging stack
+  */
+@@ -675,8 +640,7 @@ int scp_platform_process_notification(
+         }
+         /*
+          * Wait till a doorbell from RSS is received. This doorbell event indicates
+-         * that the RSS LCS is in secure state and the RSS has completed loading
+-         * the LCP ramfw images to LCP ITCM.
++         * that the RSS LCS is in secure state.
+          */
+         status = scp_platform_ctx.timer_api->wait(timer_id,
+                 RSS_DOORBELL_WAIT_TIMEOUT_US, check_rss_init_status, NULL);
+@@ -692,11 +656,9 @@ int scp_platform_process_notification(
+         program_ap_rvbar();
+ 
+         /*
+-         * Initialize primary core and LCPs
++         * Initialize primary core
+          */
+         if (params->new_state == MOD_CLOCK_STATE_RUNNING) {
+-            /* Configure LCP0 UART access and release all LCPs */
+-            release_lcp();
+ 
+             if (system_info->chip_id == 0) {
+                 FWK_LOG_INFO(
+diff --git a/product/rdkronos/product.mk b/product/rdkronos/product.mk
+index 157ea4bed..fe2054274 100644
+--- a/product/rdkronos/product.mk
++++ b/product/rdkronos/product.mk
+@@ -7,5 +7,4 @@
+ #
+ 
+ BS_PRODUCT_NAME := rdkronos
+-BS_FIRMWARE_LIST := lcp_ramfw \
+-                    scp_ramfw
++BS_FIRMWARE_LIST := scp_ramfw
+diff --git a/product/rdkronos/scp_ramfw/include/scp_css_mmap.h b/product/rdkronos/scp_ramfw/include/scp_css_mmap.h
+index 2a7f6630b..9d8ad16f9 100644
+--- a/product/rdkronos/scp_ramfw/include/scp_css_mmap.h
++++ b/product/rdkronos/scp_ramfw/include/scp_css_mmap.h
+@@ -42,7 +42,7 @@
+ #define SCP_ADDRESS_TRANSLATION_WINDOW1_BASE (0xA0000000)
+ 
+ /* Offsets within SCP's Address Translation Window0 */
+-#define SCP_ATW0_LCP_AND_CLUSTER_UTILITY_OFFSET (0x0)
++#define SCP_ATW0_CLUSTER_UTILITY_OFFSET (0x0)
+ #define SCP_ATW0_AP_PERIPHERAL_SRAM_OFFSET (0x10000000)
+ #define SCP_ATW0_SYSTEM_CONTROL_SRAM_OFFSET (0x18000000)
+ 
+@@ -50,23 +50,21 @@
+ #define SCP_ATW1_CMN_OFFSET (0x0)
+ 
+ /*
+- * LCP subsystem and Cluster Utility memory region that is addressable in the AP
+- * memory map between 0x2_0000_0000 - 0x2_0FFF_FFFF is mapped in the SCP address
++ * Cluster Utility memory region that is addressable in the AP memory map
++ * between 0x2_0000_0000 - 0x2_0FFF_FFFF is mapped in the SCP address
+  * translation window 0 from 0x6000_0000 to 0x6FFF_FFFF via ATU configuration.
+  */
+ 
+ /*
+- * Size of SCP's view of per-cluster LCP subsystem and utlility memory region.
++ * Size of SCP's view of utlility memory region.
+  */
+-#define SCP_LCP_AND_CLUSTER_UTILITY_SIZE (0x200000)
++#define SCP_CLUSTER_UTILITY_SIZE (0x200000)
+ 
+ /*
+- * Offsets of various blocks within LCP subsystem and cluster utility that is
+- * mapped into SCP's address translation window 0. These offsets are applicable
+- * to each cluster in the system.
++ * Offsets of various blocks within  cluster utility that is mapped into SCP's
++ * address translation window 0. These offsets are applicable to each cluster
++ * in the system.
+  */
+-#define SCP_LCP_CONTROL_OFFSET (0x21000)
+-#define SCP_LCP_EXTERNAL_CONTROL_OFFSET (0x70000)
+ #define SCP_CLUSTER_UTILITY_CORE_MANAGER_OFFSET (0x80000)
+ #define SCP_CLUSTER_UTILITY_CLUSTER_PPU_OFFSET (0x130000)
+ #define SCP_CLUSTER_UTILITY_CORE_PPU_OFFSET (0x180000)
+@@ -74,43 +72,26 @@
+ /* Core Manager base address for a cluster 'n' */
+ #define SCP_CLUSTER_UTILITY_CORE_MANAGER_BASE(n) \
+     (SCP_ADDRESS_TRANSLATION_WINDOW0_BASE + \
+-        SCP_ATW0_LCP_AND_CLUSTER_UTILITY_OFFSET + \
+-        (n * SCP_LCP_AND_CLUSTER_UTILITY_SIZE) + \
++        SCP_ATW0_CLUSTER_UTILITY_OFFSET + \
++        (n * SCP_CLUSTER_UTILITY_SIZE) + \
+         SCP_CLUSTER_UTILITY_CORE_MANAGER_OFFSET)
+ 
+ /* Cluster PPU base address */
+ #define SCP_CLUSTER_UTILITY_CLUSTER_PPU_BASE(n) \
+     (SCP_ADDRESS_TRANSLATION_WINDOW0_BASE + \
+-        SCP_ATW0_LCP_AND_CLUSTER_UTILITY_OFFSET + \
+-        (n * SCP_LCP_AND_CLUSTER_UTILITY_SIZE) + \
++        SCP_ATW0_CLUSTER_UTILITY_OFFSET + \
++        (n * SCP_CLUSTER_UTILITY_SIZE) + \
+ 	SCP_CLUSTER_UTILITY_CLUSTER_PPU_OFFSET)
+ 
+ /* Application core PPU base address */
+ #define SCP_CLUSTER_UTILITY_CORE_PPU_BASE(n) \
+     (SCP_ADDRESS_TRANSLATION_WINDOW0_BASE + \
+-        SCP_ATW0_LCP_AND_CLUSTER_UTILITY_OFFSET + \
+-        (n * SCP_LCP_AND_CLUSTER_UTILITY_SIZE) + \
++        SCP_ATW0_CLUSTER_UTILITY_OFFSET + \
++        (n * SCP_CLUSTER_UTILITY_SIZE) + \
+ 	SCP_CLUSTER_UTILITY_CORE_PPU_OFFSET)
+ 
+-/* Base address of SCP's view of LCP's External Control register block */
+-#define SCP_LCP_EXTERNAL_CONTROL(n) \
+-    (SCP_ADDRESS_TRANSLATION_WINDOW0_BASE + \
+-        SCP_ATW0_LCP_AND_CLUSTER_UTILITY_OFFSET + \
+-        (n * SCP_LCP_AND_CLUSTER_UTILITY_SIZE) + \
+-	SCP_LCP_EXTERNAL_CONTROL_OFFSET)
+-		
+-/* Base address of SCP's view of LCP's Control register block */
+-#define SCP_LCP_CONTROL(n) \
+-    (SCP_ADDRESS_TRANSLATION_WINDOW0_BASE + \
+-        SCP_ATW0_LCP_AND_CLUSTER_UTILITY_OFFSET + \
+-        (n * SCP_LCP_AND_CLUSTER_UTILITY_SIZE) + \
+-        SCP_LCP_CONTROL_OFFSET)
+-
+-/* Offsets in the LCP control register block */
+-#define SCP_LCP_CONTROL_CPU_WAIT_OFFSET     0x120
+-
+ /*
+- * System Control SRAM (shared between RSS, MCP, SCP and AP) is mapped by ATU in
++ * System Control SRAM (shared between RSS, SCP and AP) is mapped by ATU in
+  * the SCP address translation window 0 at the address 0x7800_0000.
+  */
+ #define SCP_SYSTEM_CONTROL_SRAM_BASE (SCP_ADDRESS_TRANSLATION_WINDOW0_BASE + \
+-- 
+2.25.1
+

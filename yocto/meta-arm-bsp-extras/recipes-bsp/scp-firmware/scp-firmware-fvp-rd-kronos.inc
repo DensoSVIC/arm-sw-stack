@@ -26,6 +26,7 @@ SRC_URI += "\
     file://0015-product-rdkronos-Remove-unused-PCIe-configuration.patch \
     file://0016-product-rdkronos-Set-log-level-to-ERROR.patch \
     file://0017-product-rdkronos-Increase-the-ATU-request-timeout.patch \
+    file://0018-product-rdkronos-Remove-LCP.patch \
 "
 # cSpell:enable
 
@@ -33,5 +34,5 @@ COMPATIBLE_MACHINE     = "fvp-rd-kronos"
 SCP_BUILD_RELEASE      = "0"
 SCP_PLATFORM           = "rdkronos"
 SCP_LOG_LEVEL          = "INFO"
-FW_TARGETS             = "scp lcp"
+FW_TARGETS             = "scp"
 FW_INSTALL             = "ramfw"

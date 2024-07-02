@@ -67,13 +67,13 @@ SRC_URI += "\
     file://0054-rss-kronos-Add-FVP-shutdown-handler.patch \
     file://0055-rss-kronos-Remove-unused-PCIe-address-mapping.patch \
     file://0056-rss-kronos-Align-capsule-update-structs.patch \
+    file://0057-rss-kronos-Remove-LCP.patch \
 "
 # cSpell:enable
 
 TFM_DEBUG = "1"
 TFM_PLATFORM = "arm/rss/kronos"
 
-EXTRA_OECMAKE += "-D MCUBOOT_IMAGE_NUMBER=8"
 EXTRA_OECMAKE += "-D ATU_SCP=ON"
 EXTRA_OECMAKE += "-D RSS_USE_HOST_FLASH=OFF"
 EXTRA_OECMAKE += "-D ENABLE_SCP_ATU_CTRL=OFF"
