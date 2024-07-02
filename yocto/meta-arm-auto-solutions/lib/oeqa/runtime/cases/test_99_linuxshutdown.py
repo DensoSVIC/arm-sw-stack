@@ -17,7 +17,6 @@ class LinuxShutdownTest(OERuntimeTestCase):
         cls.linux_console = cls.tc.target.DEFAULT_CONSOLE
         cls.rss_console = 'rss'
         cls.scp_console = 'scp'
-        cls.lcp_console = 'lcp'
         cls.tfa_console = 'tf-a'
 
     @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
@@ -36,8 +35,6 @@ class LinuxShutdownTest(OERuntimeTestCase):
         self.assertNotIn(b'[ERR]', self.target.before(self.rss_console))
         self.target.expect(self.scp_console, pexpect.EOF)
         self.assertNotIn(b'[ERROR]', self.target.before(self.scp_console))
-        self.target.expect(self.lcp_console, pexpect.EOF)
-        self.assertNotIn(b'[ERROR]', self.target.before(self.lcp_console))
         self.target.expect(self.tfa_console, pexpect.EOF)
         self.assertNotRegex(self.target.before(self.tfa_console),
                             br'ERROR:|E\/TC|PANIC')

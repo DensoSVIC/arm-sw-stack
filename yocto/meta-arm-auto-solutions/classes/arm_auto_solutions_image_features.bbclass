@@ -205,7 +205,6 @@ TEST_SUITES:append = " \
 "
 
 TEST_SUITES:remove:si0-bridge-ethernet0 = "\
-    test_00_lcp \
     test_00_trusted_firmware_a \
     test_10_linuxboot \
     test_20_fvp_devices \
