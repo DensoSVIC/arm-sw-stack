@@ -63,8 +63,6 @@ to have a certain understanding of the following technologies:
 
     * `System Control Processor (SCP) Firmware`_
 
-    * `Local Control Processor (LCP) Firmware`_
-
     * `Trusted Firmware-A (TF-A)`_
 
     * `Trusted Services`_
@@ -131,7 +129,6 @@ The platform consists of the following hardware IP:
    Safety Island       Cortex-R82AE Armv8-R64
    RSE                 Cortex-M55 Armv8.1-M
    SCP                 Cortex-M7 Armv7-M
-   LCP                 Cortex-M55 Armv8.1-M
    =================== ======================================
 
 The remaining software in the Primary Compute subsystem, based on the

@@ -274,7 +274,6 @@ rst_prolog = f"""
 .. _Linux PTP Project: https://linuxptp.sourceforge.net
 .. _Linux preempt-rt repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fpreempt-rt%2Fbase
 .. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fbase
-.. _Local Control Processor (LCP) Firmware: https://developer.arm.com/documentation/den0050/latest
 .. _MCUboot: https://docs.mcuboot.com/
 .. _Mbed TLS repository: https://github.com/Mbed-TLS/mbedtls/tree/{mbedtls_version}
 .. _Mbed TLS: https://mbed-tls.readthedocs.io/en/latest/

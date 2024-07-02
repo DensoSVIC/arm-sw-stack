@@ -21,7 +21,6 @@ images are included:
   * RSS BL2 image
   * RSS Runtime image
   * SCP RAM Firmware (SCP RAMFW) image
-  * LCP RAM Firmware (LCP RAMFW) image
   * Safety Island Cluster 0 (SI CL0) image
   * Safety Island Cluster 1 (SI CL1) image
   * Safety Island Cluster 2 (SI CL2) image
@@ -54,7 +53,7 @@ new images. The flash layouts are shown in the following figures.
   * FWU MetaData: Used for RSS BL1 to select the correct bank to load and
     boot the RSS BL2.
   * FWU Private MetaData: Used for the RSS BL2 to select the correct bank to
-    load and boot the SCP, LCP, SI, and the Primary Compute BL2.
+    load and boot the SCP, SI, and the Primary Compute BL2.
 
 ..
   /* cspell:enable */

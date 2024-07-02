@@ -206,12 +206,11 @@ to:
 * Implement the RD-Kronos platform port, based on RD-Fremont.
 * Load and boot the SCP.
 * Load and boot the Safety Island.
-* Load and boot the LCP.
 * Load and boot the AP.
 * Configure GIC View-1/2/3 for Safety Island.
 * Configure the NI-710AE of the Safety Island.
 * Support the runtime services listed above.
-* Add Secure Firmware Update support for RSS, SCP, LCP, Safety Island and Primary Compute.
+* Add Secure Firmware Update support for RSS, SCP, Safety Island and Primary Compute.
 * Add a shutdown handler to be able to shutdown the FVP.
 
 .. _design_components_scp-firmware:
@@ -225,8 +224,7 @@ built to provide microcontrollers to abstract various power, or other system
 management tasks, away from Primary Compute (PC).
 
 The `System Control Processor (SCP) Firmware`_ provides a software reference
-implementation for the System Control Processor (SCP) and Local Control
-Processor (LCP) components.
+implementation for the System Control Processor (SCP) component.
 
 System Control Processor (SCP)
 ==============================
@@ -246,26 +244,6 @@ The functionality of the SCP includes:
     * Voltage domain management
 * System Control and Management Interface (SCMI, platform-side)
 
-Local Control Processor (LCP)
-=============================
-
-For the RD-Kronos platform, the Local Control Processor (LCP) software is
-deployed on Cortex-M55 CPUs.
-
-The LCP is introduced for each application core to support a scalable power
-control solution in systems with very high core counts by SCP management. Now,
-the main functionality of the LCP is limited Per-core Dynamic Voltage Frequency
-Scaling (DVFS).
-
-To minimize potential fault sources in a subsystem which functions in a mostly
-full-on state for the targeted application, the per core voltage scaling of
-DVFS is not supported.
-
-The per core frequency scaling is supported with limitation. Only one
-Phase-Locked Loop (PLL) function (which may incorporate redundancy as a safety
-mechanism) is supported for the application processors. This limitation
-also minimizes potential fault sources.
-
 MHUv3 Communication
 ===================
 
@@ -273,16 +251,12 @@ There are MHUv3 devices between the Cortex-M core where the RSS runs and the
 Cortex-M core where SCP-firmware runs. In the transport layer of MHUv3,
 doorbell signals are exchanged between the RSS and SCP.
 
-For RD-Fremont platform, MHUv3 signals are sent:
+For RD-Kronos platform, MHUv3 signals are sent:
 
 * From SCP to the RSS to indicate that SCP has booted successfully
-* From the RSS to SCP to indicate the LCP and Primary Compute (PC) is ready
-  to boot
-
-For RD-Kronos platform, the MHUv3 communication is extended for booting Safety
-Island (SI) clusters. The RSS sends a doorbell signal to SCP to notify that the
-image of a Safety Island cluster has been loaded to LLRAM and the cluster is
-ready to boot.
+* From the RSS to SCP to indicate the Primary Compute (PC) is ready to boot
+* From the RSS to SCP to notify the SCP that the image of a Safety Island (SI)
+  cluster has been loaded to LLRAM and the cluster is ready to boot.
 
 The following diagram illustrates the MHUv3 communication sequence between
 the RSS and SCP.
@@ -306,7 +280,6 @@ Patches for the SCP are included at
 * Implement the RD-Kronos platform port, based on RD-Fremont.
 * Communicate with RSS via MHUv3 to conduct the boot flow.
 * Power on Safety Island.
-* Reset LCP.
 * Power on PC.
 * Add Primary Compute and Safety Island shared SRAM to Interconnect memory
   region map.

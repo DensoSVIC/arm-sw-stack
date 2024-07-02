@@ -2822,7 +2822,6 @@ A similar output to the following is printed out:
   Creating terminal default on terminal_ns_uart0
   Creating terminal tf-a on terminal_sec_uart
   Creating terminal scp on terminal_uart_scp
-  Creating terminal lcp on terminal_uart_lcp
   Creating terminal rss on terminal_rss_uart
   Creating terminal safety_island_c0 on terminal_uart_si_cluster0
   Creating terminal safety_island_c1 on terminal_uart_si_cluster1

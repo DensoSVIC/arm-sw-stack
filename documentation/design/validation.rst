@@ -40,13 +40,6 @@ The testing scripts can be found in
 All of the Processing Elements and Components have their terminal output logged
 for debugging.
 
- * LCP
-    The script that implements the test is
-    :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/test_00_lcp.py`.
-    The test waits for the LCP to log that it has successfully initialized and
-    started all of its internal modules. It also checks whether the LCP has
-    logged any errors, in which case the test fails.
-
  * RSS
     The script that implements the test is
     :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/test_00_rss.py`.

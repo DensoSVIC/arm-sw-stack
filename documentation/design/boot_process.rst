@@ -25,7 +25,6 @@ The RSS uses a NVM flash to store the images of various components, including:
 * RSS BL2 image
 * RSS Runtime image
 * SCP RAM Firmware (SCP RAMFW) image
-* LCP RAM Firmware (LCP RAMFW) image
 * Safety Island Cluster 0 (SI CL0) image
 * Safety Island Cluster 1 (SI CL1) image
 * Safety Island Cluster 2 (SI CL2) image
@@ -132,8 +131,6 @@ Major steps of the boot flow:
    * Notifies the SCP to power on the SI CL1
    * Copies the SI CL2 image from flash to SI LLRAM and authenticates the image
    * Notifies the SCP to power on the SI CL2
-   * Copies the LCP image from flash to LCP SRAM and authenticates the image
-   * Releases the LCP out of reset
    * Copies the AP BL2 image from flash to AP SRAM and authenticates the image
    * Notifies the SCP to power on the AP
 

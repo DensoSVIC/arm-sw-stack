@@ -28,6 +28,7 @@ Changed
 * Added compiler tuning for Cortex-R82 to the Zephyr toolchain
 * Upgraded from Yocto nanbield to scarthgap
 * Introduced the Yocto layer meta-arm-safety-island
+* Removed LCP from the boot flow
 
 .. _releasenotes_limitations:
 
