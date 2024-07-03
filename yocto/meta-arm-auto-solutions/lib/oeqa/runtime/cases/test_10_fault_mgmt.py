@@ -39,7 +39,7 @@ GIC_FMU_FAULT_SAMPLE = [
 ]
 
 
-class FaultMgmtTest(OERuntimeTestCase):
+class FaultMgmtTestBase(OERuntimeTestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -54,7 +54,14 @@ class FaultMgmtTest(OERuntimeTestCase):
 
     def fmu_fault_clear(self):
         output = self.shell.exec_command("fault clear", timeout=120)
+        self.assertIn("Erasing the storage...", output)
         self.assertIn("Done!", output)
+
+    def fmu_fault_list(self, fault=""):
+        return self.shell.exec_command(f"fault list {fault}", timeout=60)
+
+
+class FaultMgmtTest(FaultMgmtTestBase):
 
     def test_tree(self):
         tree = self.shell.exec_command("fault tree")
@@ -145,7 +152,7 @@ class FaultMgmtTest(OERuntimeTestCase):
     def test_fmu_fault_list(self):
         self.test_system_fmu_internal_inject()
         self.test_gic_fmu_inject()
-        output = self.shell.exec_command("fault list", timeout=60)
+        output = self.fmu_fault_list()
 
         # Fault patterns for the address "2a510000" (only non-critical)
         for fault_id in SYSTEM_FMU_INTERNAL_FAULTS:
@@ -163,7 +170,7 @@ class FaultMgmtTest(OERuntimeTestCase):
             self.assertIn(critical_pattern, output)
 
         self.shell.exec_command("fault inject fmu@2a510000 0x2")
-        output = self.shell.exec_command("fault list 2")
+        output = self.fmu_fault_list("2")
         self.assertIn("Fault received (non-critical): "
                       "0x2 on fmu@2a510000 : count 2",
                       output)
@@ -197,30 +204,22 @@ class FaultMgmtTest(OERuntimeTestCase):
     def test_fmu_fault_clear(self):
         self.test_system_fmu_internal_inject()
 
-        output = self.shell.exec_command("fault clear")
-        self.assertIn("Erasing the storage...", output)
-        self.assertIn("Done!", output)
+        self.fmu_fault_clear()
 
-        output = self.shell.exec_command("fault list")
+        output = self.fmu_fault_list()
         self.assertIn("No fault reported", output)
 
 
-class FaultMgmtSSUTest(OERuntimeTestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.tc.target.transition('on')
+class FaultMgmtSSUTest(FaultMgmtTestBase):
 
     def setUp(self):
-        super().setUp()
         # Work around duplicate symlink creation so it can be recreated
         os.unlink(self.target.bootlog)
         self.logger.info('Resetting')
         self.target.transition('off')
         self.target.transition('on')
-        self.shell = Shell(self.target, FAULT_MGMT_CONSOLE, self.logger)
-        self.shell.wait_for_prompt(timeout=60)
+        # Call the parent setUp at this stage, after resetting
+        super().setUp()
 
         # Ensure initial state is "TEST"
         output = self.shell.exec_command("fault safety_status ssu@2a500000")
