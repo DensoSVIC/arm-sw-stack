@@ -39,6 +39,7 @@ GIC_FMU_FAULT_SAMPLE = [
 ]
 
 ROOT_FMU = "fmu@2a510000"
+UPSTREAM_FMUS = ["fmu@2a570000", "fmu@2a530000"]
 SSU = "ssu@2a500000"
 
 
@@ -99,7 +100,7 @@ class FaultMgmtTest(FaultMgmtTestBase):
 
     def test_tree(self):
         tree = self.shell.exec_command("fault tree")
-        for fmu in [ROOT_FMU] + ["fmu@2a570000"] + [SSU]:
+        for fmu in [ROOT_FMU] + UPSTREAM_FMUS + [SSU]:
             self.assertIn(fmu, tree)
 
     def test_system_fmu_internal_inject(self):
@@ -124,24 +125,28 @@ class FaultMgmtTest(FaultMgmtTestBase):
         self.fmu_fault_set_enabled(ROOT_FMU, "0x2", True)
         self.target.expect(self.console, "Fault received")
 
-    @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
-    def test_gic_fmu_inject(self):
-        for fault_id in GIC_FMU_FAULT_SAMPLE:
+    def gic_fmu_inject_fault_list(self, fmu_dev, fault_list):
+        for fault_id in fault_list:
             # Enable fault
-            self.fmu_fault_set_enabled("fmu@2a570000", fault_id, True)
+            self.fmu_fault_set_enabled(fmu_dev, fault_id, True)
 
             # Configure fault as non-critical and inject
-            self.fmu_fault_set_critical("fmu@2a570000", fault_id, False)
-            fault_count = self.fmu_fault_inject("fmu@2a570000", fault_id,
+            self.fmu_fault_set_critical(fmu_dev, fault_id, False)
+            fault_count = self.fmu_fault_inject(fmu_dev, fault_id,
                                                 False)
             self.assertGreater(fault_count, 0)
 
             # Configure fault as critical and inject
             self.shell.wait_for_prompt()
-            self.fmu_fault_set_critical("fmu@2a570000", fault_id, True)
-            fault_count = self.fmu_fault_inject("fmu@2a570000", fault_id,
-                                                True)
+            self.fmu_fault_set_critical(fmu_dev, fault_id, True)
+            fault_count = self.fmu_fault_inject(fmu_dev, fault_id, True)
             self.assertGreater(fault_count, 0)
+
+    @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
+    def test_gic_fmu_inject(self):
+        for fmu_dev in UPSTREAM_FMUS:
+            self.fmu_fault_clear()
+            self.gic_fmu_inject_fault_list(fmu_dev, GIC_FMU_FAULT_SAMPLE)
 
     def test_fmu_fault_count(self):
         self.test_system_fmu_internal_inject()
@@ -151,30 +156,32 @@ class FaultMgmtTest(FaultMgmtTestBase):
 
     @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
     def test_fmu_fault_list(self):
-        self.test_system_fmu_internal_inject()
-        self.test_gic_fmu_inject()
-        output = self.fmu_fault_list()
+        for fmu_dev in UPSTREAM_FMUS:
+            self.fmu_fault_clear()
+            self.test_system_fmu_internal_inject()
+            self.gic_fmu_inject_fault_list(fmu_dev, GIC_FMU_FAULT_SAMPLE)
+            output = self.fmu_fault_list()
 
-        # Fault patterns for the root fmu address (only non-critical)
-        for fault_id in SYSTEM_FMU_INTERNAL_FAULTS:
-            pattern = (f"Fault received (non-critical): {fault_id} on "
-                       f"{ROOT_FMU} : count 1")
-            self.assertIn(pattern, output)
+            # Fault patterns for the root fmu address (only non-critical)
+            for fault_id in SYSTEM_FMU_INTERNAL_FAULTS:
+                pattern = (f"Fault received (non-critical): {fault_id} on "
+                           f"{ROOT_FMU} : count 1")
+                self.assertIn(pattern, output)
 
-        # For the address "2a570000" (critical and non-critical)
-        for fault_id in GIC_FMU_FAULT_SAMPLE:
-            non_critical_pattern = ("Fault received (non-critical): "
-                                    f"{fault_id} on fmu@2a570000 : count 1")
-            critical_pattern = (f"Fault received (critical): {fault_id} "
-                                "on fmu@2a570000 : count 1")
-            self.assertIn(non_critical_pattern, output)
-            self.assertIn(critical_pattern, output)
+            # For the upstream fmu address (critical and non-critical)
+            for fault_id in GIC_FMU_FAULT_SAMPLE:
+                non_critical_pattern = ("Fault received (non-critical): "
+                                        f"{fault_id} on {fmu_dev} : count 1")
+                critical_pattern = (f"Fault received (critical): {fault_id} "
+                                    f"on {fmu_dev} : count 1")
+                self.assertIn(non_critical_pattern, output)
+                self.assertIn(critical_pattern, output)
 
-        self.fmu_fault_inject(ROOT_FMU, "0x2", False)
-        output = self.fmu_fault_list("2")
-        self.assertIn("Fault received (non-critical): "
-                      f"0x2 on {ROOT_FMU} : count 2",
-                      output)
+            self.fmu_fault_inject(ROOT_FMU, "0x2", False)
+            output = self.fmu_fault_list("2")
+            self.assertIn("Fault received (non-critical): "
+                          f"0x2 on {ROOT_FMU} : count 2",
+                          output)
 
     def filter_fault_history(self, output):
         lines = output.split('\n')
@@ -226,7 +233,7 @@ class FaultMgmtSSUTest(FaultMgmtTestBase):
         output = self.shell.exec_command(f"fault safety_status {SSU}")
         self.assertIn("TEST", output)
 
-    def test_ssu_compl_ok(self):
+    def ssu_state_machine(self, fmu_dev):
         # TEST -> compl_ok -> SAFE
         output = self.shell.exec_command(
             f"fault safety_control {SSU} compl_ok")
@@ -243,9 +250,9 @@ class FaultMgmtSSUTest(FaultMgmtTestBase):
         self.assertIn("SAFE", output)
 
         # SAFE -> critical fault -> ERRC
-        self.fmu_fault_set_enabled("fmu@2a570000", "0x200", True)
-        self.fmu_fault_set_critical("fmu@2a570000", "0x200", True)
-        self.fmu_fault_inject("fmu@2a570000", "0x200", True)
+        self.fmu_fault_set_enabled(fmu_dev, "0x200", True)
+        self.fmu_fault_set_critical(fmu_dev, "0x200", True)
+        self.fmu_fault_inject(fmu_dev, "0x200", True)
         output = self.shell.exec_command(f"fault safety_status {SSU}")
         self.assertIn("ERRC", output)
 
@@ -253,6 +260,12 @@ class FaultMgmtSSUTest(FaultMgmtTestBase):
         output = self.shell.exec_command(
             f"fault safety_control {SSU} compl_ok")
         self.assertIn("ERRC", output)
+
+    def test_gic_fmu_ssu_compl_ok(self):
+        for fmu_dev in UPSTREAM_FMUS:
+            self.ssu_state_machine(fmu_dev)
+            # Reset FVP in order to recover from ssu ERRC
+            self.setUp()
 
     def test_ssu_nce_ok(self):
         # TEST -> nce_ok -> ERRN
