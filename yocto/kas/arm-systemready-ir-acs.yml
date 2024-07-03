@@ -7,14 +7,9 @@
 header:
   version: 16
   includes:
-    - yocto/kas/arm-bsp-extras.yml
     - repo: meta-arm
       file: kas/arm-systemready-ir-acs.yml
-    - yocto/kas/bsp-pinned-repos.yml
 
 local_conf_header:
   arm-systemready-ir-acs: |
     TMPDIR = "${TOPDIR}/tmp_systemready"
-
-target:
-  - core-image-minimal

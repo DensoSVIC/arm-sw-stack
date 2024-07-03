@@ -147,7 +147,7 @@ Bsp-Image-Build-linux-rt:
 Bsp-Image-Build-firmware:
   extends: .kas_image_build_arm_bsp_extras
   variables:
-    KAS_CONFIGS: arm-systemready-firmware
+    KAS_CONFIGS: arm-bsp-extras/arm-systemready-firmware
 
 .kas_image_build_arm_auto_solutions:
   extends: .kas_image_build_sw_ref_stack

@@ -7,10 +7,8 @@
 header:
   version: 16
   includes:
-    - yocto/kas/arm-bsp-extras.yml
     - repo: meta-arm
       file: kas/arm-systemready-firmware.yml
-    - yocto/kas/bsp-pinned-repos.yml
 
 local_conf_header:
   arm-systemready-firmware: |
