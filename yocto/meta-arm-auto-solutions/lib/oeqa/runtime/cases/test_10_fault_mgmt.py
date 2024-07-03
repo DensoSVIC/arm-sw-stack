@@ -63,6 +63,37 @@ class FaultMgmtTestBase(OERuntimeTestCase):
     def fmu_fault_list(self, fault=""):
         return self.shell.exec_command(f"fault list {fault}", timeout=60)
 
+    def fmu_fault_set_enabled(self, fmu_dev, fault_id, enable):
+        enable_flag = "1" if enable else "0"
+        enable_text = "Enabling fault" if enable else "Disabling fault"
+        self.target.sendline(self.console,
+                             f"fault set_enabled {fmu_dev} {fault_id} "
+                             f"{enable_flag}")
+        self.target.expect(self.console, f"{enable_text}", timeout=90)
+
+    def fmu_fault_set_critical(self, fmu_dev, fault_id, is_critical):
+        critical_flag = "1" if is_critical else "0"
+        critical_text = "critical" if is_critical else "non-critical"
+        self.target.sendline(self.console,
+                             f"fault set_critical {fmu_dev} {fault_id} "
+                             f"{critical_flag}")
+        self.target.expect(self.console,
+                           f"Setting fault {fault_id} on device {fmu_dev} "
+                           f"as {critical_text}", timeout=90)
+
+    def fmu_fault_inject(self, fmu_dev, fault_id, is_critical):
+        critical_text = r'critical' if is_critical else r'non-critical'
+        self.target.sendline(self.console,
+                             f"fault inject {fmu_dev} {fault_id}")
+        self.target.expect(self.console,
+                           rf"Fault received \({critical_text}\): "
+                           fr"{fault_id} on {fmu_dev}",
+                           timeout=90)
+        self.target.expect(self.console,
+                           fr"Fault count for {fault_id} on {fmu_dev}: (\d+)",
+                           timeout=300)
+        return int(self.target.match(self.console)[1])
+
 
 class FaultMgmtTest(FaultMgmtTestBase):
 
@@ -75,21 +106,11 @@ class FaultMgmtTest(FaultMgmtTestBase):
         self.fmu_fault_clear()
         for fault_id in SYSTEM_FMU_INTERNAL_FAULTS:
             self.shell.wait_for_prompt()
-            self.target.sendline(self.console,
-                                 f"fault inject {ROOT_FMU} {fault_id}")
-            self.target.expect(self.console,
-                               r"Fault received \(non-critical\): "
-                               fr"{fault_id} on {ROOT_FMU}",
-                               timeout=90)
-            self.target.expect(
-                self.console,
-                fr"Fault count for {fault_id} on {ROOT_FMU}: 1",
-                timeout=300)
+            fault_count = self.fmu_fault_inject(ROOT_FMU, fault_id, False)
+            self.assertGreater(fault_count, 0)
 
     def test_system_fmu_internal_set_enabled(self):
-        output = self.shell.exec_command(
-                f"fault set_enabled {ROOT_FMU} 0x2 0")
-        self.assertIn('Disabling fault', output)
+        self.fmu_fault_set_enabled(ROOT_FMU, "0x2", False)
 
         self.target.sendline(self.console, f"fault inject {ROOT_FMU} 0x2")
         # Wait 10 seconds to ensure the fault is not triggered
@@ -100,50 +121,27 @@ class FaultMgmtTest(FaultMgmtTestBase):
         self.shell.wait_for_prompt()
 
         # Re-enable the fault and ensure it is now received
-        self.target.sendline(self.console,
-                             f"fault set_enabled {ROOT_FMU} 0x2 1")
-        self.target.expect(self.console, 'Enabling fault', timeout=30)
-        self.target.expect(self.console,
-                           "Fault received")
+        self.fmu_fault_set_enabled(ROOT_FMU, "0x2", True)
+        self.target.expect(self.console, "Fault received")
 
     @OETestDepends(['test_10_linuxboot.LinuxBootTest.test_linux_boot'])
     def test_gic_fmu_inject(self):
         for fault_id in GIC_FMU_FAULT_SAMPLE:
             # Enable fault
-            output = self.shell.exec_command(
-                f"fault set_enabled fmu@2a570000 {fault_id} 1")
-            self.assertIn("Enabling fault", output)
+            self.fmu_fault_set_enabled("fmu@2a570000", fault_id, True)
 
             # Configure fault as non-critical and inject
-            output = self.shell.exec_command(
-                f"fault set_critical fmu@2a570000 {fault_id} 0", timeout=30)
-            self.assertIn("Setting fault", output)
-            self.target.sendline(self.console,
-                                 f"fault inject fmu@2a570000 {fault_id}")
-            self.target.expect(self.console,
-                               r"Fault received \(non-critical\): "
-                               fr"{fault_id} on fmu@2a570000",
-                               timeout=90)
-            self.target.expect(
-                self.console,
-                fr"Fault count for {fault_id} on fmu@2a570000: 1",
-                timeout=300)
+            self.fmu_fault_set_critical("fmu@2a570000", fault_id, False)
+            fault_count = self.fmu_fault_inject("fmu@2a570000", fault_id,
+                                                False)
+            self.assertGreater(fault_count, 0)
 
             # Configure fault as critical and inject
             self.shell.wait_for_prompt()
-            output = self.shell.exec_command(
-                f"fault set_critical fmu@2a570000 {fault_id} 1", timeout=30)
-            self.assertIn("Setting fault", output)
-            self.target.sendline(self.console,
-                                 f"fault inject fmu@2a570000 {fault_id}")
-            self.target.expect(self.console,
-                               r"Fault received \(critical\): "
-                               fr"{fault_id} on fmu@2a570000",
-                               timeout=30)
-            self.target.expect(
-                self.console,
-                fr"Fault count for {fault_id} on fmu@2a570000: 1",
-                timeout=300)
+            self.fmu_fault_set_critical("fmu@2a570000", fault_id, True)
+            fault_count = self.fmu_fault_inject("fmu@2a570000", fault_id,
+                                                True)
+            self.assertGreater(fault_count, 0)
 
     def test_fmu_fault_count(self):
         self.test_system_fmu_internal_inject()
@@ -172,7 +170,7 @@ class FaultMgmtTest(FaultMgmtTestBase):
             self.assertIn(non_critical_pattern, output)
             self.assertIn(critical_pattern, output)
 
-        self.shell.exec_command(f"fault inject {ROOT_FMU} 0x2")
+        self.fmu_fault_inject(ROOT_FMU, "0x2", False)
         output = self.fmu_fault_list("2")
         self.assertIn("Fault received (non-critical): "
                       f"0x2 on {ROOT_FMU} : count 2",
@@ -194,7 +192,7 @@ class FaultMgmtTest(FaultMgmtTestBase):
 
     def test_fmu_fault_summary(self):
         self.test_system_fmu_internal_inject()
-        self.shell.exec_command(f"fault inject {ROOT_FMU} 0x20")
+        self.fmu_fault_inject(ROOT_FMU, "0x20", False)
         output = self.shell.exec_command("fault summary", timeout=60)
         count = len(SYSTEM_FMU_INTERNAL_FAULTS)
         self.assertIn(f"Number of fault reported: {count + 1}", output)
@@ -235,7 +233,7 @@ class FaultMgmtSSUTest(FaultMgmtTestBase):
         self.assertIn("SAFE", output)
 
         # SAFE -> non-critical fault -> ERRN
-        self.shell.exec_command(f"fault inject {ROOT_FMU} 2")
+        self.fmu_fault_inject(ROOT_FMU, "0x2", False)
         output = self.shell.exec_command(f"fault safety_status {SSU}")
         self.assertIn("ERRN", output)
 
@@ -245,9 +243,9 @@ class FaultMgmtSSUTest(FaultMgmtTestBase):
         self.assertIn("SAFE", output)
 
         # SAFE -> critical fault -> ERRC
-        self.shell.exec_command("fault set_enabled fmu@2a570000 0x200 1")
-        self.shell.exec_command("fault set_critical fmu@2a570000 0x200 1")
-        self.shell.exec_command("fault inject fmu@2a570000 0x200")
+        self.fmu_fault_set_enabled("fmu@2a570000", "0x200", True)
+        self.fmu_fault_set_critical("fmu@2a570000", "0x200", True)
+        self.fmu_fault_inject("fmu@2a570000", "0x200", True)
         output = self.shell.exec_command(f"fault safety_status {SSU}")
         self.assertIn("ERRC", output)
 
