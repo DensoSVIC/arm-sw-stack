@@ -38,6 +38,9 @@ GIC_FMU_FAULT_SAMPLE = [
     "0x50000300",  # FMU 0 - FMU lockstep protection error
 ]
 
+ROOT_FMU = "fmu@2a510000"
+SSU = "ssu@2a500000"
+
 
 class FaultMgmtTestBase(OERuntimeTestCase):
 
@@ -65,7 +68,7 @@ class FaultMgmtTest(FaultMgmtTestBase):
 
     def test_tree(self):
         tree = self.shell.exec_command("fault tree")
-        for fmu in ["fmu@2a510000", "fmu@2a570000", "ssu@2a500000"]:
+        for fmu in [ROOT_FMU] + ["fmu@2a570000"] + [SSU]:
             self.assertIn(fmu, tree)
 
     def test_system_fmu_internal_inject(self):
@@ -73,22 +76,22 @@ class FaultMgmtTest(FaultMgmtTestBase):
         for fault_id in SYSTEM_FMU_INTERNAL_FAULTS:
             self.shell.wait_for_prompt()
             self.target.sendline(self.console,
-                                 f"fault inject fmu@2a510000 {fault_id}")
+                                 f"fault inject {ROOT_FMU} {fault_id}")
             self.target.expect(self.console,
                                r"Fault received \(non-critical\): "
-                               fr"{fault_id} on fmu@2a510000",
+                               fr"{fault_id} on {ROOT_FMU}",
                                timeout=90)
             self.target.expect(
                 self.console,
-                fr"Fault count for {fault_id} on fmu@2a510000: 1",
+                fr"Fault count for {fault_id} on {ROOT_FMU}: 1",
                 timeout=300)
 
     def test_system_fmu_internal_set_enabled(self):
         output = self.shell.exec_command(
-                "fault set_enabled fmu@2a510000 0x2 0")
+                f"fault set_enabled {ROOT_FMU} 0x2 0")
         self.assertIn('Disabling fault', output)
 
-        self.target.sendline(self.console, f"fault inject fmu@2a510000 0x2")
+        self.target.sendline(self.console, f"fault inject {ROOT_FMU} 0x2")
         # Wait 10 seconds to ensure the fault is not triggered
         match = self.target.expect(self.console,
                                    ["Fault received", pexpect.TIMEOUT],
@@ -98,7 +101,7 @@ class FaultMgmtTest(FaultMgmtTestBase):
 
         # Re-enable the fault and ensure it is now received
         self.target.sendline(self.console,
-                             f"fault set_enabled fmu@2a510000 0x2 1")
+                             f"fault set_enabled {ROOT_FMU} 0x2 1")
         self.target.expect(self.console, 'Enabling fault', timeout=30)
         self.target.expect(self.console,
                            "Fault received")
@@ -154,10 +157,10 @@ class FaultMgmtTest(FaultMgmtTestBase):
         self.test_gic_fmu_inject()
         output = self.fmu_fault_list()
 
-        # Fault patterns for the address "2a510000" (only non-critical)
+        # Fault patterns for the root fmu address (only non-critical)
         for fault_id in SYSTEM_FMU_INTERNAL_FAULTS:
             pattern = (f"Fault received (non-critical): {fault_id} on "
-                       "fmu@2a510000 : count 1")
+                       f"{ROOT_FMU} : count 1")
             self.assertIn(pattern, output)
 
         # For the address "2a570000" (critical and non-critical)
@@ -169,10 +172,10 @@ class FaultMgmtTest(FaultMgmtTestBase):
             self.assertIn(non_critical_pattern, output)
             self.assertIn(critical_pattern, output)
 
-        self.shell.exec_command("fault inject fmu@2a510000 0x2")
+        self.shell.exec_command(f"fault inject {ROOT_FMU} 0x2")
         output = self.fmu_fault_list("2")
         self.assertIn("Fault received (non-critical): "
-                      "0x2 on fmu@2a510000 : count 2",
+                      f"0x2 on {ROOT_FMU} : count 2",
                       output)
 
     def filter_fault_history(self, output):
@@ -191,7 +194,7 @@ class FaultMgmtTest(FaultMgmtTestBase):
 
     def test_fmu_fault_summary(self):
         self.test_system_fmu_internal_inject()
-        self.shell.exec_command("fault inject fmu@2a510000 0x20")
+        self.shell.exec_command(f"fault inject {ROOT_FMU} 0x20")
         output = self.shell.exec_command("fault summary", timeout=60)
         count = len(SYSTEM_FMU_INTERNAL_FAULTS)
         self.assertIn(f"Number of fault reported: {count + 1}", output)
@@ -199,7 +202,7 @@ class FaultMgmtTest(FaultMgmtTestBase):
         filtered_output = self.filter_fault_history(output)
         self.assertRegex(filtered_output, r"^(?:Fault received "
                          r"\(non-critical\): 0x[0-9a-f]+ on "
-                         fr"fmu@2a510000 : count \d+\s*\r?\n?){{{count}}}")
+                         fr"{ROOT_FMU} : count \d+\s*\r?\n?){{{count}}}")
 
     def test_fmu_fault_clear(self):
         self.test_system_fmu_internal_inject()
@@ -222,60 +225,60 @@ class FaultMgmtSSUTest(FaultMgmtTestBase):
         super().setUp()
 
         # Ensure initial state is "TEST"
-        output = self.shell.exec_command("fault safety_status ssu@2a500000")
+        output = self.shell.exec_command(f"fault safety_status {SSU}")
         self.assertIn("TEST", output)
 
     def test_ssu_compl_ok(self):
         # TEST -> compl_ok -> SAFE
         output = self.shell.exec_command(
-            "fault safety_control ssu@2a500000 compl_ok")
+            f"fault safety_control {SSU} compl_ok")
         self.assertIn("SAFE", output)
 
         # SAFE -> non-critical fault -> ERRN
-        self.shell.exec_command("fault inject fmu@2a510000 2")
-        output = self.shell.exec_command("fault safety_status ssu@2a500000")
+        self.shell.exec_command(f"fault inject {ROOT_FMU} 2")
+        output = self.shell.exec_command(f"fault safety_status {SSU}")
         self.assertIn("ERRN", output)
 
         # ERRN -> compl_ok -> SAFE
         output = self.shell.exec_command(
-            "fault safety_control ssu@2a500000 compl_ok")
+            f"fault safety_control {SSU} compl_ok")
         self.assertIn("SAFE", output)
 
         # SAFE -> critical fault -> ERRC
         self.shell.exec_command("fault set_enabled fmu@2a570000 0x200 1")
         self.shell.exec_command("fault set_critical fmu@2a570000 0x200 1")
         self.shell.exec_command("fault inject fmu@2a570000 0x200")
-        output = self.shell.exec_command("fault safety_status ssu@2a500000")
+        output = self.shell.exec_command(f"fault safety_status {SSU}")
         self.assertIn("ERRC", output)
 
         # ERRC is unrecoverable
         output = self.shell.exec_command(
-            "fault safety_control ssu@2a500000 compl_ok")
+            f"fault safety_control {SSU} compl_ok")
         self.assertIn("ERRC", output)
 
     def test_ssu_nce_ok(self):
         # TEST -> nce_ok -> ERRN
         output = self.shell.exec_command(
-            "fault safety_control ssu@2a500000 nce_ok")
+            f"fault safety_control {SSU} nce_ok")
         self.assertIn("ERRN", output)
 
         # ERRN -> nce_not_ok -> ERRC
         output = self.shell.exec_command(
-            "fault safety_control ssu@2a500000 nce_not_ok")
+            f"fault safety_control {SSU} nce_not_ok")
         self.assertIn("ERRC", output)
 
         # ERRC is unrecoverable
         output = self.shell.exec_command(
-            "fault safety_control ssu@2a500000 compl_ok")
+            f"fault safety_control {SSU} compl_ok")
         self.assertIn("ERRC", output)
 
     def test_ssu_ce_not_ok(self):
         # TEST -> ce_not_ok -> ERRC
         output = self.shell.exec_command(
-            "fault safety_control ssu@2a500000 ce_not_ok")
+            f"fault safety_control {SSU} ce_not_ok")
         self.assertIn("ERRC", output)
 
         # ERRC is unrecoverable
         output = self.shell.exec_command(
-            "fault safety_control ssu@2a500000 compl_ok")
+            f"fault safety_control {SSU} compl_ok")
         self.assertIn("ERRC", output)
