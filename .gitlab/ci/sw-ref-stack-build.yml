@@ -153,6 +153,35 @@ Bsp-Image-Build-firmware:
   variables:
     KAS_CONFIGS: arm-bsp-extras/arm-systemready-firmware
 
+.kas_image_build_systemready:
+  extends: .kas_image_build_arm_bsp_extras
+  parallel:
+    matrix:
+      - BUILD_HOST_ARCH: x86_64
+        KAS_MACHINE: fvp-rd-kronos
+
+Bsp-Image-Build-systemready-ir-acs:
+  extends: .kas_image_build_systemready
+  variables:
+    KAS_CONFIGS: arm-bsp-extras/arm-systemready-ir-acs
+    TESTIMAGE_AUTO: "$${@ d.getVar('FREQUENCY') == 'weekly' }"
+  timeout: 12h
+
+Bsp-Image-Build-systemready-linux-distros-debian:
+  extends: .kas_image_build_systemready
+  variables:
+    KAS_CONFIGS: arm-bsp-extras/arm-systemready-linux-distros-debian
+
+Bsp-Image-Build-systemready-linux-distros-fedora:
+  extends: .kas_image_build_systemready
+  variables:
+    KAS_CONFIGS: arm-bsp-extras/arm-systemready-linux-distros-fedora
+
+Bsp-Image-Build-systemready-linux-distros-opensuse:
+  extends: .kas_image_build_systemready
+  variables:
+    KAS_CONFIGS: arm-bsp-extras/arm-systemready-linux-distros-opensuse
+
 .kas_image_build_arm_auto_solutions:
   extends: .kas_image_build_sw_ref_stack
   variables:
