@@ -41,8 +41,5 @@ check-layers:
           - meta-arm-bsp-extras
           - meta-arm-safety-island
 
-  variables:
-    TESTIMAGE_AUTO: "0"
-
   rules:
     - !reference [".layer-check:rules", rules]
