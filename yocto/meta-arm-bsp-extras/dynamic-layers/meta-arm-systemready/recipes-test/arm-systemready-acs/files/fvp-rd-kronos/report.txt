@@ -1,0 +1,40 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: MIT
+
+General information
+-------------------
+- Arm SystemReady Band: IR
+- System name: Kronos
+- Prepared by:
+- E-mail:
+- Date:
+
+System information
+------------------
+- Company: Arm
+- System: Kronos
+- SoC:
+- FW version:
+- Memory:
+- Storage devices / disks:
+- Network controllers:
+- Other Hardware information:
+
+Test Logs and Results
+---------------------
+- ACS version used: 2.1
+- ACS URL (if pre-built binary): https://github.com/ARM-software/arm-systemready/blob/v23.09_SR_REL2.0.0_ES_REL1.3.0_IR_REL2.1.0/IR/prebuilt_images/v23.09_2.1.0/ir-acs-live-image-generic-arm64.wic.xz
+- Changes to ACS (if built from source):
+
+- Test Logs collected
+[X] ACS - SCT
+[X] ACS - BSA - UEFI
+[X] ACS - BSA - Linux
+[X] ACS - FWTS
+[X] ACS - Linux boot log
+[X] ACS - Linux dumps
+[X] ACS - UEFI Shell dumps
+[ ] ACS - Capsule Update

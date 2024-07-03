@@ -285,6 +285,7 @@ FSTYPES
 fullfill
 funtionalities
 fvpboot
+fwts
 genericarm
 genericarm64
 genid
@@ -524,6 +525,7 @@ nonterminating
 nooelint
 nopt
 noreboot
+nostamp
 nostdlib
 nosve
 NOTFOUND
