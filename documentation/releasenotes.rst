@@ -34,6 +34,7 @@ Changed
 * Enabled PSA Internal Trusted Storage API on Primary Compute
 * Added an AP_REFCLK non-secure Generic Timer node in Kronos device tree
 * Updated identified non-alignments on RD-Kronos for Devicetree missing schemas
+* Introduced Safety Island GIC FMU device for Safety Island Cluster 1 and automated tests.
 
 .. _releasenotes_limitations:
 

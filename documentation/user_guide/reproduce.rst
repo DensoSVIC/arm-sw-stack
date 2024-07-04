@@ -2569,14 +2569,16 @@ and GIC-720AE FMU and how this affects the SSU safety state.
       fault tree
 
     The output shows the root fault device ``fmu@2a510000`` (the System FMU),
-    after which are the attached safety state device ``ssu@2a500000`` and
-    fault device ``fmu@2a570000`` (the GIC-720AE FMU):
+    after which are the attached safety state device ``ssu@2a500000``, the
+    fault device ``fmu@2a570000`` (the Primary Compute GIC-720AE FMU) and the
+    fault device ``fmu@2a530000`` (the Safety Island GIC-720AE FMU):
 
     .. code-block:: text
 
       Root 0: fmu@2a510000
               Safety: ssu@2a500000
               Slot 0: fmu@2a570000
+              Slot 1: fmu@2a530000
 
  2. After booting, query the initial state of the SSU:
 
@@ -2748,8 +2750,8 @@ The following messages are expected in the output to validate this Use-Case:
 
 .. code-block:: text
 
+  RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_gic_fmu_ssu_compl_ok: PASSED (96.24s)
   RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_ce_not_ok: PASSED (38.18s)
-  RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_compl_ok: PASSED (30.66s)
   RESULTS - test_10_fault_mgmt.FaultMgmtSSUTest.test_ssu_nce_ok: PASSED (29.24s)
   RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_clear: PASSED (11.24s)
   RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_fmu_fault_count: PASSED (6.04s)

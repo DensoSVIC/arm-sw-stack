@@ -390,7 +390,8 @@ of faults in the FMU device tree:
   * ``test_system_fmu_internal_set_enabled`` validates disabling System FMU
     faults.
   * ``test_gic_fmu_inject`` validates the injection and reporting of GIC-720AE
-    FMU faults (critical and non-critical).
+    FMU faults from Primary Compute and Safety Island (critical and
+    non-critical).
   * ``test_fmu_fault_count`` validates the reporting of the overall fault
     count.
   * ``test_fmu_fault_list`` validates the list of reported fault counts.
@@ -401,8 +402,8 @@ of faults in the FMU device tree:
 machine using three test cases (with a full system reset between each one to
 transition from ``ERRC`` back to ``TEST``):
 
- * ``test_ssu_compl_ok``, which triggers a non-critical fault, recovers then
-   triggers a critical fault.
+ * ``test_gic_fmu_ssu_compl_ok``, which triggers a non-critical fault, recovers
+   then triggers a critical fault, for each upstream GIC FMU.
  * ``test_ssu_nce_ok``, in which the self-test fails with a non-critical fault
    which is then signaled as critical.
  * ``test_ssu_ce_not_ok``, in which the self-test fails with a critical fault.

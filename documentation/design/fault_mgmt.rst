@@ -235,6 +235,8 @@ The Kronos FVP models:
  * A System FMU in the Safety Island, attached to the SSU.
  * An FMU attached to the GIC-720AE in the Primary Compute, attached to the
    System FMU.
+ * An FMU attached to the GIC-720AE in the Safety Island, attached to the
+   System FMU.
 
 .. image:: ../images/kronos_fault_device_tree.*
    :align: center
