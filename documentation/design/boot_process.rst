@@ -86,7 +86,7 @@ production. To replace the default key, the user needs to:
   ``ASSEMBLY_AND_TEST_PROV_DATA_KIND_0`` in ``dm_dummy_provisioning_data.c``
   with the hash value.
 
-For detail of how to generate the private key and the hash of the public key,
+For details of how to generate the private key and the hash of the public key,
 refer to the documentation of `imgtool`_ which is provided by MCUboot.
 
 .. _design_boot_process_boot_flow:
