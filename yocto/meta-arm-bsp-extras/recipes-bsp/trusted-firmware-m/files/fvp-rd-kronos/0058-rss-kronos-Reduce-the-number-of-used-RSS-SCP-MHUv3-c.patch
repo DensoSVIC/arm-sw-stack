@@ -1,0 +1,151 @@
+From fc4a67912fa078324bb079a54ca65a1d84bad8d6 Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Fri, 5 Jul 2024 13:58:14 +0100
+Subject: [PATCH] rss/kronos: Reduce the number of used RSS<->SCP MHUv3
+ channels
+
+The currently used number of doorbell channels between RSS and
+SCP is seven, while the RSS specification specifies that the
+maximum number of channels is four.
+
+1- Combine the channels used for booting Safety Island clusters
+into one using different channel values.
+2- Combine the Shutdown and Reset channels into one.
+
+Upstream-Status: Pending
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ .../arm/rss/common/rss_comms/rss_comms_hal.c  | 10 +++--
+ .../target/arm/rss/kronos/tfm_interrupts.c    | 41 ++++++++-----------
+ platform/include/tfm_hal_interrupt.h          |  7 +---
+ 3 files changed, 27 insertions(+), 31 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/common/rss_comms/rss_comms_hal.c b/platform/ext/target/arm/rss/common/rss_comms/rss_comms_hal.c
+index 06f702518..28d3a84fb 100644
+--- a/platform/ext/target/arm/rss/common/rss_comms/rss_comms_hal.c
++++ b/platform/ext/target/arm/rss/common/rss_comms/rss_comms_hal.c
+@@ -19,6 +19,10 @@
+ #include "rss_comms_protocol.h"
+ #include <string.h>
+ 
++#define MHU_SCP_RSS_SI_CL0_FLAG 0x1
++#define MHU_SCP_RSS_SI_CL1_FLAG 0x2
++#define MHU_SCP_RSS_SI_CL2_FLAG 0x4
++
+ /* Declared statically to avoid using huge amounts of stack space. Maybe revisit
+  * if functions not being reentrant becomes a problem.
+  */
+@@ -246,7 +250,7 @@ enum tfm_plat_err_t tfm_multi_core_hal_init(void)
+ 
+ #ifdef MHU_V3_RSS_TO_SCP
+     SPMLOG_DBGMSG("Telling SCP to reset SI CL0\r\n");
+-    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, MHU_SCP_RSS_SI_CL0_CHANNEL_ID, 0x1);
++    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, MHU_SCP_RSS_SI_CHANNEL_ID, MHU_SCP_RSS_SI_CL0_FLAG);
+ 
+     if (mhu_error != MHU_V_3_X_ERR_NONE) {
+         return mhu_error;
+@@ -258,7 +262,7 @@ enum tfm_plat_err_t tfm_multi_core_hal_init(void)
+      * complete and that the SCP can release safety island cluster1
+      */
+     SPMLOG_DBGMSG("Telling SCP to reset SI CL1\r\n");
+-    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, MHU_SCP_RSS_SI_CL1_CHANNEL_ID, 0x1);
++    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, MHU_SCP_RSS_SI_CHANNEL_ID, MHU_SCP_RSS_SI_CL1_FLAG);
+ 
+     if (mhu_error != MHU_V_3_X_ERR_NONE) {
+         return mhu_error;
+@@ -270,7 +274,7 @@ enum tfm_plat_err_t tfm_multi_core_hal_init(void)
+      * complete and that the SCP can release safety island cluster2
+      */
+     SPMLOG_DBGMSG("Telling SCP to reset SI CL2\r\n");
+-    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, MHU_SCP_RSS_SI_CL2_CHANNEL_ID, 0x1);
++    mhu_error = mhu_v3_x_doorbell_write(&MHU_V3_RSS_TO_SCP_DEV, MHU_SCP_RSS_SI_CHANNEL_ID, MHU_SCP_RSS_SI_CL2_FLAG);
+ 
+     if (mhu_error != MHU_V_3_X_ERR_NONE) {
+         return mhu_error;
+diff --git a/platform/ext/target/arm/rss/kronos/tfm_interrupts.c b/platform/ext/target/arm/rss/kronos/tfm_interrupts.c
+index b1d4ee714..5848f7f91 100644
+--- a/platform/ext/target/arm/rss/kronos/tfm_interrupts.c
++++ b/platform/ext/target/arm/rss/kronos/tfm_interrupts.c
+@@ -61,35 +61,30 @@ static int mhu_scp_rss_systop_on_doorbell_handler(uint32_t value) {
+     return 0;
+ }
+ 
+-static int mhu_scp_rss_sys_reset_doorbell_handler(uint32_t value) {
+-	tfm_hal_system_reset();
+-
+-	/* Not expected to return from this function call */
+-	return -1;
+-}
+-
+-static int mhu_scp_rss_sys_shutdown_doorbell_handler(uint32_t value) {
+-
+-	SPMLOG("System shutdown complete\r\n");
+-
+-	/* 
+-	 * Not expected to reach here in case of FVP,
+-	 * but this is required for FPGA as we are unable to shutdown.
+-	 */
+-	while(1) {
+-		__WFI();
+-	}
++static int mhu_scp_rss_power_doorbell_handler(uint32_t value) {
++
++    if (value & 0x1) {
++            tfm_hal_system_reset();
++    } else if (value & 0x2) {
++        SPMLOG("System shutdown complete\r\n");
++        /* 
++        * Not expected to reach here in case of FVP,
++        * but this is required for FPGA as we are unable to shutdown.
++        */
++        while(1) {
++            __WFI();
++        }
++    }
+ 
+-	/* Not expected to return from this function call */
+-	return -1;
++    /* Not expected to return from this function call */
++    return 1;
+ }
+ 
+ /* Array of function pointers to call if a message is received on a channel */
+ static int (*mhu_scp_rss_doorbell_vector[MHU_SCP_RSS_CHANNEL_COUNT]) (uint32_t) = {
+     [MHU_SCP_RSS_ATU_REQUEST_CHANNEL_ID]  = mhu_scp_rss_atu_request_doorbell_handler,
+     [MHU_SCP_RSS_SYSTOP_ON_CHANNEL_ID]    = mhu_scp_rss_systop_on_doorbell_handler,
+-    [MHU_SCP_RSS_SYS_RESET_CHANNEL_ID]    = mhu_scp_rss_sys_reset_doorbell_handler,
+-    [MHU_SCP_RSS_SYS_SHUTDOWN_CHANNEL_ID] = mhu_scp_rss_sys_shutdown_doorbell_handler,
++    [MHU_SCP_RSS_POWER_CHANNEL_ID]        = mhu_scp_rss_power_doorbell_handler,
+ };
+ 
+ /* Function to handle the SCP-->RSS MHUv3 combined MBX interrupt */
+@@ -107,7 +102,7 @@ void CMU_MHU4_Receiver_Handler(void)
+         }
+ 
+         if (value != 0){
+-            /* Handle the ATU requests from MSCP */
++            /* Handle the request from SCP */
+             status = mhu_scp_rss_doorbell_vector[ch](value);
+             if (status != 0) {
+                 /* Update mask value to clear the doorbell */
+diff --git a/platform/include/tfm_hal_interrupt.h b/platform/include/tfm_hal_interrupt.h
+index 6c3692a62..2188bb5ad 100644
+--- a/platform/include/tfm_hal_interrupt.h
++++ b/platform/include/tfm_hal_interrupt.h
+@@ -15,11 +15,8 @@
+ enum mhu_scp_rss_doorbell_channel {
+     MHU_SCP_RSS_ATU_REQUEST_CHANNEL_ID=0,
+     MHU_SCP_RSS_SYSTOP_ON_CHANNEL_ID,
+-    MHU_SCP_RSS_SYS_RESET_CHANNEL_ID,
+-    MHU_SCP_RSS_SI_CL0_CHANNEL_ID,
+-    MHU_SCP_RSS_SI_CL1_CHANNEL_ID,
+-    MHU_SCP_RSS_SI_CL2_CHANNEL_ID,
+-    MHU_SCP_RSS_SYS_SHUTDOWN_CHANNEL_ID,
++    MHU_SCP_RSS_POWER_CHANNEL_ID,
++    MHU_SCP_RSS_SI_CHANNEL_ID,
+     MHU_SCP_RSS_CHANNEL_COUNT,
+ };
+ #endif
+-- 
+2.25.1
+

@@ -68,6 +68,7 @@ SRC_URI += "\
     file://0055-rss-kronos-Remove-unused-PCIe-address-mapping.patch \
     file://0056-rss-kronos-Align-capsule-update-structs.patch \
     file://0057-rss-kronos-Remove-LCP.patch \
+    file://0058-rss-kronos-Reduce-the-number-of-used-RSS-SCP-MHUv3-c.patch \
 "
 # cSpell:enable
 

@@ -27,6 +27,7 @@ SRC_URI += "\
     file://0016-product-rdkronos-Set-log-level-to-ERROR.patch \
     file://0017-product-rdkronos-Increase-the-ATU-request-timeout.patch \
     file://0018-product-rdkronos-Remove-LCP.patch \
+    file://0019-product-rdkronos-Reduce-the-number-of-used-RSS-SCP-M.patch \
 "
 # cSpell:enable
 

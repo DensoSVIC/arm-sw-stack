@@ -29,6 +29,7 @@ Changed
 * Upgraded from Yocto nanbield to scarthgap
 * Introduced the Yocto layer meta-arm-safety-island
 * Removed LCP from the boot flow
+* Aligned the number of supported MHUv3 channels with the RSS specification
 
 .. _releasenotes_limitations:
 

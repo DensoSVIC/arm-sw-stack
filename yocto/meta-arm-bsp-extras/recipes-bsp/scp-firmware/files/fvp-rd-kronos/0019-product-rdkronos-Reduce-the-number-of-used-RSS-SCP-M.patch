@@ -1,0 +1,137 @@
+From a55a546c63f02b7519ce981c7573fd3e09243c07 Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Fri, 5 Jul 2024 14:14:36 +0100
+Subject: [PATCH] product/rdkronos: Reduce the number of used RSS<->SCP MHUv3
+ channels
+
+The currently used number of doorbell channels between RSS and
+SCP is seven, while the RSS specification specifies that the
+maximum number of channels is four.
+
+1- Combine the channels used for booting Safety Island clusters
+into one using different channel values.
+2- Combine the Shutdown and Reset channels into one.
+
+Upstream-Status: Pending
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ product/rdkronos/scp_ramfw/config_mhu3.c      | 12 ++---
+ product/rdkronos/scp_ramfw/config_transport.c | 50 +++++++++----------
+ 2 files changed, 31 insertions(+), 31 deletions(-)
+
+diff --git a/product/rdkronos/scp_ramfw/config_mhu3.c b/product/rdkronos/scp_ramfw/config_mhu3.c
+index 4d4bb0461..8233f0fa5 100644
+--- a/product/rdkronos/scp_ramfw/config_mhu3.c
++++ b/product/rdkronos/scp_ramfw/config_mhu3.c
+@@ -36,14 +36,14 @@ struct mod_mhu3_channel_config
+         MOD_MHU3_INIT_DBCH(1, 0, 1, 0),
+         /* PBX CH 2, FLAG 0, MBX CH 2, FLAG 0 */
+         MOD_MHU3_INIT_DBCH(2, 0, 2, 0),
++        /* PBX CH 2, FLAG 1, MBX CH 2, FLAG 1 */
++        MOD_MHU3_INIT_DBCH(2, 1, 2, 1),
+         /* PBX CH 3, FLAG 0, MBX CH 3, FLAG 0 */
+         MOD_MHU3_INIT_DBCH(3, 0, 3, 0),
+-        /* PBX CH 4, FLAG 0, MBX CH 4, FLAG 0 */
+-        MOD_MHU3_INIT_DBCH(4, 0, 4, 0),
+-        /* PBX CH 5, FLAG 0, MBX CH 5, FLAG 0 */
+-        MOD_MHU3_INIT_DBCH(5, 0, 5, 0),
+-        /* PBX CH 6, FLAG 0, MBX CH 6, FLAG 0 */
+-        MOD_MHU3_INIT_DBCH(6, 0, 6, 0),
++        /* PBX CH 3, FLAG 1, MBX CH 3, FLAG 1 */
++        MOD_MHU3_INIT_DBCH(3, 1, 3, 1),
++        /* PBX CH 3, FLAG 2, MBX CH 3, FLAG 2 */
++        MOD_MHU3_INIT_DBCH(3, 2, 3, 2),
+     };
+ 
+ /* Module element table */
+diff --git a/product/rdkronos/scp_ramfw/config_transport.c b/product/rdkronos/scp_ramfw/config_transport.c
+index 36b841733..46b14dfbe 100644
+--- a/product/rdkronos/scp_ramfw/config_transport.c
++++ b/product/rdkronos/scp_ramfw/config_transport.c
+@@ -119,6 +119,28 @@ static const struct fwk_element transport_element_table[] = {
+                     MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
+         }),
+     },
++    [SCP_CFGD_MOD_TRANSPORT_EIDX_SHUTDOWN] = {
++        .name = "SCP_PLATFORM_TRANSPORT_SHUTDOWN",
++        .data = &((
++            struct mod_transport_channel_config) {
++            .transport_type = MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_NONE,
++            .policies = MOD_TRANSPORT_POLICY_NONE,
++            .channel_type = MOD_TRANSPORT_CHANNEL_TYPE_REQUESTER,
++            .signal_api_id =
++                FWK_ID_API_INIT(
++                    FWK_MODULE_IDX_SCP_PLATFORM,
++                    MOD_SCP_PLATFORM_API_IDX_TRANSPORT_SIGNAL),
++            .driver_id =
++                FWK_ID_SUB_ELEMENT_INIT(
++                    FWK_MODULE_IDX_MHU3,
++                    SCP_CFGD_MOD_MHU3_EIDX_SCP_RSS_S,
++                    3),
++            .driver_api_id =
++                FWK_ID_API_INIT(
++                    FWK_MODULE_IDX_MHU3,
++                    MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
++        }),
++    },
+     [SCP_CFGD_MOD_TRANSPORT_EIDX_BOOT_SI_CLUS0] = {
+         .name = "ATU_TRANSPORT",
+         .data = &((
+@@ -134,7 +156,7 @@ static const struct fwk_element transport_element_table[] = {
+                     FWK_ID_SUB_ELEMENT_INIT(
+                         FWK_MODULE_IDX_MHU3,
+                         SCP_CFGD_MOD_MHU3_EIDX_SCP_RSS_S,
+-                        3),
++                        4),
+                 .driver_api_id =
+                     FWK_ID_API_INIT(
+                         FWK_MODULE_IDX_MHU3,
+@@ -156,7 +178,7 @@ static const struct fwk_element transport_element_table[] = {
+                     FWK_ID_SUB_ELEMENT_INIT(
+                         FWK_MODULE_IDX_MHU3,
+                         SCP_CFGD_MOD_MHU3_EIDX_SCP_RSS_S,
+-                        4),
++                        5),
+                 .driver_api_id =
+                     FWK_ID_API_INIT(
+                         FWK_MODULE_IDX_MHU3,
+@@ -178,35 +200,13 @@ static const struct fwk_element transport_element_table[] = {
+                     FWK_ID_SUB_ELEMENT_INIT(
+                         FWK_MODULE_IDX_MHU3,
+                         SCP_CFGD_MOD_MHU3_EIDX_SCP_RSS_S,
+-                        5),
++                        6),
+                 .driver_api_id =
+                     FWK_ID_API_INIT(
+                         FWK_MODULE_IDX_MHU3,
+                         MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
+         }),
+     },
+-    [SCP_CFGD_MOD_TRANSPORT_EIDX_SHUTDOWN] = {
+-        .name = "SCP_PLATFORM_TRANSPORT_SHUTDOWN",
+-        .data = &((
+-            struct mod_transport_channel_config) {
+-            .transport_type = MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_NONE,
+-            .policies = MOD_TRANSPORT_POLICY_NONE,
+-            .channel_type = MOD_TRANSPORT_CHANNEL_TYPE_REQUESTER,
+-            .signal_api_id =
+-                FWK_ID_API_INIT(
+-                    FWK_MODULE_IDX_SCP_PLATFORM,
+-                    MOD_SCP_PLATFORM_API_IDX_TRANSPORT_SIGNAL),
+-            .driver_id =
+-                FWK_ID_SUB_ELEMENT_INIT(
+-                    FWK_MODULE_IDX_MHU3,
+-                    SCP_CFGD_MOD_MHU3_EIDX_SCP_RSS_S,
+-                    6),
+-            .driver_api_id =
+-                FWK_ID_API_INIT(
+-                    FWK_MODULE_IDX_MHU3,
+-                    MOD_MHU3_API_IDX_TRANSPORT_DRIVER),
+-        }),
+-    },
+     [SCP_CFGD_MOD_TRANSPORT_EIDX_COUNT] = { 0 },
+ };
+ 
+-- 
+2.25.1
+
