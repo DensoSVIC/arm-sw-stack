@@ -173,7 +173,6 @@ trusted_services_doc_version = "integration"
 trusted_services_version = "08b3d39471f4914186bd23793dc920e83b0e3197"
 uboot_version = "2023.07.02"
 xen_version = "4.18"
-yocto_doc_version = yocto_version + "/"
 zephyr_version = "3.5.0"
 psa_crypto_api_version = "1.1"
 psa_storage_api_version = "1.0"
@@ -270,7 +269,7 @@ rst_prolog = f"""
 .. _IEEE 802.1AS: https://ieeexplore.ieee.org/document/9121845
 .. _IEEE 802.1Q: https://ieeexplore.ieee.org/document/10004498
 .. _IPC service: https://docs.zephyrproject.org/{zephyr_version}/services/ipc/ipc_service/ipc_service.html
-.. _Kernel Types: https://docs.yoctoproject.org/{yocto_doc_version}/kernel-dev/advanced.html#kernel-types
+.. _Kernel Types: https://docs.yoctoproject.org/{yocto_version}/kernel-dev/advanced.html#kernel-types
 .. _Linux PTP Project: https://linuxptp.sourceforge.net
 .. _Linux preempt-rt repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fpreempt-rt%2Fbase
 .. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fbase
@@ -323,17 +322,17 @@ rst_prolog = f"""
 .. _U-Boot repository: https://source.denx.de/u-boot/u-boot/-/tree/v{uboot_version}
 .. _U-boot: https://u-boot.readthedocs.io
 .. _UEFI SMM Services: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/uefi-smm-services.html
-.. _Writing New Tests: https://docs.yoctoproject.org/{yocto_doc_version}dev-manual/runtime-testing.html#writing-new-tests
+.. _Writing New Tests: https://docs.yoctoproject.org/{yocto_version}/dev-manual/runtime-testing.html#writing-new-tests
 .. _Xen Hypervisor: https://xenproject.org/help/documentation
 .. _Xen repository: https://xenbits.xen.org/gitweb/?p=xen.git;a=tree;h=refs/heads/stable-{xen_version}
-.. _Yocto Project Quick Start: https://docs.yoctoproject.org/{yocto_doc_version}brief-yoctoprojectqs/index.html
-.. _Yocto Project: https://docs.yoctoproject.org/{yocto_doc_version}/index.html
+.. _Yocto Project Quick Start: https://docs.yoctoproject.org/{yocto_version}/brief-yoctoprojectqs/index.html
+.. _Yocto Project: https://docs.yoctoproject.org/{yocto_version}/index.html
 .. _Zephyr file system: https://docs.zephyrproject.org/{zephyr_version}/services/file_system/index.html
 .. _Zephyr gPTP subsystem: https://docs.zephyrproject.org/{zephyr_version}/connectivity/networking/api/gptp.html
 .. _Zephyr repository: https://github.com/zephyrproject-rtos/zephyr/tree/v{zephyr_version}
 .. _Zephyr: https://docs.zephyrproject.org/{zephyr_version}/
 .. _edk2-test-parser: https://gitlab.arm.com/systemready/edk2-test-parser/-/blob/ir1/EBBR.yaml
-.. _how to install the essential packages: https://docs.yoctoproject.org/{yocto_doc_version}/singleindex.html#ubuntu-and-debian
+.. _how to install the essential packages: https://docs.yoctoproject.org/{yocto_version}/singleindex.html#ubuntu-and-debian
 .. _imgtool: https://github.com/mcu-tools/mcuboot/blob/main/docs/imgtool.md
 .. _kas Dependencies & installation: https://kas.readthedocs.io/en/{kas_version}/userguide.html#dependencies-installation
 .. _kas build tool: https://kas.readthedocs.io/en/{kas_version}/userguide.html
@@ -341,7 +340,7 @@ rst_prolog = f"""
 .. _libts: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/libraries.html#libts
 .. _openSUSE Installation Guide: https://doc.opensuse.org/documentation/leap/startup/html/book-startup/part-basics.html
 .. _openSUSE Leap: https://download.opensuse.org/distribution/leap/
-.. _testimage.bbclass: https://docs.yoctoproject.org/{yocto_doc_version}ref-manual/classes.html#testimage
+.. _testimage.bbclass: https://docs.yoctoproject.org/{yocto_version}/ref-manual/classes.html#testimage
 .. _xen-command-line options: https://xenbits.xen.org/docs/{xen_version}-testing/misc/xen-command-line.html#dom0
 .. _xl configuration: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.cfg.5.html#Architecture-Specific-options
 .. _xl documentation: https://xenbits.xen.org/docs/{xen_version}-testing/man/xl.1.html
