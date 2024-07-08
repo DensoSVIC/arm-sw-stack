@@ -30,6 +30,7 @@ Changed
 * Introduced the Yocto layer meta-arm-safety-island
 * Removed LCP from the boot flow
 * Aligned the number of supported MHUv3 channels with the RSS specification
+* Enabled TF-A Trusted Board Boot (TBB)
 
 .. _releasenotes_limitations:
 

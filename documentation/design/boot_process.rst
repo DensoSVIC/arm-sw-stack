@@ -166,7 +166,8 @@ The Primary Compute uses:
   * Linux (Baremetal Architecture)
   * Xen (Virtualization Architecture)
 
-The Primary Compute boot flow follows the following steps:
+The primary compute boot flow follows the following steps, and the boot
+process complies with the `Trusted Board Boot Requirements (TBBR)`_:
 
 1. AP BL2:
 
@@ -185,3 +186,28 @@ The Primary Compute boot flow follows the following steps:
 4. Grub loads and boots either Linux (Baremetal Architecture) or Xen
    (Virtualization Architecture) from the boot partition, depending on the Grub
    configuration
+
+Trusted Board Boot (TBB)
+========================
+
+The Trusted Board Boot (TBB) feature ensures that only authenticated TF-A stages
+and configs up to and including the BL33 boot-loader are allowed to run on the
+platform. It achieves this by establishing a Chain of Trust to prevent the execution
+of malicious firmware.
+
+The TBB Chain of Trust (CoT) starts with a set of implicitly trusted components.
+On the Arm development platforms, these components are:
+
+   * An SHA-256 hash of the Root of Trust Public Key (ROTPK). It is stored in the
+     trusted root-key storage registers. In the Arm Automotive Solutions Software
+     Reference Stack design, the ROTPK and hash can be found in
+     plat/arm/board/common/rotpk/ folder of TF-A and is intended for development
+     purposes. This SHA256 hash of the ROTPK is embedded into the AP_BL2 image.
+   * The RSE uses its chain of trust to authenticate and load the AP_BL2 image.
+
+The remaining components in the CoT are certificates and boot loader images. The
+certificates follow the `X.509 v3`_ standard. It supports adding custom extensions to
+the certificates, which are used to store essential information to establish the CoT.
+
+Please refer to the `Trusted Board Boot Requirements (TBBR)`_ and `Trusted Board Boot (TBB)`_
+documentation to learn about the TBB implementation.

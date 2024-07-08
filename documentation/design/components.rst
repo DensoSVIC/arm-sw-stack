@@ -319,7 +319,6 @@ the FIP image, which contains:
 * BL32 (:ref:`design_components_op-tee`)
 * BL33 (:ref:`design_components_u-boot`)
 * The ``HW_CONFIG`` device tree
-* The ``TB_FW_CONFIG`` device tree
 * The ``TOS_FW_CONFIG`` device tree
 
 .. _design_components_trusted-firmware-a_downstream_changes:

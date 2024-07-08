@@ -165,6 +165,7 @@ scp_firmware_base_version = "main branch post v2.13.0"
 scp_firmware_version = "cc4c9e017348d92054f74026ee1beb081403c168"
 systemready_ir_acs_version = "2.1.0"
 trusted_firmware_a_version = "2.8.0"
+trusted_firmware_a_doc_version = "v2.8"
 trusted_firmware_m_base_version = "main branch post v1.8.1"
 trusted_firmware_m_version = "53aa78efef274b9e46e63b429078ae1863609728"
 trusted_firmware_m_doc_version = "tf-mv2.1.0"
@@ -309,6 +310,8 @@ rst_prolog = f"""
 .. _TF-M Secure Services: https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/design_docs/services/index.html
 .. _TF-M Secure boot: https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/design_docs/booting/tfm_secure_boot.html
 .. _Tmux Documentation: https://man7.org/linux/man-pages/man1/tmux.1.html
+.. _Trusted Board Boot (TBB): https://trustedfirmware-a.readthedocs.io/en/{trusted_firmware_a_doc_version}/design/trusted-board-boot.html
+.. _Trusted Board Boot Requirements (TBBR): https://developer.arm.com/documentation/den0006/latest
 .. _TrustZone: https://www.arm.com/technologies/trustzone-for-cortex-a/tee-reference-documentation
 .. _Trusted Firmware-A (TF-A): https://trustedfirmware-a.readthedocs.io
 .. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/+/v{trusted_firmware_a_version}
@@ -323,6 +326,7 @@ rst_prolog = f"""
 .. _U-boot: https://u-boot.readthedocs.io
 .. _UEFI SMM Services: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/uefi-smm-services.html
 .. _Writing New Tests: https://docs.yoctoproject.org/{yocto_version}/dev-manual/runtime-testing.html#writing-new-tests
+.. _X.509 v3: https://www.rfc-editor.org/rfc/rfc5280.txt
 .. _Xen Hypervisor: https://xenproject.org/help/documentation
 .. _Xen repository: https://xenbits.xen.org/gitweb/?p=xen.git;a=tree;h=refs/heads/stable-{xen_version}
 .. _Yocto Project Quick Start: https://docs.yoctoproject.org/{yocto_version}/brief-yoctoprojectqs/index.html
