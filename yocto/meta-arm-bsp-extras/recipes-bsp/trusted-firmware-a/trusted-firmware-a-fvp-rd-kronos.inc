@@ -25,6 +25,11 @@ SRC_URI += "\
     file://0012-feat-rdkronos-Add-FWU-related-configuration-in-rdkro.patch \
     file://0013-feat-scmi-Add-infinite-loop-to-handle-unsupported-po.patch \
     file://0014-psci-SMCCC_ARCH_FEATURES-discovery-through-PSCI_FEATURES.patch \
+    file://0015-fix-rdkronos-Remove-tb_fw_configs-and-settings.patch \
+    file://0016-feat-bl2-Add-support-for-loading-DTB-at-BL2.patch \
+    file://0017-fix-rdkronos-Enabling-the-BL2_ENABLE_DTB_LOAD-option.patch \
+    file://0018-feat-auth-Add-FW_CONFIG-to-BL2-Chain-of-Trust.patch \
+    file://0019-feat-rdkronos-Enabling-Trusted-Board-Boot-TBB-for-rd.patch \
     "
 # cSpell:enable
 
@@ -33,7 +38,7 @@ TFA_PLATFORM                 = "rdkronos"
 TFA_BUILD_TARGET             = "bl2 fip"
 TFA_INSTALL_TARGET           = "bl2 fip"
 TFA_DEBUG                    = "1"
-TFA_MBEDTLS                  = "0"
+TFA_MBEDTLS                  = "1"
 TFA_UBOOT                    = "1"
 
 TFA_SPD = "spmd"
@@ -47,6 +52,11 @@ EXTRA_OEMAKE:append = " \
     ARM_ARCH_MAJOR=9 ARM_ARCH_MINOR=0 \
     SVE_VECTOR_LEN=128 \
     ENABLE_MPAM_FOR_LOWER_ELS=1 \
+    TRUSTED_BOARD_BOOT=1 \
+    GENERATE_COT=1 \
+    COT=tbbr \
+    ARM_ROTPK_LOCATION=devel_rsa \
+    ROT_KEY=plat/arm/board/common/rotpk/arm_rotprivk_rsa.pem \
     BL32=${RECIPE_SYSROOT}/${nonarch_base_libdir}/firmware/tee-pager_v2.bin \
     ${@'' if d.getVar('SVE_DISABLE_FLAG', True) == '1' else 'ARM_ARCH_MAJOR=9 ARM_ARCH_MINOR=2 SVE_VECTOR_LEN=128'} \
 "

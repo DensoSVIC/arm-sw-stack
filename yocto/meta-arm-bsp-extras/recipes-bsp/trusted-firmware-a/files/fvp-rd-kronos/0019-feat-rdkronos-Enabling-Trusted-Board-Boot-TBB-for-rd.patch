@@ -1,0 +1,98 @@
+From 0a45abafec2e5dc37411ad33e3fd0eb5a693bfef Mon Sep 17 00:00:00 2001
+From: Divin Raj <divin.raj@arm.com>
+Date: Sun, 7 Jul 2024 00:53:09 +0100
+Subject: [PATCH] feat(rdkronos): Enabling Trusted Board Boot(TBB) for rdkronos
+
+In this commit, Trusted Board Boot has been enabled for the kronos
+platform, and the non-volatile counter remains at the default
+values since the non-volatile counter is read-only for Arm
+development platforms.
+
+Signed-off-by: Divin Raj <divin.raj@arm.com>
+Upstream-Status: Pending
+---
+ .../arm/board/rdkronos/include/platform_def.h | 10 ++++++
+ plat/arm/board/rdkronos/platform.mk           |  4 +++
+ plat/arm/board/rdkronos/rdkronos_tbb.c        | 34 +++++++++++++++++++
+ 3 files changed, 48 insertions(+)
+ create mode 100644 plat/arm/board/rdkronos/rdkronos_tbb.c
+
+diff --git a/plat/arm/board/rdkronos/include/platform_def.h b/plat/arm/board/rdkronos/include/platform_def.h
+index b85e1669b..62edd7e1f 100644
+--- a/plat/arm/board/rdkronos/include/platform_def.h
++++ b/plat/arm/board/rdkronos/include/platform_def.h
+@@ -135,6 +135,16 @@
+ #define FIP_SIGNATURE_HEADER		0x400
+ #define PLAT_ARM_FIP_OFFSET_IN_GPT	(FIP_BANK0_OFFSET + FIP_SIGNATURE_HEADER)
+ 
++/* Non-volatile counters */
++#define TRUSTED_NVCTR_BASE_OFFSET	UL(0x00E70000)
++#define TFW_NVCTR_BASE_OFFSET		0x0000
++#define NTFW_CTR_BASE_OFFSET		0x0004
++#define SOC_TRUSTED_NVCTR_BASE		(SOC_PLATFORM_PERIPH_BASE + TRUSTED_NVCTR_BASE_OFFSET)
++#define TFW_NVCTR_BASE			(SOC_TRUSTED_NVCTR_BASE	+ TFW_NVCTR_BASE_OFFSET)
++#define TFW_NVCTR_SIZE			U(4)
++#define NTFW_CTR_BASE			(SOC_TRUSTED_NVCTR_BASE + NTFW_CTR_BASE_OFFSET)
++#define NTFW_CTR_SIZE			U(4)
++
+ /*******************************************************************************
+  * Memprotect definitions
+  ******************************************************************************/
+diff --git a/plat/arm/board/rdkronos/platform.mk b/plat/arm/board/rdkronos/platform.mk
+index 1fca955c2..a71309282 100644
+--- a/plat/arm/board/rdkronos/platform.mk
++++ b/plat/arm/board/rdkronos/platform.mk
+@@ -59,6 +59,10 @@ ifeq (${BL2_AT_EL3},1)
+ BL2_SOURCES		+=	${RDKRONOS_CPU_SOURCES}
+ endif
+ 
++ifeq (${TRUSTED_BOARD_BOOT},1)
++BL2_SOURCES		+=	${RDKRONOS_BASE}/rdkronos_tbb.c
++endif
++
+ # Add the FDT_SOURCES and options for Dynamic Config
+ FDT_SOURCES		+=	${RDKRONOS_BASE}/fdts/${PLAT}_fw_config.dts \
+ 				fdts/${PLAT}.dts
+diff --git a/plat/arm/board/rdkronos/rdkronos_tbb.c b/plat/arm/board/rdkronos/rdkronos_tbb.c
+new file mode 100644
+index 000000000..ce9301ad8
+--- /dev/null
++++ b/plat/arm/board/rdkronos/rdkronos_tbb.c
+@@ -0,0 +1,34 @@
++/*
++ * Copyright (c) 2024, ARM Limited. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++#include <plat/arm/common/plat_arm.h>
++
++int plat_get_mbedtls_heap(void **heap_addr, size_t *heap_size)
++{
++        assert(heap_addr != NULL);
++        assert(heap_size != NULL);
++
++        return arm_get_mbedtls_heap(heap_addr, heap_size);
++}
++
++/*
++ * Return the ROTPK hash in the following ASN.1 structure in DER format:
++ *
++ * AlgorithmIdentifier  ::=  SEQUENCE  {
++ *     algorithm       OBJECT IDENTIFIER,
++ *     parameters      ANY DEFINED BY algorithm OPTIONAL
++ * }
++ *
++ * DigestInfo ::= SEQUENCE {
++ *     digestAlgorithm AlgorithmIdentifier,
++ *     digest          OCTET STRING
++ * }
++ */
++int plat_get_rotpk_info(void *cookie, void **key_ptr, unsigned int *key_len,
++                       unsigned int *flags)
++{
++       return arm_get_rotpk_info(cookie, key_ptr, key_len, flags);
++}
+-- 
+2.34.1
+

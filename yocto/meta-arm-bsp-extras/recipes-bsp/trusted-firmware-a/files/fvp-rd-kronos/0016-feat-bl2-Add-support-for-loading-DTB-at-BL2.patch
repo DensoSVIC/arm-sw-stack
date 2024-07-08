@@ -1,0 +1,167 @@
+From 07af629b41a9b3d94ec67184c3482366ac9404a7 Mon Sep 17 00:00:00 2001
+From: Divin Raj <divin.raj@arm.com>
+Date: Sun, 7 Jul 2024 00:15:02 +0100
+Subject: [PATCH] feat(bl2): Add support for loading DTB at BL2
+
+This commit introduces a new build option, `BL2_ENABLE_DTB_LOAD`,
+enabling the loading of device tree for `fw_config` when BL2_AT_EL3
+scenario.
+
+Signed-off-by: Divin Raj <divin.raj@arm.com>
+Upstream-Status: Pending
+---
+ Makefile                               | 13 +++++++
+ bl2/bl2_main.c                         | 53 ++++++++++++++++++++++++++
+ docs/getting_started/build-options.rst |  5 +++
+ make_helpers/defaults.mk               |  3 ++
+ 4 files changed, 74 insertions(+)
+
+diff --git a/Makefile b/Makefile
+index 9eae30c92..0ad326e04 100644
+--- a/Makefile
++++ b/Makefile
+@@ -713,6 +713,17 @@ ifeq ($(BL2_AT_EL3)-$(BL2_IN_XIP_MEM),0-1)
+ $(error "BL2_IN_XIP_MEM is only supported when BL2_AT_EL3 is enabled")
+ endif
+ 
++# This internal flag is a common option which is set to 1 for scenarios
++# to load DTB when RESET to BL2.
++ifeq (${BL2_ENABLE_DTB_LOAD},1)
++    ifneq (${BL2_AT_EL3},1)
++	$(error BL2_AT_EL3 must be enabled when BL2_ENABLE_DTB_LOAD is enabled)
++    endif
++    ifeq (${FW_CONFIG},)
++	$(error FW_CONFIG must be specified when BL2_ENABLE_DTB_LOAD is enabled)
++    endif
++endif
++
+ # For RAS_EXTENSION, require that EAs are handled in EL3 first
+ ifeq ($(RAS_EXTENSION),1)
+     ifneq ($(HANDLE_EA_EL3_FIRST_NS),1)
+@@ -1064,6 +1075,7 @@ $(eval $(call assert_booleans,\
+         USE_TBBR_DEFS \
+         WARMBOOT_ENABLE_DCACHE_EARLY \
+         BL2_AT_EL3 \
++        BL2_ENABLE_DTB_LOAD \
+         BL2_IN_XIP_MEM \
+         BL2_INV_DCACHE \
+         USE_SPINLOCK_CAS \
+@@ -1209,6 +1221,7 @@ $(eval $(call add_defines,\
+         USE_TBBR_DEFS \
+         WARMBOOT_ENABLE_DCACHE_EARLY \
+         BL2_AT_EL3 \
++        BL2_ENABLE_DTB_LOAD \
+         BL2_IN_XIP_MEM \
+         BL2_INV_DCACHE \
+         USE_SPINLOCK_CAS \
+diff --git a/bl2/bl2_main.c b/bl2/bl2_main.c
+index 5da803795..d891221ba 100644
+--- a/bl2/bl2_main.c
++++ b/bl2/bl2_main.c
+@@ -17,6 +17,10 @@
+ #include <drivers/console.h>
+ #include <drivers/fwu/fwu.h>
+ #include <lib/extensions/pauth.h>
++#if BL2_ENABLE_DTB_LOAD
++#include <lib/fconf/fconf.h>
++#include <lib/fconf/fconf_dyn_cfg_getter.h>
++#endif
+ #include <plat/common/platform.h>
+ 
+ #include "bl2_private.h"
+@@ -71,6 +75,43 @@ void bl2_setup(u_register_t arg0, u_register_t arg1, u_register_t arg2,
+ }
+ #endif /* BL2_AT_EL3 */
+ 
++/*******************************************************************************
++ * DTB load function for BL2 when BL2_AT_EL3=1 && BL2_ENABLE_DTB_LOAD=1
++ ******************************************************************************/
++#if BL2_ENABLE_DTB_LOAD
++static void arm_bl2_el3_load_dtb_config(void)
++{
++	int ret = -1;
++	const struct dyn_cfg_dtb_info_t *fw_config_info;
++
++	/* Set global DTB info for fixed fw_config information */
++	set_config_info(PLAT_FW_CONFIG_BASE, ~0UL, PLAT_FW_CONFIG_MAX_SIZE, FW_CONFIG_ID);
++
++	/* Fill the device tree information struct with the info from the config dtb */
++	ret = fconf_load_config(FW_CONFIG_ID);
++	if (ret < 0) {
++		ERROR("Loading of FW_CONFIG failed %d\n", ret);
++		plat_error_handler(ret);
++	}
++
++	/*
++	 * FW_CONFIG loaded successfully. Check the FW_CONFIG device tree parsing
++	 * is successful.
++	 */
++	fw_config_info = FCONF_GET_PROPERTY(dyn_cfg, dtb, FW_CONFIG_ID);
++	if (fw_config_info == NULL) {
++		ret = -1;
++		ERROR("Invalid FW_CONFIG address\n");
++		plat_error_handler(ret);
++	}
++	ret = fconf_populate_dtb_registry(fw_config_info->config_addr);
++	if (ret < 0) {
++		ERROR("Parsing of FW_CONFIG failed %d\n", ret);
++		plat_error_handler(ret);
++	}
++}
++#endif /* BL2_ENABLE_DTB_LOAD */
++
+ /*******************************************************************************
+  * The only thing to do in BL2 is to load further images and pass control to
+  * next BL. The memory occupied by BL2 will be reclaimed by BL3x stages. BL2
+@@ -86,6 +127,18 @@ void bl2_main(void)
+ 	/* Perform remaining generic architectural setup in S-EL1 */
+ 	bl2_arch_setup();
+ 
++#if BL2_ENABLE_DTB_LOAD
++	/*
++	 * The DTB should be loaded before calling fwu_init()
++	 * because fwu_init() updates the platform I/O policies using the offset
++	 * address and length of firmware-updated images stored in the platform
++	 * NV storage.
++	 * And also the DTB must be loaded and parsed before the subsequent images
++	 * start loading.
++	 */
++	arm_bl2_el3_load_dtb_config();
++#endif /* BL2_ENABLE_DTB_LOAD */
++
+ #if PSA_FWU_SUPPORT
+ 	fwu_init();
+ #endif /* PSA_FWU_SUPPORT */
+diff --git a/docs/getting_started/build-options.rst b/docs/getting_started/build-options.rst
+index 402de1361..343998119 100644
+--- a/docs/getting_started/build-options.rst
++++ b/docs/getting_started/build-options.rst
+@@ -64,6 +64,11 @@ Common build options
+    enable this use-case. For now, this option is only supported when BL2_AT_EL3
+    is set to '1'.
+ 
++-  ``BL2_ENABLE_DTB_LOAD``: Boolean option to enable the loading of fw_config device
++   trees from the Firmware Image Package (FIP). When enabled, BL2 will load the
++   firmware config device trees from the FIP. This option is only supported when
++   BL2_AT_EL3 is set to '1'.
++
+ -  ``BL31``: This is an optional build option which specifies the path to
+    BL31 image for the ``fip`` target. In this case, the BL31 in TF-A will not
+    be built.
+diff --git a/make_helpers/defaults.mk b/make_helpers/defaults.mk
+index 683d7ac9f..19b7bc5bd 100644
+--- a/make_helpers/defaults.mk
++++ b/make_helpers/defaults.mk
+@@ -32,6 +32,9 @@ BASE_COMMIT			:= origin/master
+ # Execute BL2 at EL3
+ BL2_AT_EL3			:= 0
+ 
++# Load fw_config device tree at BL2
++BL2_ENABLE_DTB_LOAD		:= 0
++
+ # Only use SP packages if SP layout JSON is defined
+ BL2_ENABLE_SP_LOAD		:= 0
+ 
+-- 
+2.34.1
+

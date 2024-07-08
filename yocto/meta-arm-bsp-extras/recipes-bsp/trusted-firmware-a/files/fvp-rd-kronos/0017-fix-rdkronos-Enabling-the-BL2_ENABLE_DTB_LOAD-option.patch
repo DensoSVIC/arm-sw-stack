@@ -1,0 +1,116 @@
+From 3b2143a82e4ab913369c3e88b370a225ce0bdeae Mon Sep 17 00:00:00 2001
+From: Divin Raj <divin.raj@arm.com>
+Date: Sun, 7 Jul 2024 00:48:00 +0100
+Subject: [PATCH] fix(rdkronos): Enabling the BL2_ENABLE_DTB_LOAD option
+
+Enabling the BL2_ENABLE_DTB_LOAD option to load FW_CONFIG at BL2 and
+removing the redundant code as the DTB load code moved to the bl2_main.c
+
+Signed-off-by: Divin Raj <divin.raj@arm.com>
+Upstream-Status: Pending
+---
+ .../arm/board/rdkronos/include/platform_def.h |  3 ++
+ plat/arm/board/rdkronos/platform.mk           |  4 +-
+ .../board/rdkronos/rdkronos_bl2_el3_setup.c   | 54 -------------------
+ 3 files changed, 5 insertions(+), 56 deletions(-)
+ delete mode 100644 plat/arm/board/rdkronos/rdkronos_bl2_el3_setup.c
+
+diff --git a/plat/arm/board/rdkronos/include/platform_def.h b/plat/arm/board/rdkronos/include/platform_def.h
+index 912ae69fb..d9fd01803 100644
+--- a/plat/arm/board/rdkronos/include/platform_def.h
++++ b/plat/arm/board/rdkronos/include/platform_def.h
+@@ -146,6 +146,9 @@
+ #define PLAT_ARM_MEM_PROT_ADDR		(V2M_FLASH0_BASE + \
+ 					 V2M_FLASH0_SIZE - V2M_FLASH_BLOCK_SIZE)
+ 
++#define PLAT_FW_CONFIG_MAX_SIZE		(ARM_FW_CONFIG_LIMIT - ARM_FW_CONFIG_BASE)
++#define PLAT_FW_CONFIG_BASE		ARM_FW_CONFIG_BASE
++
+ #include <lib/utils_def.h>
+ #include <lib/xlat_tables/xlat_tables_defs.h>
+ #include <plat/arm/common/arm_def.h>
+diff --git a/plat/arm/board/rdkronos/platform.mk b/plat/arm/board/rdkronos/platform.mk
+index d6ae0a42b..1fca955c2 100644
+--- a/plat/arm/board/rdkronos/platform.mk
++++ b/plat/arm/board/rdkronos/platform.mk
+@@ -29,6 +29,7 @@ HW_ASSISTED_COHERENCY			:= 1
+ NEED_BL32				:= yes
+ USE_COHERENT_MEM			:= 0
+ NR_OF_IMAGES_IN_FW_BANK			:=1
++BL2_ENABLE_DTB_LOAD			:= 1
+ 
+ GIC_ENABLE_V4_EXTN	:= 1
+ include drivers/arm/gic/v3/gicv3.mk
+@@ -55,8 +56,7 @@ BL31_SOURCES		+=	${RDKRONOS_CPU_SOURCES}			\
+ 
+ 
+ ifeq (${BL2_AT_EL3},1)
+-BL2_SOURCES		+=	${RDKRONOS_CPU_SOURCES} \
+-				${RDKRONOS_BASE}/rdkronos_bl2_el3_setup.c
++BL2_SOURCES		+=	${RDKRONOS_CPU_SOURCES}
+ endif
+ 
+ # Add the FDT_SOURCES and options for Dynamic Config
+diff --git a/plat/arm/board/rdkronos/rdkronos_bl2_el3_setup.c b/plat/arm/board/rdkronos/rdkronos_bl2_el3_setup.c
+deleted file mode 100644
+index d2aa69fb2..000000000
+--- a/plat/arm/board/rdkronos/rdkronos_bl2_el3_setup.c
++++ /dev/null
+@@ -1,54 +0,0 @@
+-/*
+- * Copyright (c) 2023, ARM Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- */
+-
+-#include <common/debug.h>
+-#include <lib/fconf/fconf.h>
+-#include <lib/fconf/fconf_dyn_cfg_getter.h>
+-#include <plat/arm/common/plat_arm.h>
+-#include <plat/common/platform.h>
+-#include <platform_def.h>
+-
+-void bl2_el3_plat_arch_setup(void)
+-{
+-	const struct dyn_cfg_dtb_info_t *fw_config_info;
+-	uint32_t fw_config_max_size;
+-	int err = -1;
+-
+-	arm_bl2_el3_plat_arch_setup();
+-
+-	/* Set global DTB info for fixed fw_config information */
+-	fw_config_max_size = ARM_FW_CONFIG_LIMIT - ARM_FW_CONFIG_BASE;
+-	set_config_info(ARM_FW_CONFIG_BASE, ~0UL, fw_config_max_size, FW_CONFIG_ID);
+-
+-	/* Fill the device tree information struct with the info from the config dtb */
+-	err = fconf_load_config(FW_CONFIG_ID);
+-	if (err < 0) {
+-		ERROR("Loading of FW_CONFIG failed %d\n", err);
+-		plat_error_handler(err);
+-	}
+-
+-	/*
+-	 * FW_CONFIG loaded successfully. If FW_CONFIG device tree parsing
+-	 * is successful then load TB_FW_CONFIG device tree.
+-	 */
+-	fw_config_info = FCONF_GET_PROPERTY(dyn_cfg, dtb, FW_CONFIG_ID);
+-	if (fw_config_info != NULL) {
+-		err = fconf_populate_dtb_registry(fw_config_info->config_addr);
+-		if (err < 0) {
+-			ERROR("Parsing of FW_CONFIG failed %d\n", err);
+-			plat_error_handler(err);
+-		}
+-		/* load TB_FW_CONFIG */
+-		err = fconf_load_config(TB_FW_CONFIG_ID);
+-		if (err < 0) {
+-			ERROR("Loading of TB_FW_CONFIG failed %d\n", err);
+-			plat_error_handler(err);
+-		}
+-	} else {
+-		ERROR("Invalid FW_CONFIG address\n");
+-		plat_error_handler(err);
+-	}
+-}
+-- 
+2.34.1
+

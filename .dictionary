@@ -665,6 +665,7 @@ romfw
 ROOTFS
 rootwait
 ROTPK
+rotprivk
 rpath
 rpcr
 rpdev
@@ -773,6 +774,7 @@ sysroot
 sysroots
 systemready
 sysvinit
+tbbr
 testimage
 textcopyright
 tfmxxx

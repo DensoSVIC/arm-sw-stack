@@ -1,0 +1,97 @@
+From b98e35e9d1b9789674820107d8a9d19f259af608 Mon Sep 17 00:00:00 2001
+From: Divin Raj <divin.raj@arm.com>
+Date: Sun, 7 Jul 2024 00:48:00 +0100
+Subject: [PATCH] fix(rdkronos): Remove tb_fw_configs and settings
+
+In this commit, removing the tb_fw_config as it is only required
+for the normal BL1 to BL2 flow. In the RESET_AT_EL3 scenario,
+mbedtls_heap initialization is done by Bl2 setup when enabling
+the TBB.
+
+Signed-off-by: Divin Raj <divin.raj@arm.com>
+Upstream-Status: Pending
+---
+ .../rdkronos/fdts/rdkronos_fw_config.dts      |  6 ----
+ .../rdkronos/fdts/rdkronos_tb_fw_config.dts   | 28 -------------------
+ plat/arm/board/rdkronos/platform.mk           |  4 ---
+ 3 files changed, 38 deletions(-)
+ delete mode 100644 plat/arm/board/rdkronos/fdts/rdkronos_tb_fw_config.dts
+
+diff --git a/plat/arm/board/rdkronos/fdts/rdkronos_fw_config.dts b/plat/arm/board/rdkronos/fdts/rdkronos_fw_config.dts
+index 00c435ef6..776b6d10c 100644
+--- a/plat/arm/board/rdkronos/fdts/rdkronos_fw_config.dts
++++ b/plat/arm/board/rdkronos/fdts/rdkronos_fw_config.dts
+@@ -12,12 +12,6 @@
+ 	dtb-registry {
+ 		compatible = "fconf,dyn_cfg-dtb_registry";
+ 
+-		tb_fw-config {
+-			load-address = <0x0 0x0060000>;
+-			max-size = <0x200>;
+-			id = <TB_FW_CONFIG_ID>;
+-		};
+-
+ 		tos_fw-config {
+ 			load-address = <0x0 0x70000>;
+ 			max-size = <0x1000>;
+diff --git a/plat/arm/board/rdkronos/fdts/rdkronos_tb_fw_config.dts b/plat/arm/board/rdkronos/fdts/rdkronos_tb_fw_config.dts
+deleted file mode 100644
+index c5890beed..000000000
+--- a/plat/arm/board/rdkronos/fdts/rdkronos_tb_fw_config.dts
++++ /dev/null
+@@ -1,28 +0,0 @@
+-/*
+- * Copyright (c) 2023, ARM Limited and Contributors. All rights reserved.
+- *
+- * SPDX-License-Identifier: BSD-3-Clause
+- */
+-
+-/dts-v1/;
+-
+-/ {
+-	tb_fw-config {
+-		compatible = "arm,tb_fw";
+-
+-		/* Disable authentication for development */
+-		disable_auth = <0x0>;
+-
+-		/*
+-		 * The following two entries are placeholders for Mbed TLS
+-		 * heap information. The default values don't matter since
+-		 * they will be overwritten by BL1.
+-		 * In case of having shared Mbed TLS heap between BL1 and BL2,
+-		 * BL1 will populate these two properties with the respective
+-		 * info about the shared heap. This info will be available for
+-		 * BL2 in order to locate and re-use the heap.
+-		 */
+-		mbedtls_heap_addr = <0x0 0x0>;
+-		mbedtls_heap_size = <0x0>;
+-	};
+-};
+diff --git a/plat/arm/board/rdkronos/platform.mk b/plat/arm/board/rdkronos/platform.mk
+index bab9e5633..d6ae0a42b 100644
+--- a/plat/arm/board/rdkronos/platform.mk
++++ b/plat/arm/board/rdkronos/platform.mk
+@@ -61,10 +61,8 @@ endif
+ 
+ # Add the FDT_SOURCES and options for Dynamic Config
+ FDT_SOURCES		+=	${RDKRONOS_BASE}/fdts/${PLAT}_fw_config.dts \
+-				${RDKRONOS_BASE}/fdts/${PLAT}_tb_fw_config.dts \
+ 				fdts/${PLAT}.dts
+ FW_CONFIG		:=	${BUILD_PLAT}/fdts/${PLAT}_fw_config.dtb
+-TB_FW_CONFIG		:=	${BUILD_PLAT}/fdts/${PLAT}_tb_fw_config.dtb
+ HW_CONFIG		:=	${BUILD_PLAT}/fdts/${PLAT}.dtb
+ 
+ RDKRONOS_SPMC_MANIFEST_DTS	:=	${RDKRONOS_BASE}/fdts/${PLAT}_optee_spmc_manifest.dts
+@@ -77,8 +75,6 @@ $(eval $(call TOOL_ADD_PAYLOAD,${RDKRONOS_TOS_FW_CONFIG},--tos-fw-config,${RDKRO
+ 
+ # Add the FW_CONFIG to FIP and specify the same to certtool
+ $(eval $(call TOOL_ADD_PAYLOAD,${FW_CONFIG},--fw-config,${FW_CONFIG}))
+-# Add the TB_FW_CONFIG to FIP and specify the same to certtool
+-$(eval $(call TOOL_ADD_PAYLOAD,${TB_FW_CONFIG},--tb-fw-config,${TB_FW_CONFIG}))
+ # Add the HW_CONFIG to FIP and specify the same to certtool
+ $(eval $(call TOOL_ADD_PAYLOAD,${HW_CONFIG},--hw-config,${HW_CONFIG}))
+ 
+-- 
+2.34.1
+

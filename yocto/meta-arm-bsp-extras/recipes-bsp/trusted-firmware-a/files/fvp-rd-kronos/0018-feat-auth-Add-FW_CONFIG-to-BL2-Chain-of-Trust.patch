@@ -1,0 +1,170 @@
+From 03b9cbc684448baca10ff699d7e31afafe16de26 Mon Sep 17 00:00:00 2001
+From: Divin Raj <divin.raj@arm.com>
+Date: Sun, 7 Jul 2024 00:15:02 +0100
+Subject: [PATCH] feat(auth): Add FW_CONFIG to BL2 Chain of Trust
+
+This commit adds FW_CONFIG to BL2 CoT for authenticating FW_CONFIG
+during the BL2_AT_EL3 scenario. This feature is enabled only with
+the following build option combination: BL2_AT_EL3=1 and
+BL2_ENABLE_DTB_LOAD=1.
+
+Additionally, move the auth_mod_init() function before loading the
+FW_CONFIG in order to authenticate FW_CONFIG.
+
+Signed-off-by: Divin Raj <divin.raj@arm.com>
+Upstream-Status: Pending
+---
+ Makefile                               |  4 ++--
+ bl2/bl2_main.c                         | 10 +++++++---
+ drivers/auth/tbbr/tbbr_cot_bl1.c       | 15 ---------------
+ drivers/auth/tbbr/tbbr_cot_bl2.c       |  1 +
+ drivers/auth/tbbr/tbbr_cot_common.c    | 18 ++++++++++++++++++
+ include/drivers/auth/tbbr_cot_common.h |  1 +
+ make_helpers/tbbr/tbbr_tools.mk        | 12 ++++++------
+ 7 files changed, 35 insertions(+), 26 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 0ad326e04..a893c7869 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1328,8 +1328,8 @@ $(eval $(call MAKE_BL,bl1))
+ endif
+ 
+ ifeq (${NEED_BL2},yes)
+-ifeq (${BL2_AT_EL3}, 0)
+-FIP_BL2_ARGS := tb-fw
++ifeq ($(BL2_AT_EL3), $(BL2_ENABLE_DTB_LOAD))
++    FIP_BL2_ARGS := tb-fw
+ endif
+ 
+ BL2_SOURCES := $(sort ${BL2_SOURCES})
+diff --git a/bl2/bl2_main.c b/bl2/bl2_main.c
+index d891221ba..b2abc061c 100644
+--- a/bl2/bl2_main.c
++++ b/bl2/bl2_main.c
+@@ -127,6 +127,13 @@ void bl2_main(void)
+ 	/* Perform remaining generic architectural setup in S-EL1 */
+ 	bl2_arch_setup();
+ 
++	/* Initialize authentication module.
++	 *
++	 * Initialization of the authentication module should occur before
++	 * loading the FW_CONFIG to authenticate the complete CoT.
++	 */
++	auth_mod_init();
++
+ #if BL2_ENABLE_DTB_LOAD
+ 	/*
+ 	 * The DTB should be loaded before calling fwu_init()
+@@ -145,9 +152,6 @@ void bl2_main(void)
+ 
+ 	crypto_mod_init();
+ 
+-	/* Initialize authentication module */
+-	auth_mod_init();
+-
+ 	/* Initialize the Measured Boot backend */
+ 	bl2_plat_mboot_init();
+ 
+diff --git a/drivers/auth/tbbr/tbbr_cot_bl1.c b/drivers/auth/tbbr/tbbr_cot_bl1.c
+index 44f86384f..e479c17d7 100644
+--- a/drivers/auth/tbbr/tbbr_cot_bl1.c
++++ b/drivers/auth/tbbr/tbbr_cot_bl1.c
+@@ -150,21 +150,6 @@ static const auth_img_desc_t tb_fw_config = {
+ 	}
+ };
+ 
+-static const auth_img_desc_t fw_config = {
+-	.img_id = FW_CONFIG_ID,
+-	.img_type = IMG_RAW,
+-	.parent = &trusted_boot_fw_cert,
+-	.img_auth_methods = (const auth_method_desc_t[AUTH_METHOD_NUM]) {
+-		[0] = {
+-			.type = AUTH_METHOD_HASH,
+-			.param.hash = {
+-				.data = &raw_data,
+-				.hash = &fw_config_hash
+-			}
+-		}
+-	}
+-};
+-
+ /*
+  * TBBR Chain of trust definition
+  */
+diff --git a/drivers/auth/tbbr/tbbr_cot_bl2.c b/drivers/auth/tbbr/tbbr_cot_bl2.c
+index 11e2f4678..8f3371e90 100644
+--- a/drivers/auth/tbbr/tbbr_cot_bl2.c
++++ b/drivers/auth/tbbr/tbbr_cot_bl2.c
+@@ -653,6 +653,7 @@ DEFINE_SIP_SP_PKG(8);
+ static const auth_img_desc_t * const cot_desc[] = {
+ 	[TRUSTED_BOOT_FW_CERT_ID]		=	&trusted_boot_fw_cert,
+ 	[HW_CONFIG_ID]				=	&hw_config,
++	[FW_CONFIG_ID]				=	&fw_config,
+ 	[TRUSTED_KEY_CERT_ID]			=	&trusted_key_cert,
+ 	[SCP_FW_KEY_CERT_ID]			=	&scp_fw_key_cert,
+ 	[SCP_FW_CONTENT_CERT_ID]		=	&scp_fw_content_cert,
+diff --git a/drivers/auth/tbbr/tbbr_cot_common.c b/drivers/auth/tbbr/tbbr_cot_common.c
+index 0983d4219..b3405a6f5 100644
+--- a/drivers/auth/tbbr/tbbr_cot_common.c
++++ b/drivers/auth/tbbr/tbbr_cot_common.c
+@@ -124,3 +124,21 @@ const auth_img_desc_t hw_config = {
+ 		}
+ 	}
+ };
++
++/*
++ * FW_CONFIG
++ */
++const auth_img_desc_t fw_config = {
++	.img_id = FW_CONFIG_ID,
++	.img_type = IMG_RAW,
++	.parent = &trusted_boot_fw_cert,
++	.img_auth_methods = (const auth_method_desc_t[AUTH_METHOD_NUM]) {
++		[0] = {
++			.type = AUTH_METHOD_HASH,
++			.param.hash = {
++				.data = &raw_data,
++				.hash = &fw_config_hash
++			}
++		}
++	}
++};
+\ No newline at end of file
+diff --git a/include/drivers/auth/tbbr_cot_common.h b/include/drivers/auth/tbbr_cot_common.h
+index a51faee1a..21bcd520a 100644
+--- a/include/drivers/auth/tbbr_cot_common.h
++++ b/include/drivers/auth/tbbr_cot_common.h
+@@ -25,5 +25,6 @@ extern auth_param_type_desc_t fw_config_hash;
+ 
+ extern const auth_img_desc_t trusted_boot_fw_cert;
+ extern const auth_img_desc_t hw_config;
++extern const auth_img_desc_t fw_config;
+ 
+ #endif /* TBBR_COT_COMMON_H */
+diff --git a/make_helpers/tbbr/tbbr_tools.mk b/make_helpers/tbbr/tbbr_tools.mk
+index 5ef2d852e..3e03b1abe 100644
+--- a/make_helpers/tbbr/tbbr_tools.mk
++++ b/make_helpers/tbbr/tbbr_tools.mk
+@@ -82,12 +82,12 @@ $(if ${NON_TRUSTED_WORLD_KEY},$(eval $(call CERT_ADD_CMD_OPT,${NON_TRUSTED_WORLD
+ 
+ 
+ # Add the BL2 CoT (image cert)
+-ifeq (${NEED_BL2},yes)
+-ifeq (${BL2_AT_EL3}, 0)
+-ifneq (${COT},cca)
+-$(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/tb_fw.crt,--tb-fw-cert))
+-endif
+-endif
++ifeq (${NEED_BL2}, yes)
++    ifneq (${COT}, cca)
++        ifeq ($(BL2_AT_EL3), $(BL2_ENABLE_DTB_LOAD))
++            $(eval $(call TOOL_ADD_PAYLOAD, ${BUILD_PLAT}/tb_fw.crt, --tb-fw-cert))
++        endif
++    endif
+ endif
+ 
+ # Add the SCP_BL2 CoT (key cert + img cert)
+-- 
+2.34.1
+
