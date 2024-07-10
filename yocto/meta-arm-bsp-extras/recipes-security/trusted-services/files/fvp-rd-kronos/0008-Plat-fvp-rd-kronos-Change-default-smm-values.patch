@@ -1,0 +1,42 @@
+From 152ab63f7c2b83570fd4fea41bf40def542390c9 Mon Sep 17 00:00:00 2001
+From: Robbie Cao <robbie.cao@arm.com>
+Date: Fri, 25 Aug 2023 07:53:32 +0800
+Subject: [PATCH] Plat: fvp-rd-kronos: Change default smm values
+
+SMM gateway uses SE proxy to route the calls for any NV storage so set
+the NV_STORE_SN.
+
+Change the storage index uid and max UEFI variables as well.
+
+Signed-off-by: Robbie Cao <robbie.cao@arm.com>
+Upstream-Status: Pending
+---
+ platform/providers/arm/kronos/platform.cmake | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/platform/providers/arm/kronos/platform.cmake b/platform/providers/arm/kronos/platform.cmake
+index 16e891a..53659a6 100644
+--- a/platform/providers/arm/kronos/platform.cmake
++++ b/platform/providers/arm/kronos/platform.cmake
+@@ -8,6 +8,9 @@
+ 
+ set(COMMS_MHU_MSG_SIZE 0x1FFC CACHE STRING "Max message size that can be transfered via MHU")
+ set(PLAT_RSS_COMMS_PAYLOAD_MAX_SIZE 0x1040 CACHE STRING "Size of the RSS_COMMS_PAYLOAD buffer")
++set(SMM_GATEWAY_MAX_UEFI_VARIABLES 100 CACHE STRING "Maximum UEFI variable count")
++set(SMM_RPC_CALLER_SESSION_SHARED_MEMORY_SIZE 6*4096 CACHE STRING "RPC caller buffer size in SMMGW")
++set(SMM_SP_HEAP_SIZE 90*1024 CACHE STRING "SMM gateway SP heap size")
+ 
+ if (NOT DEFINED TGT)
+ 	message(FATAL_ERROR "Mandatory parameter TGT is not defined.")
+@@ -16,6 +19,8 @@ endif()
+ target_compile_definitions(${TGT} PRIVATE
+ 	COMMS_MHU_MSG_SIZE=${COMMS_MHU_MSG_SIZE}
+ 	PLAT_RSS_COMMS_PAYLOAD_MAX_SIZE=${PLAT_RSS_COMMS_PAYLOAD_MAX_SIZE}
++	SMM_GATEWAY_MAX_UEFI_VARIABLES=${SMM_GATEWAY_MAX_UEFI_VARIABLES}
++	SMM_VARIABLE_INDEX_STORAGE_UID=0x787
+ )
+ 
+ # include MHU driver
+-- 
+2.34.1
+

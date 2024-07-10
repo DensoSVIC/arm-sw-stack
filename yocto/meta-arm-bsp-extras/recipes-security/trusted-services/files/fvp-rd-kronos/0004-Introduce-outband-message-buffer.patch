@@ -1,0 +1,144 @@
+From 6739050b547a007d2497c7c2bde3800fa12975c4 Mon Sep 17 00:00:00 2001
+From: Michael Zhao <michael.zhao2@arm.com>
+Date: Mon, 8 Jul 2024 11:19:14 +0100
+Subject: [PATCH] Introduce outband message buffer
+
+The current version of MHUv3 driver requires outband message buffer to
+exchange bulk data.
+
+In this commit, the outband message buffer info is fetched from device
+tree. In `mhu_send_data()`, serialized data is copied to the buffer,
+only a doorbell is sent to the peer side. In `mhu_receive_data()`, the
+data from the peer side is copied from the buffer.
+
+Signed-off-by: Michael Zhao <michael.zhao2@arm.com>
+Upstream-Status: Inappropriate [To be replaced by upstream MHUv3]
+---
+ .../kronos-opteesp/default_se-proxy.dts.in    | 20 +++++++++++++++++-
+ .../mhu_driver/mhu_v3_x/mhu_adapter_v3_x.c    | 10 +++++++++
+ .../arm/mhu_driver/mhu_v3_x/mhu_v3_x.h        |  4 ++++
+ .../mhu_driver/mhu_v3_x/mhu_wrapper_v3_x.c    | 21 ++++++++++++-------
+ 4 files changed, 46 insertions(+), 9 deletions(-)
+
+diff --git a/deployments/se-proxy/config/kronos-opteesp/default_se-proxy.dts.in b/deployments/se-proxy/config/kronos-opteesp/default_se-proxy.dts.in
+index 71965a6..98547d7 100644
+--- a/deployments/se-proxy/config/kronos-opteesp/default_se-proxy.dts.in
++++ b/deployments/se-proxy/config/kronos-opteesp/default_se-proxy.dts.in
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
++ * Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  */
+@@ -22,5 +22,23 @@
+ 
+ 	device-regions {
+ 		compatible = "arm,ffa-manifest-device-regions";
++		mhu-sender {
++			/* Armv8 A Foundation Platform values */
++			base-address = <0x00000000 0x2AB20000>; /* AP2RSS Secure MHU Sender */
++			pages-count = <16>;
++			attributes = <0x3>; /* read-write */
++		};
++		mhu-receiver {
++			/* Armv8 A Foundation Platform values */
++			base-address = <0x00000000 0x2AB30000>; /* AP2RSS Secure MHU Receiver */
++			pages-count = <16>;
++			attributes = <0x3>; /* read-write */
++		};
++		rss_comms-shm {
++			/* Armv8 A Foundation Platform values */
++			base-address = <0x00000000 0xFFFFC000>; /* shared memory for the communication between TS and RSS */
++			pages-count = <16>;
++			attributes = <0x3>; /* read-write */
++		};
+ 	};
+ };
+diff --git a/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_adapter_v3_x.c b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_adapter_v3_x.c
+index c6b6d1b..11829bd 100644
+--- a/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_adapter_v3_x.c
++++ b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_adapter_v3_x.c
+@@ -115,6 +115,16 @@ int platform_mhu_create(struct platform_mhu_driver *driver, const char *object_n
+ 		return -1;
+ 	}
+ 
++	/* Initialize the outband message buffer. */
++	if (!config_store_query(CONFIG_CLASSIFIER_DEVICE_REGION, "rss_comms-shm", 0, &device_region,
++				sizeof(device_region))) {
++		free(new_instance);
++		return -1;
++	}
++
++	new_instance->outband_buf_base = device_region.base_addr;
++	new_instance->outband_buf_size = device_region.io_region_size;
++
+ 	driver->context = new_instance;
+ 
+ 	return 0;
+diff --git a/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_v3_x.h b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_v3_x.h
+index ca1232e..3dcadae 100644
+--- a/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_v3_x.h
++++ b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_v3_x.h
+@@ -110,6 +110,10 @@ struct mhu_v3_x_dev_t {
+     uintptr_t base;
+     /* Type of the MHUv3 frame */
+     enum mhu_v3_x_frame_t frame;
++    /* Base of shared outband message buffer */
++    uintptr_t outband_buf_base;
++    /* Size of shared outband message buffer in bytes */
++    size_t outband_buf_size;
+     /* Minor revision of the MHUv3 */
+     uint32_t subversion;
+     /* Flag to indicate if the MHUv3 is initialized */
+diff --git a/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_wrapper_v3_x.c b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_wrapper_v3_x.c
+index a320e40..097a88c 100644
+--- a/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_wrapper_v3_x.c
++++ b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_wrapper_v3_x.c
+@@ -235,12 +235,14 @@ enum mhu_error_t mhu_send_data(void *mhu_sender_dev,
+      * First 4 bytes represents the header which currently stores the size
+      * of msg. Rest of buffer holds the actual message.
+      */
+-    /* (void)memcpy((void *)MHU3_OUTBAND_BUF_BASE, (void *)&msg_len,
+-            MHU3_OUTBAND_BUF_HEADER_SIZE); */
++    (void)memcpy((void *)dev->outband_buf_base, (void *)&msg_len,
++            MHU3_OUTBAND_BUF_HEADER_SIZE);
+ 
+     /* Copy the message */
+-    /* (void)memcpy((void *)(MHU3_OUTBAND_BUF_BASE + MHU3_OUTBAND_BUF_HEADER_SIZE),
+-            (void *)send_buffer, msg_len); */
++    for (int i = 0; i < msg_len; i++) {
++        (void)memcpy((void *)(dev->outband_buf_base + MHU3_OUTBAND_BUF_HEADER_SIZE + i),
++                     (uint8_t *)(send_buffer + i), 1);
++    }
+ 
+     /*
+      * Use only one channel 0 to ring the doorbell on receiver for
+@@ -287,17 +289,20 @@ enum mhu_error_t mhu_receive_data(void *mhu_receiver_dev,
+      * First 4 bytes represents the header which currently stores the size
+      * of msg. Rest of buffer holds the actual message.
+      */
+-    /* (void)memcpy((void *)&msg_len, (void *)MHU3_OUTBAND_BUF_BASE,
++    (void)memcpy((void *)&msg_len, (void *)dev->outband_buf_base,
+             MHU3_OUTBAND_BUF_HEADER_SIZE);
+     if (*size < msg_len) {
+         return MHU_V_3_X_ERR_UNSUPPORTED;
+-    } */
++    }
+ 
+     *size = msg_len;
+ 
+     /* Copy the message */
+-    /* (void)memcpy((void *)receive_buffer, (void *)(MHU3_OUTBAND_BUF_BASE +
+-                MHU3_OUTBAND_BUF_HEADER_SIZE), msg_len); */
++    for (int i = 0; i < msg_len; i++) {
++        (void)memcpy((void *)(receive_buffer + i),
++                     (void *)(dev->outband_buf_base + MHU3_OUTBAND_BUF_HEADER_SIZE + i),
++		     1);
++    }
+ 
+     return MHU_V_3_X_ERR_NONE;
+ 
+-- 
+2.34.1
+

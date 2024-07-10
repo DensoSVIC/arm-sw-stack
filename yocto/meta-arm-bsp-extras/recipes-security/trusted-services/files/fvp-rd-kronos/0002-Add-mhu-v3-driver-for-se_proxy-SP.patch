@@ -1,14 +1,10 @@
-From 0462b0dd11b26736f372e414fefc6a4e270868a1 Mon Sep 17 00:00:00 2001
+From f0c8e7610029f91d54489b5327f0775afc67cbc1 Mon Sep 17 00:00:00 2001
 From: Jun Zhang <jun.zhang@arm.com>
 Date: Thu, 10 Aug 2023 16:18:26 +0800
 Subject: [PATCH] Add mhu v3 driver for se_proxy SP
 
 The driver for MHU V3 is based on the implementation in
-trusted-firmware-m [0]. Add a build parameter to select
-the version of MHU and the default version is MHU V2.
-If we use MHU V3, then the parameter as below is needed.
-
--DPLAT_MHU_VERSION=3
+trusted-firmware-m [0].
 
 0:
 platform/ext/target/arm/rss/common/native_drivers/mhu_v3_x.c
@@ -18,55 +14,47 @@ platform/ext/target/arm/rss/common/native_drivers/mhu_wrapper_v3_x.c
 Repo: https://gitlab.arm.com/infra-solutions/reference-design/platsw/trusted-firmware-m/
 Tag: RD-INFRA-2023.06.28
 
-Upstream-Status: Pending
 Signed-off-by: Jun Zhang <jun.zhang@arm.com>
+Signed-off-by: Michael Zhao <michael.zhao2@arm.com>
+Upstream-Status: Inappropriate [To be replaced by upstream MHUv3]
 ---
- .../drivers/arm/mhu_driver/component.cmake    |  18 +-
- platform/drivers/arm/mhu_driver/mhu.h         | 107 +++
- platform/drivers/arm/mhu_driver/mhu_v3_x.c    | 646 ++++++++++++++++++
- platform/drivers/arm/mhu_driver/mhu_v3_x.h    | 259 +++++++
- .../drivers/arm/mhu_driver/mhu_wrapper_v3_x.c | 308 +++++++++
- 5 files changed, 1333 insertions(+), 5 deletions(-)
- create mode 100644 platform/drivers/arm/mhu_driver/mhu.h
- create mode 100644 platform/drivers/arm/mhu_driver/mhu_v3_x.c
- create mode 100644 platform/drivers/arm/mhu_driver/mhu_v3_x.h
- create mode 100644 platform/drivers/arm/mhu_driver/mhu_wrapper_v3_x.c
+ .../arm/mhu_driver/mhu_v3_x/driver.cmake      |  13 +
+ .../drivers/arm/mhu_driver/mhu_v3_x/mhu.h     | 107 +++
+ .../arm/mhu_driver/mhu_v3_x/mhu_v3_x.c        | 636 ++++++++++++++++++
+ .../arm/mhu_driver/mhu_v3_x/mhu_v3_x.h        | 257 +++++++
+ .../mhu_driver/mhu_v3_x/mhu_wrapper_v3_x.c    | 307 +++++++++
+ platform/providers/arm/kronos/platform.cmake  |   6 +-
+ 6 files changed, 1324 insertions(+), 2 deletions(-)
+ create mode 100644 platform/drivers/arm/mhu_driver/mhu_v3_x/driver.cmake
+ create mode 100644 platform/drivers/arm/mhu_driver/mhu_v3_x/mhu.h
+ create mode 100644 platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_v3_x.c
+ create mode 100644 platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_v3_x.h
+ create mode 100644 platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_wrapper_v3_x.c
 
-diff --git a/platform/drivers/arm/mhu_driver/component.cmake b/platform/drivers/arm/mhu_driver/component.cmake
-index 77a5a50..544d75d 100644
---- a/platform/drivers/arm/mhu_driver/component.cmake
-+++ b/platform/drivers/arm/mhu_driver/component.cmake
-@@ -1,12 +1,20 @@
- #-------------------------------------------------------------------------------
--# Copyright (c) 2021, Arm Limited and Contributors. All rights reserved.
-+# Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
- #
- # SPDX-License-Identifier: BSD-3-Clause
- #
- #-------------------------------------------------------------------------------
- 
- # Add source files for using mhu driver
--target_sources(${TGT}
--	PRIVATE
--	"${CMAKE_CURRENT_LIST_DIR}/mhu_v2_x.c"
--)
-+if(PLAT_MHU_VERSION EQUAL 3)
-+	target_sources(${TGT}
-+		PRIVATE
+diff --git a/platform/drivers/arm/mhu_driver/mhu_v3_x/driver.cmake b/platform/drivers/arm/mhu_driver/mhu_v3_x/driver.cmake
+new file mode 100644
+index 0000000..561bb1e
+--- /dev/null
++++ b/platform/drivers/arm/mhu_driver/mhu_v3_x/driver.cmake
+@@ -0,0 +1,13 @@
++#-------------------------------------------------------------------------------
++# Copyright (c) 2021-2024, Arm Limited and Contributors. All rights reserved.
++#
++# SPDX-License-Identifier: BSD-3-Clause
++#
++#-------------------------------------------------------------------------------
++
++# Add source files for using mhu driver
++target_sources(${TGT}
++	PRIVATE
 +		"${CMAKE_CURRENT_LIST_DIR}/mhu_v3_x.c"
 +		"${CMAKE_CURRENT_LIST_DIR}/mhu_wrapper_v3_x.c"
-+	)
-+else()
-+	target_sources(${TGT}
-+		PRIVATE
-+		"${CMAKE_CURRENT_LIST_DIR}/mhu_v2_x.c"
-+	)
-+endif()
-diff --git a/platform/drivers/arm/mhu_driver/mhu.h b/platform/drivers/arm/mhu_driver/mhu.h
++)
+diff --git a/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu.h b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu.h
 new file mode 100644
 index 0000000..e9f407b
 --- /dev/null
-+++ b/platform/drivers/arm/mhu_driver/mhu.h
++++ b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu.h
 @@ -0,0 +1,107 @@
 +/*
 + * Copyright (c) 2022-2023 Arm Limited. All rights reserved.
@@ -175,12 +163,12 @@ index 0000000..e9f407b
 +#endif
 +
 +#endif /* __MHU_H__ */
-diff --git a/platform/drivers/arm/mhu_driver/mhu_v3_x.c b/platform/drivers/arm/mhu_driver/mhu_v3_x.c
+diff --git a/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_v3_x.c b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_v3_x.c
 new file mode 100644
-index 0000000..b640b3b
+index 0000000..4ee6ba2
 --- /dev/null
-+++ b/platform/drivers/arm/mhu_driver/mhu_v3_x.c
-@@ -0,0 +1,646 @@
++++ b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_v3_x.c
+@@ -0,0 +1,636 @@
 +/*
 + * Copyright (c) 2023 Arm Limited
 + *
@@ -473,7 +461,6 @@ index 0000000..b640b3b
 +{
 +    union _mhu_v3_x_frame_t *p_mhu;
 +    struct _mhu_v3_x_mbx_mdbcw_reg_t *mdbcw_reg;
-+    enum mhu_v3_x_error_t status;
 +
 +    if (dev == NULL) {
 +        return MHU_V_3_X_ERR_INVALID_PARAM;
@@ -504,7 +491,6 @@ index 0000000..b640b3b
 +{
 +    union _mhu_v3_x_frame_t *p_mhu;
 +    struct _mhu_v3_x_pbx_pdbcw_reg_t *pdbcw_reg;
-+    enum mhu_v3_x_error_t status;
 +
 +    if (dev == NULL) {
 +        return MHU_V_3_X_ERR_INVALID_PARAM;
@@ -535,7 +521,6 @@ index 0000000..b640b3b
 +     uint32_t channel, uint32_t *value)
 +{
 +    union _mhu_v3_x_frame_t *p_mhu;
-+    enum mhu_v3_x_error_t status;
 +
 +    if ((dev == NULL) || (value == NULL)) {
 +        return MHU_V_3_X_ERR_INVALID_PARAM;
@@ -572,7 +557,6 @@ index 0000000..b640b3b
 +{
 +    union _mhu_v3_x_frame_t *p_mhu;
 +    struct _mhu_v3_x_mbx_mdbcw_reg_t *mdbcw_reg;
-+    enum mhu_v3_x_error_t status;
 +
 +    if (dev == NULL) {
 +        return MHU_V_3_X_ERR_INVALID_PARAM;
@@ -604,7 +588,6 @@ index 0000000..b640b3b
 +{
 +    union _mhu_v3_x_frame_t *p_mhu;
 +    struct _mhu_v3_x_mbx_mdbcw_reg_t *mdbcw_reg;
-+    enum mhu_v3_x_error_t status;
 +
 +    if (dev == NULL) {
 +        return MHU_V_3_X_ERR_INVALID_PARAM;
@@ -636,7 +619,6 @@ index 0000000..b640b3b
 +{
 +    union _mhu_v3_x_frame_t *p_mhu;
 +    struct _mhu_v3_x_mbx_mdbcw_reg_t *mdbcw_reg;
-+    enum mhu_v3_x_error_t status;
 +
 +    if ((dev == NULL) || (mask_status == NULL)) {
 +        return MHU_V_3_X_ERR_INVALID_PARAM;
@@ -703,7 +685,6 @@ index 0000000..b640b3b
 +     const struct mhu_v3_x_dev_t *dev, uint32_t channel,
 +     enum mhu_v3_x_channel_type_t ch_type)
 +{
-+    enum mhu_v3_x_error_t status;
 +
 +    if (dev == NULL) {
 +        return MHU_V_3_X_ERR_INVALID_PARAM;
@@ -765,7 +746,6 @@ index 0000000..b640b3b
 +     const struct mhu_v3_x_dev_t *dev, uint32_t channel,
 +     enum mhu_v3_x_channel_type_t ch_type)
 +{
-+    enum mhu_v3_x_error_t status;
 +
 +    /* Check if driver has been initialized */
 +    if (!(dev->is_initialized)) {
@@ -801,8 +781,6 @@ index 0000000..b640b3b
 +     const struct mhu_v3_x_dev_t *dev, uint32_t channel,
 +     enum mhu_v3_x_channel_type_t ch_type)
 +{
-+    union _mhu_v3_x_frame_t *p_mhu = (union _mhu_v3_x_frame_t *)dev->base;
-+    enum mhu_v3_x_error_t status;
 +
 +    /* Check if driver has been initialized */
 +    if (!(dev->is_initialized)) {
@@ -827,12 +805,12 @@ index 0000000..b640b3b
 +
 +    return MHU_V_3_X_ERR_NONE;
 +}
-diff --git a/platform/drivers/arm/mhu_driver/mhu_v3_x.h b/platform/drivers/arm/mhu_driver/mhu_v3_x.h
+diff --git a/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_v3_x.h b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_v3_x.h
 new file mode 100644
-index 0000000..d14946c
+index 0000000..ca1232e
 --- /dev/null
-+++ b/platform/drivers/arm/mhu_driver/mhu_v3_x.h
-@@ -0,0 +1,259 @@
++++ b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_v3_x.h
+@@ -0,0 +1,257 @@
 +/*
 + * Copyright (c) 2023 Arm Limited
 + *
@@ -860,7 +838,6 @@ index 0000000..d14946c
 +#include <stdint.h>
 +#include <stdbool.h>
 +#include "mhu.h"
-+//#include "host_base_address.h"
 +
 +#ifdef __cplusplus
 +extern "C" {
@@ -899,7 +876,7 @@ index 0000000..d14946c
 +#define MHU3_PBX_DBCH_FLAG_AP_COMMS     UINT32_C(0x2)
 +
 +/* Size of shared outband message buffer in bytes */
-+#define MHU3_OUTBAND_BUF_SIZE UINT64_C(0x1000)
++#define MHU3_OUTBAND_BUF_SIZE UINT64_C(0x2000)
 +#define MHU3_OUTBAND_BUF_HEADER_SIZE UINT64_C(0x4)
 +
 +/* Base of shared outband mesage buffer */
@@ -1086,18 +1063,17 @@ index 0000000..d14946c
 +     const struct mhu_v3_x_dev_t *dev, uint32_t channel,
 +     enum mhu_v3_x_channel_type_t ch_type);
 +
-+
 +#ifdef __cplusplus
 +}
 +#endif
 +
 +#endif /* __MHU_V3_X_H__ */
-diff --git a/platform/drivers/arm/mhu_driver/mhu_wrapper_v3_x.c b/platform/drivers/arm/mhu_driver/mhu_wrapper_v3_x.c
+diff --git a/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_wrapper_v3_x.c b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_wrapper_v3_x.c
 new file mode 100644
-index 0000000..74eddec
+index 0000000..39dc9b5
 --- /dev/null
-+++ b/platform/drivers/arm/mhu_driver/mhu_wrapper_v3_x.c
-@@ -0,0 +1,308 @@
++++ b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_wrapper_v3_x.c
+@@ -0,0 +1,307 @@
 +/*
 + * Copyright (c) 2023 Arm Limited
 + *
@@ -1252,7 +1228,6 @@ index 0000000..74eddec
 +static int validate_buffer_params(uintptr_t buf_addr, size_t buf_size)
 +{
 +    if ((buf_addr == 0) || (!IS_ALIGNED(buf_addr, 4)) ||
-+            (!IS_ALIGNED(buf_size, 4)) ||
 +            buf_size > mhu_get_max_message_size()) {
 +        return MHU_V_3_X_ERR_INVALID_PARAM;
 +    }
@@ -1406,6 +1381,35 @@ index 0000000..74eddec
 +
 +    return error_mapping_to_mhu_error_t(err);
 +}
+diff --git a/platform/providers/arm/kronos/platform.cmake b/platform/providers/arm/kronos/platform.cmake
+index 90cbef8..16e891a 100644
+--- a/platform/providers/arm/kronos/platform.cmake
++++ b/platform/providers/arm/kronos/platform.cmake
+@@ -1,11 +1,12 @@
+ #-------------------------------------------------------------------------------
+-# Copyright (c) 2021-2024, Arm Limited and Contributors. All rights reserved.
++# Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ #
+ # Platform definition for the 'FVP_Kronos' virtual platform.
+ #-------------------------------------------------------------------------------
+ 
++set(COMMS_MHU_MSG_SIZE 0x1FFC CACHE STRING "Max message size that can be transfered via MHU")
+ set(PLAT_RSS_COMMS_PAYLOAD_MAX_SIZE 0x1040 CACHE STRING "Size of the RSS_COMMS_PAYLOAD buffer")
+ 
+ if (NOT DEFINED TGT)
+@@ -13,8 +14,9 @@ if (NOT DEFINED TGT)
+ endif()
+ 
+ target_compile_definitions(${TGT} PRIVATE
++	COMMS_MHU_MSG_SIZE=${COMMS_MHU_MSG_SIZE}
+ 	PLAT_RSS_COMMS_PAYLOAD_MAX_SIZE=${PLAT_RSS_COMMS_PAYLOAD_MAX_SIZE}
+ )
+ 
+ # include MHU driver
+-include(${TS_ROOT}/platform/drivers/arm/mhu_driver/component.cmake)
++include(${TS_ROOT}/platform/drivers/arm/mhu_driver/mhu_v3_x/driver.cmake)
 -- 
-2.25.1
+2.34.1
 

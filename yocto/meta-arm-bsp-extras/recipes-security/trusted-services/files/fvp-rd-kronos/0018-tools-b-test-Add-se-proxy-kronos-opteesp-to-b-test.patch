@@ -1,19 +1,19 @@
-From 2ee134d56f4bb0c1b0f3f2c0fd463f5cf1e0fd6a Mon Sep 17 00:00:00 2001
+From e610989f0553c0d0c1d3790c23bfdb00dae810d1 Mon Sep 17 00:00:00 2001
 From: Robbie Cao <robbie.cao@arm.com>
 Date: Wed, 29 Nov 2023 06:33:25 +0800
 Subject: [PATCH] tools/b-test: Add se-proxy-kronos-opteesp to b-test
 
-Upstream-Status: Pending
 Signed-off-by: Robbie Cao <robbie.cao@arm.com>
+Upstream-Status: Pending
 ---
  tools/b-test/test_data.yaml | 4 ++++
  1 file changed, 4 insertions(+)
 
 diff --git a/tools/b-test/test_data.yaml b/tools/b-test/test_data.yaml
-index 5908388..89fb7f2 100644
+index 9167312..c19d129 100644
 --- a/tools/b-test/test_data.yaml
 +++ b/tools/b-test/test_data.yaml
-@@ -170,6 +170,10 @@ data:
+@@ -166,6 +166,10 @@ data:
        src: "$TS_ROOT/deployments/se-proxy/config/corstone1000-opteesp"
        params:
              - "-GUnix Makefiles"
@@ -25,5 +25,5 @@ index 5908388..89fb7f2 100644
        src: "$TS_ROOT/deployments/se-proxy/config/default-opteesp"
        params:
 -- 
-2.25.1
+2.34.1
 

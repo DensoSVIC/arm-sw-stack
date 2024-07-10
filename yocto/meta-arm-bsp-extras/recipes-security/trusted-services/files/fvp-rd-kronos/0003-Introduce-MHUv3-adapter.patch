@@ -1,0 +1,223 @@
+From 139de853ea801c23b2690e7bd0875d43077e70f0 Mon Sep 17 00:00:00 2001
+From: Michael Zhao <michael.zhao2@arm.com>
+Date: Mon, 8 Jul 2024 10:40:22 +0100
+Subject: [PATCH] Introduce MHUv3 adapter
+
+Following 2 callbacks are not implemented in `platform_mhu_iface`
+because the MHUv3 driver is old, the function parameters doesn't align.
+- `mhu_adapter_signal_and_wait_for_clear`
+- `mhu_adapter_wait_for_signal_and_clear`
+
+Now the 2 callbacks are not used, so it doesn't impact. The problem can
+be resolve after apdating the MHUv3 driver.
+
+Another mismatch is in `mhu_adapter_wait_data`. The MHUv3 driver doesn't
+support `mhu_wait_data` API. With the MHUv3 driver, `receive` follows
+immediately the `send`, `wait` is not needed.
+
+Signed-off-by: Michael Zhao <michael.zhao2@arm.com>
+Upstream-Status: Pending
+---
+ .../arm/mhu_driver/mhu_v3_x/driver.cmake      |   1 +
+ .../drivers/arm/mhu_driver/mhu_v3_x/mhu.h     |   4 +-
+ .../mhu_driver/mhu_v3_x/mhu_adapter_v3_x.c    | 130 ++++++++++++++++++
+ .../mhu_driver/mhu_v3_x/mhu_wrapper_v3_x.c    |   4 +-
+ 4 files changed, 134 insertions(+), 5 deletions(-)
+ create mode 100644 platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_adapter_v3_x.c
+
+diff --git a/platform/drivers/arm/mhu_driver/mhu_v3_x/driver.cmake b/platform/drivers/arm/mhu_driver/mhu_v3_x/driver.cmake
+index 561bb1e..1e1c910 100644
+--- a/platform/drivers/arm/mhu_driver/mhu_v3_x/driver.cmake
++++ b/platform/drivers/arm/mhu_driver/mhu_v3_x/driver.cmake
+@@ -10,4 +10,5 @@ target_sources(${TGT}
+ 	PRIVATE
+ 		"${CMAKE_CURRENT_LIST_DIR}/mhu_v3_x.c"
+ 		"${CMAKE_CURRENT_LIST_DIR}/mhu_wrapper_v3_x.c"
++		"${CMAKE_CURRENT_LIST_DIR}/mhu_adapter_v3_x.c"
+ )
+diff --git a/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu.h b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu.h
+index e9f407b..96c5080 100644
+--- a/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu.h
++++ b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2022-2023 Arm Limited. All rights reserved.
++ * Copyright (c) 2022-2024 Arm Limited. All rights reserved.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+@@ -64,7 +64,6 @@ enum mhu_error_t mhu_init_receiver(void *mhu_receiver_dev);
+  * \brief Sends data over MHU.
+  *
+  * \param[in] mhu_sender_dev    Pointer to the sender MHU.
+- * \param[in] mhu_outband_base  Pointer to the shared memory.
+  * \param[in] send_buffer       Pointer to buffer containing the data to be
+  *                              transmitted.
+  * \param[in] size              Size of the data to be transmitted in bytes.
+@@ -76,7 +75,6 @@ enum mhu_error_t mhu_init_receiver(void *mhu_receiver_dev);
+  *       over-reading.
+  */
+ enum mhu_error_t mhu_send_data(void *mhu_sender_dev,
+-                               void *mhu_outband_base,
+                                uint8_t *send_buffer,
+                                size_t size);
+ 
+diff --git a/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_adapter_v3_x.c b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_adapter_v3_x.c
+new file mode 100644
+index 0000000..c6b6d1b
+--- /dev/null
++++ b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_adapter_v3_x.c
+@@ -0,0 +1,130 @@
++/*
++ * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++#include <config/interface/config_store.h>
++#include <platform/interface/device_region.h>
++#include <platform/interface/mhu_interface.h>
++#include <stdlib.h>
++
++#include "mhu.h"
++#include "mhu_v3_x.h"
++
++static int mhu_adapter_send(void *context, unsigned char *send_buffer, size_t size)
++{
++	struct mhu_v3_x_dev_t *dev = NULL;
++
++	if (!context || !send_buffer || size == 0)
++		return -1;
++
++	dev = (struct mhu_v3_x_dev_t *)context;
++
++	if (mhu_send_data(dev, (uint8_t *)send_buffer, size) != MHU_ERR_NONE)
++		return -1;
++
++	return 0;
++}
++
++static int mhu_adapter_receive(void *context, unsigned char *receive_buffer, size_t *size)
++{
++	struct mhu_v3_x_dev_t *dev = NULL;
++
++	if (!context || !receive_buffer || !size)
++		return -1;
++
++	dev = (struct mhu_v3_x_dev_t *)context;
++
++	if (mhu_receive_data(dev, (uint8_t *)receive_buffer, size) != MHU_ERR_NONE)
++		return -1;
++
++	return 0;
++}
++
++static int mhu_adapter_wait_data(void *context)
++{
++	/* The code base of MHUv3 is old, the mhu_wait_data API is not provided
++	   by the MHUv3 driver and the its wrapper.
++	   With this version of MHUv3 driver, `receive` follows immediately
++	   after `send`, a seperate `wait` is not needed.
++	 */
++	return 0;
++}
++
++static int mhu_adapter_signal_and_wait_for_clear(void *context, uint32_t value)
++{
++        /* The code base of MHUv3 is old, the signal_and_wait_for_clear provided
++	   by the MHUv3 driver doesn't match in parameters.
++	   Updating the MHUv3 to latest TFM version can resolve.
++	   Now the signal_and_wait_for_clear interface of platform_mhu_iface is
++	   not used.
++	*/
++	return -1;
++
++}
++
++static int mhu_adapter_wait_for_signal_and_clear(void *context, uint32_t value)
++{
++        /* The code base of MHUv3 is old, the wait_for_signal_and_clear provided
++	   by the MHUv3 driver doesn't match in parameters.
++	   Updating the MHUv3 to latest TFM version can resolve.
++	   Now the wait_for_signal_and_clear interface of platform_mhu_iface is
++	   not used.
++	*/
++	return -1;
++}
++
++int platform_mhu_create(struct platform_mhu_driver *driver, const char *object_name,
++			bool is_receiver)
++{
++	struct mhu_v3_x_dev_t *new_instance = NULL;
++	enum mhu_error_t status = MHU_ERR_NONE;
++	struct device_region device_region = { 0 };
++	static const struct platform_mhu_iface iface = {
++		.send = mhu_adapter_send,
++		.receive = mhu_adapter_receive,
++		.wait_data = mhu_adapter_wait_data,
++		.signal_and_wait_for_clear = mhu_adapter_signal_and_wait_for_clear,
++		.wait_for_signal_and_clear = mhu_adapter_wait_for_signal_and_clear,
++	};
++
++	/* Default to leaving the driver in a safe but inoperable state. */
++	driver->iface = &iface;
++	driver->context = NULL;
++
++	if (!config_store_query(CONFIG_CLASSIFIER_DEVICE_REGION, object_name, 0, &device_region,
++				sizeof(device_region)))
++		return -1;
++
++	new_instance = calloc(1, sizeof(struct mhu_v3_x_dev_t));
++	if (!new_instance)
++		return -1;
++
++	new_instance->base = device_region.base_addr;
++
++	if (is_receiver) {
++		new_instance->frame = MHU_V3_X_MBX_FRAME;
++		status = mhu_init_receiver(new_instance);
++	} else {
++		new_instance->frame = MHU_V3_X_PBX_FRAME;
++		status = mhu_init_sender(new_instance);
++	}
++
++	if (status != MHU_ERR_NONE) {
++		free(new_instance);
++		return -1;
++	}
++
++	driver->context = new_instance;
++
++	return 0;
++}
++
++void platform_mhu_destroy(struct platform_mhu_driver *driver)
++{
++	if (!driver->context)
++		return;
++
++	free(driver->context);
++	driver->context = NULL;
++}
+diff --git a/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_wrapper_v3_x.c b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_wrapper_v3_x.c
+index 39dc9b5..a320e40 100644
+--- a/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_wrapper_v3_x.c
++++ b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_wrapper_v3_x.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2023 Arm Limited
++ * Copyright (c) 2023-2024 Arm Limited
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+@@ -215,7 +215,7 @@ fail:
+     return err;
+ }
+ 
+-enum mhu_error_t mhu_send_data(void *mhu_sender_dev, void *mhu_outband_base,
++enum mhu_error_t mhu_send_data(void *mhu_sender_dev,
+         uint8_t *send_buffer, size_t size)
+ {
+     struct mhu_v3_x_dev_t *dev = mhu_sender_dev;
+-- 
+2.34.1
+

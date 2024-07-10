@@ -1,0 +1,75 @@
+From 30354f1fd381b60805b3ea0cbbff094dbf328f1e Mon Sep 17 00:00:00 2001
+From: Michael Zhao <michael.zhao2@arm.com>
+Date: Tue, 16 Jul 2024 15:46:15 +0100
+Subject: [PATCH] Enlarge the payload size of RSS message
+
+The UEFI Authenticated Variables requires larger payload size in RSS
+messages.
+
+The size of the outband shared memory for MHUv3 with TF-M is 0x4000.
+But only a small portion of it is used to transfer the RSS messages.
+
+Now enlarge the payload size to use as much space of the shared memory
+as possible.
+
+Signed-off-by: Michael Zhao <michael.zhao2@arm.com>
+Upstream-Status: Pending
+---
+ deployments/se-proxy/config/kronos-opteesp/CMakeLists.txt | 4 ++--
+ platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_v3_x.h       | 2 +-
+ platform/providers/arm/kronos/platform.cmake              | 6 +++---
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/deployments/se-proxy/config/kronos-opteesp/CMakeLists.txt b/deployments/se-proxy/config/kronos-opteesp/CMakeLists.txt
+index 2ab3a60..4a7886c 100644
+--- a/deployments/se-proxy/config/kronos-opteesp/CMakeLists.txt
++++ b/deployments/se-proxy/config/kronos-opteesp/CMakeLists.txt
+@@ -1,5 +1,5 @@
+ #-------------------------------------------------------------------------------
+-# Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
++# Copyright (c) 2023-2024, Arm Limited and Contributors. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ #
+@@ -22,7 +22,7 @@ target_include_directories(se-proxy PRIVATE "${TOP_LEVEL_INCLUDE_DIRS}")
+ set(SP_BIN_UUID_CANON "46bb39d1-b4d9-45b5-88ff-040027dab249")
+ set(SP_FFA_UUID_CANON "${TS_RPC_UUID_CANON}")
+ 
+-set(SP_HEAP_SIZE "32 * 1024" CACHE STRING "SP heap size in bytes")
++set(SP_HEAP_SIZE "70 * 1024" CACHE STRING "SP heap size in bytes")
+ set(SP_BOOT_ORDER "1" CACHE STRING "Boot order of the SP")
+ set(TRACE_PREFIX "SEPROXY" CACHE STRING "Trace prefix")
+ 
+diff --git a/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_v3_x.h b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_v3_x.h
+index 3dcadae..2bc19d8 100644
+--- a/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_v3_x.h
++++ b/platform/drivers/arm/mhu_driver/mhu_v3_x/mhu_v3_x.h
+@@ -63,7 +63,7 @@ extern "C" {
+ #define MHU3_PBX_DBCH_FLAG_AP_COMMS     UINT32_C(0x2)
+ 
+ /* Size of shared outband message buffer in bytes */
+-#define MHU3_OUTBAND_BUF_SIZE UINT64_C(0x2000)
++#define MHU3_OUTBAND_BUF_SIZE UINT64_C(0x4000)
+ #define MHU3_OUTBAND_BUF_HEADER_SIZE UINT64_C(0x4)
+ 
+ /* Base of shared outband mesage buffer */
+diff --git a/platform/providers/arm/kronos/platform.cmake b/platform/providers/arm/kronos/platform.cmake
+index 53659a6..a7a0794 100644
+--- a/platform/providers/arm/kronos/platform.cmake
++++ b/platform/providers/arm/kronos/platform.cmake
+@@ -6,9 +6,9 @@
+ # Platform definition for the 'FVP_Kronos' virtual platform.
+ #-------------------------------------------------------------------------------
+ 
+-set(COMMS_MHU_MSG_SIZE 0x1FFC CACHE STRING "Max message size that can be transfered via MHU")
+-set(PLAT_RSS_COMMS_PAYLOAD_MAX_SIZE 0x1040 CACHE STRING "Size of the RSS_COMMS_PAYLOAD buffer")
+-set(SMM_GATEWAY_MAX_UEFI_VARIABLES 100 CACHE STRING "Maximum UEFI variable count")
++set(COMMS_MHU_MSG_SIZE 0xFFFC CACHE STRING "Max message size that can be transfered via MHU")
++set(PLAT_RSS_COMMS_PAYLOAD_MAX_SIZE 0x3FE0 CACHE STRING "Size of the RSS_COMMS_PAYLOAD buffer")
++set(SMM_GATEWAY_MAX_UEFI_VARIABLES 60 CACHE STRING "Maximum UEFI variable count")
+ set(SMM_RPC_CALLER_SESSION_SHARED_MEMORY_SIZE 6*4096 CACHE STRING "RPC caller buffer size in SMMGW")
+ set(SMM_SP_HEAP_SIZE 90*1024 CACHE STRING "SMM gateway SP heap size")
+ 
+-- 
+2.34.1
+

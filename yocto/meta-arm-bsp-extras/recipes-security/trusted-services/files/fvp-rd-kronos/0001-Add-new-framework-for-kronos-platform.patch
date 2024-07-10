@@ -1,20 +1,22 @@
-From ef88317fe6a47eae9adab8f855d5f5b8ece37b3d Mon Sep 17 00:00:00 2001
+From b13eb4b23c32dcc6b838ab7d3917f6ad27b9cace Mon Sep 17 00:00:00 2001
 From: Jun Zhang <jun.zhang@arm.com>
 Date: Thu, 10 Aug 2023 15:22:13 +0800
 Subject: [PATCH] Add new framework for kronos platform
 
 The framework is added in se-proxy SP to support kronos platform
 
-Upstream-Status: Pending
 Signed-off-by: Jun Zhang <jun.zhang@arm.com>
+Signed-off-by: Robbie Cao <robbie.cao@arm.com>
+Signed-off-by: Michael Zhao <michael.zhao2@arm.com>
+Upstream-Status: Pending
 ---
- .../config/kronos-opteesp/CMakeLists.txt      | 97 +++++++++++++++++++
- .../kronos-opteesp/default_se-proxy.dts.in    | 24 +++++
- .../kronos-opteesp/optee_sp_user_defines.h    | 15 +++
+ .../config/kronos-opteesp/CMakeLists.txt      | 90 +++++++++++++++++++
+ .../kronos-opteesp/default_se-proxy.dts.in    | 26 ++++++
+ .../kronos-opteesp/optee_sp_user_defines.h    | 15 ++++
  deployments/se-proxy/infra/kronos/infra.cmake | 23 +++++
- .../infra/kronos/service_proxy_factory.c      | 43 ++++++++
- platform/providers/arm/kronos/platform.cmake  | 10 ++
- 6 files changed, 212 insertions(+)
+ .../infra/kronos/service_proxy_factory.c      | 43 +++++++++
+ platform/providers/arm/kronos/platform.cmake  | 20 +++++
+ 6 files changed, 217 insertions(+)
  create mode 100644 deployments/se-proxy/config/kronos-opteesp/CMakeLists.txt
  create mode 100644 deployments/se-proxy/config/kronos-opteesp/default_se-proxy.dts.in
  create mode 100644 deployments/se-proxy/config/kronos-opteesp/optee_sp_user_defines.h
@@ -24,12 +26,12 @@ Signed-off-by: Jun Zhang <jun.zhang@arm.com>
 
 diff --git a/deployments/se-proxy/config/kronos-opteesp/CMakeLists.txt b/deployments/se-proxy/config/kronos-opteesp/CMakeLists.txt
 new file mode 100644
-index 0000000..46d0566
+index 0000000..2ab3a60
 --- /dev/null
 +++ b/deployments/se-proxy/config/kronos-opteesp/CMakeLists.txt
-@@ -0,0 +1,97 @@
+@@ -0,0 +1,90 @@
 +#-------------------------------------------------------------------------------
-+# Copyright (c) 2021-2023, Arm Limited and Contributors. All rights reserved.
++# Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
 +#
 +# SPDX-License-Identifier: BSD-3-Clause
 +#
@@ -41,24 +43,20 @@ index 0000000..46d0566
 +include(../../../deployment.cmake REQUIRED)
 +
 +#-------------------------------------------------------------------------------
-+#  The CMakeLists.txt for building the se-proxy deployment for kronos
++#  The CMakeLists.txt for building the se-proxy deployment for Kronos
++#  using the "opteesp" environment.
 +#
-+#  Builds proxy service providers that communicate with a separate secure element
-+#  that hosts a set of service endpoints.  This deployment is for running in an
-+#  SEL0 secure partition hosted by OPTEE in the role of SPM.
 +#-------------------------------------------------------------------------------
 +include(${TS_ROOT}/environments/opteesp/env.cmake)
 +project(trusted-services LANGUAGES C ASM)
 +add_executable(se-proxy)
 +target_include_directories(se-proxy PRIVATE "${TOP_LEVEL_INCLUDE_DIRS}")
-+set(SP_UUID_CANON "46bb39d1-b4d9-45b5-88ff-040027dab249")
++set(SP_BIN_UUID_CANON "46bb39d1-b4d9-45b5-88ff-040027dab249")
++set(SP_FFA_UUID_CANON "${TS_RPC_UUID_CANON}")
++
 +set(SP_HEAP_SIZE "32 * 1024" CACHE STRING "SP heap size in bytes")
++set(SP_BOOT_ORDER "1" CACHE STRING "Boot order of the SP")
 +set(TRACE_PREFIX "SEPROXY" CACHE STRING "Trace prefix")
-+include(${TS_ROOT}/tools/cmake/common/TargetCompileDefinitions.cmake)
-+set_target_uuids(
-+	SP_UUID ${SP_UUID_CANON}
-+	SP_NAME "se-proxy"
-+)
 +
 +target_include_directories(se-proxy PRIVATE
 +	${CMAKE_CURRENT_LIST_DIR}
@@ -83,7 +81,6 @@ index 0000000..46d0566
 +#-------------------------------------------------------------------------------
 +add_platform(TARGET "se-proxy")
 +
-+
 +#-------------------------------------------------------------------------------
 +#  Deployment specific build options
 +#-------------------------------------------------------------------------------
@@ -97,8 +94,6 @@ index 0000000..46d0566
 +	)
 +endif()
 +
-+compiler_generate_stripped_elf(TARGET se-proxy NAME "${SP_UUID_CANON}.stripped.elf" RES STRIPPED_ELF)
-+
 +#-------------------------------------------------------------------------------
 +#  Deployment specific install options
 +#-------------------------------------------------------------------------------
@@ -111,15 +106,15 @@ index 0000000..46d0566
 +			PUBLIC_HEADER DESTINATION ${TS_ENV}/include
 +			RUNTIME DESTINATION ${TS_ENV}/bin
 +		)
-+install(FILES ${STRIPPED_ELF} DESTINATION ${TS_ENV}/bin)
 +
 +get_property(_PROTO_FILES TARGET se-proxy PROPERTY PROTOBUF_FILES)
 +install(FILES ${_PROTO_FILES} DESTINATION ${TS_ENV}/lib/protobuf)
 +
 +include(${TS_ROOT}/tools/cmake/common/ExportSp.cmake)
 +export_sp(
-+	SP_UUID_CANON ${SP_UUID_CANON}
-+	SP_UUID_LE ${SP_UUID_LE}
++	SP_FFA_UUID_CANON ${SP_FFA_UUID_CANON}
++	SP_BIN_UUID_CANON ${SP_BIN_UUID_CANON}
++	SP_BOOT_ORDER ${SP_BOOT_ORDER}
 +	SP_NAME "se-proxy"
 +	MK_IN ${TS_ROOT}/environments/opteesp/sp.mk.in
 +	DTS_IN ${CMAKE_CURRENT_LIST_DIR}/default_se-proxy.dts.in
@@ -127,12 +122,12 @@ index 0000000..46d0566
 +)
 diff --git a/deployments/se-proxy/config/kronos-opteesp/default_se-proxy.dts.in b/deployments/se-proxy/config/kronos-opteesp/default_se-proxy.dts.in
 new file mode 100644
-index 0000000..5ca6349
+index 0000000..71965a6
 --- /dev/null
 +++ b/deployments/se-proxy/config/kronos-opteesp/default_se-proxy.dts.in
-@@ -0,0 +1,24 @@
+@@ -0,0 +1,26 @@
 +/*
-+ * Copyright (c) 2021-2023, Arm Limited and Contributors. All rights reserved.
++ * Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
 + *
 + * SPDX-License-Identifier: BSD-3-Clause
 + */
@@ -148,8 +143,10 @@ index 0000000..5ca6349
 +	exception-level = <1>; /* S-EL0 */
 +	execution-state = <0>; /* AArch64 */
 +	xlat-granule = <0>; /* 4KiB */
++	boot-order = /bits/ 16 <@EXPORT_SP_BOOT_ORDER@>;
 +	messaging-method = <3>; /* Direct messaging only */
-+	legacy-elf-format = <1>;
++	ns-interrupts-action = <2>; /* Non-secure interrupts are signaled */
++	elf-format = <1>;
 +
 +	device-regions {
 +		compatible = "arm,ffa-manifest-device-regions";
@@ -157,12 +154,12 @@ index 0000000..5ca6349
 +};
 diff --git a/deployments/se-proxy/config/kronos-opteesp/optee_sp_user_defines.h b/deployments/se-proxy/config/kronos-opteesp/optee_sp_user_defines.h
 new file mode 100644
-index 0000000..aaad5bb
+index 0000000..a7035ec
 --- /dev/null
 +++ b/deployments/se-proxy/config/kronos-opteesp/optee_sp_user_defines.h
 @@ -0,0 +1,15 @@
 +/*
-+ * Copyright (c) 2021-2023, Arm Limited and Contributors. All rights reserved.
++ * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
 + *
 + * SPDX-License-Identifier: BSD-3-Clause
 + */
@@ -178,12 +175,12 @@ index 0000000..aaad5bb
 +#endif /* SP_HEADER_DEFINES_H */
 diff --git a/deployments/se-proxy/infra/kronos/infra.cmake b/deployments/se-proxy/infra/kronos/infra.cmake
 new file mode 100644
-index 0000000..7670af4
+index 0000000..720acce
 --- /dev/null
 +++ b/deployments/se-proxy/infra/kronos/infra.cmake
 @@ -0,0 +1,23 @@
 +#-------------------------------------------------------------------------------
-+# Copyright (c) 2023, Arm Limited and Contributors. All rights reserved.
++# Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
 +#
 +# SPDX-License-Identifier: BSD-3-Clause
 +#
@@ -207,69 +204,79 @@ index 0000000..7670af4
 +)
 diff --git a/deployments/se-proxy/infra/kronos/service_proxy_factory.c b/deployments/se-proxy/infra/kronos/service_proxy_factory.c
 new file mode 100644
-index 0000000..da326cc
+index 0000000..47c3f37
 --- /dev/null
 +++ b/deployments/se-proxy/infra/kronos/service_proxy_factory.c
 @@ -0,0 +1,43 @@
 +/*
-+ * Copyright (c) 2021-2023, Arm Limited and Contributors. All rights reserved.
-+ * Copyright (c) 2021-2023, Linaro Limited. All rights reserved.
++ * Copyright (c) 2024, Arm Limited and Contributors. All rights reserved.
 + *
 + * SPDX-License-Identifier: BSD-3-Clause
 + */
 +
 +#include <stddef.h>
 +#include <psa/sid.h>
-+#include <rpc/common/endpoint/rpc_interface.h>
++#include "rpc/common/endpoint/rpc_service_interface.h"
++#include <rpc/rss_comms/caller/sp/rss_comms_caller.h>
 +#include <service/attestation/provider/attest_provider.h>
 +#include <service/attestation/provider/serializer/packed-c/packedc_attest_provider_serializer.h>
 +#include <service/crypto/factory/crypto_provider_factory.h>
 +#include <service/secure_storage/frontend/secure_storage_provider/secure_storage_provider.h>
 +#include <trace.h>
 +
-+struct rpc_interface *attest_proxy_create(void)
++struct rpc_service_interface *attest_proxy_create(void)
 +{
-+	struct rpc_interface *attest_iface = NULL;
++	struct rpc_service_interface *attest_iface = NULL;
 +
 +	return attest_iface;
 +}
 +
-+struct rpc_interface *crypto_proxy_create(void)
++struct rpc_service_interface *crypto_proxy_create(void)
 +{
-+	struct rpc_interface *crypto_iface = NULL;
++	struct rpc_service_interface *crypto_iface = NULL;
 +
 +	return crypto_iface;
 +}
 +
-+struct rpc_interface *ps_proxy_create(void)
++struct rpc_service_interface *ps_proxy_create(void)
 +{
-+	struct rpc_interface *rpc_interface = NULL;
++	struct rpc_service_interface *rpc_iface = NULL;
 +
-+	return rpc_interface;
++	return rpc_iface;
 +}
 +
-+struct rpc_interface *its_proxy_create(void)
++struct rpc_service_interface *its_proxy_create(void)
 +{
-+	struct rpc_interface *rpc_interface = NULL;
++	struct rpc_service_interface *rpc_iface = NULL;
 +
-+	return rpc_interface;
++	return rpc_iface;
 +}
 diff --git a/platform/providers/arm/kronos/platform.cmake b/platform/providers/arm/kronos/platform.cmake
 new file mode 100644
-index 0000000..3e794aa
+index 0000000..90cbef8
 --- /dev/null
 +++ b/platform/providers/arm/kronos/platform.cmake
-@@ -0,0 +1,10 @@
+@@ -0,0 +1,20 @@
 +#-------------------------------------------------------------------------------
-+# Copyright (c) 2021-2023, Arm Limited and Contributors. All rights reserved.
++# Copyright (c) 2021-2024, Arm Limited and Contributors. All rights reserved.
 +#
 +# SPDX-License-Identifier: BSD-3-Clause
 +#
 +# Platform definition for the 'FVP_Kronos' virtual platform.
 +#-------------------------------------------------------------------------------
 +
++set(PLAT_RSS_COMMS_PAYLOAD_MAX_SIZE 0x1040 CACHE STRING "Size of the RSS_COMMS_PAYLOAD buffer")
++
++if (NOT DEFINED TGT)
++	message(FATAL_ERROR "Mandatory parameter TGT is not defined.")
++endif()
++
++target_compile_definitions(${TGT} PRIVATE
++	PLAT_RSS_COMMS_PAYLOAD_MAX_SIZE=${PLAT_RSS_COMMS_PAYLOAD_MAX_SIZE}
++)
++
 +# include MHU driver
 +include(${TS_ROOT}/platform/drivers/arm/mhu_driver/component.cmake)
---
-2.25.1
+-- 
+2.34.1
 

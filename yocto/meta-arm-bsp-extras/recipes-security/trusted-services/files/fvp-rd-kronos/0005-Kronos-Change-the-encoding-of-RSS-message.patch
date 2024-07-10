@@ -1,0 +1,51 @@
+From 56c9ad0f6616d327329b11106ebde4cc91784d08 Mon Sep 17 00:00:00 2001
+From: Michael Zhao <michael.zhao2@arm.com>
+Date: Thu, 11 Jul 2024 11:27:07 +0100
+Subject: [PATCH] Kronos: Change the encoding of RSS message
+
+The encoding of the RSS message control parameter in Trusted Services
+is different with that in Kronos RSS.
+
+This commit changes the encoding to work with RSS.
+
+In future it should be changed back to align with upstream.
+
+Signed-off-by: Michael Zhao <michael.zhao2@arm.com>
+Upstream-Status: Inappropriate [Will align to upstream encoding]
+---
+ .../rss_comms/caller/sp/rss_comms_protocol_common.h | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/components/rpc/rss_comms/caller/sp/rss_comms_protocol_common.h b/components/rpc/rss_comms/caller/sp/rss_comms_protocol_common.h
+index 177d636..a1f1833 100644
+--- a/components/rpc/rss_comms/caller/sp/rss_comms_protocol_common.h
++++ b/components/rpc/rss_comms/caller/sp/rss_comms_protocol_common.h
+@@ -20,12 +20,25 @@
+ #ifndef RSS_COMMS_PROTOCOL_COMMON
+ #define RSS_COMMS_PROTOCOL_COMMON
+ 
++/* Note: 
++   This is only for Kronos to work with its current RSS version.
++   The change should be given up in future when RSS is also updated.
++*/
++#define TYPE_OFFSET     16U
++#define TYPE_MASK       (0xFFFFUL << TYPE_OFFSET)
++#define IN_LEN_OFFSET   8U
++#define IN_LEN_MASK     (0xFFUL << IN_LEN_OFFSET)
++#define OUT_LEN_OFFSET  0U
++#define OUT_LEN_MASK    (0xFFUL << OUT_LEN_OFFSET)
++
++/* Original encoding settings
+ #define TYPE_OFFSET	(0U)
+ #define TYPE_MASK	(0xFFFFUL << TYPE_OFFSET)
+ #define IN_LEN_OFFSET	(24U)
+ #define IN_LEN_MASK	(0x7UL << IN_LEN_OFFSET)
+ #define OUT_LEN_OFFSET	(16U)
+ #define OUT_LEN_MASK	(0x7UL << OUT_LEN_OFFSET)
++*/
+ 
+ #define PARAM_PACK(type, in_len, out_len)			   \
+ 	(((((uint32_t)(type)) << TYPE_OFFSET) & TYPE_MASK)	 | \
+-- 
+2.34.1
+

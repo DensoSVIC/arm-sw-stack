@@ -1,0 +1,80 @@
+From cf427fe7868691ffd1c75ca9b0de498653a23c2c Mon Sep 17 00:00:00 2001
+From: Jun Zhang <jun.zhang@arm.com>
+Date: Tue, 15 Aug 2023 15:39:28 +0800
+Subject: [PATCH] Add new rpc caller for Crypto Service on kronos platform
+
+The new rpc caller is based on rss_comms acted as
+conversion layer and MHUv3 acted as transport layer.
+
+Signed-off-by: Jun Zhang <jun.zhang@arm.com>
+Signed-off-by: Michael Zhao <michael.zhao@arm.com>
+Upstream-Status: Pending
+---
+ deployments/se-proxy/infra/kronos/infra.cmake |  2 +-
+ .../infra/kronos/service_proxy_factory.c      | 25 ++++++++++++++-----
+ 2 files changed, 20 insertions(+), 7 deletions(-)
+
+diff --git a/deployments/se-proxy/infra/kronos/infra.cmake b/deployments/se-proxy/infra/kronos/infra.cmake
+index 13fff86..443f876 100644
+--- a/deployments/se-proxy/infra/kronos/infra.cmake
++++ b/deployments/se-proxy/infra/kronos/infra.cmake
+@@ -20,7 +20,7 @@ add_components(TARGET "se-proxy"
+ 	"components/service/secure_storage/backend/secure_storage_ipc"
+ 	"components/service/attestation/reporter/stub"
+ 	"components/service/attestation/key_mngr/stub"
+-	"components/service/crypto/backend/stub"
++	"components/service/crypto/backend/psa_ipc"
+ 	"components/service/crypto/client/psa"
+ 	"components/service/secure_storage/backend/mock_store"
+ )
+diff --git a/deployments/se-proxy/infra/kronos/service_proxy_factory.c b/deployments/se-proxy/infra/kronos/service_proxy_factory.c
+index 327ae59..e647c9b 100644
+--- a/deployments/se-proxy/infra/kronos/service_proxy_factory.c
++++ b/deployments/se-proxy/infra/kronos/service_proxy_factory.c
+@@ -16,10 +16,10 @@
+ #include <trace.h>
+ 
+ /* IPC backends */
++#include <service/crypto/backend/psa_ipc/crypto_ipc_backend.h>
+ #include <service/secure_storage/backend/secure_storage_ipc/secure_storage_ipc.h>
+ 
+ /* Stub backends */
+-#include <service/crypto/backend/stub/stub_crypto_backend.h>
+ #include <service/secure_storage/backend/mock_store/mock_store.h>
+ 
+ static const struct rpc_uuid dummy_uuid = { 0 };
+@@ -43,13 +43,26 @@ struct rpc_service_interface *attest_proxy_create(void)
+ struct rpc_service_interface *crypto_proxy_create(void)
+ {
+ 	struct rpc_service_interface *crypto_iface = NULL;
+-	struct crypto_provider *crypto_provider = NULL;
++	struct crypto_provider *crypto_provider;
++	rpc_status_t rpc_status = RPC_ERROR_INTERNAL;
++
++	/* Static objects for proxy instance */
++	static struct rpc_caller_interface rss_comms = { 0 };
++	static struct rpc_caller_session rpc_session = { 0 };
++
++	rpc_status = rss_comms_caller_init(&rss_comms);
++	if (rpc_status != RPC_SUCCESS)
++		return NULL;
+ 
+-	if (stub_crypto_backend_init() == PSA_SUCCESS) {
++	rpc_status = rpc_caller_session_open(&rpc_session, &rss_comms, &dummy_uuid, 0, 0);
++	if (rpc_status != RPC_SUCCESS)
++		return NULL;
++
++	if (crypto_ipc_backend_init(&rpc_session) != PSA_SUCCESS)
++		return NULL;
+ 
+-		crypto_provider = crypto_provider_factory_create();
+-		crypto_iface = service_provider_get_rpc_interface(&crypto_provider->base_provider);
+-	}
++	crypto_provider = crypto_provider_factory_create();
++	crypto_iface = service_provider_get_rpc_interface(&crypto_provider->base_provider);
+ 
+ 	return crypto_iface;
+ }
+-- 
+2.34.1
+

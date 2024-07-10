@@ -1,7 +1,7 @@
-From c6879d6f57adc26b3da1eb03463a4390663299c6 Mon Sep 17 00:00:00 2001
+From 8806a9aa92c0673f606ccdb14c180aeee5e508c5 Mon Sep 17 00:00:00 2001
 From: Qi Feng <qi.feng@arm.com>
 Date: Wed, 22 Nov 2023 15:38:04 +0800
-Subject: [PATCH] plat: Rename symbol names to common ones
+Subject: [PATCH] Plat: Rename symbol names to common ones
 
 The kronos platform uses symbols provided by corstone1000. Rename the
 symbol names to common ones to reflect the fact.
@@ -15,10 +15,10 @@ Upstream-Status: Inappropriate [Design is to revisted]
  ...corstone1000_fmp_service.h => plat_fmp_service.h} |  6 +++---
  4 files changed, 13 insertions(+), 13 deletions(-)
  rename components/service/capsule_update/provider/{corstone1000_fmp_service.c => plat_fmp_service.c} (98%)
- rename components/service/capsule_update/provider/{corstone1000_fmp_service.h => plat_fmp_service.h} (77%)
+ rename components/service/capsule_update/provider/{corstone1000_fmp_service.h => plat_fmp_service.h} (78%)
 
 diff --git a/components/service/capsule_update/provider/capsule_update_provider.c b/components/service/capsule_update/provider/capsule_update_provider.c
-index 6809249..50ee103 100644
+index 12c552d..7709a3a 100644
 --- a/components/service/capsule_update/provider/capsule_update_provider.c
 +++ b/components/service/capsule_update/provider/capsule_update_provider.c
 @@ -11,15 +11,15 @@
@@ -41,7 +41,7 @@ index 6809249..50ee103 100644
  };
  
  /* Service request handlers */
-@@ -77,14 +77,14 @@ static rpc_status_t event_handler(uint32_t opcode, struct rpc_caller *caller)
+@@ -79,14 +79,14 @@ static rpc_status_t event_handler(uint32_t opcode, struct rpc_caller_interface *
  	switch(opcode) {
  		case CAPSULE_UPDATE_REQUEST:
  		/* Openamp call with IOCTL for firmware update*/
@@ -73,7 +73,7 @@ diff --git a/components/service/capsule_update/provider/corstone1000_fmp_service
 similarity index 98%
 rename from components/service/capsule_update/provider/corstone1000_fmp_service.c
 rename to components/service/capsule_update/provider/plat_fmp_service.c
-index d811af9..7067c18 100644
+index 2ed0f33..e993951 100644
 --- a/components/service/capsule_update/provider/corstone1000_fmp_service.c
 +++ b/components/service/capsule_update/provider/plat_fmp_service.c
 @@ -4,7 +4,7 @@
@@ -94,7 +94,7 @@ index d811af9..7067c18 100644
  
  static psa_status_t unpack_image_info(void *buffer, uint32_t size)
  {
-@@ -242,7 +242,7 @@ static psa_status_t get_image_info(struct rpc_caller *caller)
+@@ -242,7 +242,7 @@ static psa_status_t get_image_info(struct rpc_caller_interface *caller)
  {
      psa_status_t status;
      psa_handle_t handle;
@@ -104,10 +104,10 @@ index d811af9..7067c18 100644
      struct psa_invec in_vec[] = {
  	{ .base = &ioctl_id, .len = sizeof(ioctl_id) },
 diff --git a/components/service/capsule_update/provider/corstone1000_fmp_service.h b/components/service/capsule_update/provider/plat_fmp_service.h
-similarity index 77%
+similarity index 78%
 rename from components/service/capsule_update/provider/corstone1000_fmp_service.h
 rename to components/service/capsule_update/provider/plat_fmp_service.h
-index 963223e..1dff506 100644
+index 486fa10..0cee887 100644
 --- a/components/service/capsule_update/provider/corstone1000_fmp_service.h
 +++ b/components/service/capsule_update/provider/plat_fmp_service.h
 @@ -4,8 +4,8 @@
@@ -121,12 +121,12 @@ index 963223e..1dff506 100644
  
  #ifdef __cplusplus
  extern "C" {
-@@ -22,4 +22,4 @@ void set_fmp_image_info(struct rpc_caller *caller);
+@@ -22,4 +22,4 @@ void set_fmp_image_info(struct rpc_caller_interface *caller);
  } /* extern "C" */
  #endif
  
 -#endif /* CORSTONE1000_FMP_SERVICE_H */
 +#endif /* PLAT_FMP_SERVICE_H */
 -- 
-2.25.1
+2.34.1
 
