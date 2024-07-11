@@ -34,5 +34,6 @@ SRC_URI:append:fvp-rd-kronos = " \
     file://0018-Plat-kronos-Add-ns-interrupts-action-for-OP-TEE-3.22.patch \
     file://0019-smm_gateway-GetNextVariableName-Fix.patch \
     file://0020-LazyFetch-allow-setting-the-cmake-generator.patch \
+    file://0021-Plat-kronos-Add-internal-trusted-storage-SE-Proxy-de.patch \
     "
 EXTRA_OECMAKE:append:fvp-rd-kronos = " -D PLAT_MHU_VERSION=3"

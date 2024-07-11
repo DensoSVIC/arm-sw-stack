@@ -1,0 +1,55 @@
+From a08b0cdea653f006a930cb48f527d3bfbe8331a1 Mon Sep 17 00:00:00 2001
+From: Divin Raj <divin.raj@arm.com>
+Date: Thu, 11 Jul 2024 16:38:30 +0100
+Subject: [PATCH] Plat: kronos: Add internal trusted storage SE-Proxy
+ deployment
+
+Replace mock store backend with secure storage IPC backend
+for SE proxy deployment.
+
+Secure storage IPC backend is used as the backend for ITS
+(Internal Trusted Storage) backend.
+
+Signed-off-by: Divin Raj <divin.raj@arm.com>
+Upstream-Status: Pending
+---
+ .../se-proxy/infra/kronos/service_proxy_factory.c  | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/deployments/se-proxy/infra/kronos/service_proxy_factory.c b/deployments/se-proxy/infra/kronos/service_proxy_factory.c
+index f4a30c3..b085f24 100644
+--- a/deployments/se-proxy/infra/kronos/service_proxy_factory.c
++++ b/deployments/se-proxy/infra/kronos/service_proxy_factory.c
+@@ -22,7 +22,6 @@ struct rss_comms_caller rss_comms;
+ #include <service/secure_storage/backend/secure_storage_ipc/secure_storage_ipc.h>
+ /* Stub backends */
+ #include <service/crypto/backend/stub/stub_crypto_backend.h>
+-#include <service/secure_storage/backend/mock_store/mock_store.h>
+ 
+ struct rpc_interface *attest_proxy_create(void)
+ {
+@@ -87,10 +86,19 @@ struct rpc_interface *ps_proxy_create(void)
+ 
+ struct rpc_interface *its_proxy_create(void)
+ {
+-	static struct mock_store its_backend;
++	static struct secure_storage_ipc its_backend;
+ 	static struct secure_storage_provider its_provider;
++	struct rpc_caller *storage_caller;
++	struct storage_backend *backend;
++
++	storage_caller = rss_comms_caller_init(&rss_comms);
++	if (!storage_caller) {
++		EMSG("storage caller is null\n");
++		return NULL;
++	}
+ 
+-	struct storage_backend *backend = mock_store_init(&its_backend);
++	backend = secure_storage_ipc_init(&its_backend, &rss_comms.rpc_caller);
++	its_backend.service_handle = TFM_INTERNAL_TRUSTED_STORAGE_SERVICE_HANDLE;
+ 
+ 	return secure_storage_provider_init(&its_provider, backend);
+ }
+-- 
+2.34.1
+
