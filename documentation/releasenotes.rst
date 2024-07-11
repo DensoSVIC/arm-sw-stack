@@ -31,13 +31,17 @@ Changed
 * Removed LCP from the boot flow
 * Aligned the number of supported MHUv3 channels with the RSS specification
 * Enabled TF-A Trusted Board Boot (TBB)
+* Enabled PSA Internal Trusted Storage API on Primary Compute
 
 .. _releasenotes_limitations:
 
 Limitations
 ===========
 
-  * Same as `v1.0 Limitations`_.
+ * Same as `v1.0 Limitations`_ with the following exception:
+
+   * Now, the Reference Software Stack also supports the Internal Trusted Storage (ITS)
+     API on the Primary Compute.
 
 Resolved and Known Issues
 =========================

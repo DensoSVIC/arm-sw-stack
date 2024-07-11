@@ -2117,8 +2117,8 @@ The following messages are expected in the output to validate this Use-Case:
 
 .. _user_guide_reproduce_pc_psa_ps_crypto_api_test:
 
-Primary Compute PSA Protected Storage and Crypto APIs Architecture Test Suite
-=============================================================================
+Primary Compute PSA Secure Storage and Crypto APIs Architecture Test Suite
+==========================================================================
 
 The demo can be run on the Baremetal Architecture. Refer to
 :ref:`design_primary_compute_secure_services` for more information on this
@@ -2213,7 +2213,27 @@ this application.
       TOTAL SKIPPED   : 6
       ******************************************
 
-3. To shut down the FVP and terminate the emulation automatically, issue the
+3. Run the PSA Internal Trusted Storage API tests from the Primary Compute terminal
+   using the following command:
+
+   .. code-block:: text
+
+      psa-its-api-test
+
+   A message similar to the following should appear once the tests have
+   completed:
+
+   .. code-block:: text
+
+      ************ Storage Suite Report **********
+      TOTAL TESTS     : 10
+      TOTAL PASSED    : 10
+      TOTAL SIM ERROR : 0
+      TOTAL FAILED    : 0
+      TOTAL SKIPPED   : 0
+      ******************************************
+
+4. To shut down the FVP and terminate the emulation automatically, issue the
    following command on the Primary Compute terminal.
 
    .. code-block:: text
@@ -2256,6 +2276,7 @@ The following messages are expected in the output to validate this Use-Case:
 .. code-block:: text
 
    RESULTS - test_50_trusted_services.ArmAutoSolutionsTrustedServices.test_03_psa_crypto_api_test: PASSED (298.70s)
+   RESULTS - test_50_trusted_services.ArmAutoSolutionsTrustedServices.test_04_psa_its_api_test: PASSED (17.47s)
    RESULTS - test_50_trusted_services.ArmAutoSolutionsTrustedServices.test_05_psa_ps_api_test: PASSED (68.88s)
 
 .. note::

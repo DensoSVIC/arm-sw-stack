@@ -358,9 +358,11 @@ the `PSA Arch Tests`_ project) are supported:
    Used for PSA API conformance testing for `PSA Crypto API`_.
 
 * ts-psa-ps-api-test
-   Used for PSA API conformance testing for `PSA Secure Storage API`_.
-   Currently only the Protected Storage component of Secure Storage is
-   supported.
+   Used for PSA Protected Storage API conformance testing for `PSA Secure Storage API`_.
+
+* ts-psa-its-api-test
+   Used for PSA Internal Trusted Storage API conformance testing
+   for `PSA Secure Storage API`_.
 
 .. _validation_si_psa_arch_tests:
 

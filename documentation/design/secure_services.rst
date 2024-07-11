@@ -27,8 +27,7 @@ to the following specifications:
   describes two interfaces for storage:
 
     * Internal Trusted Storage (ITS) API: An interface for storage provided by
-      the Platform Root of Trust (PRoT). For now the ITS API is not supported by
-      the Reference Software Stack on the Primary Compute.
+      the Platform Root of Trust (PRoT).
     * Protected Storage (PS) API: An interface for external protected storage.
 
 
@@ -68,13 +67,13 @@ the Primary Compute Secure Services.
 
 |
 
-PSA Protected Storage and Crypto APIs Arch Tests
-------------------------------------------------
+PSA Secure Storage and Crypto APIs Arch Tests
+---------------------------------------------
 
-The PSA Protected Storage and PSA Crypto APIs Arch Tests can be accessed from
-the Primary Compute linux terminal by running a single command for each. The
-test suites execute over around a minute, and a table of results is displayed
-upon completion.
+The PSA Protected Storage, PSA Internal Trusted Storage and PSA Crypto APIs
+Arch Tests can be accessed from the Primary Compute Linux terminal by running
+a single command for each. The test suites execute over around a minute, and
+a table of results is displayed upon completion.
 
 Refer to :ref:`validation_trusted_services_tests` for more information.
 
