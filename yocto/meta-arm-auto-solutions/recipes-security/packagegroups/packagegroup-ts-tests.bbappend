@@ -8,4 +8,4 @@ COMPATIBLE_MACHINE:fvp-rd-kronos = "fvp-rd-kronos"
 
 # The ts-tests-psa relies on the ts-se-proxy MACHINE_FEATURES, which is enabled
 # on the fvp-rd-kronos machine in its machine configuration.
-RDEPENDS:${PN}-psa:baremetal = "ts-psa-crypto-api-test ts-psa-ps-api-test"
+RDEPENDS:${PN}-psa:baremetal = "ts-psa-crypto-api-test ts-psa-its-api-test ts-psa-ps-api-test"
