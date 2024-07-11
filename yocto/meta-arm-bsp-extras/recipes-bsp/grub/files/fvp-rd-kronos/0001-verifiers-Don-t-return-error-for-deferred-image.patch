@@ -1,0 +1,55 @@
+From: Leo Yan <leo.yan@linaro.org>
+To: Daniel Kiper <daniel.kiper@oracle.com>,
+	Daniel Kiper <dkiper@net-space.pl>,
+	Alex Burmashev <alexander.burmashev@oracle.com>,
+	Vladimir 'phcoder' Serbinenko <phcoder@gmail.com>,
+	Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+	grub-devel@gnu.org
+Cc: Leo Yan <leo.yan@linaro.org>
+Subject: [PATCH] verifiers: Don't return error for deferred image
+Date: Thu, 22 Dec 2022 19:14:39 +0800	[thread overview]
+Message-ID: <20221222111439.2653118-1-leo.yan@linaro.org> (raw)
+
+When boot from menu and the flag GRUB_VERIFY_FLAGS_DEFER_AUTH is set,
+grub returns error:
+
+ Booting a command list
+
+ error: verification requested but nobody cares: (hd0,gpt1)/Image.
+
+ Press any key to continue...
+
+In this case, the image should be deferred for authentication, grub
+should return the file handle and pass down to later firmware (e.g.
+U-Boot, etc) for authentication.
+
+For this purpose, rather than returning error, this patch prints log
+and returns file handler.
+
+Signed-off-by: Leo Yan <leo.yan@linaro.org>
+
+Upstream-Status: Inappropriate [embedded specific]
+
+---
+ grub-core/kern/verifiers.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/grub-core/kern/verifiers.c b/grub-core/kern/verifiers.c
+index 75d7994cf..ada753e69 100644
+--- a/grub-core/kern/verifiers.c
++++ b/grub-core/kern/verifiers.c
+@@ -115,11 +115,7 @@ grub_verifiers_open (grub_file_t io, enum grub_file_type type)
+   if (!ver)
+     {
+       if (defer)
+-	{
+-	  grub_error (GRUB_ERR_ACCESS_DENIED,
+-		      N_("verification requested but nobody cares: %s"), io->name);
+-	  goto fail_noclose;
+-	}
++	grub_printf("%s verification is deferred\n", io->name);
+ 
+       /* No verifiers wanted to verify. Just return underlying file. */
+       return io;
+-- 
+2.35.1

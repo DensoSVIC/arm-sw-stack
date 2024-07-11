@@ -50,6 +50,7 @@ bbappend
 bbclass
 bbclasses
 BBCLASSEXTEND
+bbdebug
 BBFILE
 BBFILES
 bbmulticonfig
@@ -222,6 +223,7 @@ ECDH
 ECJPAKE
 EFAULT
 efidebug
+EFIDIR
 efitools
 eigen
 EINVAL
@@ -487,6 +489,7 @@ mispell
 Mitigations
 mkdirhier
 mkeficapsule
+mkimage
 mmaa
 mmcblk
 mmci
