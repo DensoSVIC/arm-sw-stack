@@ -10,6 +10,20 @@ header:
   includes:
     - yocto/kas/arm-auto-solutions.yml
 
+repos:
+  meta-openembedded:
+    layers:
+      meta-perl:
+      meta-oe:
+
+  meta-secure-core:
+    url: https://github.com/Wind-River/meta-secure-core
+    path: layers/meta-secure-core
+    layers:
+      meta-secure-core-common:
+      meta-efi-secure-boot:
+      meta-signing-key:
+
 local_conf_header:
   baremetal: |
     TMPDIR = "${TOPDIR}/tmp_baremetal"
