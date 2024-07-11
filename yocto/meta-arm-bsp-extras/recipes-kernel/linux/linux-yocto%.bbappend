@@ -8,3 +8,7 @@ LINUX_ARM_BSP_EXTRAS_REQUIRE ?= ""
 LINUX_ARM_BSP_EXTRAS_REQUIRE:fvp-rd-kronos = "linux-yocto-fvp-rd-kronos.inc"
 
 require ${LINUX_ARM_BSP_EXTRAS_REQUIRE}
+
+UEFI_SECURE_BOOT ?= "0"
+
+require ${@oe.utils.vartrue("UEFI_SECURE_BOOT", "linux-yocto-uefi-secure-boot.inc", "", d)}
