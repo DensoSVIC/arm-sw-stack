@@ -697,6 +697,7 @@ SATA
 SBDF
 sbindir
 sbsa
+sbsign
 sbsigntool
 scarthgap
 sched
