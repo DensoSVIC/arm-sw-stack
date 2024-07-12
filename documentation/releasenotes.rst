@@ -32,6 +32,7 @@ Changed
 * Aligned the number of supported MHUv3 channels with the RSS specification
 * Enabled TF-A Trusted Board Boot (TBB)
 * Enabled PSA Internal Trusted Storage API on Primary Compute
+* Added an AP_REFCLK non-secure Generic Timer node in Kronos device tree
 
 .. _releasenotes_limitations:
 

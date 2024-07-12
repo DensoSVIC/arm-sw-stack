@@ -340,6 +340,7 @@ to:
   * PCIe controller
   * SMMUv3
   * HIPC
+  * AP_REFCLK non-secure Generic Timer
 
 * Assign the shared buffer for the Management Mode (MM) communication between
   U-Boot and OP-TEE.
