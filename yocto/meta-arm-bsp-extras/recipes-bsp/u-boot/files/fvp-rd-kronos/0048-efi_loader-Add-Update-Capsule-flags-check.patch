@@ -1,0 +1,71 @@
+From 85017c0e1bac3152dda3ab002dadafc3836c102a Mon Sep 17 00:00:00 2001
+From: David Hu <david.hu2@arm.com>
+Date: Wed, 3 Jul 2024 20:48:59 +0100
+Subject: [PATCH] efi_loader: Add Update Capsule flags check
+
+Add runtime checks of Update Capsule flags in efi_update_capsule().
+
+Those checks validate the following requirements:
+
+ - When CAPSULE_FLAGS_PERSIST_ACROSS_RESET is set in a capsule,
+   ScatterGatherList can't be NULL.
+ - A capsule which has the CAPSULE_FLAGS_POPULATE_SYSTEM_TABLE flag
+   must have CAPSULE_FLAGS_PERSIST_ACROSS_RESET set in its header as
+   well.
+ - A capsule which has the CAPSULE_FLAGS_INITIATE_RESET Flag must have
+   CAPSULE_FLAGS_PERSIST_ACROSS_RESET set in its header as well.
+
+Upstream-Status: Inappropriate [Capsule update interface should be redesigned]
+
+Signed-off-by: Emekcan Aras <emekcan.aras@arm.com>
+Signed-off-by: David Hu <david.hu2@arm.com>
+---
+ lib/efi_loader/efi_capsule.c | 32 ++++++++++++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
+
+diff --git a/lib/efi_loader/efi_capsule.c b/lib/efi_loader/efi_capsule.c
+index 9bd748d406..7e8073ac17 100644
+--- a/lib/efi_loader/efi_capsule.c
++++ b/lib/efi_loader/efi_capsule.c
+@@ -845,6 +845,38 @@ efi_status_t __efi_runtime EFIAPI efi_update_capsule(
+ 			continue;
+ 		}
+ 
++		/*
++		 * According to UEFI specs, when the flag is
++		 * CAPSULE_FLAGS_PERSIST_ACROSS_RESET, ScatterGatherList can't be NULL.
++		 */
++		if ((capsule->flags & CAPSULE_FLAGS_PERSIST_ACROSS_RESET) &&
++			scatter_gather_list == (u64)0) {
++			ret = EFI_INVALID_PARAMETER;
++			goto out;
++		}
++
++		/*
++		 * According to UEFI specs, a capsule which has the
++		 * CAPSULE_FLAGS_POPULATE_SYSTEM_TABLE flag must have
++		 * CAPSULE_FLAGS_PERSIST_ACROSS_RESET set in its header as well.
++		 */
++		if ((capsule->flags & CAPSULE_FLAGS_POPULATE_SYSTEM_TABLE) &&
++			!(capsule->flags & CAPSULE_FLAGS_PERSIST_ACROSS_RESET)) {
++			ret = EFI_INVALID_PARAMETER;
++			goto out;
++		}
++
++		/*
++		 * According to UEFI specs, a capsule which has the
++		 * CAPSULE_FLAGS_INITIATE_RESET flag must have
++		 * CAPSULE_FLAGS_PERSIST_ACROSS_RESET set in its header as well.
++		 */
++		if ((capsule->flags & CAPSULE_FLAGS_INITIATE_RESET) &&
++			!(capsule->flags & CAPSULE_FLAGS_PERSIST_ACROSS_RESET)) {
++			ret = EFI_INVALID_PARAMETER;
++			goto out;
++		}
++
+ 		log_debug("Capsule[%d] (guid:%pUs)\n",
+ 			  i, &capsule->capsule_guid);
+ 
+-- 
+2.34.1
+

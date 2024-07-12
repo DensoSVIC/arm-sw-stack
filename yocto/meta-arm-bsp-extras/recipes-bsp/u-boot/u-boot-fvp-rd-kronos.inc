@@ -56,5 +56,6 @@ SRC_URI:append:fvp-rd-kronos = " \
         file://0045-efi_loader-Use-PSCI-reset-instead-of-system-reset-AP.patch \
         file://0046-efi-vexpress64-Change-EFI_FIRMWARE_IMAGE_TYPE_UBOOT_.patch \
         file://0047-vexpress64-Respect-Kronos-memory-map-for-the-second-.patch \
+        file://0048-efi_loader-Add-Update-Capsule-flags-check.patch \
         file://kronos.cfg \
         "
