@@ -442,6 +442,7 @@ to:
 * Introduce armffa command.
 * Add MM communication support using FF-A transport.
 * Add Secure Firmware Update support.
+* Add runtime checks of Update Capsule flags
 
 .. _design_components_xen:
 

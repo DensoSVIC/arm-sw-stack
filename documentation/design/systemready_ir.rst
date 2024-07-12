@@ -107,9 +107,6 @@ non-alignments:
     justification in a future revision of EBBR is pending' by
     `edk2-test-parser`_.
 
-  * The ``UpdateCapsule()`` method does not currently support certain
-    invocations with invalid parameters.
-
 * Model - FVP
 
   * Platform-specific limitations, which are noted as excluded in the `EBBR

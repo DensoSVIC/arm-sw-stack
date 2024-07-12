@@ -50,6 +50,12 @@ Resolved and Known Issues
 
 .. _releasenotes_knownissues:
 
+Resolved Issues
+---------------
+
+  * Added runtime checks of Update Capsule flags in U-Boot, which fixed
+    SystemReady IR ACS SCT Update Capsule test failure.
+
 Known Issues
 ------------
 
