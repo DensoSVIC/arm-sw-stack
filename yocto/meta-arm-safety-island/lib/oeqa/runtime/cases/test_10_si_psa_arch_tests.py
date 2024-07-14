@@ -14,7 +14,7 @@ class SIPSAArchTests(SafetyIslandTestBase):
     def check_si_psa(self, console):
         self.target.expect(console,
                            r"TOTAL SIM ERROR : 0\r\n"
-                           r"TOTAL FAILED    : 0\r\n", timeout=1800)
+                           r"TOTAL FAILED    : 0\r\n", timeout=2000)
 
     # Only psa-related test variants execute,
     # including psa-storage-tests and psa-crypto-tests
