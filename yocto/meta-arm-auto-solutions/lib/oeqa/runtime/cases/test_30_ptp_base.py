@@ -6,12 +6,13 @@
 
 from oeqa.core.decorator.depends import OETestDepends
 from oeqa.runtime.case import OERuntimeTestCase
+from oeqa.utils.arm_auto_solutions_config import ArmAutoSolutionsConfig
 from time import sleep
 
 
 class PTPTestBase(OERuntimeTestCase):
     linux_console = 'default'
-    hostname = r'.*'
+    hostname = ArmAutoSolutionsConfig.hostname
     linux_prompt = f'root@{hostname}:~#'
     si_prompt = r'uart:~\$ '
     linuxptp_ifaces = []

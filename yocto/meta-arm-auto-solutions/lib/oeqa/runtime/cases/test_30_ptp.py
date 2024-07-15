@@ -4,8 +4,11 @@
 #
 # SPDX-License-Identifier: MIT
 
+import unittest
+
 from oeqa.core.decorator.depends import OETestDepends
 from oeqa.runtime.cases.test_30_ptp_base import PTPTestBase
+from oeqa.utils.arm_auto_solutions_config import ArmAutoSolutionsConfig
 from oeqa.utils.xen_utils import XenUtils
 
 
@@ -73,12 +76,11 @@ class PTPTest(PTPTestBase):
 
 
 class PTPTestDomU1(PTPTestBase):
-    domu_hostname = r'domu1'
+    domu_hostname = ArmAutoSolutionsConfig.domu1_hostname
 
     @classmethod
     def setUpClass(cls):
         if ('virtualization' not in cls.td.get('IMAGE_FEATURES', '').split()):
-            import unittest
             raise unittest.SkipTest(f"{cls.__name__} skipped because"
                                     " 'virtualization' is not in"
                                     " IMAGE_FEATURES")
@@ -136,12 +138,11 @@ class PTPTestDomU1(PTPTestBase):
 
 
 class PTPTestDomU2(PTPTestDomU1):
-    domu_hostname = r'domu2'
+    domu_hostname = ArmAutoSolutionsConfig.domu2_hostname
 
     @classmethod
     def setUpClass(cls):
         if int(cls.td.get('DOMU_INSTANCES', 0)) < 2:
-            import unittest
             raise unittest.SkipTest("PTPTestDomU2 skipped because DomU2 is"
                                     " not generated in this build")
         super().setUpClass()
