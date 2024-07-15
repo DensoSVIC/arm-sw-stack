@@ -34,10 +34,6 @@ repos:
       meta-arm: included
       meta-arm-toolchain: included
 
-  meta-security:
-    patches:
-      0001-parsec-Bump-trusted-services:
-
 env:
   TESTIMAGE_AUTO:
   SVE_DISABLE_FLAG:
