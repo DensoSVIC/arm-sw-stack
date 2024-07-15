@@ -10,14 +10,15 @@ import signal
 
 from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.core.decorator.depends import OETestDepends
+from oeqa.utils.arm_auto_solutions_config import ArmAutoSolutionsConfig
 from oeqa.utils.xen_utils import XenUtils
 
 
 class ActuationTest(OERuntimeTestCase):
     linux_console = 'default'
-    hostname = r'.*'
+    hostname = ArmAutoSolutionsConfig.hostname
     si_console = 'safety_island_c2'
-    domu_hostname = r'domu1'
+    domu_hostname = ArmAutoSolutionsConfig.domu1_hostname
 
     @classmethod
     def setUpClass(cls):
