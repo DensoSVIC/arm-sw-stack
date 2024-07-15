@@ -6,6 +6,7 @@
 
 from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.core.decorator.depends import OETestDepends
+from oeqa.utils.arm_auto_solutions_config import ArmAutoSolutionsConfig
 from oeqa.utils.xen_utils import XenUtils
 
 
@@ -14,7 +15,7 @@ class LinuxLoginTest(OERuntimeTestCase):
         super().setUp()
         self.timeout = int(self.td.get('TEST_FVP_LINUX_BOOT_TIMEOUT') or 900)
         self.console_name = self.target.DEFAULT_CONSOLE
-        self.hostname = r'.*'
+        self.hostname = ArmAutoSolutionsConfig.hostname
 
     def login_domus(self, domu_hostnames):
         console = self.target._get_terminal(self.console_name)
