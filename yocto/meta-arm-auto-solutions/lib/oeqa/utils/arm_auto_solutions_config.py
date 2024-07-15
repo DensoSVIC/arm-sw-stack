@@ -9,5 +9,6 @@ class ArmAutoSolutionsConfig:
     si_cl1_console_name = 'safety_island_c1'
     domu1_hostname = r'domu1'
     domu2_hostname = r'domu2'
-    dom0_prompt = r'root@[\w\-]+:~#'
-    baremetal_prompt = r'root@[\w\-]+:~#'
+    hostname = r'[\w\-]+'  # Generalized hostname pattern
+    dom0_prompt = r'root@{}:~#'.format(hostname)
+    baremetal_prompt = r'root@{}:~#'.format(hostname)
