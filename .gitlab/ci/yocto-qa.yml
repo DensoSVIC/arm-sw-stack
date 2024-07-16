@@ -22,6 +22,7 @@ check-layers:
               $KAS_WORK_DIR/layers/meta-arm/meta-arm-toolchain
               $KAS_WORK_DIR/layers/meta-cassini/meta-cassini-distro
               $KAS_WORK_DIR/layers/meta-clang
+              $KAS_WORK_DIR/layers/meta-ewaol
               $KAS_WORK_DIR/layers/meta-openembedded/meta-filesystems
               $KAS_WORK_DIR/layers/meta-openembedded/meta-networking
               $KAS_WORK_DIR/layers/meta-openembedded/meta-oe

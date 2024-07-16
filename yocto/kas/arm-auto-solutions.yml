@@ -9,19 +9,15 @@ header:
   version: 16
   includes:
     - yocto/kas/arm-safety-island.yml
-    - repo: meta-cassini
-      file: kas/cassini.yml
+    - repo: meta-ewaol
+      file: kas/ewaol.yml
     - yocto/kas/ref-stack-pinned-repos.yml
 
 repos:
-  meta-cassini:
-    url: https://gitlab.com/Linaro/cassini/meta-cassini
-    path: layers/meta-cassini
+  meta-ewaol:
+    url: https://gitlab.com/soafee/ewaol/meta-ewaol
+    path: layers/meta-ewaol
     branch: scarthgap-dev
-    commit: d800128c6e27e7f23f2dd924436ca27a4821cdd5
-    layers:
-      meta-cassini-distro:
-      meta-cassini-bsp: excluded
 
   sw-ref-stack:
     layers:
@@ -41,10 +37,7 @@ env:
 local_conf_header:
   cassini: |
     CASSINI_GENERIC_ARM64_FILESYSTEM = "0"
-    DISTRO_FEATURES:append = " ipv6"
     DISTRO_FEATURES:remove = "k3s"
     KERNEL_CLASSES:remove = "k3s_kernelcfg_check containers_kernelcfg_check"
   arm-auto-solutions-extra-features: |
     EXTRA_IMAGE_FEATURES:append = " actuation"
-
-distro: cassini
