@@ -9,6 +9,7 @@ import re
 from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.core.decorator.depends import OETestDepends
 from oeqa.core.decorator.data import skipIfDataVar
+from oeqa.utils.arm_auto_solutions_config import ArmAutoSolutionsConfig
 
 TCP_TEST_DURATION = 1
 UDP_TEST_DURATION = 3
@@ -16,7 +17,7 @@ UDP_TEST_DURATION = 3
 
 class HIPCTestBase(OERuntimeTestCase):
     linux_console = 'default'
-    hostname = r'.*'
+    hostname = ArmAutoSolutionsConfig.hostname
     si_prompt = r'uart:~\$ '
 
     @classmethod
@@ -36,7 +37,7 @@ class HIPCTestBase(OERuntimeTestCase):
                              f'net vlan del {vlan_id} 1')
         self.target.expect(cl_console,
                            rf'VLAN tag {vlan_id} removed from interface 1'
-                           r' \(.*\)',
+                           r' \(0x[0-9a-fA-F]+\)',
                            timeout=225)
         self.target.sendline(cl_console,
                              f'net ping {peer_addr} -c 1')
@@ -48,7 +49,7 @@ class HIPCTestBase(OERuntimeTestCase):
                              f'net vlan add {vlan_id + 10} 1')
         self.target.expect(cl_console,
                            rf'VLAN tag {vlan_id + 10} set to interface 1'
-                           r' \(.*\)',
+                           r' \(0x[0-9a-fA-F]+\)',
                            timeout=225)
         self.target.sendline(cl_console,
                              f'net ping {peer_addr} -c 1')
@@ -57,14 +58,15 @@ class HIPCTestBase(OERuntimeTestCase):
                              f'net vlan del {vlan_id + 10} 1')
         self.target.expect(cl_console,
                            rf'VLAN tag {vlan_id + 10} removed from interface 1'
-                           r' \(.*\)',
+                           r' \(0x[0-9a-fA-F]+\)',
                            timeout=225)
 
         # Set the original VLAN identifier
         self.target.sendline(cl_console,
                              f'net vlan add {vlan_id} 1')
         self.target.expect(cl_console,
-                           rf'VLAN tag {vlan_id} set to interface 1 \(.*\)',
+                           rf'VLAN tag {vlan_id} set to interface 1'
+                           r' \(0x[0-9a-fA-F]+\)',
                            timeout=225)
 
     def ping(self, cl_addr, cl_console, peer_addr, vlan_id):
@@ -88,7 +90,7 @@ class HIPCTestBase(OERuntimeTestCase):
             self.target.expect(cl_console,
                                rf'\d+ bytes from {re.escape(peer_addr)} to '
                                rf'{re.escape(cl_addr)}: icmp_seq=\d+ '
-                               r'ttl=\d+ time=.* ms',
+                               r'ttl=\d+ time=\d+(\.\d+)? ms',
                                timeout=350)
         self.target.sendline(cl_console)
         self.target.expect(cl_console, self.si_prompt, timeout=180)
@@ -98,7 +100,8 @@ class HIPCTestBase(OERuntimeTestCase):
             for _ in range(0, 10):
                 self.target.expect(self.linux_console,
                                    rf'\d+ bytes from {re.escape(cl_addr)}: '
-                                   r'seq=\d+ ttl=\d+ time=.* ms', timeout=180)
+                                   r'seq=\d+ ttl=\d+ time=\d+(\.\d+)? ms',
+                                   timeout=180)
             self.target.sendline(self.linux_console)
             self.target.expect(self.linux_console, self.linux_prompt,
                                timeout=180)
