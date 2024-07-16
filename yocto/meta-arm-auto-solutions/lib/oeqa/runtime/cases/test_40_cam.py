@@ -118,7 +118,7 @@ class CAMTest(OERuntimeTestCase):
         if 'virtualization' not in self.td.get('IMAGE_FEATURES', '').split():
             return
 
-        retry = 3
+        retry = 6
         expected_string = 'NTPSynchronized=yes'
         while retry > 0:
             status, output = self.lt_utils.run('timedatectl show')
