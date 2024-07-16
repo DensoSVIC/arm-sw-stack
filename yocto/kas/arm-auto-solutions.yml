@@ -37,8 +37,8 @@ env:
 local_conf_header:
   cassini: |
     CASSINI_GENERIC_ARM64_FILESYSTEM = "0"
-    DISTRO_FEATURES:remove = "k3s cassini-security"
+    DISTRO_FEATURES:remove = "cassini-security"
     DISTRO_FEATURES:append = " cassini-dev"
-    KERNEL_CLASSES:remove = "k3s_kernelcfg_check containers_kernelcfg_check"
+    KERNEL_CLASSES:remove = "containers_kernelcfg_check"
   arm-auto-solutions-extra-features: |
     EXTRA_IMAGE_FEATURES:append = " actuation"

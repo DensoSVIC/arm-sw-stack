@@ -90,7 +90,6 @@ FEATURE_PACKAGES_baremetal = " \
     kernel-module-br-netfilter \
     packagegroup-ts-tests-psa \
     parsec-mbedtls-demo \
-    podman \
     "
 
 FEATURE_PACKAGES_virtualization = " \
@@ -108,7 +107,6 @@ FEATURE_PACKAGES_domu = " \
     arm-auto-solutions-network-conf \
     packagegroup-core-boot \
     systemd-conf-arm-auto-solutions \
-    podman \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 
@@ -130,6 +128,9 @@ FEATURE_PACKAGES_hipc-validation = "iperf linuxptp"
 FEATURE_PACKAGES_hipc-validation:virtualization = "linuxptp"
 
 require ${@bb.utils.contains('EXTRA_IMAGE_FEATURES', 'virtualization', "conf/distro/include/arm-auto-solutions-virtualization.inc", '', d)}
+
+# Override the EWAOL defaults
+VIRTUAL-RUNTIME_cloud_service = "no-cloud"
 
 ZEPHYR_APP_SAFETY_ISLAND_CL0:actuation = "bridge"
 ZEPHYR_APP_SAFETY_ISLAND_CL0:si0-bridge-ethernet0 = "bridge"
