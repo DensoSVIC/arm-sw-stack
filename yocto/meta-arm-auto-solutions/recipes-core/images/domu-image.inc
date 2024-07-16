@@ -8,7 +8,7 @@ IMAGE_CLASSES:remove = "testimage"
 IMAGE_INSTALL = ""
 IMAGE_LINGUAS = ""
 
-inherit core-image
+inherit ewaol-image
 
 IMAGE_NAME_SUFFIX = ""
 IMAGE_FSTYPES = "cpio.gz"

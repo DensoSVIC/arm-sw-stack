@@ -71,7 +71,6 @@ IMAGE_FEATURES_CONFLICTS_si-psa-crypto-tests = "hipc-validation actuation si0-br
 FEATURE_PACKAGES_COMMON = " \
     arm-si-rproc-mod \
     iptables \
-    kernel-module-openvswitch \
     arm-auto-solutions-network-conf \
     openvswitch \
     packagegroup-core-boot \
@@ -86,8 +85,6 @@ FEATURE_PACKAGES_COMMON = " \
 
 FEATURE_PACKAGES_baremetal = " \
     ${FEATURE_PACKAGES_COMMON} \
-    kernel-module-bridge \
-    kernel-module-br-netfilter \
     packagegroup-ts-tests-psa \
     parsec-mbedtls-demo \
     "
@@ -95,15 +92,11 @@ FEATURE_PACKAGES_baremetal = " \
 FEATURE_PACKAGES_virtualization = " \
     ${FEATURE_PACKAGES_COMMON} \
     domu-package \
-    kernel-module-xen-gntalloc \
-    kernel-module-xen-gntdev \
-    kernel-module-xen-netback \
     xen-tools \
     virtualization-integration-tests-ptest \
     "
 
 FEATURE_PACKAGES_domu = " \
-    kernel-module-pci-host-generic \
     arm-auto-solutions-network-conf \
     packagegroup-core-boot \
     systemd-conf-arm-auto-solutions \

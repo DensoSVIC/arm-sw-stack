@@ -12,7 +12,7 @@ LICENSE = "MIT"
 IMAGE_INSTALL = ""
 IMAGE_LINGUAS = ""
 
-inherit core-image
+inherit ewaol-image
 
 IMAGE_OVERHEAD_FACTOR = "1.5"
 
