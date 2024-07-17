@@ -131,6 +131,8 @@ require ${@bb.utils.contains('EXTRA_IMAGE_FEATURES', 'virtualization', "conf/dis
 
 # Override the EWAOL defaults
 VIRTUAL-RUNTIME_cloud_service = "no-cloud"
+VIRTUAL-RUNTIME_security_provider:virtualization = "sw-provider"
+VIRTUAL-RUNTIME_security_provider:domu = "sw-provider"
 
 ZEPHYR_APP_SAFETY_ISLAND_CL0:actuation = "bridge"
 ZEPHYR_APP_SAFETY_ISLAND_CL0:si0-bridge-ethernet0 = "bridge"
