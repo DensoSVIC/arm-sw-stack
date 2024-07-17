@@ -70,6 +70,8 @@ SRC_URI += "\
     file://0057-rss-kronos-Remove-LCP.patch \
     file://0058-rss-kronos-Reduce-the-number-of-used-RSS-SCP-MHUv3-c.patch \
     file://0059-rss-driver-Power-on-redistributor-for-GIC-View-0.patch \
+    file://0060-Kronos-Enlarge-the-payload-size-of-rss_comms-message.patch \
+    file://0061-Platform-Kronos-Increase-buffers-for-EFI-vars.patch \
 "
 # cSpell:enable
 

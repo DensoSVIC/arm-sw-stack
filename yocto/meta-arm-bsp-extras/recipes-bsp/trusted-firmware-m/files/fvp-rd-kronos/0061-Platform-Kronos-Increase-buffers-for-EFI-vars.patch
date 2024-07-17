@@ -1,0 +1,61 @@
+From 52d92f7529f0ece522b5fb8ab959017683e008a0 Mon Sep 17 00:00:00 2001
+From: Michael Zhao <michael.zhao2@arm.com>
+Date: Thu, 25 Jul 2024 14:55:48 +0100
+Subject: [PATCH] Platform: Kronos: Increase buffers for EFI vars
+
+The UEFI variables are stored in the Protected Storage. The size of
+the variables metadata have been increased so the related buffer sizes
+have to be increased.
+
+The new values are chosen from test results. Among our test cases,
+SystemReady IR ACS test has the highest requirement on the number of
+UEFI variables. The values are the minimal ones to pass ACS.
+
+Signed-off-by: Bence Balogh <bence.balogh@arm.com>
+Signed-off-by: Michael Zhao <michael.zhao2@arm.com>
+Upstream-Status: Pending
+---
+ .../target/arm/rss/kronos/config_tfm_target.h | 24 ++++++++++++++++++-
+ 1 file changed, 23 insertions(+), 1 deletion(-)
+
+diff --git a/platform/ext/target/arm/rss/kronos/config_tfm_target.h b/platform/ext/target/arm/rss/kronos/config_tfm_target.h
+index c9d4a0184..77a5e7e90 100644
+--- a/platform/ext/target/arm/rss/kronos/config_tfm_target.h
++++ b/platform/ext/target/arm/rss/kronos/config_tfm_target.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2023, Arm Limited. All rights reserved.
++ * Copyright (c) 2023-2024, Arm Limited. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -41,4 +41,26 @@
+ #undef PLATFORM_SERVICE_OUTPUT_BUFFER_SIZE
+ #define PLATFORM_SERVICE_OUTPUT_BUFFER_SIZE    256
+ 
++/* The following sizes are customized to work with Trusted Services v1.0, where
++ * the data size of UEFI variables increased significantly:
++ *   - PS_MAX_ASSET_SIZE
++ *   - CRYPTO_ENGINE_BUF_SIZE
++ *   - CRYPTO_IOVEC_BUFFER_SIZE
++ * The new values are chosen from test results.
++ * Among our test cases, SystemReady IR ACS test has the highest requirement on
++ * the number of UEFI variables. The values are the minimal ones to pass ACS.
++ */
++
++/* The maximum asset size to be stored in the Protected Storage */
++#undef PS_MAX_ASSET_SIZE
++#define PS_MAX_ASSET_SIZE                      2592
++
++/* This is needed to be able to process the EFI variables during PS writes. */
++#undef CRYPTO_ENGINE_BUF_SIZE
++#define CRYPTO_ENGINE_BUF_SIZE                 0x5000
++
++/* This is also has to be increased to fit the EFI variables into the iovecs. */
++#undef CRYPTO_IOVEC_BUFFER_SIZE
++#define CRYPTO_IOVEC_BUFFER_SIZE               6000
++
+ #endif /* __CONFIG_TFM_TARGET_H__ */
+-- 
+2.34.1
+

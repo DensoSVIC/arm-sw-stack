@@ -1,0 +1,108 @@
+From 3f80ee6ef368bb292e113449606e680fea466611 Mon Sep 17 00:00:00 2001
+From: Michael Zhao <michael.zhao2@arm.com>
+Date: Wed, 17 Jul 2024 09:12:45 +0100
+Subject: [PATCH] Kronos: Enlarge the payload size of rss_comms message
+
+The payload size is enlarged to support the feature UEFI Authenticated
+Variables.
+
+The largest size of the payload depends on the size of the outband
+shared memory buffer. On Kronos, the buffer between RSS and AP is 0x4000.
+
+The larger payload size leads to more consumption of the SRAM. Increased
+`S_DATA_SIZE` by 128KB.
+
+Upstream-Status: Pending
+Signed-off-by: Michael Zhao <michael.zhao2@arm.com>
+---
+ .../target/arm/rss/common/native_drivers/mhu_v3_x.h  |  2 +-
+ .../arm/rss/common/native_drivers/mhu_wrapper_v3_x.c | 12 +++++++++++-
+ .../ext/target/arm/rss/common/rss_comms/rss_comms.h  |  7 +++++--
+ .../ext/target/arm/rss/kronos/host_base_address.h    |  2 +-
+ platform/ext/target/arm/rss/kronos/size_defs.h       |  2 +-
+ 5 files changed, 19 insertions(+), 6 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/mhu_v3_x.h b/platform/ext/target/arm/rss/common/native_drivers/mhu_v3_x.h
+index 675be3309..c8b8679e2 100644
+--- a/platform/ext/target/arm/rss/common/native_drivers/mhu_v3_x.h
++++ b/platform/ext/target/arm/rss/common/native_drivers/mhu_v3_x.h
+@@ -66,7 +66,7 @@ extern "C" {
+ #endif /* MHU_V3_RSS_SI_CL0 || MHU_V3_RSS_SI_CL1 || MHU_V3_RSS_SI_CL2 */
+ 
+ /* Size of shared outband message buffer in bytes */
+-#define MHU3_AP_RSS_OUTBAND_BUF_SIZE     UINT64_C(0x2000)
++#define MHU3_AP_RSS_OUTBAND_BUF_SIZE     UINT64_C(0x4000)
+ #ifdef MHU_V3_RSS_SI_CL0
+ #define MHU3_SI_CL0_RSS_OUTBAND_BUF_SIZE UINT64_C(0x2000)
+ #endif /* MHU_V3_RSS_SI_CL0 */
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/mhu_wrapper_v3_x.c b/platform/ext/target/arm/rss/common/native_drivers/mhu_wrapper_v3_x.c
+index 80d389d72..47cb31e9c 100644
+--- a/platform/ext/target/arm/rss/common/native_drivers/mhu_wrapper_v3_x.c
++++ b/platform/ext/target/arm/rss/common/native_drivers/mhu_wrapper_v3_x.c
+@@ -148,8 +148,18 @@ size_t mhu_get_max_message_size(void *mhu_dev)
+     /*
+      * First 4 bytes represent the MHU msg header. Rest of buffer
+      * holds the actual message.
++     *
++     * The buffer size check in validate_buffer_params() using this
++     * function is not practical if:
++     * - There are multiple MHU devices
++     * - And they use outband shared memory buffer
++     * - And the buffer size is different
++     * Because the payload size in the rss_comms message is unique, it's
++     * set to work with the largest outband buffer which is the buffer
++     * shared between AP-RSS.
++     *
+      */
+-    return (dev->outband_buf_size - MHU3_OUTBAND_BUF_HEADER_SIZE);
++    return (MHU3_AP_RSS_OUTBAND_BUF_SIZE - MHU3_OUTBAND_BUF_HEADER_SIZE);
+ }
+ 
+ static int validate_buffer_params(void *mhu_dev,
+diff --git a/platform/ext/target/arm/rss/common/rss_comms/rss_comms.h b/platform/ext/target/arm/rss/common/rss_comms/rss_comms.h
+index b64744963..0627b793c 100644
+--- a/platform/ext/target/arm/rss/common/rss_comms/rss_comms.h
++++ b/platform/ext/target/arm/rss/common/rss_comms/rss_comms.h
+@@ -16,8 +16,11 @@
+ extern "C" {
+ #endif
+ 
+- /* size suits to get_attest_token() */
+-#define RSS_COMMS_PAYLOAD_MAX_SIZE (0x40 + 0x1000)
++/*
++ * The size suits to fit the largest message.
++ * Now it is the message between AP-RSS for EFI variables.
++ */
++#define RSS_COMMS_PAYLOAD_MAX_SIZE (0x3FE0)
+ 
+ /*
+  * Allocated for each client request.
+diff --git a/platform/ext/target/arm/rss/kronos/host_base_address.h b/platform/ext/target/arm/rss/kronos/host_base_address.h
+index 1fc6c75e1..084f75d9e 100644
+--- a/platform/ext/target/arm/rss/kronos/host_base_address.h
++++ b/platform/ext/target/arm/rss/kronos/host_base_address.h
+@@ -255,7 +255,7 @@
+ #define HOST_AP_RSS_MAILBOX_BASE_S     \
+     (HOST_SCP_RSS_MAILBOX_BASE_S + HOST_SCP_RSS_MAILBOX_ATU_SIZE)
+ #define HOST_AP_RSS_MAILBOX_PHYS_BASE  UINT64_C(0xFFFFC000)
+-#define HOST_AP_RSS_MAILBOX_ATU_SIZE   ALIGN_UP(0x1000, RSS_ATU_PAGE_SIZE)
++#define HOST_AP_RSS_MAILBOX_ATU_SIZE   ALIGN_UP(0x4000, RSS_ATU_PAGE_SIZE)
+ #define HOST_AP_RSS_MAILBOX_ATU_ID     RSS_ATU_AP_RSS_MAILBOX_ATU_ID
+ 
+ /*
+diff --git a/platform/ext/target/arm/rss/kronos/size_defs.h b/platform/ext/target/arm/rss/kronos/size_defs.h
+index 441713df9..f278fafb6 100644
+--- a/platform/ext/target/arm/rss/kronos/size_defs.h
++++ b/platform/ext/target/arm/rss/kronos/size_defs.h
+@@ -18,7 +18,7 @@
+ #define SIZE_DEF_BL2_IMAGE          (0x20000) /* 128 KB */
+ 
+ /* Secure Firmware */
+-#define SIZE_DEF_S_IMAGE            (0x60000) /* 384 KB */
++#define SIZE_DEF_S_IMAGE            (0x40000) /* 256 KB */
+ /* Non-Secure Firmware */
+ #define SIZE_DEF_NS_IMAGE           (0x60000) /* 384 KB */
+ 
+-- 
+2.34.1
+
