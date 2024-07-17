@@ -200,7 +200,7 @@ Downstream Changes - RD-Kronos
 ==============================
 
 Patches for the RSS are included at
-:meta-arm-repo:`meta-arm-bsp/recipes-bsp/trusted-firmware-m/files/fvp-rd-kronos/`
+:repo:`yocto/meta-arm-bsp-extras/recipes-bsp/trusted-firmware-m/files/fvp-rd-kronos/`
 to:
 
 * Implement the RD-Kronos platform port, based on RD-Fremont.
@@ -275,7 +275,7 @@ Downstream Changes - RD-Kronos
 ==============================
 
 Patches for the SCP are included at
-:meta-arm-repo:`meta-arm-bsp/recipes-bsp/scp-firmware/files/fvp-rd-kronos/` to:
+:repo:`yocto/meta-arm-bsp-extras/recipes-bsp/scp-firmware/files/fvp-rd-kronos/` to:
 
 * Implement the RD-Kronos platform port, based on RD-Fremont.
 * Communicate with RSS via MHUv3 to conduct the boot flow.
@@ -299,7 +299,7 @@ Compute. The CPUs, memory and devices are statically configured in the device
 tree. It is compiled by the Trusted Firmware-A Yocto recipe, bundled in the
 Trusted Firmware-A flash image at rest and used to configure U-Boot, Linux and
 Xen at runtime. It is located at
-:meta-arm-repo:`meta-arm-bsp/recipes-bsp/trusted-firmware-a/files/fvp-rd-kronos/rdkronos.dts`.
+:repo:`yocto/meta-arm-bsp-extras/recipes-bsp/trusted-firmware-a/files/fvp-rd-kronos/rdkronos.dts`.
 
 .. _design_components_trusted-firmware-a:
 
@@ -327,7 +327,7 @@ Downstream Changes - RD-Kronos
 ------------------------------
 
 Patch files can be found at
-:meta-arm-repo:`meta-arm-bsp/recipes-bsp/trusted-firmware-a/files/fvp-rd-kronos/`
+:repo:`yocto/meta-arm-bsp-extras/recipes-bsp/trusted-firmware-a/files/fvp-rd-kronos/`
 to:
 
 * Implement the RD-Kronos platform port, based on RD-Fremont.
@@ -364,7 +364,7 @@ Downstream Changes - RD-Kronos
 ------------------------------
 
 Patch files can be found at
-:meta-arm-repo:`meta-arm-bsp/recipes-security/optee/files/optee-os/fvp-rd-kronos/`
+:repo:`yocto/meta-arm-bsp-extras/recipes-security/optee/files/fvp-rd-kronos/`
 to:
 
 * Implement the RD-Kronos platform port.
@@ -395,7 +395,7 @@ Downstream Changes - RD-Kronos
 ------------------------------
 
 Patch files can be found at
-:meta-arm-repo:`meta-arm-bsp/recipes-security/trusted-services/fvp-rd-kronos/`
+:repo:`yocto/meta-arm-bsp-extras/recipes-security/trusted-services/files/fvp-rd-kronos/`
 to:
 
 * Implement the RD-Kronos platform port.
@@ -428,7 +428,7 @@ Downstream Changes - RD-Kronos
 
 The implementation is based on the VExpress64 board family. Patch
 files can be found at
-:meta-arm-repo:`meta-arm-bsp/recipes-bsp/u-boot/u-boot/fvp-rd-kronos/`
+:repo:`yocto/meta-arm-bsp-extras/recipes-bsp/u-boot/files/fvp-rd-kronos/`
 to:
 
 * Enable VIRTIO_MMIO and RTC_PL031 in the base model.

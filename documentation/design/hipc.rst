@@ -268,7 +268,7 @@ Primary Compute side:
   Refer to the device tree below for more information about the memory address and
   region size.
 
-   * :meta-arm-repo:`meta-arm-bsp/recipes-bsp/trusted-firmware-a/files/fvp-rd-kronos/rdkronos.dts`.
+   * :repo:`yocto/meta-arm-bsp-extras/recipes-bsp/trusted-firmware-a/files/fvp-rd-kronos/rdkronos.dts`.
 
 ****************
 Network Topology
@@ -409,7 +409,7 @@ regions for data exchange. Each Safety Island cluster has it own Remoteproc
 binding that includes MHUv3 and Shared Memory.
 
 The Linux device tree with the appropriate nodes for HIPC is located at
-:meta-arm-repo:`meta-arm-bsp/recipes-bsp/trusted-firmware-a/files/fvp-rd-kronos/rdkronos.dts`.
+:repo:`yocto/meta-arm-bsp-extras/recipes-bsp/trusted-firmware-a/files/fvp-rd-kronos/rdkronos.dts`.
 
 In Zephyr, there is an overlay device tree for the network over RPMsg application,
 which also defines the MHUv3 channels and device memory regions.

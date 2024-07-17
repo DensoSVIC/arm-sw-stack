@@ -145,10 +145,6 @@ arm_auto_solutions_version = os.environ.get(
 version = arm_auto_solutions_version
 release = arm_auto_solutions_version
 
-meta_arm_version = os.environ.get(
-    'RTD_ENV_META_ARM_VERSION',
-    f'kronos-{yocto_version}')
-
 # Common variables for rst_prolog
 actuation_version = "v2.0"
 cassini_version = "scarthgap-dev"
@@ -358,13 +354,9 @@ repo_url_pattern = os.environ.get(
 # Read the Docs sometimes adds extra quotes to environment variables
 repo_url_pattern = repo_url_pattern.strip("'")
 
-meta_arm_url_repo_pattern = os.environ.get(
-    'META_ARM_REPO_URL_PATTERN',
-    'https://gitlab.arm.com/automotive-and-industrial/arm-auto-solutions/sw-ref-stack/-/tree/{ref}/{path}')  # noqa
-# Read the Docs sometimes adds extra quotes to environment variables
-meta_arm_url_repo_pattern = meta_arm_url_repo_pattern.strip("'")
+meta_arm_url_repo_pattern = 'https://git.yoctoproject.org/meta-arm/tree/{path}?h={ref}'  # noqa
 
 extlinks = {
-            'meta-arm-repo': (meta_arm_url_repo_pattern.format(path='%s', ref=meta_arm_version), '%s'),  # noqa
+            'meta-arm-repo': (meta_arm_url_repo_pattern.format(path='%s', ref=yocto_version), '%s'),  # noqa
             'repo': (repo_url_pattern.format(path='%s', ref=arm_auto_solutions_version), '%s'),  # noqa
             }
