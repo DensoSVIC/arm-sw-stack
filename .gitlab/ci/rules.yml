@@ -23,8 +23,12 @@
   - ".gitlab/ci/yocto-qa.yml"
   - ".gitlab/scripts/**/*"
 
-.yocto-patterns: &yocto-patterns
-  - "yocto/**/*"
+.bsp-extras-patterns: &bsp-extras-patterns
+  - "yocto/meta-arm-bsp-extras/**/*"
+
+.arm-auto-solutions-patterns: &arm-auto-solutions-patterns
+  - "yocto/meta-arm-auto-solutions/**/*"
+  - "yocto/meta-arm-safety-island/**/*"
 
 .components-patterns: &components-patterns
   - "components/**/*"
@@ -33,15 +37,25 @@ workflow:
   rules:
     - if: '$CI_PIPELINE_SOURCE != "push" || $RUN_PIPELINE != null'
 
-# Build image rules
-.build-image:rules:
+# arm-auto-solutions build image rules
+.build-arm-auto-solutions:rules:
   rules:
     - <<: *if-build-enable-regex
     - <<: *if-scheduled-or-manual
     - <<: *if-api-or-pipeline
     - changes: *ci-patterns
-    - changes: *yocto-patterns
+    - changes: *bsp-extras-patterns
+    - changes: *arm-auto-solutions-patterns
     - changes: *components-patterns
+
+# bsp-extras build image rules
+.build-bsp-extras:rules:
+  rules:
+    - <<: *if-build-enable-regex
+    - <<: *if-scheduled-or-manual
+    - <<: *if-api-or-pipeline
+    - changes: *ci-patterns
+    - changes: *bsp-extras-patterns
 
 # Layer check rules
 .layer-check:rules:
@@ -50,4 +64,5 @@ workflow:
     - <<: *if-scheduled-or-manual
     - <<: *if-api-or-pipeline
     - changes: *ci-patterns
-    - changes: *yocto-patterns
+    - changes: *bsp-extras-patterns
+    - changes: *arm-auto-solutions-patterns

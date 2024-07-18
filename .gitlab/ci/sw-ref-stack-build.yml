@@ -114,8 +114,6 @@
         ${GENERATE_BUILD_INFO_JOB} != "true" ]]; then exit; fi
     - .gitlab/scripts/jf_setup.sh
     - .gitlab/scripts/upload_image.sh
-  rules:
-    - !reference [".build-image:rules", rules]
 
 build-retention:
   stage: .pre
@@ -137,6 +135,8 @@ build-retention:
     KUBERNETES_MEMORY_LIMIT: 17Gi
     KUBERNETES_MEMORY_REQUEST: 16Gi
     KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 30Gi
+  rules:
+    - !reference [".build-bsp-extras:rules", rules]
 
 Bsp-Image-Build-base:
   extends: .kas_image_build_arm_bsp_extras
@@ -193,6 +193,8 @@ Bsp-Image-Build-systemready-linux-distros-opensuse:
       or '${FREQUENCY}' != 'adhoc' \
       or bb.utils.contains('EXTRA_IMAGE_FEATURES', 'virtualization', \
       False, True, d) else ''}"
+  rules:
+    - !reference [".build-arm-auto-solutions:rules", rules]
 
 Image-Build-baremetal:
   extends: .kas_image_build_arm_auto_solutions
