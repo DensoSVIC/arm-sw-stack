@@ -1,0 +1,75 @@
+From 18534ddde9e4b1d1c5ab7ee258ee76a9f8d8de29 Mon Sep 17 00:00:00 2001
+From: Michael Zhao <michael.zhao2@arm.com>
+Date: Thu, 18 Jul 2024 19:57:46 +0100
+Subject: [PATCH] efi: vexpress64: fwu: update RPC ABI
+
+The Trusted Services RPC protocol format changed: the data has to be
+placed in w3 and the memory handle has to be placed in w4-w5.
+
+Upstream-Status: Pending
+Signed-off-by: Bence Balogh <bence.balogh@arm.com>
+Signed-off-by: Michael Zhao <michael.zhao2@arm.com>
+---
+ lib/efi_loader/efi_capsule.c | 14 +++++++++++---
+ lib/efi_loader/efi_setup.c   | 14 +++++++++++---
+ 2 files changed, 22 insertions(+), 6 deletions(-)
+
+diff --git a/lib/efi_loader/efi_capsule.c b/lib/efi_loader/efi_capsule.c
+index cef7667b23..e4bc584637 100644
+--- a/lib/efi_loader/efi_capsule.c
++++ b/lib/efi_loader/efi_capsule.c
+@@ -787,12 +787,20 @@ static int __efi_runtime efi_fvp_buffer_ready_event(u32 capsule_image_size)
+ 	}
+ 
+ 	/*
+-	 * setting the buffer ready event arguments in register w4:
++	 * setting the buffer ready event arguments in register w3:
+ 	 * - capsule update interface ID (31:16)
+ 	 * - the buffer ready event ID (15:0)
+ 	 */
+-	msg.data1 = PREP_SEPROXY_SVC_ID(FVP_SEPROXY_UPDATE_SVC_ID) |
+-		PREP_SEPROXY_EVT(FVP_BUFFER_READY_EVT); /* w4 */
++	msg.data0 = PREP_SEPROXY_SVC_ID(FVP_SEPROXY_UPDATE_SVC_ID) |
++		PREP_SEPROXY_EVT(FVP_BUFFER_READY_EVT); /* w3 */
++
++	/*
++	 * setting the memory handle fields to
++	 * FFA_MEM_HANDLE_INVALID (0xFFFF_FFFF_FFFF_FFFF)
++	 * to signal that there is no shared memory used
++	 */
++	msg.data1 = 0xFFFFFFFF;	/* w4 */
++	msg.data2 = 0xFFFFFFFF; /* w5 */
+ 
+ 	return ffa_sync_send_receive(dev, FVP_SEPROXY_PART_ID, &msg, 0);
+ }
+diff --git a/lib/efi_loader/efi_setup.c b/lib/efi_loader/efi_setup.c
+index 996982c331..64487294cd 100644
+--- a/lib/efi_loader/efi_setup.c
++++ b/lib/efi_loader/efi_setup.c
+@@ -159,12 +159,20 @@ static int efi_fvp_uboot_efi_started_event(void)
+ 	}
+ 
+ 	/*
+-	 * setting the kernel started  event arguments:
++	 * setting the kernel started  event arguments in register w3:
+ 	 * setting capsule update interface ID(31:16)
+ 	 * the kernel started event ID(15:0)
+ 	 */
+-	msg.data1 = PREP_SEPROXY_SVC_ID(FVP_SEPROXY_UPDATE_SVC_ID) |
+-			PREP_SEPROXY_EVT(FVP_UBOOT_EFI_STARTED_EVT); /* w4 */
++	msg.data0 = PREP_SEPROXY_SVC_ID(FVP_SEPROXY_UPDATE_SVC_ID) |
++			PREP_SEPROXY_EVT(FVP_UBOOT_EFI_STARTED_EVT); /* w3 */
++
++	/*
++	 * setting the memory handle fields to
++	 * FFA_MEM_HANDLE_INVALID (0xFFFF_FFFF_FFFF_FFFF)
++	 * to signal that there is no shared memory used
++	 */
++	msg.data1 = 0xFFFFFFFF;	/* w4 */
++	msg.data2 = 0xFFFFFFFF; /* w5 */
+ 
+ 	return ffa_sync_send_receive(dev, FVP_SEPROXY_PART_ID, &msg, 0);
+ }
+-- 
+2.34.1
+
