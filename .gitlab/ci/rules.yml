@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -12,15 +12,6 @@
 
 .if-api-or-pipeline: &if-api-or-pipeline
   if: '$CI_PIPELINE_SOURCE == "api" || $CI_PIPELINE_SOURCE == "pipeline"'
-
-.if-parent-pipeline: &if-parent-pipeline
-  if: '$CI_PIPELINE_SOURCE == "parent_pipeline"'
-
-.if-nightly: &if-nightly
-  if: '$FREQUENCY == "nightly"'
-
-.if-weekly: &if-weekly
-  if: '$FREQUENCY == "weekly"'
 
 # Changes patterns
 .ci-patterns: &ci-patterns
@@ -57,8 +48,4 @@
     - <<: *if-merge-request-or-push
       changes: *ci-patterns
     - <<: *if-merge-request-or-push
-      changes: *yocto-patterns
-    - <<: *if-parent-pipeline
-      changes: *ci-patterns
-    - <<: *if-parent-pipeline
       changes: *yocto-patterns
