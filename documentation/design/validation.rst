@@ -29,12 +29,13 @@ The tests are run on the image using the oeqa test framework. Refer to
 In this section, details on the structure, implementation and debugging of the
 tests is given.
 
-OEQA tests in meta-arm
-======================
+OEQA tests used by the BSP
+==========================
 
 The Processing Elements and Components tested by the framework are detailed
 below.
 The testing scripts can be found in
+:repo:`yocto/meta-arm-bsp-extras/lib/oeqa/runtime/cases` and
 :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/`.
 
 All of the Processing Elements and Components have their terminal output logged
@@ -47,39 +48,32 @@ for debugging.
     and the NI-710AE. Then the test waits for the RSS to log that it is releasing
     the SCP. This is its last action as part of the RSS boot process.
 
- * SCP
-    The script that implements the test is
-    :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/test_00_scp.py`.
-    The test waits for the SCP to log that it has successfully initialized and
-    started all of its internal modules. It also checks whether the SCP has
-    logged any errors, in which case the test fails.
-
  * Primary Compute
-    * BSP
+    * FVP devices
        The entry point to these tests is
        :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/fvp_devices.py`. To find
-       out more about the applicable tests, refer to :ref:`design_bsp_tests`.
+       out more about the applicable tests, refer to
+       :ref:`design_fvp_device_tests`.
 
-    * TF-A
+    * FVP boot
        The script that implements the test is
-       :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/test_00_trusted_firmware_a.py`.
-       The test waits for the Primary Compute to log that it is entering the
-       Normal world as defined in the RSS boot process.
+       :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/fvp_boot.py`. The test
+       waits for Linux to boot on the Primary Compute then checks for common error
+       patterns on all consoles.
 
     * OP-TEE
        The script that implements the test is
-       :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/test_00_secure_partition.py`.
+       :repo:`yocto/meta-arm-bsp-extras/lib/oeqa/runtime/cases/test_00_secure_partition.py`.
        The test waits for the Primary Compute to log that OP-TEE loads the
        required SPs (Secure Partitions) and primary CPU switches to Normal world
        boot.
 
-.. _design_bsp_tests:
+.. _design_fvp_device_tests:
 
-BSP Tests
-=========
+FVP Device Tests
+================
 
-
-The BSP Tests consist of a series of device tests that can be found in
+These tests consist of a series of device tests that can be found in
 :meta-arm-repo:`meta-arm/lib/oeqa/runtime/cases/fvp_devices.py`.
 
 * networking
