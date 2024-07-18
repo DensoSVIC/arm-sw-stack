@@ -10,6 +10,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files/${MACHINE}:"
 SRC_URI:append = " \
     file://0003-check-sr-results-Change-the-expected-SR-result-confi.patch \
     file://0004-check-sr-results-Change-extra-compat.patch \
+    file://0005-check-sr-results.yaml-Reset-SCT-failure-number-to-0.patch \
 "
 # cSpell: enable
 
