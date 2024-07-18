@@ -99,6 +99,11 @@ The layer dependency sources and their revisions for the ``kronos`` repository
     branch: |meta-openembedded branch|
     revision: |meta-openembedded revision|
 
+    URL: |meta-ptx repository|
+    layers: meta-ptx
+    branch: |meta-ptx branch|
+    revision: |meta-ptx revision|
+
     URL: |meta-security repository|
     layers: meta-parsec
     branch: |meta-security branch|

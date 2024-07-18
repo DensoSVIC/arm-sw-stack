@@ -216,6 +216,9 @@ rst_prolog = f"""
 .. |meta-openembedded branch| replace:: {yocto_version}
 .. |meta-openembedded repository| replace:: https://git.openembedded.org/meta-openembedded
 .. |meta-openembedded revision| replace:: HEAD
+.. |meta-ptx branch| replace:: {yocto_version}
+.. |meta-ptx repository| replace:: https://github.com/pengutronix/meta-ptx
+.. |meta-ptx revision| replace:: HEAD
 .. |meta-security branch| replace:: {yocto_version}
 .. |meta-security repository| replace:: https://git.yoctoproject.org/git/meta-security
 .. |meta-security revision| replace:: HEAD
