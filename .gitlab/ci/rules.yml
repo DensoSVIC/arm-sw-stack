@@ -4,9 +4,6 @@
 # SPDX-License-Identifier: MIT
 ---
 # Conditions
-.if-merge-request-or-push: &if-merge-request-or-push
-  if: '$CI_MERGE_REQUEST_IID || $CI_PIPELINE_SOURCE == "push"'
-
 .if-scheduled-or-manual: &if-scheduled-or-manual
   if: '$CI_PIPELINE_SOURCE == "schedule" || $CI_PIPELINE_SOURCE == "web"'
 
@@ -28,24 +25,23 @@
 .components-patterns: &components-patterns
   - "components/**/*"
 
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "push" || $RUN_PIPELINE != null'
+
 # Build image rules
 .build-image:rules:
   rules:
     - <<: *if-scheduled-or-manual
     - <<: *if-api-or-pipeline
-    - <<: *if-merge-request-or-push
-      changes: *ci-patterns
-    - <<: *if-merge-request-or-push
-      changes: *yocto-patterns
-    - <<: *if-merge-request-or-push
-      changes: *components-patterns
+    - changes: *ci-patterns
+    - changes: *yocto-patterns
+    - changes: *components-patterns
 
 # Layer check rules
 .layer-check:rules:
   rules:
     - <<: *if-scheduled-or-manual
     - <<: *if-api-or-pipeline
-    - <<: *if-merge-request-or-push
-      changes: *ci-patterns
-    - <<: *if-merge-request-or-push
-      changes: *yocto-patterns
+    - changes: *ci-patterns
+    - changes: *yocto-patterns
