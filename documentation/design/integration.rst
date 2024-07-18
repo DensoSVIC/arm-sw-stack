@@ -14,21 +14,27 @@ integrate and validate the :ref:`Use-Cases <overview_use_cases>`.
 The Yocto Project version used by the Reference Software Stack
 is |yocto version|.
 
-***********************************
-meta-arm-auto-solutions Yocto Layer
-***********************************
+*******************************
+meta-arm-bsp-extras Yocto Layer
+*******************************
 
-The ``meta-arm-auto-solutions`` layer depends on the ``meta-arm-bsp`` layer
+The ``meta-arm-bsp-extras`` layer primarily depends on the ``meta-arm`` layer
 which implements the ``fvp-rd-kronos`` bitbake ``MACHINE`` definition to enable
 the Arm Automotive Solutions to run on the Arm Kronos Reference Design FVP
 (FVP_RD_Kronos).
 
-The layer ``meta-arm-auto-solutions`` is based on the `Cassini`_ distribution.
+***********************************
+meta-arm-auto-solutions Yocto Layer
+***********************************
+
+The ``meta-arm-auto-solutions`` layer is based on the `Cassini`_ distribution.
 It also contains a set of bitbake bbclasses, recipes and libraries to build,
 integrate, and validate the :ref:`overview_use_cases` with either or both the
 **Baremetal** and **Virtualization** Reference Software Stack Architectures
 as described in :ref:`Reference Software Stack Overview
 <overview_reference_software_stack_overview>`.
+
+It depends on a BSP layer such as the ``meta-arm-bsp-extras`` layer.
 
 The layer source code can be found at :repo:`yocto/meta-arm-auto-solutions`.
 
