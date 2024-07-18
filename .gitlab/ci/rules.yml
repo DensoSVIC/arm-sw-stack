@@ -10,6 +10,10 @@
 .if-api-or-pipeline: &if-api-or-pipeline
   if: '$CI_PIPELINE_SOURCE == "api" || $CI_PIPELINE_SOURCE == "pipeline"'
 
+.if-build-enable-regex: &if-build-enable-regex
+  if: '$BUILD_ENABLE_REGEX != null && $CI_JOB_NAME !~ $BUILD_ENABLE_REGEX'
+  when: never
+
 # Changes patterns
 .ci-patterns: &ci-patterns
   - ".gitlab-ci.yml"
@@ -32,6 +36,7 @@ workflow:
 # Build image rules
 .build-image:rules:
   rules:
+    - <<: *if-build-enable-regex
     - <<: *if-scheduled-or-manual
     - <<: *if-api-or-pipeline
     - changes: *ci-patterns
@@ -41,6 +46,7 @@ workflow:
 # Layer check rules
 .layer-check:rules:
   rules:
+    - <<: *if-build-enable-regex
     - <<: *if-scheduled-or-manual
     - <<: *if-api-or-pipeline
     - changes: *ci-patterns
