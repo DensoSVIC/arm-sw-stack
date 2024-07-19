@@ -9,6 +9,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files/${MACHINE}:"
 # cSpell: disable
 SRC_URI:append = " \
     file://0003-check-sr-results-Change-the-expected-SR-result-confi.patch \
+    file://0004-check-sr-results-Change-extra-compat.patch \
 "
 # cSpell: enable
 

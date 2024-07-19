@@ -1,0 +1,41 @@
+From 187b15f7ce3397f8bbe05c844d598be8449d6b00 Mon Sep 17 00:00:00 2001
+From: Jun Wu <jun.wu@arm.com>
+Date: Mon, 15 Jul 2024 15:47:18 +0000
+Subject: [PATCH] check-sr-results: Change extra_compat
+
+Update the check-sr-results.yaml for the Kronos Systemready IR
+suite. These changes are required to ignore the missing schema
+warnings from devicetree validation by extra_compat
+
+  1. 'arm,rd1-ae' is the preferred root node compatible
+  2. 'arm,neoverse-v3ae' is accurate for cpu<n> node
+  3. 'cache' has its binding in dt-schema at
+    https://github.com/devicetree-org/dt-schema/blob/main
+    /dtschema/schemas/cache.yaml
+
+Upstream-Status: Inappropriate [Kronos-specific update]
+Signed-off-by: Jun Wu <jun.wu@arm.com>
+---
+ check-sr-results.yaml | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/check-sr-results.yaml b/check-sr-results.yaml
+index f81a74520682..b37e0acac9dc 100644
+--- a/check-sr-results.yaml
++++ b/check-sr-results.yaml
+@@ -335,10 +335,9 @@ tree:
+           - file: BsaDevTree.dtb
+             devicetree:
+             extra_compat:
+-              - arm,rd-kronos
+-              - arm,neoverse
++              - arm,rd1-ae
++              - arm,neoverse-v3ae
+               - arm,slc
+-              - cache
+               - arm,mpam-msc
+               - arm,mhuv3
+               - arm,si-rproc
+-- 
+2.34.1
+
