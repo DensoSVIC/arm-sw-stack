@@ -11,7 +11,7 @@
 
 / {
 	model = "RD Kronos";
-	compatible = "arm,rd-kronos", "arm,neoverse";
+	compatible = "arm,rd1-ae";
 	interrupt-parent = <&gic>;
 	#address-cells = <2>;
 	#size-cells = <2>;
