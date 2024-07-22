@@ -132,8 +132,8 @@ build-retention:
   extends: .kas_image_build_sw_ref_stack
   variables:
     KUBERNETES_CPU_REQUEST: '16'
-    KUBERNETES_MEMORY_LIMIT: 17Gi
-    KUBERNETES_MEMORY_REQUEST: 16Gi
+    KUBERNETES_MEMORY_LIMIT: 24Gi
+    KUBERNETES_MEMORY_REQUEST: 24Gi
     KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 30Gi
   rules:
     - !reference [".build-bsp-extras:rules", rules]
