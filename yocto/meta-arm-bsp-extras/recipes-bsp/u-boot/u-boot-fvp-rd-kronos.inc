@@ -57,5 +57,6 @@ SRC_URI:append:fvp-rd-kronos = " \
         file://0046-efi-vexpress64-Change-EFI_FIRMWARE_IMAGE_TYPE_UBOOT_.patch \
         file://0047-vexpress64-Respect-Kronos-memory-map-for-the-second-.patch \
         file://0048-efi_loader-Add-Update-Capsule-flags-check.patch \
+        file://0049-efi-workaround-of-Scatter-Gather-List-hard-coded-val.patch  \
         file://kronos.cfg \
         "

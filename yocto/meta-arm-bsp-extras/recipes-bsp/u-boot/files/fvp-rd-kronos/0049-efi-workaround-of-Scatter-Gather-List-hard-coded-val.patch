@@ -1,0 +1,76 @@
+From acb942923f46c1462f4282f5652ef0dd1cd59c9f Mon Sep 17 00:00:00 2001
+From: David Hu <david.hu2@arm.com>
+Date: Tue, 23 Jul 2024 13:11:41 +0100
+Subject: [PATCH] efi: workaround of Scatter Gather List hard-coded value
+
+According to UEFI sepcs, Scatter Gather List value shall not be 0 when
+flag CAPSULE_FLAGS_PERSIST_ACROSS_RESET is set.
+As the support of Scatter Gather List is not implemented yet, U-Boot
+hard code Scatter Gather List to 0. It fails in Update Capsule flag
+checks.
+
+Hard code Scatter Gather List to 1 instead as a workaround to pass
+Update Capsule flag checks.
+
+Upstream-Status: Inappropriate [Capsule update interface should be redesigned]
+
+Signed-off-by: Emekcan Aras <emekcan.aras@arm.com>
+Signed-off-by: David Hu <david.hu2@arm.com>
+---
+ cmd/efidebug.c               | 11 +++++++++++
+ lib/efi_loader/efi_capsule.c | 15 ++++++++++-----
+ 2 files changed, 21 insertions(+), 5 deletions(-)
+
+diff --git a/cmd/efidebug.c b/cmd/efidebug.c
+index 9622430c47..00f6f4a739 100644
+--- a/cmd/efidebug.c
++++ b/cmd/efidebug.c
+@@ -75,7 +75,18 @@ static int do_efi_capsule_update(struct cmd_tbl *cmdtp, int flag,
+ 		       capsule->capsule_image_size);
+ 	}
+ 
++#if IS_ENABLED(CONFIG_TARGET_VEXPRESS64_BASE_FVP)
++	/*
++	 * The support of scatter_gather_list is not implemented yet.
++	 * According to UEFI specs, scatter_gather_list shall not be 0 when
++	 * CAPSULE_FLAGS_PERSIST_ACROSS_RESET is set.
++	 * Set scatter_gather_list to 1 as a workaround to keep compatible with
++	 * UEFI specs.
++	 */
++	ret = EFI_CALL(efi_update_capsule(&capsule, 1, 1));
++#else
+ 	ret = EFI_CALL(efi_update_capsule(&capsule, 1, 0));
++#endif
+ 	if (ret) {
+ 		printf("Cannot handle a capsule at %p\n", capsule);
+ 		return CMD_RET_FAILURE;
+diff --git a/lib/efi_loader/efi_capsule.c b/lib/efi_loader/efi_capsule.c
+index 7e8073ac17..cef7667b23 100644
+--- a/lib/efi_loader/efi_capsule.c
++++ b/lib/efi_loader/efi_capsule.c
+@@ -1489,12 +1489,17 @@ efi_status_t efi_launch_capsules(void)
+ 			index = 0;
+ 		ret = efi_capsule_read_file(files[i], &capsule);
+ 		if (ret == EFI_SUCCESS) {
+-			#if IS_ENABLED(CONFIG_TARGET_CORSTONE1000) || IS_ENABLED(CONFIG_TARGET_VEXPRESS64_BASE_FVP)
+-			/* capsule update only supports 1 image and no scatter gather list for corstone1000 and vexpress64 */
+-			efi_update_capsule(&capsule, 1, 0);
+-			#else
++#if IS_ENABLED(CONFIG_TARGET_CORSTONE1000) || IS_ENABLED(CONFIG_TARGET_VEXPRESS64_BASE_FVP)
++			/*
++			 * Capsule update only supports 1 image.
++			 * The support of scatter_gather_list is not implemented yet.
++			 * Set scatter_gather_list to 1 as a workaround to pass capsule flag
++			 * checks required in UEFI specs.
++			 */
++			ret = efi_update_capsule(&capsule, 1, 1);
++#else
+ 			ret = efi_capsule_update_firmware(capsule);
+-			#endif
++#endif
+ 			if (ret != EFI_SUCCESS) {
+ 				log_err("Applying capsule %ls failed.\n",
+ 					files[i]);
+-- 
+2.34.1
+
