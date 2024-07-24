@@ -60,4 +60,8 @@ SRC_URI:append:fvp-rd-kronos = " \
         file://0049-efi-workaround-of-Scatter-Gather-List-hard-coded-val.patch  \
         file://0050-efi-vexpress64-fwu-update-RPC-ABI.patch \
         file://kronos.cfg \
+	file://boot.cmd \
         "
+# Generate U-Boot script 'boot.scr'
+UBOOT_ENV = "boot"
+UBOOT_ENV_SUFFIX = "scr"

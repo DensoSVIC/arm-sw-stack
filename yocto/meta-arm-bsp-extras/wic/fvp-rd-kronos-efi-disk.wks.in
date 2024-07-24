@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-part /boot --label boot --active --align 1024 --use-uuid --part-type EF00 --source bootimg-efi --sourceparams="loader=${EFI_PROVIDER}"
+part /boot --label boot --active --align 1024 --size 64M --use-uuid --part-type EF00 --source bootimg-efi --sourceparams="loader=${EFI_PROVIDER}"
 
 part / --label root --align 1024 --use-uuid --source rootfs --fstype=ext4
 
