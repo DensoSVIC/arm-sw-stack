@@ -29,12 +29,13 @@ Changed
 * Upgraded from Yocto nanbield to scarthgap
 * Introduced the Yocto layer meta-arm-safety-island
 * Removed LCP from the boot flow
-* Aligned the number of supported MHUv3 channels with the RSS specification
+* Aligned the number of supported MHUv3 channels with the RSE specification
 * Enabled TF-A Trusted Board Boot (TBB)
 * Enabled PSA Internal Trusted Storage API on Primary Compute
 * Added an AP_REFCLK non-secure Generic Timer node in Kronos device tree
 * Updated identified non-alignments on RD-Kronos for Devicetree missing schemas
 * Introduced Safety Island GIC FMU device for Safety Island Cluster 1 and automated tests.
+* Runtime Security Subsystem (RSE) has been renamed to Runtime Security Engine (RSE) since TF-M v2.1.0.
 
 .. _releasenotes_limitations:
 

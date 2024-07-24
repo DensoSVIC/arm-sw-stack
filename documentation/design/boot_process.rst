@@ -8,22 +8,22 @@
 Boot Process
 ############
 
-.. _design_boot_process_rss-oriented_boot_flow:
+.. _design_boot_process_rse-oriented_boot_flow:
 
 **********************
-RSS-oriented Boot Flow
+RSE-oriented Boot Flow
 **********************
 
-The :ref:`design_components_rss` is the root of trust chain. It is the
+The :ref:`design_components_rse` is the root of trust chain. It is the
 first booting element when the system is powered up.
 
-The boot sequence is shown in the RSS-oriented Boot Flow diagram below
+The boot sequence is shown in the RSE-oriented Boot Flow diagram below
 :ref:`design_boot_process_boot_flow` section.
 
-The RSS uses a NVM flash to store the images of various components, including:
+The RSE uses a NVM flash to store the images of various components, including:
 
-* RSS BL2 image
-* RSS Runtime image
+* RSE BL2 image
+* RSE Runtime image
 * SCP RAM Firmware (SCP RAMFW) image
 * Safety Island Cluster 0 (SI CL0) image
 * Safety Island Cluster 1 (SI CL1) image
@@ -46,7 +46,7 @@ Image Signing
 
 A RSA private key is stored in TF-M's source code repository (the
 ``bl2/ext/mcuboot/root-RSA-3072.pem`` file) for testing. The private key is used
-to sign the images listed above that RSS BL2 loads.
+to sign the images listed above that RSE BL2 loads.
 
 In the Yocto build stage of the platform, a shell function
 ``sign_host_image()`` is used to sign the images, which can be found at
@@ -60,11 +60,11 @@ A public key is derived from the private key for authenticating the signed
 images. The public key is also known as the Root of Trust Public Key (ROTPK). It
 is also written in the NVM flash in the build stage. The hash of the public key
 is written in the ``dm_dummy_provisioning_data.c`` file of the TF-M source code
-folder ``platform/ext/target/arm/rss/common/provisioning/bundle_dm/``.
+folder ``platform/ext/target/arm/rse/common/provisioning/bundle_dm/``.
 
 During the system's first boot, the hash of the public key is provisioned into
 the OTP by BL1_1. More details on the provisioning can be found in the
-`RSS provisioning`_ page. Once the provisioning stage has been completed, the
+`RSE provisioning`_ page. Once the provisioning stage has been completed, the
 OTP contents cannot be updated.
 
 BL2 reads the public key from the NVM flash and validates the public key against
@@ -93,34 +93,34 @@ refer to the documentation of `imgtool`_ which is provided by MCUboot.
 Boot Flow
 =========
 
-The following diagram illustrates the boot flow that originates from the RSS.
+The following diagram illustrates the boot flow that originates from the RSE.
 
 |
 
-.. image:: ../images/rss_oriented_boot_flow.*
+.. image:: ../images/rse_oriented_boot_flow.*
    :align: center
-   :alt: RSS-oriented Boot Flow
+   :alt: RSE-oriented Boot Flow
 
 |
 
 Major steps of the boot flow:
 
-1. RSS BL1_1:
+1. RSE BL1_1:
 
    * Begins executing in place from ROM when the system is powered up
-   * Provisions RSS BL1_2 and various keys and other data from the provisioning
+   * Provisions RSE BL1_2 and various keys and other data from the provisioning
      bundle to the OTP (This step only happens on the system's first boot)
-   * Copies the RSS BL1_2 image from the OTP to the SRAM
-   * Validates RSS BL1_2 against the hash stored in the OTP
-   * Transfers the execution to RSS BL1_2
+   * Copies the RSE BL1_2 image from the OTP to the SRAM
+   * Validates RSE BL1_2 against the hash stored in the OTP
+   * Transfers the execution to RSE BL1_2
 
-2. RSS BL1_2:
+2. RSE BL1_2:
 
-   * Copies the encrypted RSS BL2 image from flash into the SRAM
-   * Decrypts the RSS BL2 image
-   * Transfers the execution to RSS BL2
+   * Copies the encrypted RSE BL2 image from flash into the SRAM
+   * Decrypts the RSE BL2 image
+   * Transfers the execution to RSE BL2
 
-3. RSS BL2:
+3. RSE BL2:
 
    * Copies the SCP RAMFW image from flash to SCP SRAM and authenticates the
      image

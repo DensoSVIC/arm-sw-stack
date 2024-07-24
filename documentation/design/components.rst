@@ -18,7 +18,7 @@ Arm Automotive Solutions comprises of the following main components:
   * - Component
     - Version
     - Source
-  * - :ref:`design_components_rss` (Trusted Firmware-M)
+  * - :ref:`design_components_rse` (Trusted Firmware-M)
     - |Trusted Firmware-M version| (based on |Trusted Firmware-M base version|)
     - `Trusted Firmware-M repository`_
   * - :ref:`design_components_scp-firmware`
@@ -46,24 +46,20 @@ Arm Automotive Solutions comprises of the following main components:
     - |Zephyr version|
     - `Zephyr repository`_
 
-.. _design_components_rss:
+.. _design_components_rse:
 
 ***
-RSS
+RSE
 ***
 
 The `Runtime Security Engine (RSE)`_ is a security subsystem, which
 additionally adds an isolated environment to provide platform security services.
 
-.. note::
-  Runtime Security Subsystem (RSS) has been renamed to Runtime Security Engine
-  (RSE) since TF-M v2.1.0.
-
-The RSS serves as the Root of Trust for the system, offering critical platform
+The RSE serves as the Root of Trust for the system, offering critical platform
 security services and holding and protecting the most sensitive assets in the
 system.
 
-In the current software stack, the RSS offers:
+In the current software stack, the RSE offers:
 
 * Secure boot, further details of which can be found in the `TF-M Secure boot`_
   documentation.
@@ -81,19 +77,24 @@ In the current software stack, the RSS offers:
   in a PSA RoT secure partition. Further details can be found in the
   `TF-M Internal Trusted Storage Service`_ documentation.
 
-The RSS internally consists of 3 boot loaders and a runtime. The following
-diagram illustrates the high-level software structure of the RSS and some
+.. note::
+  The Runtime Security Subsystem (RSS) has been renamed to the Runtime Security
+  Engine (RSE) since TF-M v2.1.0. The downstream patches are not updated and the
+  source code mentions the RSS.
+
+The RSE internally consists of 3 boot loaders and a runtime. The following
+diagram illustrates the high-level software structure of the RSE and some
 relevant external components.
 
 |
 
-.. image:: ../images/rss_software_structure_simplified.*
+.. image:: ../images/rse_software_structure_simplified.*
    :align: center
-   :alt: RSS Software Structure
+   :alt: RSE Software Structure
 
 |
 
-The :ref:`design_secure_services` section provides more details of the RSS
+The :ref:`design_secure_services` section provides more details of the RSE
 Runtime and the relevant components.
 
 .. note::
@@ -105,7 +106,7 @@ Runtime and the relevant components.
 Memory Map
 ==========
 
-The Runtime Security Subsystem (RSS) maps the Primary Compute, System Control
+The Runtime Security Engine (RSE) maps the Primary Compute, System Control
 Processor (SCP), and Safety Island Clusters 0, 1, and 2 system memory regions
 via an Address Translation Unit (ATU) device to dedicated address spaces. This
 mapping allows access to those components memories and enables the transfer of
@@ -137,16 +138,16 @@ the boot images.
 Boot Loaders
 ============
 
-Refer to :ref:`design_boot_process_rss-oriented_boot_flow` for more details
+Refer to :ref:`design_boot_process_rse-oriented_boot_flow` for more details
 on the boot process.
 
 Runtime
 =======
 
-The RSS Runtime provides Crypto Service, PS Service and ITS Service as described
+The RSE Runtime provides Crypto Service, PS Service and ITS Service as described
 above. See :ref:`design_secure_services` for more details.
 
-.. _design_components_rss_gic_multiple_views:
+.. _design_components_rse_gic_multiple_views:
 
 GIC Multiple Views
 ==================
@@ -157,7 +158,7 @@ can be used by multiple operating systems.
 
 |
 
-.. image:: ../images/rss_gic_multiple_view.*
+.. image:: ../images/rse_gic_multiple_view.*
    :align: center
    :alt: GIC Multiple Views Overview
 
@@ -165,12 +166,12 @@ can be used by multiple operating systems.
 
 The Safety Island GIC provides 4 programming views:
 
-* View-0: Used by RSS to configure View-1/2/3 for Safety Island Cluster-0/1/2.
+* View-0: Used by RSE to configure View-1/2/3 for Safety Island Cluster-0/1/2.
 * View-1: Used by Operating System on Safety Island Cluster-0.
 * View-2: Used by Operating System on Safety Island Cluster-1.
 * View-3: Used by Operating System on Safety Island Cluster-2.
 
-.. _design_components_rss_ni710ae:
+.. _design_components_rse_ni710ae:
 
 |CoreLink| NI-710AE Network-on-Chip Interconnect
 ================================================
@@ -179,27 +180,27 @@ The `CoreLink NI-710AE Network-on-Chip Interconnect`_ is a highly
 configurable |AMBA|-compliant system-level interconnect that enables
 functional safety for automotive and industrial applications. On the
 RD-Kronos platform, the NI-710AE handles traffic from four managers,
-i.e. Safety Island CPU cluster 0/1/2 and the RSS. It provides
+i.e. Safety Island CPU cluster 0/1/2 and the RSE. It provides
 capabilities for these managers to access their corresponding
 subordinates. It also provides the capabilities for the subordinates
 to be exclusive to a certain manager or be shared among multiple
-managers during the different stages of RSS booting.
+managers during the different stages of RSE booting.
 
 On Kronos, the configuration of NI-710AE is split to two stages, namely
 the discovery stage and the programming stage, both stages are done in
-RSS BL2. In the discovery stage, software can determine the structure
+RSE BL2. In the discovery stage, software can determine the structure
 of the NI-710AE domains, components, and subfeatures without previous
 knowledge of the configuration, based on the the base address of the
 configuration space. Then, the pre-defined APU tables are programmed
-to the APUs of the NI-710AE interfaces, and the RSS BL2 continues its
+to the APUs of the NI-710AE interfaces, and the RSE BL2 continues its
 normal boot process.
 
-.. _design_components_rss_downstream_changes:
+.. _design_components_rse_downstream_changes:
 
 Downstream Changes - RD-Kronos
 ==============================
 
-Patches for the RSS are included at
+Patches for the RSE are included at
 :repo:`yocto/meta-arm-bsp-extras/recipes-bsp/trusted-firmware-m/files/fvp-rd-kronos/`
 to:
 
@@ -210,7 +211,7 @@ to:
 * Configure GIC View-1/2/3 for Safety Island.
 * Configure the NI-710AE of the Safety Island.
 * Support the runtime services listed above.
-* Add Secure Firmware Update support for RSS, SCP, Safety Island and Primary Compute.
+* Add Secure Firmware Update support for RSE, SCP, Safety Island and Primary Compute.
 * Add a shutdown handler to be able to shutdown the FVP.
 
 .. _design_components_scp-firmware:
@@ -247,25 +248,25 @@ The functionality of the SCP includes:
 MHUv3 Communication
 ===================
 
-There are MHUv3 devices between the Cortex-M core where the RSS runs and the
+There are MHUv3 devices between the Cortex-M core where the RSE runs and the
 Cortex-M core where SCP-firmware runs. In the transport layer of MHUv3,
-doorbell signals are exchanged between the RSS and SCP.
+doorbell signals are exchanged between the RSE and SCP.
 
 For RD-Kronos platform, MHUv3 signals are sent:
 
-* From SCP to the RSS to indicate that SCP has booted successfully
-* From the RSS to SCP to indicate the Primary Compute (PC) is ready to boot
-* From the RSS to SCP to notify the SCP that the image of a Safety Island (SI)
+* From SCP to the RSE to indicate that SCP has booted successfully
+* From the RSE to SCP to indicate the Primary Compute (PC) is ready to boot
+* From the RSE to SCP to notify the SCP that the image of a Safety Island (SI)
   cluster has been loaded to LLRAM and the cluster is ready to boot.
 
 The following diagram illustrates the MHUv3 communication sequence between
-the RSS and SCP.
+the RSE and SCP.
 
 |
 
-.. image:: ../images/mhuv3_comm_rss_scp.*
+.. image:: ../images/mhuv3_comm_rse_scp.*
    :align: center
-   :alt: MHUv3 Communication Between RSS and SCP
+   :alt: MHUv3 Communication Between RSE and SCP
 
 |
 
@@ -278,7 +279,7 @@ Patches for the SCP are included at
 :repo:`yocto/meta-arm-bsp-extras/recipes-bsp/scp-firmware/files/fvp-rd-kronos/` to:
 
 * Implement the RD-Kronos platform port, based on RD-Fremont.
-* Communicate with RSS via MHUv3 to conduct the boot flow.
+* Communicate with RSE via MHUv3 to conduct the boot flow.
 * Power on Safety Island.
 * Power on PC.
 * Add Primary Compute and Safety Island shared SRAM to Interconnect memory
@@ -400,7 +401,7 @@ to:
 
 * Implement the RD-Kronos platform port.
 * Support MHUv3 doorbell communication.
-* Support RSS communication protocol.
+* Support RSE communication protocol.
 * Support crypto and secure storage backends for the RD-Kronos platform.
 * Support transfer capsule update FF-A protocol.
 
@@ -419,7 +420,7 @@ In the current software stack, the U-Boot implementation of the UEFI subsystem
 uses the FF-A (`Arm Firmware Framework for Arm A-profile`_) driver to
 communicate with the `UEFI SMM Services`_ in the Secure world to store and read
 UEFI variables that are stored in the Protected Storage Service provided by the
-RSS.
+RSE.
 
 .. _design_components_u-boot_downstream_changes:
 

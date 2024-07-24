@@ -20,7 +20,7 @@ Security (TLS) connection is established, and a simple webpage is transferred.
 The TLS session consists of both symmetric and asymmetric cryptographic
 operations. In this demo, the symmetric operations are executed by `Mbed TLS`_
 in Linux userspace. The asymmetric operations are carried out by `Parsec`_. The
-backend of the Parsec service is based on the RSS crypto runtime service.
+backend of the Parsec service is based on the RSE crypto runtime service.
 
 ************
 Architecture
@@ -87,11 +87,11 @@ The following components are involved in the demo:
     Library of Mbed TLS. The driver implements a secure element by using the
     Parsec service. It delegates the crypto API calls to Parsec. The calls are
     further handled by the Secure Enclave Proxy Secure Partition (SE Proxy SP)
-    in the Secure world of Primary Compute and finally handled by the RSS crypto
+    in the Secure world of Primary Compute and finally handled by the RSE crypto
     service.
 
 For more information of how the operations are handled by Parsec service, the SE
-Proxy SP and the RSS, refer to :ref:`design_secure_services`.
+Proxy SP and the RSE, refer to :ref:`design_secure_services`.
 
 TLS Handshake
 =============
@@ -144,15 +144,15 @@ handshake steps:
 Once the handshake finishes successfully, the server and the client can exchange
 data securely, because the data is encrypted with a symmetric algorithm.
 
-Using RSS Crypto Service
+Using RSE Crypto Service
 ------------------------
 
 In the TLS handshake step ``3. Server Certificate`` and ``4. Server Key
 Exchange``, the client performs asymmetric crypto operations to verify digital
 signatures from the server side. The client invokes the Parsec Secure Element
 Driver in Mbed TLS to handle the asymmetric operations. Finally the operations
-are served by the RSS crypto runtime service. Specifically, the TLS client calls
-following APIs from the RSS for the asymmetric crypto operations:
+are served by the RSE crypto runtime service. Specifically, the TLS client calls
+following APIs from the RSE for the asymmetric crypto operations:
 
 * ``psa_import_key``
 

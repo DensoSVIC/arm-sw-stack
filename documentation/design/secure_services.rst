@@ -46,7 +46,7 @@ Management Mode (SMM).
 
 These Secure Services are provided by the `Trusted Services`_ project, and
 implemented by leveraging the `TrustZone`_ technology in the Primary Compute and
-the hardware-isolated secure enclave in the RSS.
+the hardware-isolated secure enclave in the RSE.
 
 The Reference Software Stack provides the implementation of Secure Services
 through both the Primary Compute and the Safety Island.
@@ -87,7 +87,7 @@ physical platform details.
 
 ``Parsec`` is configured to use Trusted Services in the Secure world as its
 backend. ``Parsec`` service calls the API provided by ``libts`` which further
-invokes the RSS for cryptographic services.
+invokes the RSE for cryptographic services.
 
 libts
 -----
@@ -108,12 +108,12 @@ SE Proxy SP
 -----------
 
 The `SE Proxy SP`_ (Secure Enclave Proxy Secure Partition) is a proxy partition
-managed by `OP-TEE`_. It provides access to services hosted by the RSS.
+managed by `OP-TEE`_. It provides access to services hosted by the RSE.
 
 The ``SE Proxy SP`` receives secure service operation requests from the Normal
 world, translates the request parameters to IPC calls, and invokes the runtime
-services provided by the RSS. The IPC is carried by Shared Memory and MHUv3
-Doorbell communication between the Primary Compute and the RSS.
+services provided by the RSE. The IPC is carried by Shared Memory and MHUv3
+Doorbell communication between the Primary Compute and the RSE.
 
 SMM Gateway SP
 --------------
@@ -121,7 +121,7 @@ SMM Gateway SP
 The `SMM Gateway SP`_ (System Management Mode Gateway Secure Partition) serves
 as a gateway for the variable storage required by the implementation of UEFI
 Boot and Runtime Services APIs. These UEFI variables are stored in the Protected
-Storage Service provided by the RSS.
+Storage Service provided by the RSE.
 
 The data flow to store UEFI variables is presented in the diagram at the
 beginning of the :ref:`design_primary_compute_secure_services_architecture`
@@ -161,15 +161,15 @@ The `PSA Crypto API`_ is implemented by the ``libmbedcrypto`` library of
 `Mbed TLS`_.
 
 Mbed TLS supports drivers for cryptographic accelerators, secure elements and
-random generators. An `RSS Communication Driver` is created to communicate with
-RSS for calling the crypto service that is provided there. The driver invokes
-the ``psa_call()`` interface to communicate with the RSS via MHUv3.
+random generators. An `RSE Communication Driver` is created to communicate with
+RSE for calling the crypto service that is provided there. The driver invokes
+the ``psa_call()`` interface to communicate with the RSE via MHUv3.
 
 By introducing the driver, different crypto operations can be handled in
 different ways:
 
-* Asymmetric crypto operations can be handled in RSS for enhanced security,
-  because the private key cannot leave RSS. The following Crypto APIs are
+* Asymmetric crypto operations can be handled in RSE for enhanced security,
+  because the private key cannot leave RSE. The following Crypto APIs are
   supported by the driver:
 
   Key management:
@@ -235,7 +235,7 @@ Two use cases are addressed by `PSA Secure Storage API`_:
     * ``psa_ps_get_support``
 
 All the PSA Secure Storage API interfaces use the ``psa_call()`` for
-communicating with the RSS.
+communicating with the RSE.
 
 The PSA APIs are thread safe in case of parallel API invocations from multiple
 threads within the same cluster or from different clusters, Where the
@@ -245,14 +245,14 @@ request completes.
 Memory Map
 ----------
 
-RSS shares dedicated SRAM with Safety Island Clusters 0, 1, and 2 and Primary
+RSE shares dedicated SRAM with Safety Island Clusters 0, 1, and 2 and Primary
 Compute.
 
 Safety Island side:
 
  Cluster 0:
 
-   * ``local_sram_rss_cl0`` : Used for data transfer between Cluster 0 and RSS
+   * ``local_sram_rse_cl0`` : Used for data transfer between Cluster 0 and RSE
 
     Refer to the device tree overlay below for more information about the memory
     addresses and region sizes.
@@ -261,7 +261,7 @@ Safety Island side:
 
  Cluster 1:
 
-   * ``local_sram_rss_cl1`` : Used for data transfer between Cluster 1 and RSS
+   * ``local_sram_rse_cl1`` : Used for data transfer between Cluster 1 and RSE
 
     Refer to the device tree overlay below for more information about the memory
     addresses and region sizes.
@@ -270,7 +270,7 @@ Safety Island side:
 
  Cluster 2:
 
-   * ``local_sram_rss_cl2`` : Used for data transfer between Cluster 2 and RSS
+   * ``local_sram_rse_cl2`` : Used for data transfer between Cluster 2 and RSE
 
     Refer to the device tree overlay below for more information about the memory
     addresses and region sizes.
@@ -279,27 +279,27 @@ Safety Island side:
 
 Primary Compute side:
 
- * ``rss_comms-virtio`` : Used for data transfer between SE Proxy SP in the Primary
-   Compute Secure World and RSS
+ * ``RSE_comms-virtio`` : Used for data transfer between SE Proxy SP in the Primary
+   Compute Secure World and RSE
 
-RSS communication
+RSE communication
 -----------------
 
-The RSS communication protocol is designed to be a lightweight serialization of
+The RSE communication protocol is designed to be a lightweight serialization of
 the ``psa_call()`` API through a combination of in-band MHUv3
 (Message Handling Unit) transport and parameter-passing through Shared Memory.
 
-To call an RSS service, the client must send a message in-band over the MHUv3
-sender link to RSS and wait for a reply message on the MHUv3 receiver.
+To call an RSE service, the client must send a message in-band over the MHUv3
+sender link to RSE and wait for a reply message on the MHUv3 receiver.
 The messages are defined as packed C structures, which are serialized in
 byte-order over the MHUv3 links.
 
 *******************
-RSS Secure Firmware
+RSE Secure Firmware
 *******************
 
-The Secure Services are finally served by the ``RSS Secure Firmware``. For more
-information about how the Secure Services work in the RSS, read the
+The Secure Services are finally served by the ``RSE Secure Firmware``. For more
+information about how the Secure Services work in the RSE, read the
 `TF-M Secure Services`_ page.
 
 Trusted Firmware-M has some limitations regarding the Secure Storage Service.

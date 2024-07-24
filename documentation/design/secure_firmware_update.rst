@@ -18,8 +18,8 @@ The Reference Software Stack implements Secure Firmware Update following
 the `Platform Security Firmware Update Specification`_. The following firmware
 images are included:
 
-  * RSS BL2 image
-  * RSS Runtime image
+  * RSE BL2 image
+  * RSE Runtime image
   * SCP RAM Firmware (SCP RAMFW) image
   * Safety Island Cluster 0 (SI CL0) image
   * Safety Island Cluster 1 (SI CL1) image
@@ -35,13 +35,13 @@ Architecture
 ************
 
 As standardized into the `Platform Security Firmware Update Specification`_,
-each one of the RSS flash and secure flash is divided into two banks, where one
+each one of the RSE flash and secure flash is divided into two banks, where one
 bank has the currently running images and the other bank is used for staging
 new images. The flash layouts are shown in the following figures.
 
-.. image:: ../images/rss_flash_layout.*
+.. image:: ../images/rse_flash_layout.*
    :align: center
-   :alt: RSS Flash Layout
+   :alt: RSE Flash Layout
 
 ..
   /* cspell:disable */
@@ -50,9 +50,9 @@ new images. The flash layouts are shown in the following figures.
 
   * MBR: Master Boot Record
   * GPT: GUUID Partition Table
-  * FWU MetaData: Used for RSS BL1 to select the correct bank to load and
-    boot the RSS BL2.
-  * FWU Private MetaData: Used for the RSS BL2 to select the correct bank to
+  * FWU MetaData: Used for RSE BL1 to select the correct bank to load and
+    boot the RSE BL2.
+  * FWU Private MetaData: Used for the RSE BL2 to select the correct bank to
     load and boot the SCP, SI, and the Primary Compute BL2.
 
 ..
@@ -86,15 +86,15 @@ following steps:
   2. The firmware upgrade process is initiated from the UEFI UpdateCapsule
      runtime service.
   3. The capsule image is then read and copied from the Primary Compute
-     disk to the Shared Memory between the Primary Compute and RSS.
+     disk to the Shared Memory between the Primary Compute and RSE.
   4. The Capsule Update service in SE Proxy SP handles the firmware update
-     request. It then sends a request to the RSS Platform Runtime Service to
+     request. It then sends a request to the RSE Platform Runtime Service to
      handle the firmware update request.
-  5. Once the RSS Platform service receives the firmware update request, it
+  5. Once the RSE Platform service receives the firmware update request, it
      firstly carries out validations of the header of the capsule, the version
      of the images, and the counter of the images, then copies the image from
-     the Shared Memory to the RSS flash, and finally updates the image to the
-     Bank-0 or the Bank-1 of the RSS flash and Primary Compute Secure Flash.
+     the Shared Memory to the RSE flash, and finally updates the image to the
+     Bank-0 or the Bank-1 of the RSE flash and Primary Compute Secure Flash.
   6. The system will reset after a successful firmware update and boot from
      the bank with the new firmware images. If the firmware update fails, when
      the user restarts the system from the UEFI shell the system will boot

@@ -24,8 +24,8 @@ files and a high level overview of their purpose/functionality as a group:
 
   * - Component
     - Link to the Downstream Changes
-  * - :ref:`design_components_rss`
-    - :ref:`design_components_rss_downstream_changes` for RSS
+  * - :ref:`design_components_rse`
+    - :ref:`design_components_rse_downstream_changes` for RSE
   * - :ref:`design_components_scp-firmware`
     - :ref:`design_components_scp-firmware_downstream_changes` for SCP-firmware
   * - :ref:`design_components_trusted-firmware-a`

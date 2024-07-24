@@ -41,12 +41,12 @@ The testing scripts can be found in
 All of the Processing Elements and Components have their terminal output logged
 for debugging.
 
- * RSS
+ * RSE
     The script that implements the test is
-    :repo:`yocto/meta-arm-bsp-extras/lib/oeqa/runtime/cases/test_00_rss.py`.
+    :repo:`yocto/meta-arm-bsp-extras/lib/oeqa/runtime/cases/test_00_rse.py`.
     The test firstly waits for the successful programming of the GIC-Multiview
-    and the NI-710AE. Then the test waits for the RSS to log that it is releasing
-    the SCP. This is its last action as part of the RSS boot process.
+    and the NI-710AE. Then the test waits for the RSE to log that it is releasing
+    the SCP. This is its last action as part of the RSE boot process.
 
  * Primary Compute
     * FVP devices
@@ -261,13 +261,13 @@ Integration Tests Validating the Parsec-enabled TLS Demo
 The ``test_parsec_demo`` integration test in
 :repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_40_parsec.py`
 verifies the functionality of the crypto service provided by Parsec and the
-RSS. The test is only enabled when the use case is ``Safety Island Actuation
+RSE. The test is only enabled when the use case is ``Safety Island Actuation
 Demo`` and the "Baremetal Architecture" is selected.
 
 The test invokes a TLS server and client application. The client consumes the
 Parsec service for asymmetric crypto operations. Parsec is configured with
 Trusted Services as the backend which further invokes the crypto service from
-the hardware isolated RSS.
+the hardware isolated RSE.
 
 The test is performed under the following configuration:
 
@@ -434,4 +434,4 @@ The script that implements the tests is
  * test_securefirmwareupdate
       The test waits for U-Boot to start, starts the ``Secure Firmware
       Update`` process and ensures that the ``Secure Firmware Update``
-      was completed successfully by monitoring the RSS terminal output.
+      was completed successfully by monitoring the RSE terminal output.

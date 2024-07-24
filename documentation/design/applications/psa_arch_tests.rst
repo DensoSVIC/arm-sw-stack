@@ -46,7 +46,7 @@ Device Tree
 ***********
 
 In Zephyr, the device tree overlays the MHUv3 transmission and reception devices and
-defines the shared SRAM memory between the Safety Island cluster and RSS.
+defines the shared SRAM memory between the Safety Island cluster and RSE.
 
 The Zephyr overlay device tree is located at
 :repo:`components/safety_island/zephyr/src/overlays/psa`.
@@ -60,7 +60,7 @@ PSA Secure Storage APIs Architecture Test Suite
 The `PSA Secure Storage APIs Architecture Test Suite`_ runs on Safety Island
 Cluster 2 as a Zephyr application. It uses the PSA Secure Storage APIs
 interfaces provided by Trusted Firmware-M which communicates with the Secure
-Storage Service provided by the Trusted Firmware-M running on RSS using an RSS
+Storage Service provided by the Trusted Firmware-M running on RSE using an RSE
 communication protocol.
 
 The PSA Secure Storage API tests are linked into the Trusted Firmware-M PSA
@@ -123,7 +123,7 @@ PSA Secure Storage APIs
 The PSA Secure Storage APIs are provided by the Trusted Firmware-M interfaces
 instead of duplicating code in Arm Automotive Solutions. They are linked into
 Zephyr and use the provided ``psa_call()`` in order to communicate with the
-RSS to use the Secure Storage Service provided by Trusted Firmware-M.
+RSE to use the Secure Storage Service provided by Trusted Firmware-M.
 
 Refer to `Trusted Firmware-M PSA Protected Storage Interfaces`_ and
 `Trusted Firmware-M PSA Internal Trusted Storage Interfaces`_ for more
@@ -158,7 +158,7 @@ PSA Crypto APIs
 
 The PSA Crypto APIs are implemented by `Mbed TLS`_. In Mbed TLS, different
 crypto APIs are handled in different ways. For asymmetric crypto operations, the
-RSS secure service is invoked by calling the ``psa_call()`` interface. The other
+RSE secure service is invoked by calling the ``psa_call()`` interface. The other
 crypto operations are handled on Safety Island by Mbed TLS software
 implementation. For more information on the Mbed TLS implementation,
 refer to :ref:`design_safety_island_secure_services_psa_crypto_apis`.
@@ -180,7 +180,7 @@ to:
 * Add PSA Arch Tests as a Zephyr module.
 * Move a Secure Storage test to be the final one in the test suite as it causes
   Denial of Service to the Primary Compute.
-* Change the key location of asymmetric crypto operation test cases, so the RSS
+* Change the key location of asymmetric crypto operation test cases, so the RSE
   secure service can be called.
 * Postpone the time-consuming crypto test case for ``psa_generate_key`` to the
   end of the execution sequence.

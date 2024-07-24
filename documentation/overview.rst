@@ -105,8 +105,7 @@ Arm Automotive Solutions Overview
 Arm Automotive Solutions is composed of multiple Open Source components,
 including:
 
-  * The `Runtime Security Engine (RSE)`_ - referred to in this document as
-    the Runtime Security Subsystem (RSS) - running an instance of Trusted
+  * The `Runtime Security Engine (RSE)`_, running an instance of Trusted
     Firmware-M, which offers boot, cryptography, and secure storage services.
 
   * The Safety Island subsystem, running three instances of the Zephyr real-time
@@ -183,7 +182,7 @@ compute platform:
   * High reliability compute subsystem
   * Safety Island Communication
   * Transport Layer Security (TLS) with hardware cryptography support
-  * RSS Secure Services providing PSA Secure Storage and Crypto compliant APIs
+  * RSE Secure Services providing PSA Secure Storage and Crypto compliant APIs
   * Arm SystemReady IR-aligned software stack
   * Secure firmware update following Arm's Security Firmware Update
     Specification
@@ -233,7 +232,7 @@ transferred. The TLS session consists of both symmetric and asymmetric
 cryptographic operations. The symmetric operations are executed by Mbed TLS
 in Linux userspace on the Primary Compute. The asymmetric operations are
 carried out by `Parsec`_. While the backend of the Parsec service is based on
-RSS cryptographic runtime service. Refer to
+RSE cryptographic runtime service. Refer to
 :ref:`design_applications_parsec_enabled_tls` for more information.
 
 Primary Compute PSA Protected Storage and Crypto APIs Architecture Test Suite

@@ -293,7 +293,7 @@ rst_prolog = f"""
 .. _Platform Security Firmware Update Specification: https://developer.arm.com/documentation/den0118/latest
 .. _Power Control System Architecture (PCSA): https://developer.arm.com/documentation/den0050/latest
 .. _Pure Pursuit: https://autowarefoundation.gitlab.io/autoware.auto/AutowareAuto/pure-pursuit.html
-.. _RSS provisioning: https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/platform/arm/rse/rse_provisioning.html
+.. _RSE provisioning: https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/platform/arm/rse/rse_provisioning.html
 .. _Runtime Security Engine (RSE): https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/platform/arm/rse/readme.html
 .. _SCP-firmware repository: https://github.com/ARM-software/SCP-firmware/tree/{scp_firmware_version}
 .. _SE Proxy SP: https://trusted-services.readthedocs.io/en/latest/deployments/secure-partitions.html#se-proxy

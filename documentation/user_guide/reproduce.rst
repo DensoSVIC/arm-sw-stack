@@ -2806,9 +2806,9 @@ The firmware images listed below can be found in the directory
  * ``ap-flash-image.img``
  * ``encrypted_cm_provisioning_bundle_0.bin``
  * ``encrypted_dm_provisioning_bundle.bin``
- * ``rss-flash-image.img``
- * ``rss-nvm-image.img``
- * ``rss-rom-image.img``
+ * ``rse-flash-image.img``
+ * ``rse-nvm-image.img``
+ * ``rse-rom-image.img``
 
 .. _user_guide_reproduce_sr_ir_acs:
 
@@ -2845,7 +2845,7 @@ A similar output to the following is printed out:
   Creating terminal default on terminal_ns_uart0
   Creating terminal tf-a on terminal_sec_uart
   Creating terminal scp on terminal_uart_scp
-  Creating terminal rss on terminal_rss_uart
+  Creating terminal rse on terminal_rse_uart
   Creating terminal safety_island_c0 on terminal_uart_si_cluster0
   Creating terminal safety_island_c1 on terminal_uart_si_cluster1
   Creating terminal safety_island_c2 on terminal_uart_si_cluster2
@@ -3516,7 +3516,7 @@ To start the FVP and connect to the Primary Compute terminal (running Linux):
   kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
 
 Note that the main tmux windows involved in the Secure Firmware Update are
-``terminal_ns_uart0`` and ``terminal_rss_uart``. For ease of navigation, it is
+``terminal_ns_uart0`` and ``terminal_rse_uart``. For ease of navigation, it is
 recommended to join these in a single window with two panes.
 
 Follow the steps below to achieve the same:
@@ -3527,8 +3527,8 @@ Follow the steps below to achieve the same:
  2. The user should wait for the U-Boot ``Hit any key to stop autoboot``
     to appear.
  3. Press any key before the time limit to enter the U-Boot shell.
- 4. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_rss_uart -h``
-    followed by pressing the ``Enter`` key to join the RSS terminal window to
+ 4. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_rse_uart -h``
+    followed by pressing the ``Enter`` key to join the RSE terminal window to
     the Primary Compute terminal window.
 
 Refer to the following image of the tmux panes rearrangement. Panes can
@@ -3573,7 +3573,7 @@ To start Secure Firmware Update:
       EFI: MM partition ID 0x8003
       EFI: FVP: Capsule shared buffer at 0x81000000 , size 8192 pages
 
-   In ``terminal_rss_uart``:
+   In ``terminal_rse_uart``:
 
    .. code-block:: text
 
@@ -3600,7 +3600,7 @@ To start Secure Firmware Update:
    there are lines in the log like below, then the upgrade was successful and
    the system has successfully rebooted with the updated firmware.
 
-   In ``terminal_rss_uart``:
+   In ``terminal_rse_uart``:
 
    .. code-block:: text
 
