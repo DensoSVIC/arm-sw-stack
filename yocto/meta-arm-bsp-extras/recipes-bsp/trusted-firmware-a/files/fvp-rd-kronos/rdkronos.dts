@@ -39,6 +39,7 @@
 
 			C0_L2: l2-cache0 {
 				compatible = "cache";
+				cache-unified;
 				cache-level = <0x02>;
 				cache-size = <0x100000>;
 				cache-line-size = <0x40>;
@@ -61,6 +62,7 @@
 
 			C1_L2: l2-cache1 {
 				compatible = "cache";
+				cache-unified;
 				cache-level = <0x02>;
 				cache-size = <0x100000>;
 				cache-line-size = <0x40>;
@@ -83,6 +85,7 @@
 
 			C2_L2: l2-cache2 {
 				compatible = "cache";
+				cache-unified;
 				cache-level = <0x02>;
 				cache-size = <0x100000>;
 				cache-line-size = <0x40>;
@@ -105,6 +108,7 @@
 
 			C3_L2: l2-cache3 {
 				compatible = "cache";
+				cache-unified;
 				cache-level = <0x02>;
 				cache-size = <0x100000>;
 				cache-line-size = <0x40>;
@@ -127,6 +131,7 @@
 
 			C4_L2: l2-cache4 {
 				compatible = "cache";
+				cache-unified;
 				cache-level = <0x02>;
 				cache-size = <0x100000>;
 				cache-line-size = <0x40>;
@@ -149,6 +154,7 @@
 
 			C5_L2: l2-cache5 {
 				compatible = "cache";
+				cache-unified;
 				cache-level = <0x02>;
 				cache-size = <0x100000>;
 				cache-line-size = <0x40>;
@@ -171,6 +177,7 @@
 
 			C6_L2: l2-cache6 {
 				compatible = "cache";
+				cache-unified;
 				cache-level = <0x02>;
 				cache-size = <0x100000>;
 				cache-line-size = <0x40>;
@@ -193,6 +200,7 @@
 
 			C7_L2: l2-cache7 {
 				compatible = "cache";
+				cache-unified;
 				cache-level = <0x02>;
 				cache-size = <0x100000>;
 				cache-line-size = <0x40>;
@@ -215,6 +223,7 @@
 
 			C8_L2: l2-cache8 {
 				compatible = "cache";
+				cache-unified;
 				cache-level = <0x02>;
 				cache-size = <0x100000>;
 				cache-line-size = <0x40>;
@@ -237,6 +246,7 @@
 
 			C9_L2: l2-cache9 {
 				compatible = "cache";
+				cache-unified;
 				cache-level = <0x02>;
 				cache-size = <0x100000>;
 				cache-line-size = <0x40>;
@@ -259,6 +269,7 @@
 
 			C10_L2: l2-cache10 {
 				compatible = "cache";
+				cache-unified;
 				cache-level = <0x02>;
 				cache-size = <0x100000>;
 				cache-line-size = <0x40>;
@@ -281,6 +292,7 @@
 
 			C11_L2: l2-cache11 {
 				compatible = "cache";
+				cache-unified;
 				cache-level = <0x02>;
 				cache-size = <0x100000>;
 				cache-line-size = <0x40>;
@@ -303,6 +315,7 @@
 
 			C12_L2: l2-cache12 {
 				compatible = "cache";
+				cache-unified;
 				cache-level = <0x02>;
 				cache-size = <0x100000>;
 				cache-line-size = <0x40>;
@@ -325,6 +338,7 @@
 
 			C13_L2: l2-cache13 {
 				compatible = "cache";
+				cache-unified;
 				cache-level = <0x02>;
 				cache-size = <0x100000>;
 				cache-line-size = <0x40>;
@@ -347,6 +361,7 @@
 
 			C14_L2: l2-cache14 {
 				compatible = "cache";
+				cache-unified;
 				cache-level = <0x02>;
 				cache-size = <0x100000>;
 				cache-line-size = <0x40>;
@@ -369,6 +384,7 @@
 
 			C15_L2: l2-cache15 {
 				compatible = "cache";
+				cache-unified;
 				cache-level = <0x02>;
 				cache-size = <0x100000>;
 				cache-line-size = <0x40>;
@@ -598,25 +614,25 @@
 
 		si_c0_rproc_rsctbl: rsctbl@40000000 {
 			compatible = "shared-dma-pool";
-			reg = <0x00 0x40000000 0x0 0x1000>;
+			reg = <0x0 0x40000000 0x0 0x1000>;
 			no-map;
 		};
 
-		si_c0_vdev0vring0: vdev0vring0@40001000  {
+		si_c0_vdev0vring0: vdev0vring0@40001000 {
 			compatible = "shared-dma-pool";
-			reg = <0x00 0x40001000 0x0 0x100000>;
+			reg = <0x0 0x40001000 0x0 0x100000>;
 			no-map;
 		};
 
 		si_c0_vdev0vring1: vdev0vring1@40101000 {
 			compatible = "shared-dma-pool";
-			reg = <0x00 0x40101000 0x0 0x100000>;
+			reg = <0x0 0x40101000 0x0 0x100000>;
 			no-map;
 		};
 
 		si_c0_vdev0buffer: vdev0buffer@40201000 {
 			compatible = "shared-dma-pool";
-			reg = <0x00 0x40201000 0x0 0x300000>;
+			reg = <0x0 0x40201000 0x0 0x300000>;
 			no-map;
 		};
 
@@ -626,7 +642,7 @@
 			no-map;
 		};
 
-		si_c1_vdev0vring0: vdev0vring0@40502000  {
+		si_c1_vdev0vring0: vdev0vring0@40502000 {
 			compatible = "shared-dma-pool";
 			reg = <0x0 0x40502000 0x0 0x100000>;
 			no-map;
@@ -644,27 +660,27 @@
 			no-map;
 		};
 
-		si_c2_rproc_rsctbl: rsctbl@40A02000 {
+		si_c2_rproc_rsctbl: rsctbl@40a02000 {
 			compatible = "shared-dma-pool";
-			reg = <0x0 0x40A02000 0x0 0x1000>;
+			reg = <0x0 0x40a02000 0x0 0x1000>;
 			no-map;
 		};
 
-		si_c2_vdev0vring0: vdev0vring0@40A03000  {
+		si_c2_vdev0vring0: vdev0vring0@40a03000 {
 			compatible = "shared-dma-pool";
-			reg = <0x0 0x40A03000 0x0 0x100000>;
+			reg = <0x0 0x40a03000 0x0 0x100000>;
 			no-map;
 		};
 
-		si_c2_vdev0vring1: vdev0vring1@40B03000 {
+		si_c2_vdev0vring1: vdev0vring1@40b03000 {
 			compatible = "shared-dma-pool";
-			reg = <0x0 0x40B03000 0x0 0x100000>;
+			reg = <0x0 0x40b03000 0x0 0x100000>;
 			no-map;
 		};
 
-		si_c2_vdev0buffer: vdev0buffer@40E03000 {
+		si_c2_vdev0buffer: vdev0buffer@40c03000 {
 			compatible = "shared-dma-pool";
-			reg = <0x0 0x40C03000 0x0 0x300000>;
+			reg = <0x0 0x40c03000 0x0 0x300000>;
 			no-map;
 		};
 	};
@@ -691,6 +707,14 @@
 		clock-output-names = "refclk1mhz";
 	};
 
+	fixed_3v3: v2m-3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+	};
+	
 	soc {
 		compatible = "simple-bus";
 		#address-cells = <2>;
@@ -701,14 +725,14 @@
 			compatible = "arm,armv7-timer-mem";
 			reg = <0x0 0x2a810000 0 0x10000>;
 			#address-cells = <2>;
-			#size-cells = <2>;
+			#size-cells = <1>;
 			clock-frequency = <250000000>;
-			ranges;
+			ranges = <0x0 0x2a810000 0x0 0x2a810000 0x30000>;
 
 			frame@2a830000 {
 				frame-number = <0>;
 				interrupts = <GIC_SPI 77 IRQ_TYPE_LEVEL_HIGH>;
-				reg = <0x0 0x2a830000 0x0 0x10000>;
+				reg = <0x0 0x2a830000 0x10000>;
 			};
 		};
 
@@ -807,13 +831,13 @@
 			#size-cells = <0x02>;
 			compatible = "pci-host-ecam-generic";
 			device_type = "pci";
-			bus-range = <0x00 0x11>;
-			reg = <0x40 0x00 0x00 0x04000000>;
+			bus-range = <0x0 0x11>;
+			reg = <0x40 0x0 0x0 0x04000000>;
 			ranges = <0x43000000 0x40 0x40000000 0x40 0x40000000 0x10 0x00000000
-				  0x02000000 0x00 0x60000000 0x00 0x60000000 0x00 0x08000000
-				  0x01000000 0x00 0x00 0x00 0x77800000 0x00 0x800000>;
-			msi-map = <0x00 &its1 0x40000 0x10000>;
-			iommu-map = <0x00 &smmu 0x40000 0x10000>;
+				  0x02000000 0x0 0x60000000 0x0 0x60000000 0x0 0x08000000
+				  0x01000000 0x0 0x0 0x0 0x77800000 0x0 0x800000>;
+			msi-map = <0x0 &its1 0x40000 0x10000>;
+			iommu-map = <0x0 &smmu 0x40000 0x10000>;
 			dma-coherent;
 		};
 
@@ -822,10 +846,10 @@
 			reg = <0x2 0x80000000 0x0 0x100000>;
 			dma-coherent;
 			#iommu-cells = <1>;
-			interrupts = <1 210 1>,
-				     <1 211 1>,
-				     <1 212 1>,
-				     <1 213 1>;
+			interrupts = <GIC_SPI 210 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 211 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 212 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 213 IRQ_TYPE_EDGE_RISING>;
 			interrupt-names = "eventq", "priq", "cmdq-sync", "gerror";
 			msi-parent = <&its1 0x10000>;
 		};
@@ -837,20 +861,11 @@
 			#gpio-cells = <2>;
 		};
 
-		fixed_3v3: v2m-3v3@c011000 {
-			compatible = "regulator-fixed";
-			reg = <0x0 0xc011000 0x0 0x1000>;
-			regulator-name = "3V3";
-			regulator-min-microvolt = <3300000>;
-			regulator-max-microvolt = <3300000>;
-			regulator-always-on;
-		};
-
-		mmci@c050000 {
+		mmc@c050000 {
 			compatible = "arm,pl180", "arm,primecell";
 			reg = <0x0 0xc050000 0x0 0x1000>;
-			interrupts = <0 0x8B 0x4>,
-				     <0 0x8C 0x4>;
+			interrupts = <GIC_SPI 139 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 140 IRQ_TYPE_LEVEL_HIGH>;
 			cd-gpios = <&sysreg 0 0>;
 			wp-gpios = <&sysreg 1 0>;
 			bus-width = <8>;
