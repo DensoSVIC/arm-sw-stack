@@ -14,25 +14,25 @@
 			zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_RAM_NOCACHE) )>;
 		};
 
-		local_sram_rss_cl0: memory@40000000 {
+		local_sram_rse_cl0: memory@40000000 {
 			reg = <0x0 0x40000000 DT_SIZE_K(8)>;
 		};
 
 		psa: psa {
 			compatible = "arm,ipc-psa";
-			tx-region =  <&local_sram_rss_cl0>;
-			rx-region =  <&local_sram_rss_cl0>;
-			mboxes = <&rss_cl0_mbox_tx 0>, <&rss_cl0_mbox_rx 0>;
+			tx-region =  <&local_sram_rse_cl0>;
+			rx-region =  <&local_sram_rse_cl0>;
+			mboxes = <&rse_cl0_mbox_tx 0>, <&rse_cl0_mbox_rx 0>;
 			mbox-names = "tx", "rx";
 			status = "okay";
 		};
 	};
 };
 
-&rss_cl0_mbox_tx {
+&rse_cl0_mbox_tx {
 	status = "okay";
 };
 
-&rss_cl0_mbox_rx {
+&rse_cl0_mbox_rx {
 	status = "okay";
 };
