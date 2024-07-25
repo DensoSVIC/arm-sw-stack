@@ -275,6 +275,7 @@ fcanon
 ffch
 fileextrapaths
 FILESEXTRAPATHS
+filesize
 filesystems
 finit
 fiptool
@@ -439,6 +440,7 @@ linuxshutdown
 LISTIFY
 LIVEPATCH
 LLRAM
+loadaddr
 loadpolicy
 luca
 mainmenu

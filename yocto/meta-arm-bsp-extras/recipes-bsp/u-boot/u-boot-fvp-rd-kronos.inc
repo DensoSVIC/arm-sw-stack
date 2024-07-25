@@ -60,8 +60,14 @@ SRC_URI:append:fvp-rd-kronos = " \
         file://0049-efi-workaround-of-Scatter-Gather-List-hard-coded-val.patch  \
         file://0050-efi-vexpress64-fwu-update-RPC-ABI.patch \
         file://kronos.cfg \
-	file://boot.cmd \
+        file://boot.cmd \
         "
-# Generate U-Boot script 'boot.scr'
-UBOOT_ENV = "boot"
-UBOOT_ENV_SUFFIX = "scr"
+
+UEFI_SECURE_BOOT ?= "0"
+
+do_configure:prepend() {
+    if "${@'true' if oe.types.boolean('${UEFI_SECURE_BOOT}') else 'false'}"; then
+        sed -i 's/uefi_sb_auth_vars_name=""/uefi_sb_auth_vars_name="${UEFI_SB_AUTH_VARS_NAME}"/' \
+            "${WORKDIR}/boot.cmd"
+    fi
+}
