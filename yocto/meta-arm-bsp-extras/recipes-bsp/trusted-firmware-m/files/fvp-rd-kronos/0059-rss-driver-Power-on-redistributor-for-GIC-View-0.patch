@@ -1,0 +1,129 @@
+From a093906c23566d361c29ad936ccbcd0db69a8867 Mon Sep 17 00:00:00 2001
+From: Luca Fancellu <luca.fancellu@arm.com>
+Date: Thu, 25 Jul 2024 11:10:40 +0100
+Subject: [PATCH] rss/driver: Power on redistributor for GIC View 0
+
+The FMU CI block is powered on only when the GIC View 0
+redistributor is powered on, so implement the controls
+to do that through the GICR_PWRR register.
+
+While enabling the redistributor, an issue with some
+related macros defining size and addresses for the views
+are fixed.
+
+Upstream-Status: Pending
+Signed-off-by: Luca Fancellu <luca.fancellu@arm.com>
+---
+ .../common/native_drivers/fainlight_gic_drv.c | 40 +++++++++++++++++++
+ .../common/native_drivers/fainlight_gic_reg.h | 14 +++++++
+ .../target/arm/rss/kronos/host_base_address.h |  8 ++--
+ 3 files changed, 58 insertions(+), 4 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_drv.c b/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_drv.c
+index 779d29f14b28..47068ce6dd0f 100644
+--- a/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_drv.c
++++ b/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_drv.c
+@@ -136,6 +136,41 @@ int gic_multiple_view_config_spi(struct gic_mv_dev_t *dev,
+     return 0;
+ }
+ 
++static void gicr_wait_group_not_in_transit(struct gic_mv_dev_t *dev)
++{
++    uint32_t pwrr;
++
++    do {
++        pwrr = GICR_READ_REG(dev, 0, GICR_PWRR);
++
++    /* Check group not transitioning: RDGPD == RDGPO */
++    } while (((pwrr & GICR_PWRR_RDGPD) >> GICR_PWRR_RDGPD_SHIFT) !=
++             ((pwrr & GICR_PWRR_RDGPO) >> GICR_PWRR_RDGPO_SHIFT));
++}
++
++static int gic_rdist_pwr_on(struct gic_mv_dev_t *dev)
++{
++    /* Check if redistributor needs power management */
++    if (GICR_READ_REG(dev, 0, GICR_IIDR) < GICR_IIDR_ARM_GIC_600)
++        return -1;
++
++    do {
++        /* Wait until group not transitioning */
++        gicr_wait_group_not_in_transit(dev);
++
++        /* Power on redistributor */
++        GICR_WRITE_REG(dev, 0, GICR_PWRR, GICR_PWRR_ON);
++
++        /*
++         * Wait until the power on state is reflected.
++         * If RDPD == 0 then powered on.
++         */
++    } while ((GICR_READ_REG(dev, 0, GICR_PWRR) & GICR_PWRR_RDPD)
++             != GICR_PWRR_ON);
++
++    return 0;
++}
++
+ int gic_multiple_view_device_probe(struct gic_mv_dev_t *dev,
+                                    uintptr_t base_addr,
+                                    uint16_t view_num,
+@@ -169,5 +204,10 @@ int gic_multiple_view_device_probe(struct gic_mv_dev_t *dev,
+ 
+     BOOT_LOG_INF("GIC: Multiple Views Support detected!");
+ 
++    if (gic_rdist_pwr_on(dev)) {
++        BOOT_LOG_ERR("GIC: Could not power on redistributor!");
++        return -1;
++    }
++
+     return 0;
+ }
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_reg.h b/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_reg.h
+index 8212b9cd7098..ee05be2205e4 100644
+--- a/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_reg.h
++++ b/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_reg.h
+@@ -35,10 +35,24 @@
+ #define GICD_CFGID_HI_MV     (0x1 << 21)
+ 
+ /* Register offset of GICR */
++#define GICR_IIDR           0x0004
+ #define GICR_TYPER          0x0008
++#define GICR_PWRR           0x0024
+ #define GICR_VIEWR          0x002C
+ #define GICR_PIDR2          GICD_PIDR2
+ 
++/* GICR_IIDR GIC model encoding */
++#define GICR_IIDR_ARM_GIC_600    0x0200043b
++
++/* GICR_PWRR fields */
++#define GICR_PWRR_RDPD_SHIFT     0
++#define GICR_PWRR_RDGPD_SHIFT    2
++#define GICR_PWRR_RDGPO_SHIFT    3
++#define GICR_PWRR_RDPD           (1U << GICR_PWRR_RDPD_SHIFT)
++#define GICR_PWRR_RDGPD          (1U << GICR_PWRR_RDGPD_SHIFT)
++#define GICR_PWRR_RDGPO          (1U << GICR_PWRR_RDGPO_SHIFT)
++#define GICR_PWRR_ON             (0U << GICR_PWRR_RDPD_SHIFT)
++
+ #define GICR_VIEWR_MASK     0x3
+ 
+ /* Bit to check the last Redistrubitor on this socket */
+diff --git a/platform/ext/target/arm/rss/kronos/host_base_address.h b/platform/ext/target/arm/rss/kronos/host_base_address.h
+index e9465a4a9e5d..e7143691660a 100644
+--- a/platform/ext/target/arm/rss/kronos/host_base_address.h
++++ b/platform/ext/target/arm/rss/kronos/host_base_address.h
+@@ -337,10 +337,10 @@
+ 
+ /* Safety Island Multiple View GIC Base addresses */
+ #define SI_GIC_VIEW_0_BASE          0x30000000
+-#define SI_GIC_VIEW_1_BASE          0x30200000
+-#define SI_GIC_VIEW_2_BASE          0x30400000
+-#define SI_GIC_VIEW_3_BASE          0x30600000
+-#define SI_GIC_VIEW_SIZE            0x200000
++#define SI_GIC_VIEW_1_BASE          0x30400000
++#define SI_GIC_VIEW_2_BASE          0x30800000
++#define SI_GIC_VIEW_3_BASE          0x30C00000
++#define SI_GIC_VIEW_SIZE            0x400000
+ /* Safety Island Multiple View GIC addresses using Non-secure ATU region */
+ #define SI_GIC_VIEW_0_BASE_S_LOG   (HOST_ACCESS_BASE_S + 0x8000000)
+ /* Safety Island Multiple View GIC addresses */
+-- 
+2.34.1
+
