@@ -7,8 +7,8 @@
 from oeqa.runtime.case import OERuntimeTestCase
 
 
-class RssTest(OERuntimeTestCase):
-    console = 'rss'
+class RseTest(OERuntimeTestCase):
+    console = 'rse'
 
     def test_normal_boot(self):
         self.target.transition('on')

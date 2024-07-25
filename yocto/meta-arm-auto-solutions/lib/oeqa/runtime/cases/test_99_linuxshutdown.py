@@ -15,7 +15,7 @@ class LinuxShutdownTest(OERuntimeTestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.linux_console = cls.tc.target.DEFAULT_CONSOLE
-        cls.rss_console = 'rss'
+        cls.rse_console = 'rse'
         cls.scp_console = 'scp'
         cls.tfa_console = 'tf-a'
 
@@ -26,17 +26,17 @@ class LinuxShutdownTest(OERuntimeTestCase):
         self.target.expect(self.linux_console,
                            r'System Power Off',
                            timeout=1350)
-        self.target.expect(self.rss_console,
+        self.target.expect(self.rse_console,
                            r'System shutdown complete',
                            timeout=450)
 
         # Verify there were no errors in any of the consoles
-        self.assertNotIn(b'[ERR]', self.target.before(self.rss_console))
+        self.assertNotIn(b'[ERR]', self.target.before(self.rse_console))
 
         # Timeout has been set to 300s to give FVP enough time to shutdown,
         # verify that there are no errors after 'System shutdown complete'
-        self.target.expect(self.rss_console, pexpect.EOF, timeout=300)
-        self.assertNotIn(b'[ERR]', self.target.before(self.rss_console))
+        self.target.expect(self.rse_console, pexpect.EOF, timeout=300)
+        self.assertNotIn(b'[ERR]', self.target.before(self.rse_console))
 
         self.target.expect(self.scp_console, pexpect.EOF)
         self.assertNotIn(b'[ERROR]', self.target.before(self.scp_console))

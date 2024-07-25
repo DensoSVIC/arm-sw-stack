@@ -12,7 +12,7 @@ class SecureFirmwareUpdateTest(OERuntimeTestCase):
     def setUp(self):
         super().setUp()
         self.uboot_console = self.target.DEFAULT_CONSOLE
-        self.rss_console = 'rss'
+        self.rse_console = 'rse'
 
     def test_securefirmwareupdate(self):
         # Turn on the FVP
@@ -35,11 +35,11 @@ class SecureFirmwareUpdateTest(OERuntimeTestCase):
                            r'EFI: FVP: Capsule shared buffer at 0x[0-9a-fA-F]+'
                            r' , size \d+ pages',
                            timeout=60)
-        # Wait for update to be complete on RSS side
-        self.target.expect(self.rss_console,
+        # Wait for update to be complete on RSE side
+        self.target.expect(self.rse_console,
                            r'Flashing the image succeeded.',
                            timeout=2700)
-        self.target.expect(self.rss_console,
+        self.target.expect(self.rse_console,
                            r'Performing system reset...',
                            timeout=30)
         # Wait for the Primary Compute to reset
@@ -47,6 +47,6 @@ class SecureFirmwareUpdateTest(OERuntimeTestCase):
                            r'Hit any key to stop autoboot:',
                            timeout=60)
         # Verify that TF-M booted from the correct boot index
-        self.target.expect(self.rss_console,
+        self.target.expect(self.rse_console,
                            r'get_fwu_agent_state: enter, boot_index = 1',
                            timeout=60)
