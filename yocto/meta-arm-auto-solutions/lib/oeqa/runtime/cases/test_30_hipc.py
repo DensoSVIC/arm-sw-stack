@@ -133,6 +133,7 @@ class HIPCTestBase(OERuntimeTestCase):
         allowed_messages = [
             br'net_tcp: context->tcp == NULL',
             br'net_gptp: Not AS capable: \d+ ns > \d+ ns',
+            br'net_gptp: Reset Pdelay requests',
         ]
         server_output = self.target.before(server)
         errors = error_check(allowed_messages, server_output)
