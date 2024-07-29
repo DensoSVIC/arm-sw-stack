@@ -3475,7 +3475,8 @@ Secure Firmware Update
 ======================
 
 Currently, :ref:`design_secure_firmware_update` is only available in the
-Baremetal Architecture.
+Baremetal Architecture. The firmware update is on-disk to meet Arm SystemReady
+IR requirements.
 
 Baremetal Architecture
 ----------------------
@@ -3483,12 +3484,13 @@ Baremetal Architecture
 Build
 ^^^^^
 
-The to be updated firmware capsule for testing will be generated together with
+The firmware update capsule for testing will be generated together with
 the image for the software stack when building. The firmware capsule is placed
-on a removable storage device (in the case of Arm FVPs, an MMC card implementation).
+on a removable storage device (in the case of Arm FVPs, an MMC card
+implementation).
 
-Ensure the creation of the initial firmware flash images because previously updated
-firmware will lead to failure of the secure firmware update tests.
+Ensure the creation of the initial firmware flash images because previously
+updated firmware will lead to failure of the secure firmware update tests.
 
 .. code-block:: text
 
@@ -3524,11 +3526,8 @@ Follow the steps below to achieve the same:
  1. Ensure that the tmux window titled ``terminal_ns_uart0`` is selected.
     If not, press ``Ctrl-b w`` from the tmux session, navigate to the tmux
     window titled ``terminal_ns_uart0`` followed by pressing the ``Enter`` key.
- 2. The user should wait for the U-Boot ``Hit any key to stop autoboot``
-    to appear.
- 3. Press any key before the time limit to enter the U-Boot shell.
- 4. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_rse_uart -h``
-    followed by pressing the ``Enter`` key to join the RSE terminal window to
+ 2. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_rss_uart -h``
+    followed by pressing the ``Enter`` key to join the RSS terminal window to
     the Primary Compute terminal window.
 
 Refer to the following image of the tmux panes rearrangement. Panes can
@@ -3540,28 +3539,36 @@ be navigated using ``Ctrl-b`` followed by the arrow keys.
 
 |
 
+The user should wait for the system to boot and for the Linux prompt to appear.
+
+The Reference Software Stack running on the Primary Compute can be logged into
+as the ``root`` user without a password in the Linux terminal. Run the below
+command to guarantee that all the expected services have been initialized.
+
+.. code-block:: text
+
+  systemctl is-system-running --wait
+
+Wait for it to return. The expected terminal output is ``running``.
+
+
 Run the Demo
 ^^^^^^^^^^^^
 
-To start Secure Firmware Update:
-
-1. In the U-Boot shell, run the following commands to start Secure Firmware
-   Update:
-
-   .. note::
-
-      Each command should be copied and pasted individually to the U-Boot shell.
+1. To start the Secure Firmware Update, run the following commands to create
+   the UpdateCapsule directory and copy the update capsule into it, followed by
+   a reboot.
 
    .. code-block:: text
 
-      fatload mmc 0:1 0xa2000000 fw.cap
-      efidebug capsule update -v 0xa2000000
+      mount /dev/vda1 /boot
+      mount /dev/mmcblk0p1 /mnt
+      mkdir -p /boot/EFI/UpdateCapsule
+      cp -f /mnt/fw.cap /boot/EFI/UpdateCapsule
+      reboot
 
-2. The system will automatically start upgrading the firmware capsule.
-   **Note: This time there is no need to press any keys.**
-
-   The following logs indicate that the upgrade process has started and is in
-   progress.
+   The system will begin the firmware update automatically. The following logs
+   indicate that the upgrade process has started and is in progress.
 
    In ``terminal_ns_uart0``:
 
@@ -3595,7 +3602,7 @@ To start Secure Firmware Update:
 
    **Note: This step will take about 10 minutes.**
 
-3. The system will reset after a successful firmware update and boot with the
+2. The system will reset after a successful firmware update and boot with the
    updated firmware. This can be confirmed by checking the terminal logs; if
    there are lines in the log like below, then the upgrade was successful and
    the system has successfully rebooted with the updated firmware.
@@ -3610,9 +3617,9 @@ To start Secure Firmware Update:
       ...
       [INF]:[FWU]: get_fwu_agent_state: enter, boot_index = 1
 
-4. The system will eventually boot into Linux using the upgraded firmware.
+3. The system will eventually boot into Linux using the upgraded firmware.
 
-5. To shut down the FVP and terminate the emulation, select the terminal titled
+4. To shut down the FVP and terminate the emulation, select the terminal titled
    as ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0``
    and press ``Ctrl-c`` to stop the FVP process.
 
