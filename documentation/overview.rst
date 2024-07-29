@@ -131,7 +131,7 @@ The platform consists of the following hardware IP:
    =================== ======================================
 
 The remaining software in the Primary Compute subsystem, based on the
-`Cassini`_ distribution, is available in two main architectures:
+`EWAOL`_ distribution, is available in two main architectures:
 baremetal and virtualization.
 
   **Baremetal Architecture**

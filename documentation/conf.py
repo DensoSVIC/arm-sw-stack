@@ -147,8 +147,9 @@ release = arm_auto_solutions_version
 
 # Common variables for rst_prolog
 actuation_version = "v2.0"
-cassini_version = "scarthgap-dev"
+cassini_version = "scarthgap"
 critical_application_monitoring_version = "latest"
+ewaol_version = "scarthgap-dev"
 fvp_version = "11.25.3"
 kas_version = "4.3.2"
 linux_version = "6.6"
@@ -213,6 +214,9 @@ rst_prolog = f"""
 .. |meta-clang branch| replace:: {yocto_version}
 .. |meta-clang repository| replace:: https://github.com/kraj/meta-clang
 .. |meta-clang revision| replace:: HEAD
+.. |meta-ewaol branch| replace:: {ewaol_version}
+.. |meta-ewaol repository| replace:: https://gitlab.com/soafee/ewaol/meta-ewaol
+.. |meta-ewaol revision| replace:: {ewaol_version}
 .. |meta-openembedded branch| replace:: {yocto_version}
 .. |meta-openembedded repository| replace:: https://git.openembedded.org/meta-openembedded
 .. |meta-openembedded revision| replace:: HEAD
@@ -247,7 +251,6 @@ rst_prolog = f"""
 .. _Base Boot Requirements (BBR): https://developer.arm.com/documentation/den0044/latest
 .. _Base Boot Security Requirements (BBSR): https://developer.arm.com/documentation/den0107/latest
 .. _Base System Architecture (BSA): https://developer.arm.com/documentation/den0094/latest
-.. _Cassini: https://cassini.readthedocs.io/en/{cassini_version}/
 .. _Critical Application Monitoring repository: https://gitlab.arm.com/automotive-and-industrial/safety-island/critical-app-monitoring/-/tree/{critical_application_monitoring_version}
 .. _Critical Application Monitoring Documentation: https://critical-app-monitoring.docs.arm.com/en/{critical_application_monitoring_version}/
 .. _Crypto Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/crypto-service-description.html
@@ -263,6 +266,7 @@ rst_prolog = f"""
 .. _EULA: https://developer.arm.com/downloads/-/arm-ecosystem-fvps/eula
 .. _Embedded Base Boot Requirements (EBBR): https://developer.arm.com/architectures/platform-design/embedded-systems
 .. _Ethernet Bridging API: https://docs.zephyrproject.org/apidoc/{zephyr_version}/group__eth__bridge.html
+.. _EWAOL: https://gitlab.com/soafee/ewaol/meta-ewaol/-/tree/{ewaol_version}/
 .. _Fast Models FVP Reference Guide: https://developer.arm.com/documentation/100966/latest
 .. _GICv4.1 - Direct injection of virtual interrupts: https://developer.arm.com/documentation/107627/0101/GICv4-1---Direct-injection-of-virtual-interrupts
 .. _GitLab Issues: https://gitlab.arm.com/automotive-and-industrial/arm-automotive-solutions/sw-ref-stack/-/issues

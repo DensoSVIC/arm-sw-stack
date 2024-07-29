@@ -27,7 +27,7 @@ the Arm Automotive Solutions to run on the Arm Kronos Reference Design FVP
 meta-arm-auto-solutions Yocto Layer
 ***********************************
 
-The ``meta-arm-auto-solutions`` layer is based on the `Cassini`_ distribution.
+The ``meta-arm-auto-solutions`` layer is based on the `EWAOL`_ distribution.
 It also contains a set of bitbake bbclasses, recipes and libraries to build,
 integrate, and validate the :ref:`overview_use_cases` with either or both the
 **Baremetal** and **Virtualization** Reference Software Stack Architectures
@@ -93,6 +93,11 @@ The layer dependency sources and their revisions for the ``kronos`` repository
     layers: meta-clang
     branch: |meta-clang branch|
     revision: |meta-clang revision|
+
+    URL: |meta-ewaol repository|
+    layers: meta-ewaol
+    branch: |meta-ewaol branch|
+    revision: |meta-ewaol revision|
 
     URL: |meta-openembedded repository|
     layers: meta-filesystems, meta-networking, meta-oe, meta-python
