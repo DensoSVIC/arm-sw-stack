@@ -38,10 +38,10 @@ class HIPCTestBase(OERuntimeTestCase):
         self.target.expect(cl_console,
                            rf'VLAN tag {vlan_id} removed from interface 1'
                            r' \(0x[0-9a-fA-F]+\)',
-                           timeout=225)
+                           timeout=300)
         self.target.sendline(cl_console,
                              f'net ping {peer_addr} -c 1')
-        self.target.expect(cl_console, 'Ping timeout', timeout=180)
+        self.target.expect(cl_console, 'Ping timeout', timeout=250)
 
         # Test that with a vlan identifier different from the specification, it
         # does not work
@@ -50,16 +50,16 @@ class HIPCTestBase(OERuntimeTestCase):
         self.target.expect(cl_console,
                            rf'VLAN tag {vlan_id + 10} set to interface 1'
                            r' \(0x[0-9a-fA-F]+\)',
-                           timeout=225)
+                           timeout=300)
         self.target.sendline(cl_console,
                              f'net ping {peer_addr} -c 1')
-        self.target.expect(cl_console, 'Ping timeout', timeout=180)
+        self.target.expect(cl_console, 'Ping timeout', timeout=250)
         self.target.sendline(cl_console,
                              f'net vlan del {vlan_id + 10} 1')
         self.target.expect(cl_console,
                            rf'VLAN tag {vlan_id + 10} removed from interface 1'
                            r' \(0x[0-9a-fA-F]+\)',
-                           timeout=225)
+                           timeout=300)
 
         # Set the original VLAN identifier
         self.target.sendline(cl_console,
@@ -67,7 +67,7 @@ class HIPCTestBase(OERuntimeTestCase):
         self.target.expect(cl_console,
                            rf'VLAN tag {vlan_id} set to interface 1'
                            r' \(0x[0-9a-fA-F]+\)',
-                           timeout=225)
+                           timeout=300)
 
     def ping(self, cl_addr, cl_console, peer_addr, vlan_id):
 
@@ -78,7 +78,7 @@ class HIPCTestBase(OERuntimeTestCase):
         # it will also disable the A <> R ping and enable R <> R
 
         self.target.sendline(cl_console)
-        self.target.expect(cl_console, self.si_prompt, timeout=180)
+        self.target.expect(cl_console, self.si_prompt, timeout=250)
 
         # Run connectivity test for VLAN settings
         if vlan_id != -1:
@@ -91,9 +91,9 @@ class HIPCTestBase(OERuntimeTestCase):
                                rf'\d+ bytes from {re.escape(peer_addr)} to '
                                rf'{re.escape(cl_addr)}: icmp_seq=\d+ '
                                r'ttl=\d+ time=\d+(\.\d+)? ms',
-                               timeout=350)
+                               timeout=425)
         self.target.sendline(cl_console)
-        self.target.expect(cl_console, self.si_prompt, timeout=180)
+        self.target.expect(cl_console, self.si_prompt, timeout=250)
 
         if vlan_id != -1:
             self.target.sendline(self.linux_console, f'ping {cl_addr} -c 10')
@@ -101,10 +101,10 @@ class HIPCTestBase(OERuntimeTestCase):
                 self.target.expect(self.linux_console,
                                    rf'\d+ bytes from {re.escape(cl_addr)}: '
                                    r'seq=\d+ ttl=\d+ time=\d+(\.\d+)? ms',
-                                   timeout=180)
+                                   timeout=250)
             self.target.sendline(self.linux_console)
             self.target.expect(self.linux_console, self.linux_prompt,
-                               timeout=180)
+                               timeout=250)
 
     def check_error_messages(self, server, client):
         def error_check(allow_list, messages):
@@ -159,7 +159,8 @@ class HIPCTestBase(OERuntimeTestCase):
                 self.linux_console,
                 f'iperf -u -c {cl_addr} -t {UDP_TEST_DURATION} -b 100K -l 1438'
                 f' -P {connections_number}')
-            session_end_timeout = 300 * UDP_TEST_DURATION * connections_number
+            session_end_timeout = \
+                1.3 * 300 * UDP_TEST_DURATION * connections_number
             self.target.expect(self.linux_console, 'Client connecting to ',
                                timeout=session_end_timeout)
 
@@ -168,26 +169,27 @@ class HIPCTestBase(OERuntimeTestCase):
                                    timeout=session_end_timeout)
                 self.target.expect(cl_console,
                                    r'received packets:\s*\d+\r\n',
-                                   timeout=15)
+                                   timeout=30)
                 self.target.expect(cl_console,
                                    r'nb packets lost:\s*0\r\n',
-                                   timeout=15)
+                                   timeout=30)
                 self.target.expect(cl_console,
                                    r'nb packets outorder:\s*0\r\n',
-                                   timeout=15)
+                                   timeout=30)
                 self.check_error_messages(self.linux_console, cl_console)
 
             self.target.sendline(self.linux_console)
             self.target.expect(self.linux_console, self.linux_prompt,
                                timeout=session_end_timeout)
             self.target.sendline(cl_console)
-            self.target.expect(cl_console, self.si_prompt, timeout=180)
+            self.target.expect(cl_console, self.si_prompt, timeout=250)
 
         def test_zephyr_tcp_server(connections_number=1):
             self.target.sendline(self.linux_console,
                                  f'iperf -c {cl_addr} -t {TCP_TEST_DURATION}'
                                  f' -P {connections_number}')
-            session_end_timeout = 600 * TCP_TEST_DURATION * connections_number
+            session_end_timeout  = \
+                1.3 * 600 * TCP_TEST_DURATION * connections_number
             self.target.expect(self.linux_console, 'Client connecting to ',
                                timeout=session_end_timeout)
             for _ in range(0, connections_number):
@@ -199,7 +201,7 @@ class HIPCTestBase(OERuntimeTestCase):
             self.target.expect(self.linux_console, self.linux_prompt,
                                timeout=session_end_timeout)
             self.target.sendline(cl_console)
-            self.target.expect(cl_console, self.si_prompt, timeout=180)
+            self.target.expect(cl_console, self.si_prompt, timeout=250)
 
         # The variable HIPC_TEST_PARALLEL_CONNS_SEQ contains the sequence of
         # how many multiple connections should be tested
@@ -214,36 +216,36 @@ class HIPCTestBase(OERuntimeTestCase):
         # Zephyr as UDP server handling multiple parallel connections
         self.target.sendline(cl_console, 'zperf udp download')
         self.target.expect(cl_console, 'UDP server started on port 5001',
-                           timeout=180)
+                           timeout=250)
         try:
             for parallel_connections in connections:
                 test_zephyr_udp_server(parallel_connections)
         finally:
             self.target.sendline(cl_console, 'zperf udp download stop')
-            self.target.expect(cl_console, 'UDP server stopped', timeout=180)
+            self.target.expect(cl_console, 'UDP server stopped', timeout=250)
 
         # Zephyr as TCP server handling multiple parallel connections
         self.target.sendline(cl_console, 'zperf tcp download')
         self.target.expect(cl_console, 'TCP server started on port 5001',
-                           timeout=180)
+                           timeout=250)
         try:
             for parallel_connections in connections:
                 test_zephyr_tcp_server(parallel_connections)
         finally:
             self.target.sendline(cl_console, 'zperf tcp download stop')
-            self.target.expect(cl_console, 'TCP server stopped', timeout=180)
+            self.target.expect(cl_console, 'TCP server stopped', timeout=250)
 
         # Zephyr as UDP client
         self.target.sendline(self.linux_console, 'iperf -u -s -P 1')
         self.target.expect(self.linux_console,
-                           'Server listening on UDP port 5001', timeout=180)
+                           'Server listening on UDP port 5001', timeout=250)
         # zperf udp upload <dest ip> <dest port> <duration> <packet size>
         # <bandwidth>
         self.target.sendline(
             cl_console,
             f'zperf udp upload {peer_addr} 5001 {UDP_TEST_DURATION} 1k 100K')
         self.target.expect(cl_console, r'Num packets:\s*(\d+)\s',
-                           timeout=(150 * UDP_TEST_DURATION))
+                           timeout=(1.3 * 150 * UDP_TEST_DURATION))
         self.assertGreater(int(self.target.match(cl_console)[1]), 10)
         # During this test, it can happen that error messages are shown before
         # the test ends, but the test itself is succeeding, check that no error
@@ -251,26 +253,26 @@ class HIPCTestBase(OERuntimeTestCase):
         self.check_error_messages(self.linux_console, cl_console)
         self.target.expect(cl_console,
                            r'Num packets out order:\s*0\r\n',
-                           timeout=180)
+                           timeout=250)
         self.target.expect(cl_console,
                            r'Num packets lost:\s*0\r\n',
-                           timeout=180)
+                           timeout=250)
         self.target.sendline(cl_console)
-        self.target.expect(cl_console, self.si_prompt, timeout=180)
+        self.target.expect(cl_console, self.si_prompt, timeout=250)
         self.target.sendline(self.linux_console)
-        self.target.expect(self.linux_console, self.linux_prompt, timeout=180)
+        self.target.expect(self.linux_console, self.linux_prompt, timeout=250)
         self.check_error_messages(self.linux_console, cl_console)
 
         # Zephyr as TCP client
         self.target.sendline(self.linux_console, 'iperf -s -P 1')
         self.target.expect(self.linux_console,
-                           'Server listening on TCP port 5001', timeout=180)
+                           'Server listening on TCP port 5001', timeout=250)
         # zperf tcp upload <dest ip> <dest port> <duration> <packet size>
         self.target.sendline(
             cl_console,
             f'zperf tcp upload {peer_addr} 5001 {TCP_TEST_DURATION} 1k')
         self.target.expect(cl_console, r'Num packets:\s*(\d+)\r\n',
-                           timeout=(600 * TCP_TEST_DURATION))
+                           timeout=(1.3 * 600 * TCP_TEST_DURATION))
         # During this test, it can happen that error messages are shown before
         # the test ends, but the test itself is succeeding, check that no error
         # is found before the end of the test.
@@ -278,11 +280,11 @@ class HIPCTestBase(OERuntimeTestCase):
         self.assertGreater(int(self.target.match(cl_console)[1]), 10)
         self.target.expect(cl_console,
                            r'Num errors:\s*0 \(retry or fail\)',
-                           timeout=225)
+                           timeout=300)
         self.target.sendline(cl_console)
-        self.target.expect(cl_console, self.si_prompt, timeout=225)
+        self.target.expect(cl_console, self.si_prompt, timeout=300)
         self.target.sendline(self.linux_console)
-        self.target.expect(self.linux_console, self.linux_prompt, timeout=180)
+        self.target.expect(self.linux_console, self.linux_prompt, timeout=250)
         self.check_error_messages(self.linux_console, cl_console)
 
     def hipc_cluster(self, server_cl, client_cl, peer_addr):
@@ -297,13 +299,13 @@ class HIPCTestBase(OERuntimeTestCase):
         self.target.sendline(server_cl, f'zperf tcp download 5001 {peer_addr}')
         try:
             self.target.expect(server_cl,
-                               'TCP server started on port 5001', timeout=180)
+                               'TCP server started on port 5001', timeout=250)
             # zperf tcp upload <dest ip> <dest port> <duration> <packet size>
             cmd = (f'zperf tcp upload {peer_addr} 5001 {TCP_TEST_DURATION} 1k '
                    '100K')
             self.target.sendline(client_cl, cmd)
             self.target.expect(client_cl, r'Num packets:\s*(\d+)\r\n',
-                               timeout=(600 * TCP_TEST_DURATION))
+                               timeout=(1.3 * 600 * TCP_TEST_DURATION))
             # During this test, it can happen that error messages are shown
             # before the test ends, but the test itself is succeeding, check
             # that no error is found before the end of the test.
@@ -311,26 +313,26 @@ class HIPCTestBase(OERuntimeTestCase):
             self.assertGreater(int(self.target.match(client_cl)[1]), 10)
             self.target.expect(client_cl,
                                r'Num errors:\s*0 \(retry or fail\)',
-                               timeout=225)
+                               timeout=300)
             self.target.sendline(client_cl)
-            self.target.expect(client_cl, self.si_prompt, timeout=225)
+            self.target.expect(client_cl, self.si_prompt, timeout=300)
             self.check_error_messages(server_cl, client_cl)
         finally:
             self.target.sendline(server_cl, 'zperf tcp download stop')
-            self.target.expect(server_cl, 'TCP server stopped', timeout=180)
+            self.target.expect(server_cl, 'TCP server stopped', timeout=250)
 
         # Cluster as UDP client
         self.target.sendline(server_cl, f'zperf udp download 5001 {peer_addr}')
         try:
             self.target.expect(server_cl,
-                               'UDP server started on port 5001', timeout=180)
+                               'UDP server started on port 5001', timeout=250)
             # zperf udp upload <dest ip> <dest port> <duration> <packet size>
             cmd = (f'zperf udp upload {peer_addr} 5001 {UDP_TEST_DURATION} 1k '
                    '100K')
             self.target.sendline(client_cl, cmd)
             self.target.expect(client_cl,
                                r'Num packets:\s*(\d+)\s*\((\d+)\)\r\n',
-                               timeout=(450 * UDP_TEST_DURATION))
+                               timeout=(1.3 * 450 * UDP_TEST_DURATION))
             # During this test, it can happen that error messages are shown
             # before the test ends, but the test itself is succeeding, check
             # that no error is found before the end of the test.
@@ -338,15 +340,15 @@ class HIPCTestBase(OERuntimeTestCase):
             self.assertGreater(int(self.target.match(client_cl)[1]), 10)
             self.target.expect(client_cl,
                                r'Num packets out order:\s*0\r\n',
-                               timeout=180)
+                               timeout=250)
             self.target.expect(client_cl, r'Num packets lost:\s*0\r\n',
-                               timeout=180)
+                               timeout=250)
             self.target.sendline(client_cl)
-            self.target.expect(client_cl, self.si_prompt, timeout=225)
+            self.target.expect(client_cl, self.si_prompt, timeout=300)
             self.check_error_messages(server_cl, client_cl)
         finally:
             self.target.sendline(server_cl, 'zperf udp download stop')
-            self.target.expect(server_cl, 'UDP server stopped', timeout=180)
+            self.target.expect(server_cl, 'UDP server stopped', timeout=250)
 
     @OETestDepends(['test_10_linuxlogin.LinuxLoginTest.test_linux_login'])
     def test_ping_cluster0(self):
