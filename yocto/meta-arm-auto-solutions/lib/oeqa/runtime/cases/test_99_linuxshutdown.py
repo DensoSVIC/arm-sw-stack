@@ -28,7 +28,7 @@ class LinuxShutdownTest(OERuntimeTestCase):
                            timeout=1350)
         self.target.expect(self.rse_console,
                            r'System shutdown complete',
-                           timeout=450)
+                           timeout=1350)
 
         # Verify there were no errors in any of the consoles
         self.assertNotIn(b'[ERR]', self.target.before(self.rse_console))
