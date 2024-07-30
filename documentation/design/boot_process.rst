@@ -172,14 +172,14 @@ process complies with the `Trusted Board Boot Requirements (TBBR)`_:
 1. AP BL2:
 
    * Copies the AP BL31 image from Secure Flash to Secure RAM
+   * Copies the AP BL32 (OP-TEE) image from Secure Flash to Secure DRAM
+   * Copies the AP BL33 (U-Boot) image from Secure Flash to Normal DRAM
    * Transfers the execution to AP BL31
 
 2. AP BL31:
 
-   * Copies the AP BL32 (OP-TEE) image from Secure Flash to Secure DRAM
-   * Transfers the execution to AP BL32
-   * Copies the AP BL33 (U-Boot) image from Secure Flash to Normal DRAM
-   * Transfers the execution to AP BL33
+   * Transfers the execution to AP BL32 and then transfers the execution to
+     AP BL33
 
 3. AP BL33 loads GRUB2 from the boot partition
 
