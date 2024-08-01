@@ -189,7 +189,7 @@ class HIPCTestBase(OERuntimeTestCase):
             self.target.sendline(self.linux_console,
                                  f'iperf -c {cl_addr} -t {TCP_TEST_DURATION}'
                                  f' -P {connections_number}')
-            session_end_timeout  = \
+            session_end_timeout = \
                 1.3 * 600 * TCP_TEST_DURATION * connections_number
             self.target.expect(self.linux_console, 'Client connecting to ',
                                timeout=session_end_timeout)
