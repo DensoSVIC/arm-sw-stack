@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ * SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  * affiliates <open-source-office@arm.com></text>
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -13,11 +13,12 @@
 #include "zephyr/drivers/fault_mgmt/fault_mgmt_device.h"
 #include "zephyr/subsys/fault_mgmt/fault_mgmt.h"
 #include "zephyr/subsys/fault_mgmt/fault_mgmt_storage.h"
-#include "fault_mgmt_storage_priv.h"
+#include "fault_mgmt_priv.h"
 
 LOG_MODULE_REGISTER(fault_mgmt_storage_sys_hash_map, CONFIG_FAULT_MGMT_LOG_LEVEL);
 
-static void fault_mgmt_storage_write(const struct device *root_dev, struct fault_mgmt_fault *fault)
+static void fault_mgmt_storage_write(const struct device *root_dev,
+				     const struct fault_mgmt_fault *fault)
 {
 	uint64_t counter;
 	uint64_t combined_key;
