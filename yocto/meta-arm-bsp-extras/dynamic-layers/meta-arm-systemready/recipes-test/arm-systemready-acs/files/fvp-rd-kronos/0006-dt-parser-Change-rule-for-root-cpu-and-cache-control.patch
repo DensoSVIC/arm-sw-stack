@@ -1,0 +1,67 @@
+From ca1256097a3b819defc1d4d96c9e695d71194e35 Mon Sep 17 00:00:00 2001
+From: Jun Wu <jun.wu@arm.com>
+Date: Mon, 29 Jul 2024 15:23:23 +0000
+Subject: [PATCH] dt-parser: Change rule for root, cpu and cache-controller
+
+Change rule for root from arm,rd-kronos, arm,neoverse to arm,rd1-ae
+because the root node of rdkronos.dts has been updated to arm,rd1-ae.
+
+Add rule for cpu nodes as arm,neoverse-v3ae as the node compatible
+has been updated in rdkronos.dts. The dt-binding is not available in
+Linux Kernel.
+
+Change rule for cache-controller to arm,slc.
+Notes: when the node has multi compatible properties, we shall only
+put the first no schema property in the dt-parser.yaml, because the
+dt-validation report could be like
+"failed to match any schema with compatible: ['compat1', 'compat2']".
+In a rule if in_compatibles= 'compat1, compat2', the rule match will
+fail because dt-parser match rule by string.find(in_compatibles)
+"['compat1', 'compat2']".find('compat1, compat2') return -1.
+Pls see comments for function matches_crit.
+
+Upstream-Status: Inappropriate [Kronos-specific update]
+
+Signed-off-by: Jun Wu <jun.wu@arm.com>
+---
+ dt-parser.yaml | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/dt-parser.yaml b/dt-parser.yaml
+index 0717953e2c53..34bdd7d3b04a 100644
+--- a/dt-parser.yaml
++++ b/dt-parser.yaml
+@@ -222,11 +222,19 @@
+   update:
+     type: ignored
+ 
+-- rule: Allow no schema for arm,rd-kronos, arm,neoverse
++- rule: Allow no schema for arm,rd1-ae
+   criteria:
+     type: dt-validate warning
+     warning_message: 'failed to match any schema with compatible: '
+-    in_compatibles: 'arm,rd-kronos, arm,neoverse'
++    in_compatibles: 'arm,rd1-ae'
++  update:
++    type: ignored
++
++- rule: Allow no schema for arm,neoverse-v3ae
++  criteria:
++    type: dt-validate warning
++    warning_message: 'failed to match any schema with compatible: '
++    in_compatibles: 'arm,neoverse-v3ae'
+   update:
+     type: ignored
+ 
+@@ -234,7 +242,7 @@
+   criteria:
+     type: dt-validate warning
+     warning_message: 'failed to match any schema with compatible: '
+-    in_compatibles: 'arm,slc, cache'
++    in_compatibles: 'arm,slc'
+   update:
+     type: ignored
+ 
+-- 
+2.34.1
+
