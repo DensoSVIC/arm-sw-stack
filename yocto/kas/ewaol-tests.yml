@@ -1,0 +1,18 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2024 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: MIT
+
+---
+header:
+  version: 16
+
+repos:
+  meta-cassini:
+    layers:
+      meta-cassini-tests:
+
+local_conf_header:
+  ewaol-tests: |
+    DISTRO_FEATURES:append = " cassini-test"

@@ -255,6 +255,13 @@ TEST_SUITES:nosve = " \
     test_99_linuxshutdown \
     "
 
+TEST_SUITES:cassini-test = " \
+    test_10_linuxboot \
+    test_10_linuxlogin \
+    test_40_ewaol \
+    test_99_linuxshutdown \
+    "
+
 EXTRA_TESTIMAGE_RDEPENDS ?= ""
 EXTRA_TESTIMAGE_RDEPENDS:si0-bridge-ethernet0 = "iperf-native:do_populate_sysroot"
 

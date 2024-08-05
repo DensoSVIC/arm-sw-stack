@@ -244,6 +244,11 @@ Image-Build-baremetal-si-psa-crypto-tests:
   variables:
     KAS_CONFIGS: arm-bsp-extras/baremetal/si-psa-crypto-tests
 
+Image-Build-baremetal-ewaol-tests:
+  extends: .kas_image_build_arm_auto_solutions
+  variables:
+    KAS_CONFIGS: arm-bsp-extras/baremetal/ewaol-tests
+
 fvp-summary-render:
   image: ${MIRROR_DOCKER}/python:3.8
   stage: Release
