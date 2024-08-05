@@ -167,18 +167,33 @@ Bsp-Image-Build-systemready-ir-acs:
     TESTIMAGE_AUTO: "$${@ d.getVar('FREQUENCY') == 'weekly' }"
   timeout: 24h
 
-Bsp-Image-Build-systemready-linux-distros-debian:
+.kas_image_build_systemready_linux_distros:
   extends: .kas_image_build_systemready
+  variables:
+    # Increase memory used in kas_image_build_arm_bsp_extras
+    # by double the size required for distro installation.
+    KUBERNETES_CPU_REQUEST: '16'
+    KUBERNETES_MEMORY_LIMIT: 36Gi
+    KUBERNETES_MEMORY_REQUEST: 36Gi
+    KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 36Gi
+    # DISTRO_UNATTENDED_INST_TESTS value will be checked against "1" in
+    # meta-arm arm-systemready-linux-distros.inc file
+    DISTRO_UNATTENDED_INST_TESTS: "$${@ '1' if '${FREQUENCY}' == 'weekly' \
+      else ''}"
+  timeout: 24h
+
+Bsp-Image-Build-systemready-linux-distros-debian:
+  extends: .kas_image_build_systemready_linux_distros
   variables:
     KAS_CONFIGS: arm-bsp-extras/arm-systemready-linux-distros-debian
 
 Bsp-Image-Build-systemready-linux-distros-fedora:
-  extends: .kas_image_build_systemready
+  extends: .kas_image_build_systemready_linux_distros
   variables:
     KAS_CONFIGS: arm-bsp-extras/arm-systemready-linux-distros-fedora
 
 Bsp-Image-Build-systemready-linux-distros-opensuse:
-  extends: .kas_image_build_systemready
+  extends: .kas_image_build_systemready_linux_distros
   variables:
     KAS_CONFIGS: arm-bsp-extras/arm-systemready-linux-distros-opensuse
 
