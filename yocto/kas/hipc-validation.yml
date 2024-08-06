@@ -11,4 +11,3 @@ header:
 local_conf_header:
   hipc-validation: |
     EXTRA_IMAGE_FEATURES:append = " hipc-validation"
-    EXTRA_IMAGE_FEATURES:remove = "actuation"

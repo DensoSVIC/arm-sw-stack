@@ -11,4 +11,3 @@ header:
 local_conf_header:
   si0-bridge-ethernet0: |
     EXTRA_IMAGE_FEATURES:append = " si0-bridge-ethernet0"
-    EXTRA_IMAGE_FEATURES:remove = "actuation"

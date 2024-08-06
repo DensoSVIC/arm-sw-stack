@@ -6,11 +6,8 @@
 
 ---
 header:
-  version: 14
-
-env:
-  SVE_DISABLE_FLAG: "1"
+  version: 16
 
 local_conf_header:
-  nosve: |
-    EXTRA_IMAGE_FEATURES:append = " nosve"
+  actuation: |
+    EXTRA_IMAGE_FEATURES:append = " actuation"

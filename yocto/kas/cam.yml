@@ -11,5 +11,3 @@ header:
 local_conf_header:
   cam: |
     EXTRA_IMAGE_FEATURES:append = " cam"
-    EXTRA_IMAGE_FEATURES:remove = "si0-bridge-ethernet0"
-    EXTRA_IMAGE_FEATURES:remove = "actuation"

@@ -113,6 +113,7 @@ config KAS_INCLUDE_ARCHITECTURE
 config KAS_INCLUDE_APPLICATION
     string
     default "yocto/kas/cam.yml" if EXTRA_IMAGE_FEATURES_CAM
+    default "yocto/kas/actuation.yml" if EXTRA_IMAGE_FEATURES_ACTUATION
     default "yocto/kas/hipc-validation.yml" if EXTRA_IMAGE_FEATURES_HIPC
     default "yocto/kas/si-psa-storage-tests.yml" if EXTRA_IMAGE_FEATURES_SI_PSA_STORAGE_TESTS
     default "yocto/kas/si-psa-crypto-tests.yml" if EXTRA_IMAGE_FEATURES_SI_PSA_CRYPTO_TESTS

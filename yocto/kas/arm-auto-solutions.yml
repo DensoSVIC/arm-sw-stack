@@ -38,5 +38,3 @@ local_conf_header:
     DISTRO_FEATURES:remove = "cassini-security"
     DISTRO_FEATURES:append = " cassini-dev"
     KERNEL_CLASSES:remove = "containers_kernelcfg_check"
-  arm-auto-solutions-extra-features: |
-    EXTRA_IMAGE_FEATURES:append = " actuation"
