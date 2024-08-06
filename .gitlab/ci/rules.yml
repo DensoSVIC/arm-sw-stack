@@ -22,6 +22,7 @@
   - ".gitlab/ci/rules.yml"
   - ".gitlab/ci/yocto-qa.yml"
   - ".gitlab/scripts/**/*"
+  - "yocto/kas/**/*"
 
 .bsp-extras-patterns: &bsp-extras-patterns
   - "yocto/meta-arm-bsp-extras/**/*"
