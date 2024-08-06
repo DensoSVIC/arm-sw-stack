@@ -16,7 +16,6 @@ repos:
   meta-ewaol:
     url: https://gitlab.com/soafee/ewaol/meta-ewaol
     path: layers/meta-ewaol
-    branch: scarthgap-dev
 
   sw-ref-stack:
     layers:

@@ -1,0 +1,31 @@
+#
+# SPDX-FileCopyrightText: <text>Copyright 2024 Arm Limited and/or its
+# affiliates <open-source-office@arm.com></text>
+#
+# SPDX-License-Identifier: MIT
+
+---
+header:
+  version: 14
+overrides:
+  repos:
+    meta-arm:
+      commit: 38bce82e42ea093333a53c4a10e51d1b26cbc989
+    meta-cassini:
+      commit: bef1d728c6db464ff89828afae5b51e648058f35  # v2.0.0
+    meta-clang:
+      commit: 0acff283249842eb1f617b20c2ed4ebf9f8e3557
+    meta-ewaol:
+      commit: c28142e72691202ba55a954f0faaed4375615b68  # ewaol-2.0.0
+    meta-openembedded:
+      commit: 78a14731cf0cf38a19ff8bd0e9255b319afaf3a7
+    meta-ptx:
+      commit: 547b079bf309ebe1576aa5ae0d58564feb245a42
+    meta-security:
+      commit: 11ea91192d43d7c2b0b95a93aa63ca7e73e38034
+    meta-virtualization:
+      commit: 37c06acf58f9020bccfc61954eeefe160642d5f3
+    meta-zephyr:
+      commit: 763c72fc3088fc09ccfde6edfcdad43811d16616
+    poky:
+      commit: ca27724b44031fe11b631ee50eb1e20f7a60009d
