@@ -150,122 +150,109 @@ LINUXPTP_IFACES:append:hipc-validation:virtualization = \
     " domu1.ethsi0 domu2.ethsi0"
 LINUXPTP_IFACES:hipc-validation:domu = "ethsi0"
 
-TEST_SUITES_EXTRA ?= " \
-    test_10_safety_island_c0 \
-    test_10_safety_island_c1 \
-    test_10_safety_island_c2 \
+TEST_SUITES:cam = " \
+    ping \
+    ssh \
+    test_00_fwu \
+    test_00_rse \
+    test_00_secure_partition \
+    fvp_boot \
+    test_10_linuxboot \
+    test_10_linuxlogin \
+    test_40_cam \
+    test_50_trusted_service \
+    test_99_linuxshutdown \
+    "
+TEST_SUITES:remove:cam:virtualization = " \
+<<<<<<< Updated upstream
+    ssh \
+    ping \
+=======
+    test_00_fwu \
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+    test_00_secure_partition \
+>>>>>>> Stashed changes
     "
 
-TEST_SUITES_EXTRA:hipc-validation = " test_30_hipc test_30_ptp"
-
-TEST_SUITES_EXTRA:actuation = " \
-    test_30_actuation \
+TEST_SUITES:actuation = " \
+    ping \
+    ssh \
+    test_00_rse \
+    test_00_secure_partition \
+    fvp_boot \
     test_10_fault_mgmt \
+    test_10_linuxboot \
+    test_10_linuxlogin \
     test_10_safety_island_c2 \
+    test_20_fvp_devices \
+    test_40_parsec \
+    test_40_sve \
+    test_30_actuation \
+    test_99_linuxshutdown \
+    "
+TEST_SUITES:append:actuation:virtualization = " \
+    test_40_virtualization \
+    "
+TEST_SUITES:remove:actuation:virtualization = " \
+    test_00_secure_partition \
+    test_10_fault_mgmt \
     "
 
+TEST_SUITES:hipc-validation = " \
+    ping \
+    ssh \
+    test_00_rse \
+    test_00_secure_partition \
+    fvp_boot \
+    test_10_linuxboot \
+    test_10_linuxlogin \
+    test_30_hipc \
+    test_30_ptp \
+    test_99_linuxshutdown \
+    "
 TEST_SUITES_EXTRA:hipc-validation:virtualization = " \
     test_30_hipc_virtualization \
     test_30_ptp_virtualization \
     "
 
-TEST_SUITES_EXTRA:si0-bridge-ethernet0 = " test_30_si0_bridge_ethernet0"
-
-TEST_SUITES_EXTRA:cam = " test_40_cam"
-
-TEST_SUITES_EXTRA:append:cam:baremetal = " \
-    test_00_fwu \
-    test_50_trusted_services \
-    "
-
-TEST_SUITES_EXTRA:nosve = ""
-
-TEST_SUITES_EXTRA:si-psa-storage-tests = " test_10_si_psa_arch_tests"
-TEST_SUITES_EXTRA:si-psa-crypto-tests = " test_10_si_psa_arch_tests"
-
-TEST_SUITES_EXTRA:append:actuation:virtualization = " \
-    test_40_virtualization \
-    "
-TEST_SUITES:remove = "\
-    fvp_devices \
-    "
-
-TEST_SUITES:append = " \
-    test_10_linuxboot \
-    test_10_linuxlogin \
-    test_20_fvp_devices \
-    test_40_parsec \
-    ${@'test_40_sve' if d.getVar('SVE_DISABLE_FLAG', True) != '1' else ''} \
-    ${TEST_SUITES_EXTRA} \
-    test_99_linuxshutdown \
-"
-
-TEST_SUITES:remove:si0-bridge-ethernet0 = "\
-    test_00_trusted_firmware_a \
-    test_10_linuxboot \
-    test_20_fvp_devices \
-    ssh \
+TEST_SUITES:si0-bridge-ethernet0 = " \
     ping \
-    test_10_linuxlogin \
-    test_40_parsec \
-    test_40_sve \
-    test_99_linuxshutdown \
-    "
-
-TEST_SUITES:remove:hipc-validation = " \
-    test_20_fvp_devices \
     ssh \
-    ping \
-    test_40_parsec \
-    test_40_sve \
-    "
-
-TEST_SUITES:remove:virtualization = " \
+    test_00_rse \
     test_00_secure_partition \
-    test_10_fault_mgmt \
-    "
-
-TEST_SUITES:remove:cam = "\
-    test_20_fvp_devices \
-    test_40_parsec \
-    test_40_sve \
-    "
-
-TEST_SUITES:remove:cam:virtualization = "\
-    ssh \
-    ping \
-    "
-
-TEST_SUITES:remove:si-psa-storage-tests = "\
-    test_20_fvp_devices \
-    ssh \
-    ping \
-    test_40_parsec \
-    test_40_sve \
-    "
-
-TEST_SUITES:remove:si-psa-crypto-tests = "\
-    test_20_fvp_devices \
-    ssh \
-    ping \
-    test_40_parsec \
-    test_40_sve \
-    "
-TEST_SUITES:remove:nosve = "\
-    test_20_fvp_devices \
-    ping \
-    ssh \
-    test_30_actuation \
-    test_10_fault_mgmt \
-    test_40_gicv4_1 \
-    test_30_hipc_virtualization \
-    test_40_parsec \
-    test_30_ptp \
-    test_00_secure_partition \
+    fvp_boot \
     test_30_si0_bridge_ethernet0 \
+    "
+
+TEST_SUITES:si-psa-storage-tests = " \
+    test_00_rse \
+    test_00_secure_partition \
+    fvp_boot \
+    test_10_linuxboot \
+    test_10_linuxlogin \
     test_10_si_psa_arch_tests \
-    test_40_sve \
-    test_40_virtualization \
+    test_99_linuxshutdown \
+    "
+
+TEST_SUITES:si-psa-crypto-tests = " \
+    test_00_rse \
+    test_00_secure_partition \
+    fvp_boot \
+    test_10_linuxboot \
+    test_10_linuxlogin \
+    test_10_si_psa_arch_tests \
+    test_99_linuxshutdown \
+    "
+
+TEST_SUITES:nosve = " \
+    fvp_boot \
+    test_00_rse \
+    test_00_secure_partition \
+    test_10_linuxboot \
+    test_10_linuxlogin \
+    test_99_linuxshutdown \
     "
 
 EXTRA_TESTIMAGE_RDEPENDS ?= ""
