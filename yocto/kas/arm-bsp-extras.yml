@@ -7,21 +7,13 @@
 ---
 header:
   version: 16
-
-defaults:
-  repos:
-    branch: scarthgap
+  includes:
+    - yocto/kas/base.yml
 
 repos:
   sw-ref-stack:
     layers:
       yocto/meta-arm-bsp-extras:
-
-  poky:
-    url: https://git.yoctoproject.org/git/poky
-    path: layers/poky
-    layers:
-      meta:
 
   meta-arm:
     url: https://git.yoctoproject.org/meta-arm
@@ -31,10 +23,7 @@ repos:
       meta-arm-toolchain:
 
   meta-openembedded:
-    url: https://git.openembedded.org/meta-openembedded
-    path: layers/meta-openembedded
     layers:
-      meta-oe:
       meta-python:
 
   meta-ptx:
