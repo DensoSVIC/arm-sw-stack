@@ -37,6 +37,63 @@ Changed
 * Introduced Safety Island GIC FMU device for Safety Island Cluster 1 and automated tests.
 * Runtime Security Subsystem (RSE) has been renamed to Runtime Security Engine (RSE) since TF-M v2.1.0.
 
+Third-party Yocto layers used to build the Reference Software Stack:
+
+  .. code-block:: yaml
+    :substitutions:
+
+    URL: |meta-arm repository|
+    layers: meta-arm, meta-arm-bsp, meta-arm-systemready, meta-arm-toolchain
+    branch: scarthgap
+    revision: 38bce82e42ea093333a53c4a10e51d1b26cbc989
+
+    URL: |meta-cassini repository|
+    layers: meta-cassini-distro, meta-cassini-tests
+    branch: scarthgap
+    tag: v2.0.0
+    revision: bef1d728c6db464ff89828afae5b51e648058f35
+
+    URL: |meta-clang repository|
+    layers: meta-clang
+    branch: scarthgap
+    revision: 0acff283249842eb1f617b20c2ed4ebf9f8e3557
+
+    URL: |meta-ewaol repository|
+    layers: meta-ewaol
+    branch: scarthgap
+    tag: ewaol-2.0.0
+    revision: c28142e72691202ba55a954f0faaed4375615b68
+
+    URL: |meta-openembedded repository|
+    layers: meta-filesystems, meta-networking, meta-oe, meta-python
+    branch: scarthgap
+    revision: 78a14731cf0cf38a19ff8bd0e9255b319afaf3a7
+
+    URL: |meta-ptx repository|
+    layers: meta-ptx
+    branch: scarthgap
+    revision: 547b079bf309ebe1576aa5ae0d58564feb245a42
+
+    URL: |meta-security repository|
+    layers: meta-parsec
+    branch: scarthgap
+    revision: 11ea91192d43d7c2b0b95a93aa63ca7e73e38034
+
+    URL: |meta-virtualization repository|
+    layers: meta-virtualization
+    branch: scarthgap
+    revision: 37c06acf58f9020bccfc61954eeefe160642d5f3
+
+    URL: |meta-zephyr repository|
+    layers: meta-zephyr-core
+    branch: scarthgap
+    revision: 763c72fc3088fc09ccfde6edfcdad43811d16616
+
+    URL: |poky repository|
+    layers: meta, meta-poky
+    branch: scarthgap
+    revision: ca27724b44031fe11b631ee50eb1e20f7a60009d
+
 .. _releasenotes_limitations:
 
 Limitations
