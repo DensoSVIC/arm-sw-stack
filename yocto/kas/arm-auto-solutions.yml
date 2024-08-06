@@ -11,7 +11,6 @@ header:
     - yocto/kas/arm-safety-island.yml
     - repo: meta-ewaol
       file: kas/ewaol.yml
-    - yocto/kas/ref-stack-pinned-repos.yml
 
 repos:
   meta-ewaol:
