@@ -151,8 +151,6 @@ LINUXPTP_IFACES:append:hipc-validation:virtualization = \
 LINUXPTP_IFACES:hipc-validation:domu = "ethsi0"
 
 TEST_SUITES:cam = " \
-    ping \
-    ssh \
     test_00_fwu \
     test_00_rse \
     test_00_secure_partition \
@@ -160,20 +158,11 @@ TEST_SUITES:cam = " \
     test_10_linuxboot \
     test_10_linuxlogin \
     test_40_cam \
-    test_50_trusted_service \
     test_99_linuxshutdown \
     "
 TEST_SUITES:remove:cam:virtualization = " \
-<<<<<<< Updated upstream
-    ssh \
-    ping \
-=======
     test_00_fwu \
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
     test_00_secure_partition \
->>>>>>> Stashed changes
     "
 
 TEST_SUITES:actuation = " \
@@ -201,8 +190,6 @@ TEST_SUITES:remove:actuation:virtualization = " \
     "
 
 TEST_SUITES:hipc-validation = " \
-    ping \
-    ssh \
     test_00_rse \
     test_00_secure_partition \
     fvp_boot \
@@ -218,8 +205,6 @@ TEST_SUITES_EXTRA:hipc-validation:virtualization = " \
     "
 
 TEST_SUITES:si0-bridge-ethernet0 = " \
-    ping \
-    ssh \
     test_00_rse \
     test_00_secure_partition \
     fvp_boot \
@@ -256,9 +241,12 @@ TEST_SUITES:nosve = " \
     "
 
 TEST_SUITES:cassini-test = " \
+    ping \
+    ssh \
     test_10_linuxboot \
     test_10_linuxlogin \
     test_40_ewaol \
+    test_50_trusted_services \
     test_99_linuxshutdown \
     "
 
