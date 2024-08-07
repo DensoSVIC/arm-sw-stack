@@ -1,0 +1,44 @@
+From 4a6b659664aefecc2f9c17266824b6c4f2565a92 Mon Sep 17 00:00:00 2001
+From: Ambroise Vincent <ambroise.vincent@arm.com>
+Date: Wed, 7 Aug 2024 09:20:09 +0100
+Subject: [PATCH] rss/driver: Fix computation of GIC IVIEWRn
+
+The GICD_IVIEWRn registers start at 0, with the first 2 registers
+reserved.
+
+There are 960 SPIs controlled by those registers, so fix the computation
+of the SPI_IS_VALID macro as well.
+
+Signed-off-by: Ambroise Vincent <ambroise.vincent@arm.com>
+Upstream-Status: Pending
+---
+ .../arm/rss/common/native_drivers/fainlight_gic_drv.c       | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_drv.c b/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_drv.c
+index 47068ce6d..de92e415b 100644
+--- a/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_drv.c
++++ b/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_drv.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2023, Arm Limited. All rights reserved.
++ * Copyright (c) 2023-2024, Arm Limited. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -26,10 +26,10 @@
+     ((dev)->gicr_base + (dev)->rdist_sz * (cpu) + (ofs))) = (uint32_t)(val)
+ 
+ /* Definitions to calculate SPI register index and bit offset. */
+-#define SPI_TO_IVIEWRn_IDX(spi)     (((spi) - 32) >> 4)
++#define SPI_TO_IVIEWRn_IDX(spi)     ((spi) >> 4)
+ #define SPI_TO_IVIEWRnE_IDX(spi)    (((spi) - 4096) >> 4)
+ #define SPI_TO_IVIEWRn_BIT(spi)     (((spi) % 16) << 1)
+-#define SPI_IS_VALID(spi)           ((spi) >= 32 && (spi) < 1020)
++#define SPI_IS_VALID(spi)           ((spi) >= 32 && (spi) < 992)
+ #define SPI_IS_VALID_EXT(spi)       ((spi) >= 4096 && (spi) < 5120)
+ 
+ static int assign_pe_to_view(struct gic_mv_dev_t *dev,
+-- 
+2.25.1
+
