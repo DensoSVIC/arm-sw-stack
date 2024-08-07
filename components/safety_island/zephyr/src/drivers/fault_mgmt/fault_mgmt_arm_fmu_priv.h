@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: <text>Copyright 2023 Arm Limited and/or its
+ * SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
  * affiliates <open-source-office@arm.com></text>
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -76,7 +76,7 @@ static const mem_addr_t FAULT_MGMT_ARM_FMU_FIELD_CID[] = {0xFF0, 0xFF4, 0xFF8, 0
 #define FAULT_MGMT_ARM_FMU_PID_SYSTEM                  0x0BB49B
 #define FAULT_MGMT_ARM_FMU_PID_MASK                    0xFFFFF
 
-#define FAULT_MGMT_ARM_FMU_SYSTEM_ERRIIDR 0x10000
+#define FAULT_MGMT_ARM_FMU_SYSTEM_ERRIIDR 0x49b1043b
 
 #define FAULT_MGMT_ARM_FMU_GIC_ERRIIDR      0x49a0043b
 #define FAULT_MGMT_ARM_FMU_GIC_BLKTYPE_MASK GENMASK(30, 28)
