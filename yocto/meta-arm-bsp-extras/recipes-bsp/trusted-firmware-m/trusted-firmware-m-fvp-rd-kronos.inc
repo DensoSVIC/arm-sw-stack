@@ -72,6 +72,7 @@ SRC_URI += "\
     file://0059-rss-driver-Power-on-redistributor-for-GIC-View-0.patch \
     file://0060-Kronos-Enlarge-the-payload-size-of-rss_comms-message.patch \
     file://0061-Platform-Kronos-Increase-buffers-for-EFI-vars.patch \
+    file://0062-Platform-Kronos-Power-on-all-the-Fainlight-GIC-redis.patch \
 "
 # cSpell:enable
 

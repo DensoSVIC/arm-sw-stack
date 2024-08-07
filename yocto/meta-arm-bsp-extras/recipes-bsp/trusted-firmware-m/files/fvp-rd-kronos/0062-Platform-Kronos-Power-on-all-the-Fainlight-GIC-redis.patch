@@ -1,0 +1,93 @@
+From ab131013a5c7556b18e31572cb9096eb9ffc4c66 Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Tue, 6 Aug 2024 12:17:47 +0100
+Subject: [PATCH] Platform: Kronos: Power on all the Fainlight GIC
+ redistributors from RSS
+
+Enable all of the Fainlight GIC redistributors from RSS since the
+GICR_PWRR registers are only accessible from View 0.
+
+Upstream-Status: Pending
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ .../common/native_drivers/fainlight_gic_drv.c  | 18 ++++++++++--------
+ .../common/native_drivers/fainlight_gic_reg.h  |  4 ++++
+ 2 files changed, 14 insertions(+), 8 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_drv.c b/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_drv.c
+index 47068ce6d..d7555188b 100644
+--- a/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_drv.c
++++ b/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_drv.c
+@@ -136,36 +136,36 @@ int gic_multiple_view_config_spi(struct gic_mv_dev_t *dev,
+     return 0;
+ }
+ 
+-static void gicr_wait_group_not_in_transit(struct gic_mv_dev_t *dev)
++static void gicr_wait_group_not_in_transit(struct gic_mv_dev_t *dev, uint8_t rdist_id)
+ {
+     uint32_t pwrr;
+ 
+     do {
+-        pwrr = GICR_READ_REG(dev, 0, GICR_PWRR);
++        pwrr = GICR_READ_REG(dev, rdist_id, GICR_PWRR);
+ 
+     /* Check group not transitioning: RDGPD == RDGPO */
+     } while (((pwrr & GICR_PWRR_RDGPD) >> GICR_PWRR_RDGPD_SHIFT) !=
+              ((pwrr & GICR_PWRR_RDGPO) >> GICR_PWRR_RDGPO_SHIFT));
+ }
+ 
+-static int gic_rdist_pwr_on(struct gic_mv_dev_t *dev)
++static int gic_rdist_pwr_on(struct gic_mv_dev_t *dev, uint8_t rdist_id)
+ {
+     /* Check if redistributor needs power management */
+-    if (GICR_READ_REG(dev, 0, GICR_IIDR) < GICR_IIDR_ARM_GIC_600)
++    if (GICR_READ_REG(dev, rdist_id, GICR_IIDR) < GICR_IIDR_ARM_GIC_600)
+         return -1;
+ 
+     do {
+         /* Wait until group not transitioning */
+-        gicr_wait_group_not_in_transit(dev);
++        gicr_wait_group_not_in_transit(dev, rdist_id);
+ 
+         /* Power on redistributor */
+-        GICR_WRITE_REG(dev, 0, GICR_PWRR, GICR_PWRR_ON);
++        GICR_WRITE_REG(dev, rdist_id, GICR_PWRR, GICR_PWRR_ON);
+ 
+         /*
+          * Wait until the power on state is reflected.
+          * If RDPD == 0 then powered on.
+          */
+-    } while ((GICR_READ_REG(dev, 0, GICR_PWRR) & GICR_PWRR_RDPD)
++    } while ((GICR_READ_REG(dev, rdist_id, GICR_PWRR) & GICR_PWRR_RDPD)
+              != GICR_PWRR_ON);
+ 
+     return 0;
+@@ -204,7 +204,9 @@ int gic_multiple_view_device_probe(struct gic_mv_dev_t *dev,
+ 
+     BOOT_LOG_INF("GIC: Multiple Views Support detected!");
+ 
+-    if (gic_rdist_pwr_on(dev)) {
++    if (gic_rdist_pwr_on(dev, GICR_CLUS0_ID) ||
++        gic_rdist_pwr_on(dev, GICR_CLUS1_ID) ||
++        gic_rdist_pwr_on(dev, GICR_CLUS2_ID)) {
+         BOOT_LOG_ERR("GIC: Could not power on redistributor!");
+         return -1;
+     }
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_reg.h b/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_reg.h
+index ee05be220..04e217465 100644
+--- a/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_reg.h
++++ b/platform/ext/target/arm/rss/common/native_drivers/fainlight_gic_reg.h
+@@ -55,6 +55,10 @@
+ 
+ #define GICR_VIEWR_MASK     0x3
+ 
++#define GICR_CLUS0_ID       0x0
++#define GICR_CLUS1_ID       0x1
++#define GICR_CLUS2_ID       0x3
++
+ /* Bit to check the last Redistrubitor on this socket */
+ #define GICR_TYPER_LAST     (1U << 4)
+ 
+-- 
+2.34.1
+
