@@ -165,7 +165,7 @@ Bsp-Image-Build-systemready-ir-acs:
   variables:
     KAS_CONFIGS: arm-bsp-extras/arm-systemready-ir-acs
     TESTIMAGE_AUTO: "$${@ d.getVar('FREQUENCY') == 'weekly' }"
-  timeout: 12h
+  timeout: 24h
 
 Bsp-Image-Build-systemready-linux-distros-debian:
   extends: .kas_image_build_systemready
