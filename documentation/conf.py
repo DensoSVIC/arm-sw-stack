@@ -147,9 +147,9 @@ release = arm_auto_solutions_version
 
 # Common variables for rst_prolog
 actuation_version = "v2.0"
-cassini_version = "scarthgap"
+cassini_version = "v2.0.0"
 critical_application_monitoring_version = "latest"
-ewaol_version = "scarthgap-dev"
+ewaol_version = "ewaol-2.0.0"
 fvp_version = "11.25.3"
 kas_version = "4.3.2"
 linux_version = "6.6"
