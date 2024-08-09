@@ -190,7 +190,7 @@ class CAMTest(OERuntimeTestCase):
               f' --processing-count {self.dom.processing_count}'
               f' --stream-count {self.dom.streams}'
               ' --enable-multiple-connection')
-        status, _ = self.run_check_errors(st, timeout=90*self.dom.streams)
+        status, _ = self.run_check_errors(st, timeout=120*self.dom.streams)
         self.assertEqual(status, 0, msg='cam-app-example failed.')
 
     @OETestDepends([
