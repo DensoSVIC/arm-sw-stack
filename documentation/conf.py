@@ -251,6 +251,7 @@ rst_prolog = f"""
 .. _Base Boot Requirements (BBR): https://developer.arm.com/documentation/den0044/latest
 .. _Base Boot Security Requirements (BBSR): https://developer.arm.com/documentation/den0107/latest
 .. _Base System Architecture (BSA): https://developer.arm.com/documentation/den0094/latest
+.. _Cassini Run-Time Integration Tests documentation: https://cassini.readthedocs.io/en/{cassini_version}/developer_manual/validation.html#run-time-integration-tests
 .. _Critical Application Monitoring repository: https://gitlab.arm.com/automotive-and-industrial/safety-island/critical-app-monitoring/-/tree/{critical_application_monitoring_version}
 .. _Critical Application Monitoring Documentation: https://critical-app-monitoring.docs.arm.com/en/{critical_application_monitoring_version}/
 .. _Crypto Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/crypto-service-description.html

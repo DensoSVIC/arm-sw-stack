@@ -435,3 +435,20 @@ The script that implements the tests is
       The test waits for U-Boot to start, starts the ``Secure Firmware
       Update`` process and ensures that the ``Secure Firmware Update``
       was completed successfully by monitoring the RSE terminal output.
+
+Integration Tests Validating EWAOL
+==================================
+
+The script that implements the tests is
+:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_40_ewaol.py`
+
+ * test_ptestrunner
+
+   This test runs the EWAOL/Cassini integration tests which are implemented
+   using BATS (Bash Automated Test System). The following test suites are
+   invoked:
+
+     * container-engine-integration-tests
+     * parsec-simple-e2e-tests
+
+For more information see the `Cassini Run-Time Integration Tests documentation`_.
