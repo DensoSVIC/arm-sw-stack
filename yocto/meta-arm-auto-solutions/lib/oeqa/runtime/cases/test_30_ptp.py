@@ -4,15 +4,18 @@
 #
 # SPDX-License-Identifier: MIT
 
-import unittest
-
 from oeqa.core.decorator.depends import OETestDepends
-from oeqa.runtime.cases.test_30_ptp_base import PTPTestBase
+from oeqa.runtime.case import OERuntimeTestCase
 from oeqa.utils.arm_auto_solutions_config import ArmAutoSolutionsConfig
-from oeqa.utils.xen_utils import XenUtils
+from time import sleep
 
 
-class PTPTest(PTPTestBase):
+class PTPTest(OERuntimeTestCase):
+    linux_console = 'default'
+    hostname = ArmAutoSolutionsConfig.hostname
+    linux_prompt = f'root@{hostname}:~#'
+    si_prompt = r'uart:~\$ '
+    linuxptp_ifaces = []
     nb_clusters = 3
     cl_console_template = 'safety_island_c'
     cl_iface_template = 'ethsi'
@@ -20,6 +23,8 @@ class PTPTest(PTPTestBase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.console = \
+            cls.tc.target._get_terminal(cls.tc.target.DEFAULT_CONSOLE)
         cls.linuxptp_ifaces = cls.td.get('LINUXPTP_IFACES', '').split()
 
     @classmethod
@@ -30,6 +35,47 @@ class PTPTest(PTPTestBase):
                 f'ifconfig {cls.cl_iface_template + str(i)} up')
             cls.console.expect(cls.linux_prompt, timeout=90)
         super().tearDownClass()
+
+    def check_linux_service(self, iface):
+        self.target.sendline(self.linux_console,
+                             f'systemctl is-active ptp4l@{iface}.service')
+        self.target.expect(self.linux_console,
+                           r'(\r){1,2}\nactive(\r){1,2}\n' + self.linux_prompt,
+                           timeout=90)
+
+    def check_zephyr_state(self, cl_console, expect_sync, max_tries=1):
+        def id_str(role):
+            return rf'Port id    : 1 \({role}\)'
+
+        def as_str(capable):
+            return rf'AS capable : {capable}'
+
+        # The port can be in different states after a de-sync, depending on the
+        # timing. We only expect it not to be in "client" mode anymore.
+        # /* cspell:disable-next-line */
+        sync_role = 'SLAVE'
+        desync_role = rf'[A-Z\-]+\b(?<!{sync_role})'
+        id_pattern = [id_str(desync_role), id_str(sync_role)]
+        as_pattern = [as_str('no'), as_str('yes')]
+
+        tries = 0
+        while tries < max_tries:
+            self.target.sendline(cl_console, 'net gptp 1')
+            id_match = self.target.expect(cl_console, id_pattern, timeout=90)
+            as_match = self.target.expect(cl_console, as_pattern, timeout=90)
+            self.target.expect(cl_console, self.si_prompt, timeout=90)
+
+            if id_match == expect_sync and (as_match or not expect_sync):
+                break
+
+            tries += 1
+            sleep(1)
+        self.assertLess(tries, max_tries)
+
+    @OETestDepends(['test_30_hipc.HIPCTestBase.test_hipc_cluster_cl1_cl2'])
+    def test_ptp_linux_services(self):
+        for iface in self.linuxptp_ifaces:
+            self.check_linux_service(iface)
 
     @OETestDepends(['test_30_ptp.PTPTest.test_ptp_linux_services'])
     def test_ptp_si_clients(self):
@@ -73,80 +119,3 @@ class PTPTest(PTPTestBase):
 
         for i in range(self.nb_clusters):
             self.check_zephyr_state(cl_console(i), True, 60)
-
-
-class PTPTestDomU1(PTPTestBase):
-    domu_hostname = ArmAutoSolutionsConfig.domu1_hostname
-
-    @classmethod
-    def setUpClass(cls):
-        if ('virtualization' not in cls.td.get('IMAGE_FEATURES', '').split()):
-            raise unittest.SkipTest(f"{cls.__name__} skipped because"
-                                    " 'virtualization' is not in"
-                                    " IMAGE_FEATURES")
-        super().setUpClass()
-        cls.linuxptp_ifaces = ['ethsi0']
-        cls.dom0_prompt = rf'root@(?!{cls.domu_hostname}){cls.hostname}:~#'
-        cls.linux_prompt = rf'root@{cls.domu_hostname}:~#'
-        XenUtils.enter_guest_from_dom0(cls.console, cls.dom0_prompt,
-                                       cls.linux_prompt, cls.domu_hostname)
-
-    @classmethod
-    def tearDownClass(cls):
-        # Cancel potentially pending 'journalctl -f' command
-        cls.console.sendcontrol('C')
-        cls.console.sendline()
-        cls.console.expect(cls.linux_prompt, timeout=90)
-        XenUtils.exit_guest_to_dom0(cls.console, cls.dom0_prompt,
-                                    cls.linux_prompt, cls.domu_hostname)
-        # Ensure network interface is not left in a down state
-        cls.console.sendline(f'ifconfig {cls.domu_hostname}.ethsi0 up')
-        cls.console.expect(cls.dom0_prompt, timeout=90)
-        super().tearDownClass()
-
-    @OETestDepends(['test_30_ptp.PTPTestDomU1.test_ptp_linux_services'])
-    def test_ptp_domu_client(self):
-        self.target.sendline(self.linux_console,
-                             'journalctl | grep ptp4l | head -n 40')
-        self.check_linux_remote_clock()
-        self.target.expect(self.linux_console, self.linux_prompt, timeout=90)
-
-        # Use SSH target to run command on dom0 while the console is in domu
-        status, output = self.target.run(
-            f'ifconfig {self.domu_hostname}.ethsi0 down')
-        self.assertEqual(status, 0,
-                         msg='Failed to bring down '
-                             f'{self.domu_hostname}.ethsi0.\n{output}')
-
-        self.target.sendline(self.linux_console, 'journalctl -f | grep ptp4l')
-        self.target.expect(self.linux_console,
-                           'selected local clock '
-                           # /* cspell:disable-next-line */
-                           r'[0-9a-f]+\.[0-9a-f]+\.[0-9a-f]+ as best master',
-                           timeout=90)
-        self.linux_ctrl_c()
-
-        status, output = self.target.run(
-            f'ifconfig {self.domu_hostname}.ethsi0 up')
-        self.assertEqual(status, 0,
-                         msg='Failed to bring up '
-                             f'{self.domu_hostname}.ethsi0.\n{output}')
-
-        self.target.sendline(self.linux_console, 'journalctl -f | grep ptp4l')
-        self.check_linux_remote_clock()
-        self.linux_ctrl_c()
-
-
-class PTPTestDomU2(PTPTestDomU1):
-    domu_hostname = ArmAutoSolutionsConfig.domu2_hostname
-
-    @classmethod
-    def setUpClass(cls):
-        if int(cls.td.get('DOMU_INSTANCES', 0)) < 2:
-            raise unittest.SkipTest("PTPTestDomU2 skipped because DomU2 is"
-                                    " not generated in this build")
-        super().setUpClass()
-
-    @OETestDepends(['test_30_ptp.PTPTestDomU2.test_ptp_linux_services'])
-    def test_ptp_domu_client(self):
-        super().test_ptp_domu_client()

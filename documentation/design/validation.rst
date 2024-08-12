@@ -218,8 +218,8 @@ Integration Tests Validating gPTP
 =================================
 
 The scripts that implement the tests are
-:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_30_ptp_base.py` and
-:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_30_ptp.py`.
+:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_30_ptp.py` and
+:repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_30_ptp_virtualization.py`.
 
 * test_ptp_linux_services
       The test ensures the ``ptp4l`` services are running.

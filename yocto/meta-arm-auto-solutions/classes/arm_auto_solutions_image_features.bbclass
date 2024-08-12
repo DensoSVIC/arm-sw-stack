@@ -166,7 +166,7 @@ TEST_SUITES_EXTRA:actuation = " \
 
 TEST_SUITES_EXTRA:hipc-validation:virtualization = " \
     test_30_hipc_virtualization \
-    test_30_ptp \
+    test_30_ptp_virtualization \
     "
 
 TEST_SUITES_EXTRA:si0-bridge-ethernet0 = " test_30_si0_bridge_ethernet0"
