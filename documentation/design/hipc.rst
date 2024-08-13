@@ -59,14 +59,15 @@ backend service for communication with the Primary Compute.
 Virtual Network Device over RPMsg
 =================================
 
-RPMsg offers a range of user APIs for RPMsg endpoints to send and receive messages
-to and from these endpoints. These APIs are suitable for simple inter-processor
-communication. However, many current user applications are not built on RPMsg APIs.
-Instead, they use BSD sockets for IPC. The reason for this is that BSD sockets can
-abstract the difference between inter-processor communication and intra-processor
-communication. This makes it possible for applications to be more versatile and
-portable. In response to the needs of such applications, a virtual network device
-based on RPMsg has been added to the Reference Software Stack.
+RPMsg offers a range of user APIs for RPMsg endpoints to send and receive 
+messages. These APIs are suitable for simple inter-processor communication.
+However, many current user applications are not built on RPMsg APIs. Instead,
+they use BSD sockets for IPC. The reason for this is that BSD sockets can
+abstract the difference between inter-processor communication and 
+intra-processor communication. This makes it possible for applications to be
+more versatile and portable. In response to the needs of such applications, a
+virtual network device based on RPMsg has been added to the Reference Software
+Stack.
 
 On the Safety Island side, a network device is created over an RPMsg endpoint
 with a specific service name. The RPMsg endpoint sends a Name Service message
@@ -75,24 +76,24 @@ by the RPMsg bus, which creates an RPMsg endpoint and a corresponding network
 device. Once this is done, the virtual network devices establish network
 communication.
 
-On the Primary Compute side RPMsg frame must be copied to the Socket Buffer (skb)
-utilized by the Network Stack. However, if the traffic exceeds the performance
-limit, the Socket Buffer may get dropped during processing for congestion control
-or by the protocol layers. In such cases, the network statistics will increase
-the dropped packet counter.
+On the Primary Compute side RPMsg frame must be copied to the Socket Buffer
+(skb) utilized by the Network Stack. However, if the traffic exceeds the
+performance limit, the Socket Buffer may get dropped during processing for
+congestion control or by the protocol layers. In such cases, the network
+statistics will show an increased dropped packet counter.
 
 In the above diagram, each Safety Island cluster has its own Shared Memory and
 MHUv3 device to communicate with the Primary Compute. The size of the Shared
 Memory is 16MB, and Safety Island Clusters 0, 1, and 2 have access to it. The
-Shared Memory instance has a Resource table (4KB), Vring 0, 1 (1MB each), and
-an RPMsg vbuffer (3MB) used to send and receive information between the Primary
-Compute and the Safety Island cluster.
+Shared Memory instance has a Resource table (4KB), Vring 0, Vring1 (1MB each),
+and an RPMsg Virtio Buffer (3MB) used to send and receive information between
+the Primary Compute and the Safety Island cluster.
 
-On the Primary Compute, the Safety Island Remoteproc driver and RPMsg-based virtual
-interface driver are added to communicate with the Safety Island. The RPMsg-net
-driver on the Primary Compute and Veth-RPMsg on the Safety Island clusters implement
-the virtual ethernet device that is the basis for communication between the Primary
-Compute and Safety Island clusters.
+On the Primary Compute, the Safety Island Remoteproc driver and RPMsg-based
+virtual interface driver are added to communicate with the Safety Island. The
+RPMsg-net driver on the Primary Compute and Veth-RPMsg on the Safety Island
+clusters implement the virtual ethernet device that is the basis for
+communication between the Primary Compute and Safety Island clusters.
 
 Safety Island Remoteproc Driver
 ===============================
@@ -102,7 +103,7 @@ differences, so the entire driver doesn't need to be duplicated. The Remoteproc
 platform driver is added to the software stack to provide support for
 communication between Primary Compute and Safety Island clusters.
 
-In the FVP, Linux running in the Primary Compute, regards the Safety Island
+In the FVP, Linux running in the Primary Compute regards the Safety Island
 clusters as its remote processors. The Safety Island has three clusters. Each
 cluster behaves as an independent entity and has its own resources to establish
 the connection to the Primary Compute.
@@ -111,22 +112,22 @@ These clusters cannot be booted by the Primary Compute processor because they
 need to monitor the other hardware, including the Primary Compute. Therefore,
 the initial status of the clusters in the driver is ``RPROC_DETACHED``, which
 means the cluster has been booted independently from the Primary Compute
-processor. This driver implements the notification handler using an MHUv3 based
-mailbox, which notifies other cores when new messages are sent to the virtual
-queue.
+processor. This driver implements the notification handler using an
+MHUv3-based mailbox, which notifies other cores when new messages are sent
+to the virtual queue.
 
-The Resource table, Vring 0, 1, and RPMsg vbuffer memory regions are set up in the
-device tree bindings for each cluster. The driver reads the device tree node for
-each cluster and adds it to the Remoteproc framework. Each cluster has its own
-Resource table, Vring 0, 1, and RPMsg vbuffer, which serve as the foundation for
-communication.
+The Resource table, Vring 0, Vring 1, and RPMsg Virtio Buffer memory regions are
+set up in the device tree bindings for each cluster. The driver reads the device
+tree node for each cluster and adds it to the Remoteproc framework. Each cluster
+has its own Resource table, Vring 0, Vring 1, and RPMsg Virtio Buffer, which
+serve as the foundation for communication.
 
 Virtualization Architecture
 ===========================
 
 In the Virtualization Architecture of the Reference Software Stack, virtual
 network interfaces based on Xen drivers created in the control domain (Dom0) are
-exposed to the domUs. These virtual network interfaces are added to an Open
+exposed to the DomUs. These virtual network interfaces are added to an Open
 vSwitch virtual switch along with an RPMsg Virtual Interface to communicate
 with the Safety Island.
 
@@ -142,6 +143,7 @@ the Baremetal Architecture.
 |
 
 There are some limitations of the virtual network device over RPMsg.
+
 Refer to the release notes :ref:`releasenotes_limitations` section.
 
 ************************************************
@@ -153,8 +155,8 @@ Virtual Network Device over IPC Static Vrings
 
 Zephyr `IPC Service`_  based virtual network devices are added to each cluster
 to provide communication between clusters via BSD sockets. The backend used for
-the IPC service is RPMSg Static Vrings. The IPC RPMsg Static Vrings backend is
-implemented on top of Virtio based RPMsg communication.
+the IPC service is RPMsg Static Vrings. The IPC RPMsg Static Vrings backend is
+implemented on top of Virtio-based RPMsg communication.
 
 |
 
@@ -170,7 +172,7 @@ implemented on top of Virtio based RPMsg communication.
 Memory Map
 **********
 
-The dedicated SRAM used by the Primary Compute and Safety Island Clusters 0, 1,
+The dedicated SRAM used by the Primary Compute and Safety Island Clusters 0, 1, 
 and 2 for inter-processor data transfer has the following memory regions:
 **Resource table**, **Vring0**, **Vring1**, and **Virtio Buffer**.
 
@@ -266,7 +268,7 @@ Primary Compute side:
    * ``si_c2_vdev0buffer`` : Used for data transfer between Primary Compute and Cluster 2
 
   Refer to the device tree below for more information about the memory address and
-  region size.
+  region size:
 
    * :repo:`yocto/meta-arm-bsp-extras/recipes-bsp/trusted-firmware-a/files/fvp-rd-kronos/rdkronos.dts`.
 
@@ -285,8 +287,8 @@ switch into multiple logical switches. The VLAN tag has a value from 0 to 4096
 stored in the packet header. Usually 0 means that the packet is untagged, but
 some values are reserved.
 
-On a switch, using VLAN tagged traffic makes sure that a packet tagged with a
-certain VLAN identifier reaches only ports that are configured to manage the
+On a switch, using VLAN-tagged traffic makes sure that a packet tagged with
+a certain VLAN identifier reaches only ports that are configured to manage the
 traffic tagged with that identifier (tag).
 
 The traffic between the Primary Compute and the Safety Island is using the
@@ -345,12 +347,12 @@ See :ref:`validation_gptp` for details on how the functionality is validated.
 External Connection
 ===================
 
-The Safety Island has a single network interface leading outside the FVP system
+The Safety Island has a single network interface outside the FVP system
 located on Cluster 0.
 
 A software-based network bridge deployed on Cluster 0 bridges this external
 interface with the IPC channels to the other Safety Island clusters so Cluster
-1 and 2 can reach outside FVP.
+1 and 2 can reach outside the FVP.
 
 See :ref:`design_applications_bridge` for more information.
 
@@ -365,7 +367,7 @@ name of the interfaces that are connected to the Primary Compute.
 
 ovsbr0 is the Open vSwitch network switch which carries untagged traffic. The
 communication between the Primary Compute and Safety Island is managed through
-the brsi{N} VLAN tagged switches that are configured to carry VLAN tagged
+the brsi{N} VLAN-tagged switches that are configured to carry VLAN-tagged
 traffic from/to the ethsi{N} interface with the Safety Island.
 
 User space applications on the Primary Compute can communicate with Safety

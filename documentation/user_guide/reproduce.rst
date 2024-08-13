@@ -77,9 +77,10 @@ Download
   Performing the builds and FVP execution in **a tmux session is mandatory** for
   Arm Automotive Solutions because the ``runfvp`` tool that invokes the FVP expects
   the presence of a tmux session to attach its spawned tmux windows for console
-  access to the processing elements. Refer to
-  `Tmux Documentation`_ for more information on the usage of tmux. It is
-  recommended to change the default ``history-limit`` by adding
+  access to the processing elements.
+  
+  Refer to `Tmux Documentation`_ for more information on the usage of tmux.
+  It is recommended to change the default ``history-limit`` by adding
   ``set-option -g history-limit 3000`` to ``~/.tmux.conf`` before starting
   tmux.
 
@@ -618,8 +619,9 @@ The following messages are expected in the output to validate this Use-Case:
    RESULTS - test_40_cam.CAMTest.test_temporal_check_on_si: PASSED (44.32s)
 
 .. note::
-    There is a rare known failure where a timeout might occur during test execution. Refer to
-    :ref:`releasenotes_knownissues` for possible workarounds.
+    There is a rare known failure where a timeout might occur during test execution. 
+    
+    Refer to :ref:`releasenotes_knownissues` for possible workarounds.
 
 Virtualization Architecture
 ---------------------------
@@ -1316,8 +1318,9 @@ The following messages are expected in the output to validate this Use-Case:
    RESULTS - test_40_cam.CAMTestMultiDom.test_cam_app_example_to_service_on_si_with_multiple_vms: PASSED (68.86s)
 
 .. note::
-    There is a rare known failure where a timeout might occur during test execution. Refer to
-    :ref:`releasenotes_knownissues` for possible workarounds.
+    There is a rare known failure where a timeout might occur during test execution. 
+    
+    Refer to :ref:`releasenotes_knownissues` for possible workarounds.
 
 .. _user_guide_reproduce_actuation_demo:
 
@@ -1556,8 +1559,9 @@ The following messages are expected in the output to validate this Use-Case:
   RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (167.15s)
 
 .. note::
-    There is a rare known failure where a timeout might occur during test execution. Refer to
-    :ref:`releasenotes_knownissues` for possible workarounds.
+    There is a rare known failure where a timeout might occur during test execution. 
+    
+    Refer to :ref:`releasenotes_knownissues` for possible workarounds.
 
 Virtualization Architecture
 ---------------------------
@@ -1808,8 +1812,9 @@ The following messages are expected in the output to validate this Use-Case:
   RESULTS - test_30_actuation.ActuationTest.test_player_to_analyzer: PASSED (265.77s)
 
 .. note::
-    There is a rare known failure where a timeout might occur during test execution. Refer to
-    :ref:`releasenotes_knownissues` for possible workarounds.
+    There is a rare known failure where a timeout might occur during test execution. 
+    
+    Refer to :ref:`releasenotes_knownissues` for possible workarounds.
 
 .. _user_guide_reproduce_hipc:
 
@@ -1882,8 +1887,9 @@ The following messages are expected in the output to validate this Use-Case:
   RESULTS - test_30_ptp.PTPTest.test_ptp_si_clients: PASSED (34.73s)
 
 .. note::
-    There is a rare known failure where a timeout might occur during test execution. Refer to
-    :ref:`releasenotes_knownissues` for possible workarounds.
+    There is a rare known failure where a timeout might occur during test execution. 
+    
+    Refer to :ref:`releasenotes_knownissues` for possible workarounds.
 
 Virtualization Architecture
 ---------------------------
@@ -1952,8 +1958,9 @@ The following messages are expected in the output to validate this Use-Case:
   RESULTS - test_30_ptp_virtualization.PTPTestDomU2.test_ptp_linux_services: PASSED (47.37s)
 
 .. note::
-    There is a rare known failure where a timeout might occur during test execution. Refer to
-    :ref:`releasenotes_knownissues` for possible workarounds.
+    There is a rare known failure where a timeout might occur during test execution. 
+    
+    Refer to :ref:`releasenotes_knownissues` for possible workarounds.
 
 .. _user_guide_reproduce_parsec_tls:
 
@@ -1961,8 +1968,10 @@ Parsec-enabled TLS Demo
 =======================
 
 The demo can be run on the Baremetal Architecture. It consists of a TLS server
-and a TLS client. Refer to :ref:`design_applications_parsec_enabled_tls`
-for more information on this application. This demo is included as part of the
+and a TLS client. 
+
+Refer to :ref:`design_applications_parsec_enabled_tls` for more information on
+this application. This demo is included as part of the 
 ``Safety Island Actuation Demo``.
 
 Baremetal Architecture
@@ -2008,8 +2017,9 @@ Wait for it to return. The expected terminal output is ``running``.
 Run the Demo
 ^^^^^^^^^^^^
 
-The demo consists of a TLS server and a TLS client. Refer to
-:ref:`design_applications_parsec_enabled_tls` for more information on
+The demo consists of a TLS server and a TLS client. 
+
+Refer to :ref:`design_applications_parsec_enabled_tls` for more information on
 this application.
 
 1. Run ``ssl_server`` from the Primary Compute terminal in the background and
@@ -2114,17 +2124,19 @@ The following messages are expected in the output to validate this Use-Case:
   RESULTS - test_40_parsec.ParsecTest.test_parsec_demo: PASSED (479.25s)
 
 .. note::
-    There is a rare known failure where a timeout might occur during test execution. Refer to
-    :ref:`releasenotes_knownissues` for possible workarounds.
+    There is a rare known failure where a timeout might occur during test execution. 
+    
+    Refer to :ref:`releasenotes_knownissues` for possible workarounds.
 
 .. _user_guide_reproduce_pc_psa_ps_crypto_api_test:
 
 Primary Compute PSA Secure Storage and Crypto APIs Architecture Test Suite
 ==========================================================================
 
-The demo can be run on the Baremetal Architecture. Refer to
-:ref:`design_primary_compute_secure_services` for more information on this
-application. This demo is included as part of the ``Critical Application
+The demo can be run on the Baremetal Architecture. 
+
+Refer to :ref:`design_primary_compute_secure_services` for more information on
+this application. This demo is included as part of the ``Critical Application
 Monitoring Demo``.
 
 Baremetal Architecture
@@ -2170,8 +2182,9 @@ Wait for it to return. The expected terminal output is ``running``.
 Run the Demo
 ^^^^^^^^^^^^
 
-The demo consists of simple tests run from the Linux terminal. Refer to
-:ref:`design_primary_compute_secure_services` for more information on
+The demo consists of simple tests run from the Linux terminal. 
+
+Refer to :ref:`design_primary_compute_secure_services` for more information on
 this application.
 
 1. Run the PSA Crypto API tests from the Primary Compute terminal using the
@@ -2282,8 +2295,9 @@ The following messages are expected in the output to validate this Use-Case:
    RESULTS - test_50_trusted_services.ArmAutoSolutionsTrustedServices.test_05_psa_ps_api_test: PASSED (68.88s)
 
 .. note::
-    There is a rare known failure where a timeout might occur during test execution. Refer to
-    :ref:`releasenotes_knownissues` for possible workarounds.
+    There is a rare known failure where a timeout might occur during test execution. 
+    
+    Refer to :ref:`releasenotes_knownissues` for possible workarounds.
 
 .. _user_guide_reproduce_si_psa_ps_api_test:
 
@@ -2411,8 +2425,9 @@ The following message is expected in the output to validate this Use-Case:
   RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.00s)
 
 .. note::
-    There is a rare known failure where a timeout might occur during test execution. Refer to
-    :ref:`releasenotes_knownissues` for possible workarounds.
+    There is a rare known failure where a timeout might occur during test execution. 
+    
+    Refer to :ref:`releasenotes_knownissues` for possible workarounds.
 
 .. _user_guide_reproduce_si_psa_crypto_api_test:
 
@@ -2512,7 +2527,8 @@ The following messages are expected in the output to validate this Use-Case:
    RESULTS - test_10_si_psa_arch_tests.SIPSAArchTests.test_psa_si_cluster2: PASSED (0.01s)
 
 .. note::
-    There is a rare known failure where a timeout might occur during test execution. Refer to
+    There is a rare known failure where a timeout might occur during test execution. 
+    
     :ref:`releasenotes_knownissues` for possible workarounds.
 
 .. _user_guide_reproduce_fault_management:
@@ -2521,8 +2537,9 @@ Fault Management Demo
 =====================
 
 The demo uses the Safety Island Cluster 1 console and it can be run on the
-Baremetal Architecture of the Safety Island Actuation Demo. Refer to
-:ref:`design_applications_fault_mgmt` for further details.
+Baremetal Architecture of the Safety Island Actuation Demo. 
+
+Refer to :ref:`design_applications_fault_mgmt` for further details.
 
 Baremetal Architecture
 ----------------------
@@ -2765,8 +2782,9 @@ The following messages are expected in the output to validate this Use-Case:
   RESULTS - test_10_fault_mgmt.FaultMgmtTest.test_tree: PASSED (0.71s)
 
 .. note::
-    There is a rare known failure where a timeout might occur during test execution. Refer to
-    :ref:`releasenotes_knownissues` for possible workarounds.
+    There is a rare known failure where a timeout might occur during test execution. 
+
+    Refer to :ref:`releasenotes_knownissues` for possible workarounds.
 
 .. _user_guide_reproduce_arm_systemready_ir_validation:
 
@@ -2777,8 +2795,9 @@ Arm SystemReady IR Firmware Build
 ---------------------------------
 
 The Arm SystemReady IR Firmware Build option just builds the
-Arm SystemReady IR-aligned firmware. Refer to :ref:`design_systemready_ir`
-for more details.
+Arm SystemReady IR-aligned firmware. 
+
+Refer to :ref:`design_systemready_ir` for more details.
 
 .. image:: ../images/build_config_sr_ir.*
    :align: center
@@ -2925,8 +2944,9 @@ messages are expected to validate this Use-Case:
      TEST_OVERALL_TIMEOUT="\${@16*60*60}" kas shell -c "bitbake arm-systemready-ir-acs -C unpack"
 
 .. note::
-    There is a rare known failure where a timeout might occur during test execution. Refer to
-    :ref:`releasenotes_knownissues` for possible workarounds.
+    There is a rare known failure where a timeout might occur during test execution. 
+    
+    Refer to :ref:`releasenotes_knownissues` for possible workarounds.
 
 Refer to :ref:`systemready_ir_acs_tests` for an explanation on how the
 ACS tests are set up and how they work in the Reference Software Stack.
@@ -3609,7 +3629,8 @@ Run the Demo
       [INF]:[FWU]: erase_bank: erasing sectors = 4080, from offset = 16748544
       [INF]:[FWU]: flash_rss_capsule: writing capsule to the flash at offset = 16748544...
 
-   **Note: This step will take about 10 minutes.**
+   .. note::
+      This step will take about 10 minutes.
 
 2. The system will reset after a successful firmware update and boot with the
    updated firmware. This can be confirmed by checking the terminal logs; if
@@ -3664,7 +3685,8 @@ The following messages are expected in the output to validate this Use-Case:
   RESULTS - test_00_fwu.SecureFirmwareUpdateTest.test_securefirmwareupdate: PASSED (414.85s)
 
 .. note::
-    There is a rare known failure where a timeout might occur during test execution. Refer to
-    :ref:`releasenotes_knownissues` for possible workarounds.
+    There is a rare known failure where a timeout might occur during test execution.
+    
+    Refer to :ref:`releasenotes_knownissues` for possible workarounds.
 
 See :ref:`validation_secure_firmware_update` for more details.

@@ -84,7 +84,7 @@ Documentation Structure
 
   * :ref:`Solution Design <design/index:Solution Design>`
 
-    Provides more advanced developer-focused details of the solutions, its
+    Provides more advanced developer-focused details of each solution, its
     implementation, and dependencies.
 
   * :ref:`License <license_link:License>`
@@ -210,13 +210,14 @@ Safety Island Actuation Demo
 The Safety Island Actuation demo consists of the Arm SystemReady IR-aligned
 firmware along with Linux-based software on the Primary Compute and Zephyr
 application on the Safety Island to demonstrate automotive workloads.
+
 Refer to :ref:`design_applications_actuation` for more information.
 
 Safety Island Communication Demo
 ================================
 
-The Safety Island Communication demo demonstrates via HIPC (Heterogeneous
-Inter-processor Communication), the networking between:
+The Safety Island Communication demo demonstrates via Heterogeneous
+Inter-processor Communication (HIPC), the networking between:
 
   * Primary Compute and the three Safety Island clusters.
   * Safety Island clusters.
@@ -231,9 +232,10 @@ Layer Security (TLS) connection is established, and a simple webpage is
 transferred. The TLS session consists of both symmetric and asymmetric
 cryptographic operations. The symmetric operations are executed by Mbed TLS
 in Linux userspace on the Primary Compute. The asymmetric operations are
-carried out by `Parsec`_. While the backend of the Parsec service is based on
-RSE cryptographic runtime service. Refer to
-:ref:`design_applications_parsec_enabled_tls` for more information.
+carried out by `Parsec`_, whose backend is based on the RSE cryptographic
+runtime service.
+
+Refer to :ref:`design_applications_parsec_enabled_tls` for more information.
 
 Primary Compute PSA Protected Storage and Crypto APIs Architecture Test Suite
 =============================================================================
@@ -244,7 +246,7 @@ Storage APIs and PSA Crypto APIs specifications respectively.
 
 Both suites are used to verify whether these behaviors are implemented
 correctly in our system. This suites contain self-checking and portable
-C-based tests with directed stimulus.
+C-based tests with a directed stimulus.
 
 Refer to :ref:`design_primary_compute_secure_services` for more information.
 
@@ -257,7 +259,7 @@ APIs specification.
 
 This suite is used to verify whether these behaviors are implemented
 correctly in our system. This suite contains self-checking and portable
-C-based tests with directed stimulus.
+C-based tests with a directed stimulus.
 
 Refer to :ref:`design_applications_psa_arch_tests_secure_storage` for
 more information.
@@ -287,8 +289,9 @@ Arm SystemReady IR Validation
 =============================
 Arm SystemReady is a compliance certification program based on a set of
 hardware and firmware standards that enable interoperability with generic
-off-the-shelf operating systems and hypervisors. Refer to
-:ref:`design_systemready_ir` for more information.
+off-the-shelf operating systems and hypervisors.
+
+Refer to :ref:`design_systemready_ir` for more information.
 
 Linux Distribution Installation
 ===============================
@@ -301,8 +304,9 @@ Secure Firmware Update
 
 Demonstrates an implementation of Secure Firmware Update initiated from
 the Primary Compute and follows the
-`Platform Security Firmware Update Specification`_. Refer to
-:ref:`design_secure_firmware_update` for more information.
+`Platform Security Firmware Update Specification`_.
+
+Refer to :ref:`design_secure_firmware_update` for more information.
 
 ********************
 Repository Structure

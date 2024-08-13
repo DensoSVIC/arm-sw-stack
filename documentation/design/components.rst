@@ -100,17 +100,17 @@ Runtime and the relevant components.
 .. note::
   The release version of TF-M specified in this documentation can be different
   from that integrated in Kronos implementation.
+  
   Refer to the TF-M documentation plaintext in `Trusted Firmware-M repository`_
   if any mismatch occurs.
 
 Memory Map
 ==========
 
-The Runtime Security Engine (RSE) maps the Primary Compute, System Control
-Processor (SCP), and Safety Island Clusters 0, 1, and 2 system memory regions
-via an Address Translation Unit (ATU) device to dedicated address spaces. This
-mapping allows access to those components memories and enables the transfer of
-the boot images.
+The RSE maps the Primary Compute, System Control Processor (SCP), and Safety
+Island Clusters 0, 1, and 2 system memory regions via an Address Translation
+Unit (ATU) device to dedicated address spaces. This mapping allows access to
+those components memories and enables the transfer of the boot images.
 
 .. list-table::
    :widths: 50 50 25
@@ -166,10 +166,11 @@ can be used by multiple operating systems.
 
 The Safety Island GIC provides 4 programming views:
 
-* View-0: Used by RSE to configure View-1/2/3 for Safety Island Cluster-0/1/2.
-* View-1: Used by Operating System on Safety Island Cluster-0.
-* View-2: Used by Operating System on Safety Island Cluster-1.
-* View-3: Used by Operating System on Safety Island Cluster-2.
+* View-0: Used by RSE to configure View-1/2/3 for Safety Island Cluster 0/1/2
+  respectively.
+* View-1: Used by Operating System on Safety Island Cluster 0.
+* View-2: Used by Operating System on Safety Island Cluster 1.
+* View-3: Used by Operating System on Safety Island Cluster 2.
 
 .. _design_components_rse_ni710ae:
 
@@ -179,15 +180,15 @@ The Safety Island GIC provides 4 programming views:
 The `CoreLink NI-710AE Network-on-Chip Interconnect`_ is a highly
 configurable |AMBA|-compliant system-level interconnect that enables
 functional safety for automotive and industrial applications. On the
-RD-Kronos platform, the NI-710AE handles traffic from four managers,
-i.e. Safety Island CPU cluster 0/1/2 and the RSE. It provides
+RD-Kronos platform, the NI-710AE handles traffic from four managers:
+Safety Island Clusters 0, 1, and 2 and the RSE. It provides
 capabilities for these managers to access their corresponding
 subordinates. It also provides the capabilities for the subordinates
 to be exclusive to a certain manager or be shared among multiple
 managers during the different stages of RSE booting.
 
 On Kronos, the configuration of NI-710AE is split to two stages, namely
-the discovery stage and the programming stage, both stages are done in
+the discovery stage and the programming stage. Both stages are done in
 RSE BL2. In the discovery stage, software can determine the structure
 of the NI-710AE domains, components, and subfeatures without previous
 knowledge of the configuration, based on the the base address of the
@@ -217,12 +218,12 @@ to:
 .. _design_components_scp-firmware:
 
 ************
-SCP-firmware
+SCP firmware
 ************
 
 The `Power Control System Architecture (PCSA)`_ describes how systems can be
-built to provide microcontrollers to abstract various power, or other system
-management tasks, away from Primary Compute (PC).
+built to provide microcontrollers to abstract various power or other system
+management tasks away from Primary Compute (PC).
 
 The `System Control Processor (SCP) Firmware`_ provides a software reference
 implementation for the System Control Processor (SCP) component.
@@ -234,7 +235,7 @@ For the RD-Kronos platform, the SCP software is deployed on a Cortex-M7 CPU.
 
 The functionality of the SCP includes:
 
-* Initialization of the system to manage Primary Compute (PC) boot
+* Initialization of the system to manage Primary Compute boot
 * Runtime services:
     * Power domain management
     * System power management
@@ -254,8 +255,8 @@ doorbell signals are exchanged between the RSE and SCP.
 
 For RD-Kronos platform, MHUv3 signals are sent:
 
-* From SCP to the RSE to indicate that SCP has booted successfully
-* From the RSE to SCP to indicate the Primary Compute (PC) is ready to boot
+* From SCP to the RSE to indicate that SCP has booted successfully.
+* From the RSE to SCP to indicate the Primary Compute is ready to boot.
 * From the RSE to SCP to notify the SCP that the image of a Safety Island (SI)
   cluster has been loaded to LLRAM and the cluster is ready to boot.
 
@@ -280,8 +281,8 @@ Patches for the SCP are included at
 
 * Implement the RD-Kronos platform port, based on RD-Fremont.
 * Communicate with RSE via MHUv3 to conduct the boot flow.
-* Power on Safety Island.
-* Power on PC.
+* Power on the Safety Island.
+* Power on the Primary Compute.
 * Add Primary Compute and Safety Island shared SRAM to Interconnect memory
   region map.
 * Add a shutdown handler to be able to shutdown the FVP.
@@ -332,8 +333,8 @@ Patch files can be found at
 to:
 
 * Implement the RD-Kronos platform port, based on RD-Fremont.
-* Compile the HW_CONFIG device tree and add it to the FIP image.
-* Extend BL2_AT_EL3 to load the FW_CONFIG for dynamic configuration.
+* Compile the ``HW_CONFIG`` device tree and add it to the FIP image.
+* Extend ``BL2_AT_EL3`` to load the ``FW_CONFIG`` for dynamic configuration.
 * Support for the OP-TEE SPMC on the RD-Kronos platform.
 * Add the following device tree nodes to the RD-Kronos platform.
 
@@ -352,7 +353,7 @@ to:
 OP-TEE
 ======
 
-`OP-TEE`_ is a Trusted Execution Environment (TEE) designed as companion to a
+`OP-TEE`_ is a Trusted Execution Environment (TEE) designed as a companion to a
 Normal world Linux kernel running on Neoverse-V3AE cores using the `TrustZone`_
 technology. OP-TEE implements TEE Internal Core API v1.1.x which is the API
 exposed to Trusted Applications and the TEE Client API v1.0, which is the API
@@ -443,7 +444,7 @@ to:
 * Introduce armffa command.
 * Add MM communication support using FF-A transport.
 * Add Secure Firmware Update support.
-* Add runtime checks of Update Capsule flags
+* Add runtime checks of Update Capsule flags.
 
 .. _design_components_xen:
 
@@ -455,7 +456,7 @@ operating systems to execute on the same computer hardware concurrently.
 Responsibilities of the Xen hypervisor include memory management and CPU
 scheduling of all virtual machines (domains), and for launching the most
 privileged domain (Dom0) - the only virtual machine which by default
-has direct access to hardware. From the Dom0 the hypervisor can be managed
+has direct access to hardware. From Dom0 the hypervisor can be managed
 and unprivileged domains (DomU) can be launched.
 Xen is only included in the Virtualization Reference Software Stack
 Architecture.
@@ -605,7 +606,7 @@ are set in
 :repo:`b/yocto/meta-arm-auto-solutions/recipes-extended/xen-cfg/xen-cfg.bb`.
 
 For more information on SVE2, refer to `SVE2 guide`_.  Xen command line
-options for SVE for dom0 can be found under `xen-command-line options`_ and
+options for SVE for Dom0 can be found under `xen-command-line options`_ and
 SVE configuration for guests can be found under `xl configuration`_.
 
 For SVE2 validation, refer to
@@ -619,15 +620,15 @@ Patches for the Xen MPAM extension support, PCI Device Passthrough, and GICv4.1
 Enablement at :repo:`yocto/meta-arm-auto-solutions/recipes-extended/xen/files/`
 to:
 
- * Discover MPAM CPU feature
- * Initialize MPAM at Xen boot time
+ * Discover MPAM CPU feature.
+ * Initialize MPAM at Xen boot time.
  * Support MPAM in Xen tools to apply the domain MPAM configuration in
-   userspace at runtime
- * Support PCI Device Passthrough
- * Discover GICv4.1 feature
- * Initialize GICv4.1 at Xen boot time
- * Support GICv4.1 features of vLPI and vSGI Direct Injection
- * Support EFI capsule update from runtime and on disk
+   userspace at runtime.
+ * Support PCI Device Passthrough.
+ * Discover GICv4.1 feature.
+ * Initialize GICv4.1 at Xen boot time.
+ * Support GICv4.1 features of vLPI and vSGI Direct Injection.
+ * Support EFI capsule update from runtime and on disk.
 
 .. _design_components_linux:
 
@@ -635,7 +636,7 @@ Linux Kernel
 ============
 
 In the Baremetal Architecture, the Linux kernel is a real-time kernel that uses
-the `PREEMPT_RT patch`_. In the Virtualization Architecture, both Dom0, DomU1
+the `PREEMPT_RT patch`_. In the Virtualization Architecture, Dom0, DomU1
 and DomU2 run a standard kernel.
 
 .. note::
@@ -678,9 +679,9 @@ The ``arm_si_rproc`` and ``rpmsg_net`` drivers can be found at
 Additional patches are located at
 :repo:`yocto/meta-arm-auto-solutions/recipes-kernel/linux/files` related to:
 
- * Making virtio rpmsg buffer size configurable
- * Disable remoteproc virtio rpmsg to use DMA API in Xen guest
- * Adding MHUv3 driver
+ * Making the virtio RPMsg buffer size configurable.
+ * Disabling remoteproc virtio RPMsg to use DMA API in Xen guest.
+ * Adding MHUv3 driver.
 
 *************
 Safety Island
@@ -718,14 +719,15 @@ support this device.
 Virtual Network over RPMsg
 --------------------------
 
-A ``veth_rpmsg`` driver is added for network socket based communication between
-Armv9-A and Safety Island clusters. It implements an RPMsg backend by the OpenAMP
-library and an adaptation layer for converting RPMsg data to network data.
+A ``veth_rpmsg`` driver is added for socket-based network communication between
+Armv9-A and Safety Island clusters. It implements an RPMsg backend by the
+OpenAMP library and an adaptation layer for converting RPMsg data to network
+data.
 
 Virtual Network over IPC RPMsg Static Vrings
 --------------------------------------------
 
-A ``ipc_rpmsg_veth`` driver is added for network socket based communication
+A ``ipc_rpmsg_veth`` driver is added for socket-based network communication
 between Safety Island clusters. It implements virtual network device based
 on IPC RPMsg Static Vrings.
 
@@ -755,14 +757,14 @@ Additional patches are located at
 :repo:`yocto/meta-arm-safety-island/recipes-kernel/zephyr-kernel/files/zephyr`
 related to:
 
- * Configuring the MPU region
- * Configuring and fixing VLAN
- * Working around the shell interfering with network performance
- * Adding zperf download bind capability
- * Adding SMSC91x driver promiscuous mode
- * Fixing connected datagram socket packet filtering
- * Fixing race conditions in poll and condvar
- * Fixing gPTP message generation correctness
- * Fixing gPTP packet priority
- * Conforming to the gPTP VLAN rules
- * Adding compiler tuning for Cortex-R82
+ * Configuring the MPU region.
+ * Configuring and fixing VLAN.
+ * Working around the shell interfering with network performance.
+ * Adding zperf download bind capability.
+ * Adding SMSC91x driver promiscuous mode.
+ * Fixing connected datagram socket packet filtering.
+ * Fixing race conditions in poll and condvar.
+ * Fixing gPTP message generation correctness.
+ * Fixing gPTP packet priority.
+ * Conforming to the gPTP VLAN rules.
+ * Adding compiler tuning for Cortex-R82.

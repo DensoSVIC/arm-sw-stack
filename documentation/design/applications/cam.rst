@@ -31,6 +31,7 @@ classified into:
 
 The CAM project is integrated into Arm Automotive Solutions to demonstrate the
 feasibility of monitoring Primary Compute applications from the Safety Island.
+
 Refer to `Critical Application Monitoring Documentation`_ for more information
 on CAM project and its implementation details.
 
@@ -129,6 +130,7 @@ Zephyr File System
 ==================
 
 Zephyr supports the FAT file system and can mount it to a RAM disk.
+
 Refer to `Zephyr file system`_.
 
 .. note::

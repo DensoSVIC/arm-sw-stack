@@ -23,8 +23,9 @@ The tests are run on the image using the oeqa test framework. Refer to
 `OEQA FVP`_ for more information on this framework.
 
 .. note::
-    There is a rare known failure where a timeout might occur during test execution. Refer to
-    :ref:`releasenotes_knownissues` for possible workarounds.
+    There is a rare known failure where a timeout might occur during test execution. 
+    
+    Refer to :ref:`releasenotes_knownissues` for possible workarounds.
 
 In this section, details on the structure, implementation and debugging of the
 tests is given.
@@ -65,7 +66,7 @@ for debugging.
        The script that implements the test is
        :repo:`yocto/meta-arm-bsp-extras/lib/oeqa/runtime/cases/test_00_secure_partition.py`.
        The test waits for the Primary Compute to log that OP-TEE loads the
-       required SPs (Secure Partitions) and primary CPU switches to Normal world
+       required Secure Partitions (SPs) and primary CPU switches to Normal world
        boot.
 
 .. _design_fvp_device_tests:
@@ -81,8 +82,8 @@ These tests consist of a series of device tests that can be found in
    accessible via the filesystem and that outbound connections work
    (invoking ``wget``).
 
-* rtc
-   Checks that the rtc (real-time clock) device and its correct driver are
+* RTC
+   Checks that the Real-Time Clock (RTC) device and its correct driver are
    available and accessible via the filesystem and verifies that the
    ``hwclock`` command runs successfully.
 
@@ -120,8 +121,8 @@ For example, the file
 Before running integration tests, some basic tests will be run firstly:
 
 * test_linux_login
-   The test logs in the Linux with root. If it fails, the tests that depend
-   on it will be cancelled. The test is implemented in
+   The test logs into the Linux shell as root. If it fails, the tests that
+   depend on it will be cancelled. The test is implemented in
    :repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_10_linuxlogin.py`.
 
 * test_cluster{N}
@@ -138,7 +139,7 @@ After running all the integration tests, the following test is run:
 
 * test_linux_shutdown
    The test verifies that the FVP can be terminated using a ``shutdown now``
-   command in the linux console. The test is implemented in
+   command in the Linux console. The test is implemented in
    :repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_99_linuxshutdown.py`.
 
 .. _validation_actuation_demo:
@@ -209,7 +210,7 @@ are run for each Xen guests created.
    number.
    The tested configurations are:
 
-      * The Safety Island Cluster {M} as an Zperf server (UDP/TCP)
+      * The Safety Island Cluster {M} as a Zperf server (UDP/TCP)
         and the Safety Island Cluster {N} as a Zperf client (UDP/TCP).
 
 .. _validation_gptp:
@@ -282,11 +283,11 @@ Integration Tests Validating Xen
 
 The ``test_ptestrunner`` integration test in
 :repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_40_virtualization.py`
-uses ``ptest-runner`` to execute ``01-xendomains.bats`` BATS
-(Bash Automated Test System) tests in
+uses ``ptest-runner`` to execute ``01-xendomains.bats``
+Bash Automated Test System (BATS) tests in
 :repo:`yocto/meta-arm-auto-solutions/recipes-test/xen/files/tests/01-xendomains.bats`,
 
-DomUs lifecycle management
+DomU lifecycle management
 --------------------------
 
 The ``01-xendomains.bats`` BATS test verifies DomU lifecycle management,
@@ -298,9 +299,9 @@ MPAM
 The MPAM cache partitioning functionality is verified by the
 ``01-xendomains.bats`` BATS tests from the following aspects:
 
-* Verify if the Dom0 Cache Portion Bitmap (CPBM) value is consistent with the
+* Verify that the Dom0 Cache Portion Bitmap (CPBM) value is consistent with the
   pre-set value from the Xen command line.
-* Verify if the CPBM values for DomU1 and DomU2 are consistent with the
+* Verify that the CPBM values for DomU1 and DomU2 are consistent with the
   pre-set value from the Xen guest configuration files.
 * Verify if user can modify the domain CPBM values by the ``xl`` sub-commands
   in :ref:`design_components_xen_mpam`.

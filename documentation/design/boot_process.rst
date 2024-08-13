@@ -17,10 +17,10 @@ RSE-oriented Boot Flow
 The :ref:`design_components_rse` is the root of trust chain. It is the
 first booting element when the system is powered up.
 
-The boot sequence is shown in the RSE-oriented Boot Flow diagram below
-:ref:`design_boot_process_boot_flow` section.
+The boot sequence is shown in the RSE-oriented Boot Flow diagram in the Boot 
+Flow section :ref:`design_boot_process_boot_flow` section.
 
-The RSE uses a NVM flash to store the images of various components, including:
+The RSE uses an NVM flash to store the images of various components, including:
 
 * RSE BL2 image
 * RSE Runtime image
@@ -44,7 +44,7 @@ signature (RSA-3072) validation.
 Image Signing
 =============
 
-A RSA private key is stored in TF-M's source code repository (the
+An RSA private key is stored in TF-M's source code repository (the
 ``bl2/ext/mcuboot/root-RSA-3072.pem`` file) for testing. The private key is used
 to sign the images listed above that RSE BL2 loads.
 
@@ -74,9 +74,9 @@ authenticate the images.
 Key Customization
 =================
 
-The default private key used platform should only be used for test purposes.
-Since this private key is widely distributed, it should never be used for
-production. To replace the default key, the user needs to:
+The default private key used in the Kronos platform should only be used for test
+purposes. Since this private key is widely distributed, it should never be used
+for production. To replace the default key, the user needs to:
 
 * Generate a new RSA key pair
 * Replace the default private key ``bl2/ext/mcuboot/root-RSA-3072.pem`` with
@@ -109,7 +109,7 @@ Major steps of the boot flow:
 
    * Begins executing in place from ROM when the system is powered up
    * Provisions RSE BL1_2 and various keys and other data from the provisioning
-     bundle to the OTP (This step only happens on the system's first boot)
+     bundle to the OTP (this step only happens on the system's first boot)
    * Copies the RSE BL1_2 image from the OTP to the SRAM
    * Validates RSE BL1_2 against the hash stored in the OTP
    * Transfers the execution to RSE BL1_2
@@ -209,7 +209,7 @@ The remaining components in the CoT are certificates and boot loader images. The
 certificates follow the `X.509 v3`_ standard. It supports adding custom extensions to
 the certificates, which are used to store essential information to establish the CoT.
 
-Please refer to the `Trusted Board Boot Requirements (TBBR)`_ and `Trusted Board Boot (TBB)`_
+Refer to the `Trusted Board Boot Requirements (TBBR)`_ and `Trusted Board Boot (TBB)`_
 documentation to learn about the TBB implementation.
 
 .. _design_boot_process_uefi_secure_boot:

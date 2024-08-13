@@ -72,7 +72,7 @@ PSA Secure Storage and Crypto APIs Arch Tests
 
 The PSA Protected Storage, PSA Internal Trusted Storage and PSA Crypto APIs
 Arch Tests can be accessed from the Primary Compute Linux terminal by running
-a single command for each. The test suites execute over around a minute, and
+a single command for each. The test suites take around a minute to execute, and
 a table of results is displayed upon completion.
 
 Refer to :ref:`validation_trusted_services_tests` for more information.
@@ -107,18 +107,19 @@ Secure world SP is carried by the `Arm Firmware Framework for Arm A-profile`_
 SE Proxy SP
 -----------
 
-The `SE Proxy SP`_ (Secure Enclave Proxy Secure Partition) is a proxy partition
+The Secure Enclave Proxy Secure Partition (`SE Proxy SP`_) is a proxy partition
 managed by `OP-TEE`_. It provides access to services hosted by the RSE.
 
 The ``SE Proxy SP`` receives secure service operation requests from the Normal
 world, translates the request parameters to IPC calls, and invokes the runtime
-services provided by the RSE. The IPC is carried by Shared Memory and MHUv3
-Doorbell communication between the Primary Compute and the RSE.
+services provided by the RSE. The IPC is carried by Shared Memory and Message 
+Handling Unit (MHUv3) Doorbell communication between the Primary Compute and the
+RSE.
 
 SMM Gateway SP
 --------------
 
-The `SMM Gateway SP`_ (System Management Mode Gateway Secure Partition) serves
+The System Management Mode Gateway Secure Partition (`SMM Gateway SP`_) serves
 as a gateway for the variable storage required by the implementation of UEFI
 Boot and Runtime Services APIs. These UEFI variables are stored in the Protected
 Storage Service provided by the RSE.
@@ -161,14 +162,14 @@ The `PSA Crypto API`_ is implemented by the ``libmbedcrypto`` library of
 `Mbed TLS`_.
 
 Mbed TLS supports drivers for cryptographic accelerators, secure elements and
-random generators. An `RSE Communication Driver` is created to communicate with
+random number generators. An `RSE Communication Driver` is created to communicate with
 RSE for calling the crypto service that is provided there. The driver invokes
 the ``psa_call()`` interface to communicate with the RSE via MHUv3.
 
 By introducing the driver, different crypto operations can be handled in
 different ways:
 
-* Asymmetric crypto operations can be handled in RSE for enhanced security,
+* Asymmetric crypto operations can be handled in the RSE for enhanced security,
   because the private key cannot leave RSE. The following Crypto APIs are
   supported by the driver:
 
@@ -190,7 +191,7 @@ different ways:
     * ``psa_asymmetric_encrypt``
     * ``psa_asymmetric_decrypt``
 
-* Symmetric and other crypto operations are handled in Safety Island locally
+* Symmetric and other crypto operations are handled in the Safety Island locally
   with the Mbed TLS software implementation, where the runtime performance is
   optimized.
 
@@ -217,7 +218,7 @@ Two use cases are addressed by `PSA Secure Storage API`_:
     * ``psa_its_remove``
 
 * Protected Storage:
-  Protected Storage is meant to protect larger data-sets against physical
+  This is storage which can be used to protect large data-sets against physical
   attacks. It aims to provide the ability for a firmware developer to store
   data onto external flash, with a promise of data-at-rest protection,
   including device-bound encryption, integrity, and replay protection.
@@ -287,7 +288,7 @@ RSE communication
 
 The RSE communication protocol is designed to be a lightweight serialization of
 the ``psa_call()`` API through a combination of in-band MHUv3
-(Message Handling Unit) transport and parameter-passing through Shared Memory.
+transport and parameter-passing through Shared Memory.
 
 To call an RSE service, the client must send a message in-band over the MHUv3
 sender link to RSE and wait for a reply message on the MHUv3 receiver.
@@ -298,10 +299,11 @@ byte-order over the MHUv3 links.
 RSE Secure Firmware
 *******************
 
-The Secure Services are finally served by the ``RSE Secure Firmware``. For more
-information about how the Secure Services work in the RSE, read the
-`TF-M Secure Services`_ page.
+The Secure Services are served by the RSE Secure Firmware. For more information
+about how the Secure Services work in the RSE, read the `TF-M Secure Services`_
+page.
 
 Trusted Firmware-M has some limitations regarding the Secure Storage Service.
+
 Refer to the release notes :ref:`releasenotes_limitations` section for more
 details.

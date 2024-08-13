@@ -22,7 +22,7 @@ Changed
 
 * Use the EWAOL Yocto distribution instead of Cassini
 * Extended SystemReady IR ACS with the Security Interface Extension (SIE) Self-Certification Test (SCT)
-* Assemble the firmware images using genimage from the meta-ptx Yocto layer instead of wks/wic images
+* Assembled the firmware images using genimage from the meta-ptx Yocto layer instead of wks/wic images
 * Updated support from openSUSE 15.4 to 15.5
 * Updated support from Debian 11.7 to 12.4
 * Added Fedora 39.1.5 distribution to comply with the SystemReady IR v2.1 requirements.
@@ -143,7 +143,7 @@ New Features
 
 Implementation of the :ref:`Use-Cases <overview_use_cases>`.
 
-The main components versions used in the Reference Software Stack:
+The versions of the main components used in the Reference Software Stack:
 
 ..
   cspell:disable
@@ -265,7 +265,7 @@ Limitations
  * PSA Secure Storage APIs Architecture Test Suite only runs on
    Cluster 2 in the Safety Island due to the following limitations:
 
-   * Trusted Firmware-M supports a single partition only, this causes
+   * Trusted Firmware-M supports a single partition only. This causes
      tests running simultaneously on different entities to interfere
      with each other due to accessing the same assets, resulting in failures.
    * Trusted Firmware-M has no support against Denial of Service attacks,
@@ -281,14 +281,14 @@ Resolved and Known Issues
 Known Issues
 ------------
   * The automated validation might fail due to the encoding issues in the logs.
-    This has been observed on an AWS aarch64 Graviton 2 build host. On the test logs,
-    the error message that appears is a typical timeout error.
+    This has been observed on an AWS aarch64 Graviton 2 build host. In the test
+    logs, the error message that appears is a typical timeout error.
 
     The console log appears normal, but some characters are either corrupted or
-    replaced with \00, \x00 or ^@ characters. This issue is likely caused by encoding
-    mismatches or inconsistencies in the logging process, and it could occur in any of
-    the test suites. A workaround is to trigger the "Automated Validation" again. When
-    this issue occurs, something similar to the following would be observed in the logs:
+    replaced with \00, \x00 or ^@ characters. This issue is likely caused by
+    encoding mismatches or inconsistencies in the logging process, and it could
+    occur in any of the test suites. When this issue occurs, something similar
+    to the following would be observed in the logs:
 
     .. cspell:disable
 
@@ -302,9 +302,11 @@ Known Issues
 
     .. cspell:enable
 
-  * The automated validation might rarely fail due to timeouts related to the
-    host CPU frequency and throttling, if this happens then simply running the
-    automated validation again would fix such as issue.
+    If this occurs, trigger the "Automated Validation" again to resolve it.
+
+  * Automated validation may fail at times due to CPU frequency and throttling
+    issues. If this occurs, trigger the "Automated Validation" again to resolve
+    it.
 
   * Refer to `Critical Application Monitoring Known Issues <https://critical-app-monitoring.docs.arm.com/en/v1.0/release_notes.html#known-issues>`_
     for CAM-related known issues.
