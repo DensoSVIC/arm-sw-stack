@@ -432,9 +432,11 @@ The script that implements the tests is
 :repo:`yocto/meta-arm-auto-solutions/lib/oeqa/runtime/cases/test_00_fwu.py`
 
  * test_securefirmwareupdate
-      The test waits for U-Boot to start, starts the ``Secure Firmware
-      Update`` process and ensures that the ``Secure Firmware Update``
-      was completed successfully by monitoring the RSE terminal output.
+      The test logs into Linux and runs commands to copy the update capsule
+      from the MMC card to the boot partition. It starts the ``Secure
+      Firmware Update`` process by rebooting and ensures that the ``Secure
+      Firmware Update`` was completed successfully by monitoring the RSE
+      terminal output.
 
 Integration Tests Validating EWAOL
 ==================================
