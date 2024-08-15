@@ -18,7 +18,7 @@
 .ci-patterns: &ci-patterns
   - ".gitlab-ci.yml"
   - ".gitlab/Dockerfiles/**/*"
-  - ".gitlab/ci/kronos-build.yml"
+  - ".gitlab/ci/sw-ref-stack-build.yml"
   - ".gitlab/ci/rules.yml"
   - ".gitlab/ci/yocto-qa.yml"
   - ".gitlab/scripts/**/*"
