@@ -51,25 +51,25 @@ class PTPTestDomU1(PTPTest):
     def test_ptp_si_clients(self):
         super().test_ptp_si_clients()
 
+    def linux_ctrl_c(self):
+        self.target.sendcontrol(self.linux_console, 'C')
+        self.target.sendline(self.linux_console)
+        self.target.expect(self.linux_console, self.linux_prompt,
+                           timeout=90)
+
+    def check_linux_remote_clock(self):
+        self.target.expect(self.linux_console,
+                           # /* cspell:disable-next-line */
+                           'selected best master clock '
+                           r'[0-9a-f]+\.[0-9a-f]+\.[0-9a-f]+', timeout=90)
+        self.target.expect(self.linux_console,
+                           r'rms\s+\d+ max \d+ freq\s+(\+|-)\d+ '
+                           r'\+\/-\s+\d+ delay\s+\d+ \+\/-\s+\d+',
+                           timeout=90)
+
     @OETestDepends([
         'test_30_ptp_virtualization.PTPTestDomU1.test_ptp_linux_services'])
     def test_ptp_domu_client(self):
-        def linux_ctrl_c(self):
-            self.target.sendcontrol(self.linux_console, 'C')
-            self.target.sendline(self.linux_console)
-            self.target.expect(self.linux_console, self.linux_prompt,
-                               timeout=90)
-
-        def check_linux_remote_clock(self):
-            self.target.expect(self.linux_console,
-                               # /* cspell:disable-next-line */
-                               'selected best master clock '
-                               r'[0-9a-f]+\.[0-9a-f]+\.[0-9a-f]+', timeout=90)
-            self.target.expect(self.linux_console,
-                               r'rms\s+\d+ max \d+ freq\s+(\+|-)\d+ '
-                               r'\+\/-\s+\d+ delay\s+\d+ \+\/-\s+\d+',
-                               timeout=90)
-
         # Perform an interface down / up and verify that PTP is sync-ed
         self.target.sendline(self.linux_console,
                              'journalctl | grep ptp4l | head -n 40')
