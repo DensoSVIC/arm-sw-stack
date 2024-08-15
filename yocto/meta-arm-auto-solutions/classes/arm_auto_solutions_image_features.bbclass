@@ -253,4 +253,7 @@ TEST_SUITES:cassini-test = " \
 EXTRA_TESTIMAGE_RDEPENDS ?= ""
 EXTRA_TESTIMAGE_RDEPENDS:si0-bridge-ethernet0 = "iperf-native:do_populate_sysroot"
 
+UEFI_SECURE_BOOT:baremetal = "1"
+UEFI_SECURE_BOOT:virtualization = "0"
+
 do_testimage[rdepends] += "${EXTRA_TESTIMAGE_RDEPENDS}"
