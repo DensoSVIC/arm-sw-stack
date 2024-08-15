@@ -179,7 +179,7 @@ Bsp-Image-Build-systemready-ir-acs:
     # DISTRO_UNATTENDED_INST_TESTS value will be checked against "1" in
     # meta-arm arm-systemready-linux-distros.inc file
     DISTRO_UNATTENDED_INST_TESTS: "$${@ '1' if '${FREQUENCY}' == 'weekly' \
-      else ''}"
+      else '0'}"
   timeout: 24h
 
 Bsp-Image-Build-systemready-linux-distros-debian:
@@ -207,7 +207,7 @@ Bsp-Image-Build-systemready-linux-distros-opensuse:
     TESTIMAGE_AUTO: "$${@ '1' if '${BUILD_ARCH}' == 'x86_64' \
       or '${FREQUENCY}' != 'adhoc' \
       or bb.utils.contains('EXTRA_IMAGE_FEATURES', 'virtualization', \
-      False, True, d) else ''}"
+      False, True, d) else '0'}"
   rules:
     - !reference [".build-arm-auto-solutions:rules", rules]
 
