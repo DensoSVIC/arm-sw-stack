@@ -12,6 +12,18 @@ from oeqa.utils.arm_auto_solutions_config import ArmAutoSolutionsConfig
 from oeqa.utils.xen_utils import XenUtils
 
 
+class PTPTestDom0(PTPTest):
+    @OETestDepends([
+        'test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster2'])
+    def test_ptp_linux_services(self):
+        super().test_ptp_linux_services()
+
+    @OETestDepends([
+        'test_30_ptp_virtualization.PTPTestDom0.test_ptp_linux_services'])
+    def test_ptp_si_clients(self):
+        super().test_ptp_si_clients()
+
+
 class PTPTestDomU1(PTPTest):
     domu_hostname = ArmAutoSolutionsConfig.domu1_hostname
 
@@ -42,14 +54,12 @@ class PTPTestDomU1(PTPTest):
         super().tearDownClass()
 
     @OETestDepends([
-        'test_30_hipc_virtualization.HIPCTestDomU1.test_hipc_cluster_cl1_cl2'])
+        'test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster2'])
     def test_ptp_linux_services(self):
         super().test_ptp_linux_services()
 
-    @OETestDepends([
-        'test_30_ptp_virtualization.PTPTestDomU1.test_ptp_linux_services'])
     def test_ptp_si_clients(self):
-        super().test_ptp_si_clients()
+        self.skipTest("PTP SI Clients not tested for DomU1")
 
     def linux_ctrl_c(self):
         self.target.sendcontrol(self.linux_console, 'C')
@@ -117,12 +127,10 @@ class PTPTestDomU2(PTPTestDomU1):
     def test_ptp_linux_services(self):
         super().test_ptp_linux_services()
 
-    @OETestDepends([
-        'test_30_ptp_virtualization.PTPTestDomU2.test_ptp_linux_services'])
     def test_ptp_si_clients(self):
-        super().test_ptp_si_clients()
+        self.skipTest("PTP SI Clients not tested for DomU2")
 
     @OETestDepends([
-        'test_30_ptp_virtualization.PTPTestDomU2.test_ptp_linux_services'])
+        'test_30_ptp_virtualization.PTPTestDomU1.test_ptp_linux_services'])
     def test_ptp_domu_client(self):
         super().test_ptp_domu_client()

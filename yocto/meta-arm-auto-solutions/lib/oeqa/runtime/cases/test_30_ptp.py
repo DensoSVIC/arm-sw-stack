@@ -72,7 +72,7 @@ class PTPTest(OERuntimeTestCase):
             sleep(1)
         self.assertLess(tries, max_tries)
 
-    @OETestDepends(['test_30_hipc.HIPCTestBase.test_hipc_cluster_cl1_cl2'])
+    @OETestDepends(['test_30_hipc.HIPCTestBase.test_ping_cl1_cl2'])
     def test_ptp_linux_services(self):
         for iface in self.linuxptp_ifaces:
             self.check_linux_service(iface)

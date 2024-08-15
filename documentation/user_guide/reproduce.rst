@@ -1942,12 +1942,12 @@ The following messages are expected in the output to validate this Use-Case:
   RESULTS - test_30_hipc_virtualization.HIPCTestDomU1.test_ping_cluster2: PASSED (153.34s)
   RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_hipc_cluster1: PASSED (365.17s)
   RESULTS - test_30_hipc_virtualization.HIPCTestDomU2.test_ping_cluster1: PASSED (152.43s)
+  RESULTS - test_30_ptp_virtualization.PTPTestDom0.test_ptp_linux_services: PASSED (7.17s)
+  RESULTS - test_30_ptp_virtualization.PTPTestDom0.test_ptp_si_clients: PASSED (50.57s)
+  RESULTS - test_30_ptp_virtualization.PTPTestDomU1.test_ptp_domu_client: PASSED (47.37s)
   RESULTS - test_30_ptp_virtualization.PTPTestDomU1.test_ptp_linux_services: PASSED (7.17s)
-  RESULTS - test_30_ptp_virtualization.PTPTestDomU1.test_ptp_domu_client: PASSED (50.57s)
-  RESULTS - test_30_ptp_virtualization.PTPTestDomU1.test_ptp_si_clients: PASSED (47.37s)
-  RESULTS - test_30_ptp_virtualization.PTPTestDomU2.test_ptp_linux_services: PASSED (7.17s)
   RESULTS - test_30_ptp_virtualization.PTPTestDomU2.test_ptp_domu_client: PASSED (50.57s)
-  RESULTS - test_30_ptp_virtualization.PTPTestDomU2.test_ptp_si_clients: PASSED (47.37s)
+  RESULTS - test_30_ptp_virtualization.PTPTestDomU2.test_ptp_linux_services: PASSED (47.37s)
 
 .. note::
     There is a rare known failure where a timeout might occur during test execution. Refer to
