@@ -1,0 +1,72 @@
+From a163bd07f629597ec7f9a660dae97afd14f6a537 Mon Sep 17 00:00:00 2001
+From: Ben <Ben.Cownley@arm.com>
+Date: Tue, 30 Jul 2024 11:46:15 +0100
+Subject: [PATCH] arm-systemready: Enable SIE SCT extension of ACS
+
+The SystemReady Security Interface Extension (SIE) contains 2 test
+suites: SIE SCT [1] and SIE FWTS [2].
+
+This commit enables SIE SCT with ACS prebuilt image in this way:
+- Start the ACS with the SIE SCT test suite (the 3rd entry of grub menu)
+- After SIE SCT finished, the system will reboot
+- After the reboot, continue to run bbr/bsa test suite (the 2nd entry of
+  the grub menu, default option) and finish the rest of the test
+
+Reference:
+- [1] https://developer.arm.com/documentation/102872/0101/
+      Test-Security-Interface-Extension-compliance/Run-SCT
+- [2] https://developer.arm.com/documentation/102872/0101/
+      Test-Security-Interface-Extension-compliance/Run-FWTS
+
+Upstream-Status: Pending
+
+Signed-off-by: Ben Cownley <ben.cownley@arm.com>
+Signed-off-by: Michael Zhao <michael.zhao2@arm.com>
+---
+ .../runtime/cases/arm_systemready_ir_acs.py   | 30 +++++++++++++++++++
+ 1 file changed, 30 insertions(+)
+
+diff --git a/meta-arm-systemready/lib/oeqa/runtime/cases/arm_systemready_ir_acs.py b/meta-arm-systemready/lib/oeqa/runtime/cases/arm_systemready_ir_acs.py
+index 518d1aa2..58af8e7c 100644
+--- a/meta-arm-systemready/lib/oeqa/runtime/cases/arm_systemready_ir_acs.py
++++ b/meta-arm-systemready/lib/oeqa/runtime/cases/arm_systemready_ir_acs.py
+@@ -14,6 +14,36 @@ class SystemReadyACSTest(OERuntimeTestCase):
+         running the tests, not if an ACS test fails
+         """
+         self.target.transition('on')
++
++        # SIE contains 2 test suites: SIE SCT and SIE FWTS.
++        # Now SIE SCT is supported:
++        # - Start the ACS with the SIE SCT test suite (the 3rd entry of Grub)
++        # - After SIE SCT finished, the system will reboot
++        # - After the reboot, continue to run bbr/bsa test suite
++        #   (the 2nd entry of the Grub, default option)
++        if 'acs-sie' in self.td['MACHINE_FEATURES'].split():
++            # Make sure it is in the grub menu
++            self.target.expect(self.console, r'GNU\ GRUB', timeout=90)
++
++            # Type a `c` key to open the grub console
++            self.target.sendline(self.console, 'c')
++            # Check the prompt 'grub>' to guarantee it is in the console
++            self.target.expect(self.console, r'grub>', timeout=30)
++
++            # The grub console cannot receive a long string at once.
++            # A long command has to be broken into small segments.
++            # Send the previous ones with `send`, the last one with `sendline`.
++            self.target.send(self.console, r'chainloader /EFI/BOOT/Shell.efi')
++            self.target.send(self.console, r' -nostartup')
++            self.target.sendline(self.console, r' /EFI/BOOT/sie_startup.nsh')
++
++            # After issuing the previous command, before continuing with the
++            # `boot` command, we have to wait until the shell gives some output.
++            # The last line of the output contains "\EFI\BOOT".
++            self.target.expect(self.console, r'\\EFI\\BOOT', timeout=30)
++            self.target.sendline(self.console, 'boot')
++            self.logger.info('ACS SIE + bbr/bsa running')
++
+         # The tests finish on a root shell
+         test_patterns = [r'([a-zA-Z0-9_ ]+): \[([a-zA-Z_ ]+)\]',
+                          'ACS run is completed'] # Signifies successful completion
+-- 
+2.34.1
+

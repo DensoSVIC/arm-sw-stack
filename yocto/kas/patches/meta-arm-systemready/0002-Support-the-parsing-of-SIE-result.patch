@@ -1,0 +1,42 @@
+From 608cfb7093e84cc6d4d2246439ef0d7381ebcffd Mon Sep 17 00:00:00 2001
+From: Michael Zhao <michael.zhao2@arm.com>
+Date: Tue, 13 Aug 2024 19:56:58 +0100
+Subject: [PATCH] arm-systemready: Support the parsing of SIE result
+
+Parse the test result of the optional SIE extension if `acs-sie` is
+detected in `MACHINE_FEATURES`.
+
+Upstream-Status: Pending
+
+Signed-off-by: Michael Zhao <michael.zhao2@arm.com>
+---
+ .../classes/arm-systemready-acs.bbclass             | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/meta-arm-systemready/classes/arm-systemready-acs.bbclass b/meta-arm-systemready/classes/arm-systemready-acs.bbclass
+index 9dc3635d..e04b3e8f 100644
+--- a/meta-arm-systemready/classes/arm-systemready-acs.bbclass
++++ b/meta-arm-systemready/classes/arm-systemready-acs.bbclass
+@@ -134,6 +134,19 @@ python acs_logs_handle() {
+     subprocess.run([parser_path, sct_log, sct_seq, "--md",
+                    os.path.join(logdir, "result.md")], check=True)
+ 
++    # SIE is an optional extension of the ACS.
++    # Parse the result only when it's enabled.
++    if "acs-sie" in d.getVar("MACHINE_FEATURES"):
++       sie_log = os.path.join(logdir, "SIE", "sct_results", "Overall",
++                              "Summary.ekl")
++       sie_seq = os.path.join(logdir, "SIE", "sct_results", "Sequence",
++                              "BBSR.seq")
++       sie_conf = os.path.join(edk2_test_parser_dir, "SIE.yaml")
++
++       subprocess.run([parser_path, sie_log, sie_seq, "--config", sie_conf,
++                      "--md", os.path.join(logdir, "SIE", "result.md")],
++                      check=True)
++
+     scripts_path = os.path.join(systemready_scripts_dir,
+                                 "format-sr-results.py")
+     summary_path = os.path.join(testimage_dir, "summary.md")
+-- 
+2.34.1
+
