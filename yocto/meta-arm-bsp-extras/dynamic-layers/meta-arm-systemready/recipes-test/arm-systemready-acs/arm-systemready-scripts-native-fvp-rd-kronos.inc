@@ -20,6 +20,7 @@ SRC_URI:append = " \
     file://0005-check-sr-results.yaml-Reset-SCT-failure-number-to-0.patch \
     file://0006-dt-parser-Change-rule-for-root-cpu-and-cache-control.patch \
     file://0007-check-sr-results-dt-parser-Update-to-Linux-6.10.patch \
+    file://0008-check-sr-results-Enable-SIE-SCT-log-files-checking.patch \
 "
 
 # cSpell: enable

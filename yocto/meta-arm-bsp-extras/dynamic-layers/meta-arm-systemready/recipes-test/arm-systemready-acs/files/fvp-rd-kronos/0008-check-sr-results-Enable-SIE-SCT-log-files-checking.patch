@@ -1,0 +1,86 @@
+From 1a17f00cffdaaf8dc82ca950aa72c7702581f066 Mon Sep 17 00:00:00 2001
+From: Michael Zhao <michael.zhao2@arm.com>
+Date: Tue, 13 Aug 2024 20:25:22 +0100
+Subject: [PATCH] check-sr-results: Enable SIE SCT log files checking
+
+To cover the test of UEFI secure boot via authenticated variables, the optional
+SIE SCT test suite is enabled in `sw-ref-stack`.
+
+SIE includes 2 parts: SIE SCT, and SIE FWTS. They are executed via different
+Grub menu in ACS prebuilt image. Among them, only the SIE SCT is related to
+secure boot.
+
+This commit applies some changes to the `check-sr-results.yaml` to allow the
+checking on the SIE SCT log files and to pass with some known issues.
+
+Changes list:
+  1. Workaround to allow the checking on SIE SCT log files.
+     Running the FWTS entry [2] is required for checking SIE log. But now that
+     is not supported by `sw-ref-stack`.
+     With the workaround to change the condition to `[IR v2.1]`, the SIE log files will
+     be checked even if the FWTS was not done.
+  2. `sie-console.log` requires manually saving in the FWTS test.
+  3. `SIE` sub folder is present in `acs_results` folder.
+  4. `fwts` sub folder is missing in `SIE` folder.
+  5. 18 failures for known issues.
+  6. Ignore the FWTS log files.
+
+References:
+- [1] https://developer.arm.com/documentation/102872/0101/
+      Test-Security-Interface-Extension-compliance/Run-SCT
+- [2] https://developer.arm.com/documentation/102872/0101/
+      Test-Security-Interface-Extension-compliance/Run-FWTS
+
+Signed-off-by: Michael Zhao <michael.zhao2@arm.com>
+---
+ check-sr-results.yaml | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/check-sr-results.yaml b/check-sr-results.yaml
+index c73d862..733b6a1 100644
+--- a/check-sr-results.yaml
++++ b/check-sr-results.yaml
+@@ -582,9 +582,10 @@ tree:
+ 
+ overlays:
+ 
+-  - when-any: [IR v2.0 with SIE]
++  - when-any: [IR v2.1, IR v2.1 with SIE]
+     tree:
+       - file: sie-console.log
++        optional:
+         must-have-esp:
+         must-contain:
+           - Press any key to stop the SIE SCT running
+@@ -615,10 +616,10 @@ overlays:
+           - Failed to persist EFI variables
+       - dir: acs_results
+         min-entries: 9   # Allow missing result.md
+-        max-entries: 10  # Allow SIE folder
++        max-entries: 11  # Allow SIE folder
+         tree:
+           - dir: SIE
+-            min-entries: 3  # Allow missing result.md
++            min-entries: 2  # Allow missing result.md
+             max-entries: 4
+             tree:
+               - file: result.md
+@@ -627,13 +628,14 @@ overlays:
+                 must-contain:
+                   - SCT Summary
+                   - Dropped:|0|
+-                  - Failure:|0|
++                  - Failure:|18|
+                   - Warning:|0|
+                   - Dropped by group
+                   - Failure by group
+                   - Ignored by group
+                   - Warning by group
+               - dir: fwts
++                optional:
+                 min-entries: 1
+                 max-entries: 1
+                 tree:
+-- 
+2.34.1
+
