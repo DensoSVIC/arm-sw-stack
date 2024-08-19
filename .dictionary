@@ -380,6 +380,7 @@ irqrestore
 irqreturn
 IRQS
 irqsave
+IVIEWRn
 Izuma
 Jeronimo
 journalctl
