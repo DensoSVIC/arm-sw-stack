@@ -1,0 +1,40 @@
+From 93f37ebdcc0e5f65e0092e553f87224ba309ccc6 Mon Sep 17 00:00:00 2001
+From: "ahmed.azeem" <ahmed.azeem@arm.com>
+Date: Tue, 27 Aug 2024 11:28:01 +0100
+Subject: [PATCH] fix: Increased PS size for assets and cryto IOVECs
+
+The size for both crypto and PS assets was increased
+to pass the SIE + ACS test pass for SetVariable
+and non-volatile storage tests along with 4 additional
+variables.
+
+Upstream-Status: Pending
+
+Signed-off-by: Ahmed Azeem <ahmed.azeem@arm.com>
+---
+ platform/ext/target/arm/rss/kronos/config_tfm_target.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/kronos/config_tfm_target.h b/platform/ext/target/arm/rss/kronos/config_tfm_target.h
+index 77a5e7e90..c9a5a2ea5 100644
+--- a/platform/ext/target/arm/rss/kronos/config_tfm_target.h
++++ b/platform/ext/target/arm/rss/kronos/config_tfm_target.h
+@@ -53,7 +53,7 @@
+ 
+ /* The maximum asset size to be stored in the Protected Storage */
+ #undef PS_MAX_ASSET_SIZE
+-#define PS_MAX_ASSET_SIZE                      2592
++#define PS_MAX_ASSET_SIZE                      3456
+ 
+ /* This is needed to be able to process the EFI variables during PS writes. */
+ #undef CRYPTO_ENGINE_BUF_SIZE
+@@ -61,6 +61,6 @@
+ 
+ /* This is also has to be increased to fit the EFI variables into the iovecs. */
+ #undef CRYPTO_IOVEC_BUFFER_SIZE
+-#define CRYPTO_IOVEC_BUFFER_SIZE               6000
++#define CRYPTO_IOVEC_BUFFER_SIZE               7128
+ 
+ #endif /* __CONFIG_TFM_TARGET_H__ */
+-- 
+2.25.1

@@ -75,6 +75,7 @@ SRC_URI += "\
     file://0062-Platform-Kronos-Power-on-all-the-Fainlight-GIC-redis.patch \
     file://0063-rss-driver-Fix-computation-of-GIC-IVIEWRn.patch \
     file://0064-Platform-Kronos-Configure-RSS-MPU.patch \
+    file://0065-Fix-Increased-variable-sizes-for-assets-and-crypt-bu.patch \
 "
 # cSpell:enable
 
