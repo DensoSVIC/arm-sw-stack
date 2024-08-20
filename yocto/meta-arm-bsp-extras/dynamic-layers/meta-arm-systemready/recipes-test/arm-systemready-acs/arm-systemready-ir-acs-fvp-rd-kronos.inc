@@ -24,3 +24,8 @@ python() {
     acs_logs_handle = acs_logs_handle.replace("':3/acs_results'", "':1/acs_results'")
     d.setVar("acs_logs_handle", acs_logs_handle)
 }
+
+# Ensure the capsule update disk image is deployed
+do_image_complete[depends] += \
+    " ${@bb.utils.contains('ARM_SYSTEMREADY_CAPSULE_UPDATE', '1', ' \
+                           efi-capsule-update-disk-image-${MACHINE}:do_deploy', '', d)} "
