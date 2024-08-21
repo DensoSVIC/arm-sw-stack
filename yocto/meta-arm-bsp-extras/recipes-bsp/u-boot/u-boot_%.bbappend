@@ -10,3 +10,7 @@ MACHINE_EXTRAS_U-BOOT_REQUIRE ?= ""
 MACHINE_EXTRAS_U-BOOT_REQUIRE:fvp-rd-kronos = "u-boot-fvp-rd-kronos.inc"
 
 require ${MACHINE_EXTRAS_U-BOOT_REQUIRE}
+
+UEFI_SECURE_BOOT ?= "0"
+
+require ${@oe.utils.vartrue("UEFI_SECURE_BOOT", "u-boot-uefi-secure-boot.inc", "", d)}

@@ -222,6 +222,7 @@ ECDH
 ECJPAKE
 EFAULT
 efidebug
+efitools
 eigen
 EINVAL
 elfutils
@@ -381,6 +382,8 @@ irqrestore
 irqreturn
 IRQS
 irqsave
+isdir
+isfile
 IVIEWRn
 Izuma
 Jeronimo
@@ -692,6 +695,7 @@ SATA
 SBDF
 sbindir
 sbsa
+sbsigntool
 scarthgap
 sched
 SCMI
