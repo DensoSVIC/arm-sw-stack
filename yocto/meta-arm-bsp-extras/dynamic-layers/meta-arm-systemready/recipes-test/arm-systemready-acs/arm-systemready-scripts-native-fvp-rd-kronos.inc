@@ -19,7 +19,9 @@ SRC_URI:append = " \
     file://0004-check-sr-results-Change-extra-compat.patch \
     file://0005-check-sr-results.yaml-Reset-SCT-failure-number-to-0.patch \
     file://0006-dt-parser-Change-rule-for-root-cpu-and-cache-control.patch \
+    file://0007-check-sr-results-dt-parser-Update-to-Linux-6.10.patch \
 "
+
 # cSpell: enable
 
 PV = "ir2.1-${SRCPV}"
