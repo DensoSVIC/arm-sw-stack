@@ -71,11 +71,13 @@ blkid
 bmca
 BOOTAA
 bootable
+bootefi
 bootimg
 bootinfo
 bootloader
 bootloaders
 bootlog
+bootpart
 brctl
 brext
 brsi
@@ -184,7 +186,9 @@ devd
 devel
 devicetree
 devm
+devnum
 devs
+devtype
 diskmon
 distro
 distros
