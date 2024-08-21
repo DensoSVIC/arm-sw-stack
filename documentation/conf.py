@@ -276,6 +276,7 @@ rst_prolog = f"""
 .. _IEEE 802.1Q: https://ieeexplore.ieee.org/document/10004498
 .. _IPC service: https://docs.zephyrproject.org/{zephyr_version}/services/ipc/ipc_service/ipc_service.html
 .. _Kernel Types: https://docs.yoctoproject.org/{yocto_version}/kernel-dev/advanced.html#kernel-types
+.. _Linux Boot for Security Interface Extension: https://developer.arm.com/documentation/102872/0101/Test-Security-Interface-Extension-compliance/Run-FWTS
 .. _Linux PTP Project: https://linuxptp.sourceforge.net
 .. _Linux preempt-rt repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fpreempt-rt%2Fbase
 .. _Linux repository: https://git.yoctoproject.org/linux-yocto/log/?h=v{linux_version}%2Fstandard%2Fbase
@@ -302,6 +303,7 @@ rst_prolog = f"""
 .. _RSE provisioning: https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/platform/arm/rse/rse_provisioning.html
 .. _Runtime Security Engine (RSE): https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/platform/arm/rse/readme.html
 .. _SCP-firmware repository: https://github.com/ARM-software/SCP-firmware/tree/{scp_firmware_version}
+.. _SCT for Security Interface Extension: https://developer.arm.com/documentation/102872/0101/Test-Security-Interface-Extension-compliance/Run-SCT
 .. _SE Proxy SP: https://trusted-services.readthedocs.io/en/latest/deployments/secure-partitions.html#se-proxy
 .. _SMM Gateway SP: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/secure-partitions.html#smm-gateway
 .. _Safety Island Actuation Demo: https://safety-island-actuation-demo.docs.arm.com

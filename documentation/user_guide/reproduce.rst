@@ -2849,6 +2849,13 @@ A similar output to the following is printed out:
   Creating terminal safety_island_c0 on terminal_uart_si_cluster0
   Creating terminal safety_island_c1 on terminal_uart_si_cluster1
   Creating terminal safety_island_c2 on terminal_uart_si_cluster2
+  ACS SIE + bbr/bsa running
+  Test Group (VariableAttributes): PASSED
+  Test Group (VariableUpdates): FAILED
+  Test Group (AuthVar_Conf): FAILED
+  Test Group (AuthVar_Func): FAILED
+  Test Group (BBSRVariableSizeTest_func): FAILED
+  Test Group (ImageLoading): FAILED
   Test Group (PlatformSpecificElements): FAILED
   Test Group (RequiredElements): FAILED
   Test Group (CheckEvent_Conf): PASSED

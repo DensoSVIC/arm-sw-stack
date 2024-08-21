@@ -90,6 +90,12 @@ non-alignments:
   * Kronos system does not support populating the list of runtime variables,
     which will lead to "Can't populate EFI variables. No runtime variables will
     be available".
+  * Kronos system does not support verifying signed db/dbx update, which will
+    lead to "SecureBoot - Verify signed db/dbx update" test failures in SIE.
+  * Kronos system does not support querying authenticated variables, which will
+    lead to "RT.QueryVariableInfo - Query Auth Variable" test failures in SIE.
+  * Kronos system does not support time base authenticated variables, which will
+    lead to a "RT.SetVariable" test failure in SIE.
 
 * Devicetree
 
@@ -136,6 +142,15 @@ The Arm SystemReady ACS (Architecture Compliance Suite) is a set of tests
 that ensure architectural compliance across different implementations and
 variants of the architecture. The ACS is delivered as a prebuilt release image.
 The image is a bootable live OS image containing a collection of test suites.
+
+The ACS includes 2 optional SIE subsets:
+
+* `SCT for Security Interface Extension`_
+* `Linux Boot for Security Interface Extension`_
+
+This Reference Software Stack supports running the SCT subset to cover the
+testing on authenticated variables, Secure Boot variables, and Secure Boot image
+loading.
 
 The :meta-arm-repo:`meta-arm-systemready/classes/arm-systemready-acs.bbclass`
 class in the meta-arm-systemready Yocto layer contains the common logic to

@@ -21,6 +21,7 @@ Changed
 =======
 
 * Use the EWAOL Yocto distribution instead of Cassini
+* Extended SystemReady IR ACS with the Security Interface Extension (SIE) Self-Certification Test (SCT)
 * Assemble the firmware images using genimage from the meta-ptx Yocto layer instead of wks/wic images
 * Updated support from openSUSE 15.4 to 15.5
 * Updated support from Debian 11.7 to 12.4
