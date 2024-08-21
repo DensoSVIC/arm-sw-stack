@@ -3526,8 +3526,8 @@ Follow the steps below to achieve the same:
  1. Ensure that the tmux window titled ``terminal_ns_uart0`` is selected.
     If not, press ``Ctrl-b w`` from the tmux session, navigate to the tmux
     window titled ``terminal_ns_uart0`` followed by pressing the ``Enter`` key.
- 2. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_rss_uart -h``
-    followed by pressing the ``Enter`` key to join the RSS terminal window to
+ 2. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_rse_uart -h``
+    followed by pressing the ``Enter`` key to join the RSE terminal window to
     the Primary Compute terminal window.
 
 Refer to the following image of the tmux panes rearrangement. Panes can
