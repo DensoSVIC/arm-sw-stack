@@ -38,6 +38,7 @@ Changed
 * Runtime Security Subsystem (RSE) has been renamed to Runtime Security Engine (RSE) since TF-M v2.1.0.
 * Fixed the System FMU ERRIIDR register value in the Fault Management driver
 * Fixed the GIC-720AE IVIEWRn register offsets in TF-M
+* Using bindings of Linux Kernel from 6.3.7 to 6.10 for SystemReady IR Devicetree validation
 
 Third-party Yocto layers used to build the Reference Software Stack:
 

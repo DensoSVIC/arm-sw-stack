@@ -95,8 +95,7 @@ non-alignments:
 
   * Missing schemas for components which have not yet been or are not
     appropriate to be upstreamed (``arm,rd1-ae``, ``arm,neoverse-v3ae``,
-    ``arm,mhuv3``, ``arm,mpam-msc``, ``arm,slc``, ``arm,si-channel``,
-    ``arm,si-rproc``).
+    ``arm,mpam-msc``, ``arm,slc``, ``arm,si-channel``, ``arm,si-rproc``).
 
 * U-Boot
 
