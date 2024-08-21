@@ -879,60 +879,54 @@
 			compatible = "arm,mhuv3";
 			reg = <0x0 0x2aea0000 0x0 0x10000>;
 			clocks = <&soc_clk24mhz>;
-			clock-names = "apb_pclk";
 			#mbox-cells = <3>;
-			interrupt-names = "combined-pbx";
-			interrupts = <0 93 4>;
+			interrupt-names = "combined";
+			interrupts = <GIC_SPI 93 IRQ_TYPE_LEVEL_HIGH>;
 		};
 
 		si_c0_mbox_rproc_rx: mhu@2aeb0000 {
 			compatible = "arm,mhuv3";
 			reg = <0x0 0x2aeb0000 0x0 0x10000>;
 			clocks = <&soc_clk24mhz>;
-			clock-names = "apb_pclk";
 			#mbox-cells = <3>;
 			interrupt-names = "combined";
-			interrupts = <0 92 4>;
+			interrupts = <GIC_SPI 92 IRQ_TYPE_LEVEL_HIGH>;
 		};
 
 		si_c1_mbox_rproc_tx: mhu@2aee0000 {
 			compatible = "arm,mhuv3";
 			reg = <0x0 0x2aee0000 0x0 0x10000>;
 			clocks = <&soc_clk24mhz>;
-			clock-names = "apb_pclk";
 			#mbox-cells = <3>;
-			interrupt-names = "combined-pbx";
-			interrupts = <0 89 4>;
+			interrupt-names = "combined";
+			interrupts = <GIC_SPI 89 IRQ_TYPE_LEVEL_HIGH>;
 		};
 
 		si_c1_mbox_rproc_rx: mhu@2aef0000 {
 			compatible = "arm,mhuv3";
 			reg = <0x0 0x2aef0000 0x0 0x10000>;
 			clocks = <&soc_clk24mhz>;
-			clock-names = "apb_pclk";
 			#mbox-cells = <3>;
 			interrupt-names = "combined";
-			interrupts = <0 88 4>;
+			interrupts = <GIC_SPI 88 IRQ_TYPE_LEVEL_HIGH>;
 		};
 
 		si_c2_mbox_rproc_tx: mhu@2af20000 {
 			compatible = "arm,mhuv3";
 			reg = <0x0 0x2af20000 0x0 0x10000>;
 			clocks = <&soc_clk24mhz>;
-			clock-names = "apb_pclk";
 			#mbox-cells = <3>;
-			interrupt-names = "combined-pbx";
-			interrupts = <0 85 4>;
+			interrupt-names = "combined";
+			interrupts = <GIC_SPI 85 IRQ_TYPE_LEVEL_HIGH>;
 		};
 
 		si_c2_mbox_rproc_rx: mhu@2af30000 {
 			compatible = "arm,mhuv3";
 			reg = <0x0 0x2af30000 0x0 0x10000>;
 			clocks = <&soc_clk24mhz>;
-			clock-names = "apb_pclk";
 			#mbox-cells = <3>;
 			interrupt-names = "combined";
-			interrupts = <0 84 4>;
+			interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
 		};
 
 		si_remoteproc@40000000 {
