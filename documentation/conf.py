@@ -306,6 +306,7 @@ rst_prolog = f"""
 .. _SCT for Security Interface Extension: https://developer.arm.com/documentation/102872/0101/Test-Security-Interface-Extension-compliance/Run-SCT
 .. _SE Proxy SP: https://trusted-services.readthedocs.io/en/latest/deployments/secure-partitions.html#se-proxy
 .. _SMM Gateway SP: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/deployments/secure-partitions.html#smm-gateway
+.. _SMM Variable Service: https://trusted-services.readthedocs.io/en/integration/services/uefi-smm-services.html#smm-variable-service
 .. _Safety Island Actuation Demo: https://safety-island-actuation-demo.docs.arm.com
 .. _Secure Partition: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/environments/secure-partitions/index.html
 .. _Secure Storage Service: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/secure-storage-service-description.html
@@ -332,6 +333,7 @@ rst_prolog = f"""
 .. _U-Boot repository: https://source.denx.de/u-boot/u-boot/-/tree/v{uboot_version}
 .. _U-boot: https://u-boot.readthedocs.io
 .. _UEFI SMM Services: https://trusted-services.readthedocs.io/en/{trusted_services_doc_version}/services/uefi-smm-services.html
+.. _UEFI Specification: https://uefi.org/specs/UEFI/2.10/index.html
 .. _Writing New Tests: https://docs.yoctoproject.org/{yocto_version}/dev-manual/runtime-testing.html#writing-new-tests
 .. _X.509 v3: https://www.rfc-editor.org/rfc/rfc5280.txt
 .. _Xen Hypervisor: https://xenproject.org/help/documentation

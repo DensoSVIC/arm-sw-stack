@@ -119,6 +119,8 @@ the build directory before rebuilding the Use-Cases:
 
   rm -rf build/cache build/tmp*
 
+.. _user_guide_reproduce_use_cases:
+
 *************************
 Reproducing the Use-Cases
 *************************

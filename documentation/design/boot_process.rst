@@ -211,3 +211,108 @@ the certificates, which are used to store essential information to establish the
 
 Please refer to the `Trusted Board Boot Requirements (TBBR)`_ and `Trusted Board Boot (TBB)`_
 documentation to learn about the TBB implementation.
+
+.. _design_boot_process_uefi_secure_boot:
+
+UEFI Secure Boot
+================
+
+.. note::
+
+  The UEFI Secure Boot feature is enabled for baremetal use cases only.
+
+Introduction
+~~~~~~~~~~~~
+
+The Reference Software Stack implements UEFI Secure Boot as a method of
+verification to ensure only trusted software is booted by the BL33 boot-loader
+during the boot process. It establishes trust relationships between the platform
+owner, platform firmware and operating systems. This prevents any malicious or
+tampered software from being run.
+
+In the Reference Software Stack, UEFI Secure Boot is implemented through the
+provisioning and enrollment of authenticated variables. These authenticated
+variables are:
+
+  * Platform Key (PK): PK is the public and private key pair used to create and
+    verify digital signatures. The private key is owned by the platform owner,
+    typically stored off-device, and used to create digital signatures for UEFI
+    executables, as well as enroll the Key Exchange Keys. It establishes the
+    trust relationship between the platform and the platform owner. The public
+    key is enrolled in the platform firmware and used to verify digital
+    signatures.
+  * Key Exchange Key (KEK): KEK signs and verifies writes to the Authorized and
+    Forbidden Signature Databases. It establishes a trust relationship between
+    the operating system and platform firmware, allowing the secure interchange
+    of key information between the two.
+  * Authorized Signature Database (db): db contains the list of signatures of
+    trusted software which can be executed during the boot process.
+  * Forbidden Signature Database (dbx): dbx contains the list of signatures that
+    are no longer trusted to prevent software with these signatures from being
+    executed. If the signature of a binary is present in both db and dbx, the
+    binary should be forbidden.
+
+Architecture
+~~~~~~~~~~~~
+
+In the Reference Software Stack, UEFI Secure Boot relies on the support of the
+authenticated variables via the Trusted Services SMM Gateway SP and the RSE
+Protected Storage service. See :ref:`design_secure_services` for more
+information.
+
+During the system build stage, the following 4 authenticated variable files are
+deployed in the `uefi-sb-authenticated-variables` folder of the booting
+partition:
+
+* PK.auth
+* KEK.auth
+* db.auth
+* dbx.auth
+
+These authenticated variable files are used only for test purpose, they must not
+be used for production.
+
+|
+
+.. image:: ../images/uefi_secure_boot_baremetal.*
+   :align: center
+   :alt: UEFI Secure Boot
+
+|
+
+The diagram illustrates the UEFI Secure Boot process in the Reference Software
+Stack:
+
+1. Enrollment and provisioning of the authenticated variables. This is only done
+   on the first boot.
+
+   * U-Boot loads the authenticated variables from the boot partition.
+   * U-Boot calls SMM Gateway SP for the `SMM Variable Service`_.
+   * SMM Gateway calls SE Proxy SP.
+   * SE Proxy SP calls the RSE's Protected Storage service via MHUv3. The
+     service is used to store the authenticated variables.
+
+  2. U-Boot loads the signed GRUB image from the boot partition and verifies it.
+
+  3. GRUB boots Linux using U-Boot services. The signed Linux kernel image is
+     verified by U-Boot.
+
+.. note::
+
+  In some manual test steps in the :ref:`user_guide_reproduce_use_cases`
+  section, the firmware flash images need to be recreated with the following
+  command:
+
+  `kas shell -c "bitbake firmware-fvp-rd-kronos -C deploy"`.
+
+  This will clear all the data in the RSE Protected Storage including the
+  enrolled authenticated variables. The authenticated variable files in the boot
+  partition are not deleted after the first boot, so they can be enrolled again
+  in the next boot.
+
+  This is only for the convenience of demonstrating the Reference Software
+  Stack. In a production environment, the authenticated variable files must be
+  removed for the sake of security.
+
+Please refer to Chapter `Secure Boot and Driver Signing` of the
+`UEFI Specification`_ to learn more about UEFI Secure Boot.

@@ -15,7 +15,7 @@ Unreleased
 New Features
 ============
 
-None.
+Implementation of :ref:`design_boot_process_uefi_secure_boot`.
 
 Changed
 =======
