@@ -195,11 +195,13 @@ TEST_SUITES:hipc-validation = " \
     fvp_boot \
     test_10_linuxboot \
     test_10_linuxlogin \
-    test_30_hipc \
-    test_30_ptp \
     test_99_linuxshutdown \
     "
-TEST_SUITES_EXTRA:hipc-validation:virtualization = " \
+TEST_SUITES:append:hipc-validation:baremetal = " \
+    test_30_hipc \
+    test_30_ptp \
+    "
+TEST_SUITES:append:hipc-validation:virtualization = " \
     test_30_hipc_virtualization \
     test_30_ptp_virtualization \
     "
