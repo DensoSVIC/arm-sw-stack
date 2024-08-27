@@ -22,7 +22,7 @@ import sys
 # -- Project information -----------------------------------------------------
 
 project = 'Arm Automotive Solutions'
-copyright = '2023-2024, Arm Ltd.'
+copyright = '2023-2024, Arm Limited (or its affiliates).'
 author = 'Arm Ltd.'
 
 
@@ -247,6 +247,7 @@ rst_prolog = f"""
 .. _Arm SystemReady IR: https://www.arm.com/architecture/system-architectures/systemready-certification-program/ir
 .. _Arm SystemReady program: https://www.arm.com/architecture/system-architectures/systemready-certification-program
 .. _Arm SystemReady: https://www.arm.com/architecture/system-architectures/systemready-certification-program
+.. _Arm Trademark Policies: https://www.arm.com/company/policies/trademarks
 .. _Autoware: https://autowarefoundation.github.io/autoware-documentation
 .. _Base Boot Requirements (BBR): https://developer.arm.com/documentation/den0044/latest
 .. _Base Boot Security Requirements (BBSR): https://developer.arm.com/documentation/den0107/latest
