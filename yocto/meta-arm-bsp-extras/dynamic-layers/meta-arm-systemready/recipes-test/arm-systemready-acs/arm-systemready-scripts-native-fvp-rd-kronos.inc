@@ -22,6 +22,7 @@ SRC_URI:append = " \
     file://0007-check-sr-results-dt-parser-Update-to-Linux-6.10.patch \
     file://0008-check-sr-results-Enable-SIE-SCT-log-files-checking.patch \
     file://0009-check-sr-results-logs-not-optional.patch \
+    file://0010-check-sr-results-Workarounds-for-ESP-checks.patch \
 "
 
 # cSpell: enable

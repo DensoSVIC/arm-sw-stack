@@ -1,0 +1,177 @@
+From 0f23d3403d07739e74bce7de1e6b676c7fc1c8f4 Mon Sep 17 00:00:00 2001
+From: David Hu <david.hu2@arm.com>
+Date: Thu, 1 Aug 2024 14:06:01 +0100
+Subject: [PATCH] check-sr-results: Workarounds for ESP checks
+
+Update workarounds to pass checks of EFI System Partition (ESP) in ACS
+test on Kronos.
+
+ - Remove existing workarounds which bypassed checks of ESP.
+ - Except for uefi-sniff.log, mark all the other log files under fw
+   folder as optional.
+ - Remove check of keyword '/HD(3,GPT,' from map.log. There is no 3rd
+   partition in IR ACS v2.1. This issue has been fixed in the latest
+   systemready-scripts upstream repo.
+ - SystemReady IR ACS pre-built image v23.09 only dump a simplified list
+   of device handles. It is incompatible with latest SystemReady specs
+   and systemready-scripts, which expect more verbose information.
+   Workaround systemready-scripts to make the ESP checks backward
+   compatible with the output of ACS pre-built image v23.09.
+
+Upstream-Status: Inappropriate [Kronos-specific update]
+
+Signed-off-by: David Hu <david.hu2@arm.com>
+---
+ check-sr-results.py   | 19 +++++++++++--------
+ check-sr-results.yaml | 19 +++++++++++++------
+ 2 files changed, 24 insertions(+), 14 deletions(-)
+
+diff --git a/check-sr-results.py b/check-sr-results.py
+index a7ee8b6..b74891c 100755
+--- a/check-sr-results.py
++++ b/check-sr-results.py
+@@ -776,14 +776,15 @@ def check_uefi_sniff(filename):
+ 
+     # Open the file with the proper encoding and look for ESPs
+     for i, line in enumerate(logreader.LogReader(filename)):
++        # dh -d dumps the following pattern:
++        # 08: DevicePath(..xxxxx,xxx,xxx)) BlockIO EFISystemPartition
+         m = re.match(
+-            r'\d+: DevicePath\([^\)]+\) +(/\S+) BlockIO\([^\)]+\).* '
+-            r'EFISystemPartition\([^\)]+\)', line)
++            r'\d+: DevicePath\(\.\.(\S+)\)\) BlockIO EFISystemPartition', line)
+ 
+         if m:
+             logging.debug(f"ESP match line {i + 1}, `{line}'")
+             esp_dev_paths[m[1]] = None
+-            esp = re.sub(r'.*/', '', m[1])
++            esp = re.sub(r'.*\-', '', m[1])
+             logging.info(f"{green}Found ESP{normal} `{esp}'")
+             n += 1
+ 
+@@ -1220,11 +1221,13 @@ def deferred_check_uefi_logs_esp():
+             logging.debug(f"`{filename}' must have an ESP")
+             filenames[filename] = False
+ 
+-        if dev_path in esp_dev_paths:
+-            logging.debug(
+-                f"`{filename}' {green}had an ESP{normal} at `{dev_path}'")
+-            filenames[filename] = True
+-            stats.inc_pass()
++        for esp_dev_path in esp_dev_paths.keys():
++            if esp_dev_path in dev_path:
++                logging.debug(
++                    f"`{filename}' {green}had an ESP{normal} at `{dev_path}'")
++                filenames[filename] = True
++                stats.inc_pass()
++                break;
+ 
+     # Second path to verify that each log which needed to contain an ESP
+     # actually did.
+diff --git a/check-sr-results.yaml b/check-sr-results.yaml
+index 733b6a1..165dfc1 100644
+--- a/check-sr-results.yaml
++++ b/check-sr-results.yaml
+@@ -10,6 +10,7 @@ check-sr-results-configuration:
+ # The following tree applies to all ACS-IR 2.0 versions.
+ tree:
+   - file: acs-console.log
++    must-have-esp:
+     must-contain:
+       - Booting `bbr/bsa'
+       - Press any key to stop the EFI SCT running
+@@ -195,7 +196,6 @@ tree:
+                 min-entries: 1
+                 tree:
+                   - dir: efivars
+-                    min-entries: 0
+                     tree:
+                       - file: OsIndicationsSupported-*
+                   - dir: esrt
+@@ -360,7 +360,7 @@ tree:
+             optional:
+             min-entries: 0
+       - dir: uefi_dump
+-        min-entries: 11
++        min-entries: 13
+         max-entries: 13
+         tree:
+           - file: bcfg.log
+@@ -375,6 +375,7 @@ tree:
+             must-contain:
+               - Handle dump
+               - DevicePath
++              - EFISystemPartition
+               - FirmwareManagement
+               - SimpleTextOut
+           - file: dmem.log
+@@ -390,17 +391,17 @@ tree:
+               - MPS Table
+               - SMBIOS Table
+           - file: dmpstore.log
++            must-contain:
++              - Variable
+           - file: drivers.log
+             must-contain:
+               - DRIVER NAME
+           - file: ifconfig.log
+           - file: map.log
+-            optional:
+             must-contain:
+               - Mapping table
+               - /HD(1,GPT,
+               - /HD(2,GPT,
+-              - /HD(3,GPT,
+           - file: memmap.log
+             must-contain:
+               - '# Pages'
+@@ -434,9 +435,10 @@ tree:
+     optional:
+     min-entries: 0
+   - dir: fw
+-    optional:
++    min-entries: 1
+     tree:
+       - file: u-boot-sniff.log
++        optional:
+         must-contain:
+           # We check only that all non-hw-related commands are there for now.
+           # RTC is a special case as we have an emulation in U-Boot.
+@@ -476,7 +478,9 @@ tree:
+           - devices
+           - devtree
+           - dmpstore
+-          - dh -d -v
++          # Systemready IR ACS prebuilt image v23.09 execute `dh -d`
++          # instead of `dh -d -v`
++          - dh -d
+           - DevicePath
+           - EFISystemPartition
+           - memmap
+@@ -490,6 +494,7 @@ tree:
+           - No EFI system partition
+           - Failed to persist EFI variables
+       - file: capsule-update.log
++        optional:
+         must-have-esp:
+         must-contain:
+           - Welcome to GRUB!
+@@ -518,6 +523,7 @@ tree:
+           - No EFI system partition
+           - Failed to persist EFI variables
+       - file: capsule-on-disk.log
++        optional:
+         must-have-esp:
+         must-contain:
+           - Welcome to GRUB!
+@@ -538,6 +544,7 @@ tree:
+           - No EFI system partition
+           - Failed to persist EFI variables
+       - file: 'capsule*.bin'
++        optional:
+         uefi-capsule:
+   - dir: manual-results
+     optional:
+-- 
+2.34.1
+
