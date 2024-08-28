@@ -79,6 +79,11 @@ Third-party Yocto layers used to build the Reference Software Stack:
     branch: scarthgap
     revision: 547b079bf309ebe1576aa5ae0d58564feb245a42
 
+    URL: |meta-secure-core repository|
+    layers: meta-secure-core-common, meta-efi-secure-boot, meta-signing-key
+    branch: scarthgap
+    revision: f3f928d097917b8a131044fe718440eb7f7e381b
+
     URL: |meta-security repository|
     layers: meta-parsec
     branch: scarthgap

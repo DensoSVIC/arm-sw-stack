@@ -109,6 +109,11 @@ The layer dependency sources and their revisions for the ``kronos`` repository
     branch: |meta-ptx branch|
     revision: |meta-ptx revision|
 
+    URL: |meta-secure-core repository|
+    layers: meta-secure-core-common, meta-efi-secure-boot, meta-signing-key
+    branch: |meta-secure-core branch|
+    revision: |meta-secure-core revision|
+
     URL: |meta-security repository|
     layers: meta-parsec
     branch: |meta-security branch|

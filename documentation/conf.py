@@ -223,6 +223,9 @@ rst_prolog = f"""
 .. |meta-ptx branch| replace:: {yocto_version}
 .. |meta-ptx repository| replace:: https://github.com/pengutronix/meta-ptx
 .. |meta-ptx revision| replace:: HEAD
+.. |meta-secure-core branch| replace:: {yocto_version}
+.. |meta-secure-core repository| replace:: https://github.com/Wind-River/meta-secure-core
+.. |meta-secure-core revision| replace:: HEAD
 .. |meta-security branch| replace:: {yocto_version}
 .. |meta-security repository| replace:: https://git.yoctoproject.org/git/meta-security
 .. |meta-security revision| replace:: HEAD

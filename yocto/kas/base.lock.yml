@@ -21,6 +21,8 @@ overrides:
       commit: 78a14731cf0cf38a19ff8bd0e9255b319afaf3a7
     meta-ptx:
       commit: 547b079bf309ebe1576aa5ae0d58564feb245a42
+    meta-secure-core:
+      commit: f3f928d097917b8a131044fe718440eb7f7e381b
     meta-security:
       commit: 11ea91192d43d7c2b0b95a93aa63ca7e73e38034
     meta-virtualization:
