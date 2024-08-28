@@ -35,7 +35,7 @@ Changed
 * Added an AP_REFCLK non-secure Generic Timer node in Kronos device tree
 * Updated identified non-alignments on RD-Kronos for Devicetree missing schemas
 * Introduced Safety Island GIC FMU device for Safety Island Cluster 1 and automated tests.
-* Runtime Security Subsystem (RSE) has been renamed to Runtime Security Engine (RSE) since TF-M v2.1.0.
+* Renamed Runtime Security Subsystem (RSS) to Runtime Security Engine (RSE) to be aligned with TF-M naming.
 * Fixed the System FMU ERRIIDR register value in the Fault Management driver
 * Fixed the GIC-720AE IVIEWRn register offsets in TF-M
 * Using bindings of Linux Kernel from 6.3.7 to 6.10 for SystemReady IR Devicetree validation
