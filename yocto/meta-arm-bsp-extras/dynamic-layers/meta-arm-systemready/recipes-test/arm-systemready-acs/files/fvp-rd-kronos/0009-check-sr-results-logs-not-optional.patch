@@ -1,0 +1,43 @@
+From a45803541a60a08583d525cad2251cbbe85372c1 Mon Sep 17 00:00:00 2001
+From: Isaac Perry <isaac.perry@arm.com>
+Date: Thu, 29 Aug 2024 10:15:55 +0000
+Subject: [PATCH] acs-ir: ACS results logs are not optional
+
+The ethtool-test.log and read_blk_devices.log ACS results are no longer
+optional.
+
+Upstream-Status: Inappropriate
+
+Signed-off-by: Isaac Perry <isaac.perry@arm.com>
+---
+ check-sr-results.yaml | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/check-sr-results.yaml b/check-sr-results.yaml
+index 733b6a1..5dc901a 100644
+--- a/check-sr-results.yaml
++++ b/check-sr-results.yaml
+@@ -255,7 +255,7 @@ tree:
+               - 'Linux generic-arm64 6.4.0-yocto-standard+ #1 SMP PREEMPT
+                  Sun Jun 25 23:29:58 UTC 2023 aarch64 GNU/Linux'
+       - dir: linux_tools
+-        min-entries: 3
++        min-entries: 4
+         max-entries: 6  # Allow dt-validate.log.old
+         tree:
+           - file: device_tree.dts
+@@ -268,11 +268,9 @@ tree:
+           - file: device_driver_info.log    #This log may be removed in  future versions
+             optional:
+           - file: ethtool-test.log
+-            optional:
+             must-contain:
+               - 'INFO: Detected following ethernet interfaces via ip command :'
+           - file: read_blk_devices.log
+-            optional:
+             must-contain:
+               - 'INFO: Detected following block devices with lsblk command :'
+       - dir: sct_results
+-- 
+2.25.1
+
