@@ -697,7 +697,8 @@ footprint kernel designed for use on resource-constrained and embedded systems.
 The Reference Software Stack uses Zephyr |zephyr version| as a baseline and
 introduces a new board ``fvp_rd_kronos_safety_island`` for the Kronos FVP.
 It reuses the ``fvp_aemv8r`` SoC support and adds a pair of patches for MPU
-device region configuration.
+device region configuration. SMP support is enabled on Safety Island clusters 1
+and 2 to allow for Symmetric Multiprocessing.
 
 The Zephyr image for this board is running on the Safety Island clusters.
 In order to enable communication with Armv9-A cores (from Primary Compute),
