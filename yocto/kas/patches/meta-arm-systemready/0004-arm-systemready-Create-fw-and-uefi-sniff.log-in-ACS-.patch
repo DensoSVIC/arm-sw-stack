@@ -1,0 +1,103 @@
+From 387656c05b1a53e93b4849dbd7f523dd959c91a8 Mon Sep 17 00:00:00 2001
+From: David Hu <david.hu2@arm.com>
+Date: Wed, 14 Aug 2024 21:39:27 +0100
+Subject: [PATCH] arm-systemready: Create fw and uefi-sniff.log in ACS test
+
+Arm Systemready IR ACS test checks the UEFI Shell command dump log under
+fw folder.
+Create fw folder and uefi-sniff.log in ACS test result directory during
+ACS test result handling to pass the ACS test result check later.
+
+Upstream-Status: Pending
+
+Signed-off-by: David Hu <david.hu2@arm.com>
+---
+ .../classes/arm-systemready-acs.bbclass       | 58 +++++++++++++++++++
+ 1 file changed, 58 insertions(+)
+
+diff --git a/meta-arm-systemready/classes/arm-systemready-acs.bbclass b/meta-arm-systemready/classes/arm-systemready-acs.bbclass
+index 9dc3635d..455074d4 100644
+--- a/meta-arm-systemready/classes/arm-systemready-acs.bbclass
++++ b/meta-arm-systemready/classes/arm-systemready-acs.bbclass
+@@ -74,6 +74,10 @@ ACS_LOG_NAME = "acs_results_${DATETIME}"
+ ACS_LOG_NAME[vardepsexclude] += "DATETIME"
+ ACS_LOG_DIR = "${TEST_LOG_DIR}/${ACS_LOG_NAME}"
+ ACS_LOG_LINK = "${TEST_LOG_DIR}/acs_results"
++FW_DIR_NAME = "fw_${DATETIME}"
++FW_DIR_NAME[vardepsexclude] += "DATETIME"
++FW_DIR = "${TEST_LOG_DIR}/${FW_DIR_NAME}"
++FW_DIR_LINK = "${TEST_LOG_DIR}/fw"
+ TEST_LOG_DIR = "${WORKDIR}/testimage"
+ RM_WORK_EXCLUDE_ITEMS += "${@ os.path.basename(d.getVar('TEST_LOG_DIR')) }"
+ 
+@@ -83,6 +87,57 @@ do_testimage[depends] += "edk2-test-parser-native:do_populate_sysroot \
+                           mtools-native:do_populate_sysroot \
+                           parted-native:do_populate_sysroot"
+ 
++# Generate fw folder and the logs under it
++# So far only uefi-sniff.log is created.
++def generate_fw_logs(d):
++    # Create fw directory
++    fwdir = d.getVar('FW_DIR')
++    os.mkdir(fwdir)
++
++    # Create a symlink to the latest fw directory
++    fw_dir_link = d.getVar('FW_DIR_LINK')
++    if os.path.lexists(fw_dir_link):
++        os.remove(fw_dir_link)
++    os.symlink(fwdir, fw_dir_link, target_is_directory=True)
++
++    # Create uefi-sniff.log under fw folder
++    uefi_sniff_log = os.path.join(fwdir, "uefi-sniff.log")
++    # ACS test requires to run the following UEFI commands and save logs in
++    # fw/uefi-sniff.log. Those logs are saved in acs_results/uefi_dump.
++    # Copy their content into fw/uefi-sniff.log to pass ACS result checks.
++    uefi_sniff_cmd_logs = {
++        "Shell> dmem\n" : "dmem.log",
++        "Shell> pci\n" : "pci.log",
++        "Shell> drivers\n" : "drivers.log",
++        "Shell> devices\n" : "devices.log",
++        "Shell> devtree\n" : "devtree.log",
++        "Shell> dmpstore\n" : "dmpstore.log",
++        "Shell> dh -d\n" : "dh.log",
++        "Shell> memmap\n" : "memmap.log",
++        "Shell> smbiosview\n" : "smbiosview.log",
++    }
++
++    # Copy uefi_dump logs into uefi-sniff.log
++    logdir = d.getVar('ACS_LOG_DIR')
++    uefi_dump_dir = os.path.join(logdir, "uefi_dump")
++    with open(uefi_sniff_log, "wb") as fw:
++        for key, value in uefi_sniff_cmd_logs.items():
++
++            log_path = os.path.join(uefi_dump_dir, value)
++            # If a log doesn't exist, skip it.
++            if not os.path.exists(log_path):
++                continue
++
++            # Insert the command at first.
++            # check-sr-results.py checks patterns of some commands but the
++            # original uefi_dump logs didn't save the commands.
++            # Encode the command line bytes as utf-16. Otherwise, the following
++            # log content are corrupted.
++            fw.write(key.encode('utf-16'))
++            # Append the log content
++            with open(log_path, "rb") as fr:
++                fw.write(fr.read())
++
+ # Process the logs
+ python acs_logs_handle() {
+     import logging
+@@ -123,6 +178,9 @@ python acs_logs_handle() {
+     log_target = os.path.relpath(logdir, top_logdir)
+     os.symlink(log_target, top_link)
+ 
++    # Generate fw folder and the logs under it
++    generate_fw_logs(d)
++
+     # Parse the logs and generate results file
+     logger = make_logger_bitbake_compatible(logging.getLogger("BitBake"))
+ 
+-- 
+2.34.1
+

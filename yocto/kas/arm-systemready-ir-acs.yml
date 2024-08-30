@@ -27,6 +27,10 @@ repos:
         repo: sw-ref-stack
         path: "yocto/kas/patches/meta-arm-systemready/\
           0003-Documentation-Enable-SIE-extension.patch"
+      create-fw-uefi-sniff-log:
+        repo: sw-ref-stack
+        path: "yocto/kas/patches/meta-arm-systemready/\
+          0004-arm-systemready-Create-fw-and-uefi-sniff.log-in-ACS-.patch"
 
 local_conf_header:
   arm-systemready-ir-acs: |
