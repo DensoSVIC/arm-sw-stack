@@ -164,6 +164,9 @@ TEST_SUITES:remove:cam:virtualization = " \
     test_00_fwu \
     test_00_secure_partition \
     "
+TEST_SUITES:append:cam:baremetal = " \
+    test_99_uefi_secure_boot \
+    "
 
 TEST_SUITES:actuation = " \
     ping \
