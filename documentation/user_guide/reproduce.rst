@@ -2964,6 +2964,19 @@ This Software Stack currently supports three Linux distributions: `Debian Stable
 
 .. note::
 
+  :ref:`systemready_ir_acs_tests` runs the SIE tests, which enrolls the
+  authenticated variables for UEFI Secure Boot, so running the Linux distros
+  installation after running the ACS tests will result in a failure.
+  The firmware flash images need to be recreated with the following command:
+
+  .. code-block:: text
+
+    kas shell -c "bitbake firmware-fvp-rd-kronos -C deploy"
+
+  Refer to :ref:`design_boot_process_uefi_secure_boot` for more information.
+
+.. note::
+
   The manual installation of a Linux distribution requires some manual
   interaction, for example, some necessary selections or confirmations,
   entering the user and password, etc.
@@ -2994,6 +3007,12 @@ To install Debian, you can refer to the `Debian GNU/Linux Installation Guide`_.
 
 Distro Installation Media Preparation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The firmware flash images need to be recreated with the following command:
+
+.. code-block:: text
+
+  kas shell -c "bitbake firmware-fvp-rd-kronos -C deploy"
 
 To run the configuration menu:
 
@@ -3131,6 +3150,12 @@ To install openSUSE, you can refer to the `openSUSE Installation Guide`_.
 Distro Installation Media Preparation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+The firmware flash images need to be recreated with the following command:
+
+.. code-block:: text
+
+  kas shell -c "bitbake firmware-fvp-rd-kronos -C deploy"
+
 To run the configuration menu:
 
 .. code-block:: text
@@ -3237,6 +3262,12 @@ the ISO image to locate the kickstart configuration file (:meta-arm-repo:`meta\
 Distro Installation
 ~~~~~~~~~~~~~~~~~~~
 
+The firmware flash images need to be recreated with the following command:
+
+.. code-block:: text
+
+  kas shell -c "bitbake firmware-fvp-rd-kronos -C deploy"
+
 To run the configuration menu:
 
 .. code-block:: text
@@ -3309,6 +3340,12 @@ To install Fedora, you can refer to the `Fedora Installation Guide`_.
 
 Distro Installation Media Preparation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The firmware flash images need to be recreated with the following command:
+
+.. code-block:: text
+
+  kas shell -c "bitbake firmware-fvp-rd-kronos -C deploy"
 
 To run the configuration menu:
 
