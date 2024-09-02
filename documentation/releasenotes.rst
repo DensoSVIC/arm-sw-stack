@@ -72,7 +72,7 @@ Third-party Yocto layers used to build the Reference Software Stack:
     revision: c28142e72691202ba55a954f0faaed4375615b68
 
     URL: |meta-openembedded repository|
-    layers: meta-filesystems, meta-networking, meta-oe, meta-python
+    layers: meta-filesystems, meta-networking, meta-oe, meta-python, meta-perl
     branch: scarthgap
     revision: 78a14731cf0cf38a19ff8bd0e9255b319afaf3a7
 
