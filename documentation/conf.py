@@ -146,7 +146,6 @@ version = arm_auto_solutions_version
 release = arm_auto_solutions_version
 
 # Common variables for rst_prolog
-actuation_version = "v2.0"
 cassini_version = "v2.0.0"
 critical_application_monitoring_version = "latest"
 ewaol_version = "ewaol-2.0.0"
@@ -176,7 +175,6 @@ psa_crypto_api_version = "1.1"
 psa_storage_api_version = "1.0"
 
 rst_prolog = f"""
-.. |Actuation version| replace:: {actuation_version}
 .. |AMBA| replace:: AMBA\\ :sup:`®`
 .. |Arm SystemReadyTM| replace:: Arm SystemReady\\ :sup:`TM`
 .. |Arm| replace:: Arm\\ :sup:`®`
@@ -241,7 +239,6 @@ rst_prolog = f"""
 .. |yocto version| replace:: {yocto_version}
 
 .. _ACS: https://developer.arm.com/Architectures/Architectural%20Compliance%20Suite
-.. _Actuation repository: https://gitlab.arm.com/automotive-and-industrial/safety-island/actuation-demo/-/tree/{actuation_version}
 .. _Arm Confidential Compute Architecture: https://www.arm.com/architecture/security-features/arm-confidential-compute-architecture
 .. _Arm Ecosystem FVPs: https://developer.arm.com/downloads/-/arm-ecosystem-fvps
 .. _Arm Firmware Framework for Arm A-profile: https://developer.arm.com/documentation/den0077/latest

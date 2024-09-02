@@ -42,6 +42,7 @@ Changed
 * Fixed the GIC-720AE IVIEWRn register offsets in TF-M
 * Using bindings of Linux Kernel from 6.3.7 to 6.10 for SystemReady IR Devicetree validation
 * Supported EFI System Partition (ESP) checks in Arm Systemready IR ACS test
+* Updated Safety Island Actuation Demo from v2.0 to v2.1
 
 Third-party Yocto layers used to build the Reference Software Stack:
 
@@ -187,7 +188,7 @@ The versions of the main components used in the Reference Software Stack:
     - `Zephyr repository`_
   * - Safety Island Actuation Demo
     - v2.0
-    - `Actuation repository`_
+    - https://gitlab.arm.com/automotive-and-industrial/safety-island/actuation-demo/-/tree/v2.0
   * - Mbed TLS
     - 1ec69067fa1351427f904362c1221b31538c8b57 (based on 3.5.0)
     - `Mbed TLS repository`_
