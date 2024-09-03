@@ -1,0 +1,225 @@
+From a500a0b3b2beead47734ab0662298ff139462d2d Mon Sep 17 00:00:00 2001
+From: Jianliang Shen <jianliang.shen@arm.com>
+Date: Wed, 24 May 2023 17:02:00 +0800
+Subject: [PATCH] SPM: Record schedule attempt in PendSV if scheduler is locked
+
+'ipc_schedule' checks scheduler_lock in backend and skips thread
+switch if scheduler is locked. This makes thrd_next() futile
+and wastes CPU resources.
+
+Move scheduler_lock into architecture scope. The new scheduler
+model on isolation level 1 is:
+
+ 1. lock scheduler before entering crossing call
+ 2. In SPM, if tfm_arch_trigger_pendsv is called, record
+    the trigger attempt.
+ 3. At the end of crossing call exiting, unlock scheduler and
+    check the state of schduler_lock. If it equals SCHEDULER_ATTEMPTED,
+    trigger PendSV.
+
+The change checks the need of scheduler in advance to save the
+resources.
+
+Upstream-Status: Backport
+Signed-off-by: Jianliang Shen <jianliang.shen@arm.com>
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ secure_fw/spm/core/arch/tfm_arch.c          | 25 +++++++++++++++++++++
+ secure_fw/spm/core/arch/tfm_arch_v6m_v7m.c  |  7 ++----
+ secure_fw/spm/core/arch/tfm_arch_v8m_base.c |  7 ++----
+ secure_fw/spm/core/arch/tfm_arch_v8m_main.c |  3 ---
+ secure_fw/spm/core/backend_ipc.c            |  5 +----
+ secure_fw/spm/core/spm_cross_call.c         |  7 +++++-
+ secure_fw/spm/include/tfm_arch.h            | 17 ++++++++++++--
+ 7 files changed, 51 insertions(+), 20 deletions(-)
+
+diff --git a/secure_fw/spm/core/arch/tfm_arch.c b/secure_fw/spm/core/arch/tfm_arch.c
+index 74006db17..47c3d1b62 100644
+--- a/secure_fw/spm/core/arch/tfm_arch.c
++++ b/secure_fw/spm/core/arch/tfm_arch.c
+@@ -50,6 +50,21 @@ void tfm_arch_set_context_ret_code(void *p_ctx_ctrl, uint32_t ret_code)
+     }
+ }
+ 
++__naked uint32_t arch_release_sched_lock(void)
++{
++    __asm volatile(
++#if !defined(__ICCARM__)
++        ".syntax unified                               \n"
++#endif
++        "ldr    r1, =scheduler_lock                    \n"
++        "ldr    r0, [r1, #0]                           \n"
++        "movs   r2, #"M2S(SCHEDULER_UNLOCKED)"         \n"/* Unlock scheduler */
++        "str    r2, [r1, #0]                           \n"
++        "dsb    #0xf                                   \n"
++        "bx     lr                                     \n"
++    );
++}
++
+ /* Caution: Keep 'uint32_t' always for collecting thread return values! */
+ __naked uint32_t tfm_arch_trigger_pendsv(void)
+ {
+@@ -57,12 +72,22 @@ __naked uint32_t tfm_arch_trigger_pendsv(void)
+ #ifndef __ICCARM__
+         ".syntax unified                               \n"
+ #endif
++        "ldr     r0, =scheduler_lock                   \n"
++        "ldr     r2, [r0, #0]                          \n"
++        "cmp     r2, #"M2S(SCHEDULER_UNLOCKED)"        \n"
++        /* Skip PendSV if scheduler is locked and mark scheduling attempted. */
++        "bne     mark_schedule_attempted_and_exit      \n"
+         "ldr     r0, ="M2S(SCB_ICSR_ADDR)"             \n"
+         "ldr     r1, ="M2S(SCB_ICSR_PENDSVSET_BIT)"    \n"
+         "str     r1, [r0, #0]                          \n"
+         "dsb     #0xf                                  \n"
+         "isb                                           \n"
+         "bx      lr                                    \n"
++    "mark_schedule_attempted_and_exit:                 \n"
++        "movs    r2, #"M2S(SCHEDULER_ATTEMPTED)"       \n"
++        "str     r2, [r0, #0]                          \n"
++        "dsb     #0xf                                  \n"
++        "bx      lr                                    \n"
+     );
+ }
+ #endif
+diff --git a/secure_fw/spm/core/arch/tfm_arch_v6m_v7m.c b/secure_fw/spm/core/arch/tfm_arch_v6m_v7m.c
+index dea7b99ee..1dc02d99c 100644
+--- a/secure_fw/spm/core/arch/tfm_arch_v6m_v7m.c
++++ b/secure_fw/spm/core/arch/tfm_arch_v6m_v7m.c
+@@ -74,12 +74,9 @@ __naked void arch_non_preempt_call(uintptr_t fn_addr, uintptr_t frame_addr,
+         "   isb                                         \n"
+         "   bl     cross_call_exiting_c                 \n"
+         "   cmp    r4, #0                               \n"
+-        "   beq    v6v7_release_sched                   \n"
++        "   beq    v6v7_enable_irq_and_exit             \n"
+         "   mov    sp, r4                               \n"/* switch stack   */
+-        "v6v7_release_sched:                            \n"
+-        "   ldr    r2, =scheduler_lock                  \n"/* release pendsv */
+-        "   movs   r3, #"M2S(SCHEDULER_UNLOCKED)"       \n"
+-        "   str    r3, [r2, #0]                         \n"
++        "v6v7_enable_irq_and_exit:                      \n"
+         "   cpsie  i                                    \n"
+         "   isb                                         \n"
+         "   pop    {r4, pc}                             \n"
+diff --git a/secure_fw/spm/core/arch/tfm_arch_v8m_base.c b/secure_fw/spm/core/arch/tfm_arch_v8m_base.c
+index dccad927d..ba1d89edd 100644
+--- a/secure_fw/spm/core/arch/tfm_arch_v8m_base.c
++++ b/secure_fw/spm/core/arch/tfm_arch_v8m_base.c
+@@ -79,15 +79,12 @@ __naked void arch_non_preempt_call(uintptr_t fn_addr, uintptr_t frame_addr,
+         "   mov    r1, r6                               \n"
+         "   bl     cross_call_exiting_c                 \n"
+         "   cmp    r4, #0                               \n"
+-        "   beq    v8b_release_sched                    \n"
++        "   beq    v8b_enable_irq_and_exit              \n"
+         "   movs   r3, #0                               \n"/* To callee stack */
+         "   msr    psplim, r3                           \n"
+         "   mov    sp, r4                               \n"
+         "   msr    psplim, r5                           \n"
+-        "v8b_release_sched:                             \n"
+-        "   ldr    r2, =scheduler_lock                  \n"/* To unlock sched */
+-        "   movs   r3, #"M2S(SCHEDULER_UNLOCKED)"       \n"
+-        "   str    r3, [r2, #0]                         \n"
++        "v8b_enable_irq_and_exit:                       \n"
+         "   cpsie  i                                    \n"
+         "   isb                                         \n"
+         "   pop    {r4-r6, pc}                          \n"
+diff --git a/secure_fw/spm/core/arch/tfm_arch_v8m_main.c b/secure_fw/spm/core/arch/tfm_arch_v8m_main.c
+index 45bd9a885..9fa960709 100644
+--- a/secure_fw/spm/core/arch/tfm_arch_v8m_main.c
++++ b/secure_fw/spm/core/arch/tfm_arch_v8m_main.c
+@@ -86,9 +86,6 @@ __naked void arch_non_preempt_call(uintptr_t fn_addr, uintptr_t frame_addr,
+         "   msrne  psplim, r12                      \n"
+         "   movne  sp, r4                           \n"
+         "   msrne  psplim, r5                       \n"
+-        "   ldr    r4, =scheduler_lock              \n" /* To unlock sched */
+-        "   movs   r5, #"M2S(SCHEDULER_UNLOCKED)"   \n"
+-        "   str    r5, [r4, #0]                     \n"
+         "   cpsie  i                                \n"
+         "   isb                                     \n"
+         "   pop    {r4-r6, pc}                      \n"
+diff --git a/secure_fw/spm/core/backend_ipc.c b/secure_fw/spm/core/backend_ipc.c
+index 947a8ed6f..53937aea1 100644
+--- a/secure_fw/spm/core/backend_ipc.c
++++ b/secure_fw/spm/core/backend_ipc.c
+@@ -51,8 +51,6 @@ struct context_ctrl_t *p_spm_thread_context = &spm_thread_context;
+ /* Indicator point to the partition meta */
+ uintptr_t *partition_meta_indicator_pos;
+ 
+-extern uint32_t scheduler_lock;
+-
+ /*
+  * Query the state of current thread.
+  */
+@@ -383,8 +381,7 @@ uint64_t ipc_schedule(void)
+     p_part_curr = GET_CURRENT_COMPONENT();
+     p_part_next = GET_THRD_OWNER(pth_next);
+ 
+-    if (scheduler_lock != SCHEDULER_LOCKED && pth_next != NULL &&
+-        p_part_curr != p_part_next) {
++    if (pth_next != NULL && p_part_curr != p_part_next) {
+         /* Check if there is enough room on stack to save more context */
+         if ((p_curr_ctx->sp_limit +
+                 sizeof(struct tfm_additional_context_t)) > __get_PSP()) {
+diff --git a/secure_fw/spm/core/spm_cross_call.c b/secure_fw/spm/core/spm_cross_call.c
+index 8778730c6..9d4035915 100644
+--- a/secure_fw/spm/core/spm_cross_call.c
++++ b/secure_fw/spm/core/spm_cross_call.c
+@@ -47,14 +47,19 @@ void cross_call_exiting_c(psa_status_t status, uintptr_t frame_addr)
+     struct partition_t            *caller  = GET_CURRENT_COMPONENT();
+     struct cross_call_abi_frame_t *p_frame =
+                                   (struct cross_call_abi_frame_t *)frame_addr;
++    uint32_t                      sched_attempted;
+ 
+     /* Write the status into frame as the default return value. */
+     if (caller->ctx_ctrl.retcode_status == CROSS_RETCODE_EMPTY) {
+         p_frame->a0 = (uint32_t)status;
+     }
+ 
++    /* Release scheduler lock and check the record of schedule attempt. */
++    sched_attempted = arch_release_sched_lock();
++
+     /* Interrupt is masked, PendSV will not happen immediately. */
+-    if (status == STATUS_NEED_SCHEDULE) {
++    if (status == STATUS_NEED_SCHEDULE ||
++        sched_attempted == SCHEDULER_ATTEMPTED) {
+         tfm_arch_trigger_pendsv();
+     }
+ }
+diff --git a/secure_fw/spm/include/tfm_arch.h b/secure_fw/spm/include/tfm_arch.h
+index 4b11f8325..5bf14fa9c 100644
+--- a/secure_fw/spm/include/tfm_arch.h
++++ b/secure_fw/spm/include/tfm_arch.h
+@@ -28,6 +28,7 @@
+ #error "Unsupported ARM Architecture."
+ #endif
+ 
++#define SCHEDULER_ATTEMPTED 2 /* Schedule attempt when scheduler is locked. */
+ #define SCHEDULER_LOCKED    1
+ #define SCHEDULER_UNLOCKED  0
+ 
+@@ -308,8 +309,20 @@ void tfm_arch_init_context(void *p_ctx_ctrl,
+ uint32_t tfm_arch_refresh_hardware_context(void *p_ctx_ctrl);
+ 
+ /*
+- * Triggers scheduler. A return type is assigned in case
+- * SPM returns values by the context.
++ * Release the scheduler lock and return if there are scheduling attempts during
++ * locked period. The recorded attempts are cleared after this function so do
++ * not call it a second time after unlock to query attempt status.
++ *
++ * return value:
++ *   SCHEDULER_ATTEMPTED: unlocked successfully but there are recorded attempts
++ *                        or function get called without locked.
++ *   other values:        unlocked successfully without attempts detected.
++ */
++uint32_t arch_release_sched_lock(void);
++
++/*
++ * Start scheduling if scheduler is not locked, or the attempt is recorded and
++ * return without starting the scheduler.
+  */
+ uint32_t tfm_arch_trigger_pendsv(void);
+ 
+-- 
+2.34.1
+

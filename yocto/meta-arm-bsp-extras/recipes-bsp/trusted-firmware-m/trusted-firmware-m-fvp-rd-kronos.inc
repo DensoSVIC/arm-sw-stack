@@ -76,6 +76,7 @@ SRC_URI += "\
     file://0063-rss-driver-Fix-computation-of-GIC-IVIEWRn.patch \
     file://0064-Platform-Kronos-Configure-RSS-MPU.patch \
     file://0065-Fix-Increased-variable-sizes-for-assets-and-crypt-bu.patch \
+    file://0066-SPM-Record-schedule-attempt-in-PendSV-if-scheduler-i.patch \
 "
 # cSpell:enable
 
