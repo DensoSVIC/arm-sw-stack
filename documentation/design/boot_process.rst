@@ -20,7 +20,7 @@ first booting element when the system is powered up.
 The boot sequence is shown in the RSE-oriented Boot Flow diagram in the Boot 
 Flow section :ref:`design_boot_process_boot_flow` section.
 
-The RSE uses an NVM flash to store the images of various components, including:
+The RSE flash is used to store the images of various components, including:
 
 * RSE BL2 image
 * RSE Runtime image
@@ -28,6 +28,9 @@ The RSE uses an NVM flash to store the images of various components, including:
 * Safety Island Cluster 0 (SI CL0) image
 * Safety Island Cluster 1 (SI CL1) image
 * Safety Island Cluster 2 (SI CL2) image
+
+The RSE uses the Application Processor secure flash for:
+
 * Application Processor BL2 (AP BL2) image
 
 Trust Chain
@@ -116,22 +119,26 @@ Major steps of the boot flow:
 
 2. RSE BL1_2:
 
-   * Copies the encrypted RSE BL2 image from flash into the SRAM
+   * Copies the encrypted RSE BL2 image from the RSE flash into the SRAM
    * Decrypts the RSE BL2 image
    * Transfers the execution to RSE BL2
 
 3. RSE BL2:
 
-   * Copies the SCP RAMFW image from flash to SCP SRAM and authenticates the
-     image
+   * Copies the SCP RAMFW image from the RSE flash to SCP SRAM and authenticates
+     the image
    * Releases the SCP out of reset
-   * Copies the SI CL0 image from flash to SI LLRAM and authenticates the image
+   * Copies the SI CL0 image from the RSE flash to SI LLRAM and authenticates
+     the image
    * Notifies the SCP to power on the SI CL0
-   * Copies the SI CL1 image from flash to SI LLRAM and authenticates the image
+   * Copies the SI CL1 image from the RSE flash to SI LLRAM and authenticates
+     the image
    * Notifies the SCP to power on the SI CL1
-   * Copies the SI CL2 image from flash to SI LLRAM and authenticates the image
+   * Copies the SI CL2 image from the RSE flash to SI LLRAM and authenticates
+     the image
    * Notifies the SCP to power on the SI CL2
-   * Copies the AP BL2 image from flash to AP SRAM and authenticates the image
+   * Copies the AP BL2 image from the AP secure flash to AP SRAM and authenticates
+     the image
    * Notifies the SCP to power on the AP
 
 .. _design_boot_process_primary_compute_boot_flow:
@@ -153,27 +160,27 @@ BL33 is provided by U-Boot.
 
 The Primary Compute uses:
 
-* Secure Flash to store the following components:
+* AP Secure flash containing the following components:
 
   * AP BL31
   * AP BL32 (OP-TEE)
   * AP BL33 (U-Boot)
 
-* First VFAT (boot) partition of the VirtIO Block to store the following
+* First VFAT (boot) partition of the VirtIO Block containing the following
   components:
 
   * GRUB2
   * Linux (Baremetal Architecture)
   * Xen (Virtualization Architecture)
 
-The primary compute boot flow follows the following steps, and the boot
+The Primary Compute boot flow follows the following steps, and the boot
 process complies with the `Trusted Board Boot Requirements (TBBR)`_:
 
 1. AP BL2:
 
-   * Copies the AP BL31 image from Secure Flash to Secure RAM
-   * Copies the AP BL32 (OP-TEE) image from Secure Flash to Secure DRAM
-   * Copies the AP BL33 (U-Boot) image from Secure Flash to Normal DRAM
+   * Copies the AP BL31 image from the AP Secure flash to Secure RAM
+   * Copies the AP BL32 (OP-TEE) image from the AP Secure flash to Secure DRAM
+   * Copies the AP BL33 (U-Boot) image from the AP Secure flash to Normal DRAM
    * Transfers the execution to AP BL31
 
 2. AP BL31:
