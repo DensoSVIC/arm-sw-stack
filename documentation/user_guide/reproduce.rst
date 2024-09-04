@@ -3621,9 +3621,7 @@ Here are some tips for installing Fedora:
 Secure Firmware Update
 ======================
 
-Currently, :ref:`design_secure_firmware_update` is only available in the
-Baremetal Architecture. The firmware update is on-disk to meet Arm SystemReady
-IR requirements.
+The firmware update is on-disk to meet Arm SystemReady IR requirements.
 
 Baremetal Architecture
 ----------------------
@@ -3680,9 +3678,9 @@ Follow the steps below to achieve the same:
 Refer to the following image of the tmux panes rearrangement. Panes can
 be navigated using ``Ctrl-b`` followed by the arrow keys.
 
-  .. image:: ../images/secure_firmware_update_fvp.*
+  .. image:: ../images/secure_firmware_update_baremetal_fvp.*
     :align: center
-    :alt: Arm Auto Solutions Secure Firmware Update FVP Windows
+    :alt: Arm Auto Solutions Secure Firmware Update Baremetal FVP Windows
 
 |
 
@@ -3791,6 +3789,191 @@ To run the validation tests:
 
   1. Select ``Critical Application Monitoring Demo`` as ``Use-Case``.
   2. Select ``Baremetal`` from the ``Reference Software Stack Architecture``
+     menu.
+  3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
+     menu.
+  4. Select ``Build``.
+
+The following messages are expected in the output to validate this Use-Case:
+
+.. code-block:: text
+
+  RESULTS - test_00_fwu.SecureFirmwareUpdateTest.test_securefirmwareupdate: PASSED (414.85s)
+
+.. note::
+    There is a rare known failure where a timeout might occur during test execution.
+    
+    Refer to :ref:`releasenotes_knownissues` for possible workarounds.
+
+See :ref:`validation_secure_firmware_update` for more details.
+
+Virtualization Architecture
+---------------------------
+
+Build
+^^^^^
+
+The firmware update capsule for testing will be generated together with
+the image for the software stack when building. The firmware capsule is placed
+on a removable storage device (in the case of Arm FVPs, an MMC card
+implementation).
+
+Ensure the creation of the initial firmware flash images because previously
+updated firmware will lead to failure of the secure firmware update tests.
+
+.. code-block:: text
+
+  kas shell -c "bitbake firmware-fvp-rd-kronos -C deploy"
+
+To run the configuration menu:
+
+.. code-block:: text
+
+  kas menu sw-ref-stack/Kconfig
+
+To build a Virtualization Architecture image:
+
+1. Select ``Critical Application Monitoring Demo`` from the ``Use-Case`` menu.
+2. Select ``Virtualization`` from the ``Reference Software Stack Architecture``
+   menu.
+3. Select ``Build``.
+
+Run the FVP
+^^^^^^^^^^^
+
+To start the FVP and connect to the Primary Compute terminal (running Linux):
+
+.. code-block:: text
+
+  kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
+
+Note that the main tmux windows involved in the Secure Firmware Update are
+``terminal_ns_uart0`` and ``terminal_rse_uart``. For ease of navigation, it is
+recommended to join these in a single window with two panes.
+
+Follow the steps below to achieve the same:
+
+ 1. Ensure that the tmux window titled ``terminal_ns_uart0`` is selected.
+    If not, press ``Ctrl-b w`` from the tmux session, navigate to the tmux
+    window titled ``terminal_ns_uart0`` followed by pressing the ``Enter`` key.
+ 2. Press ``Ctrl-b :`` and then type ``join-pane -s :terminal_rse_uart -h``
+    followed by pressing the ``Enter`` key to join the RSE terminal window to
+    the Primary Compute terminal window.
+
+Refer to the following image of the tmux panes rearrangement. Panes can
+be navigated using ``Ctrl-b`` followed by the arrow keys.
+
+  .. image:: ../images/secure_firmware_update_virtualization_fvp.*
+    :align: center
+    :alt: Arm Auto Solutions Secure Firmware Update Virtualization FVP Windows
+
+|
+
+The user should wait for the system to boot and for the Linux prompt to appear.
+
+The Reference Software Stack running on the Primary Compute can be logged into
+as the ``root`` user without a password in the Linux terminal. Run the below
+command to guarantee that all the expected services have been initialized.
+
+.. code-block:: text
+
+  systemctl is-system-running --wait
+
+Wait for it to return. The expected terminal output is ``running``.
+
+
+Run the Demo
+^^^^^^^^^^^^
+
+1. To start the Secure Firmware Update, run the following commands to create
+   the UpdateCapsule directory and copy the update capsule into it, followed by
+   a reboot.
+
+   .. code-block:: text
+
+      mount /dev/vda1 /boot
+      mount /dev/mmcblk0p1 /mnt
+      mkdir -p /boot/EFI/UpdateCapsule
+      cp -f /mnt/fw.cap /boot/EFI/UpdateCapsule
+      reboot
+
+   The system will begin the firmware update automatically. The following logs
+   indicate that the upgrade process has started and is in progress.
+
+   In ``terminal_ns_uart0``:
+
+   .. code-block:: text
+
+      FF-A driver 1.0
+      FF-A framework 1.0
+      FF-A versions are compatible
+      EFI: MM partition ID 0x8003
+      EFI: FVP: Capsule shared buffer at 0x81000000 , size 8192 pages
+
+   In ``terminal_rse_uart``:
+
+   .. code-block:: text
+
+      [INF]:[FWU]: get_fwu_agent_state: enter, boot_index = 0
+      [INF]:[FWU]: get_fwu_agent_state: enter, boot_index = 0
+      [INF]:[FWU]: FMP image update: image id = 1
+      [INF]:[FWU]: FMP image update: status = 0, version=0, last_attempt_version=0.
+      [INF]: [FWU]: Host acknowledged.
+      [INF]:[FWU]: pack_image_info:207 ImageInfo size = 105, ImageName size = 14, ImageVersionName size = 14
+      [INF]: [FWU]: Getting image info succeeded.
+      [INF]:[FWU]: get_fwu_agent_state: enter, boot_index = 0
+      [INF]:[FWU]: uefi_capsule_retrieve_images: enter, capsule ptr = 0x0x65000000
+      [INF]:[FWU]: uefi_capsule_retrieve_images: capsule size = 18219116, image count = 1
+      [INF]:[FWU]: uefi_capsule_retrieve_images: image 0, version = 3
+      [INF]:[FWU]: uefi_capsule_retrieve_images: image 0 at 0x6500006c, size=18219024
+      [INF]:[FWU]: flash_rss_capsule: enter: image = 0x6500006c, size = 16121872, version = 3
+      [INF]:[FWU]: erase_bank: erasing sectors = 4080, from offset = 16748544
+      [INF]:[FWU]: flash_rss_capsule: writing capsule to the flash at offset = 16748544...
+
+   .. note::
+      This step will take about 10 minutes.
+
+2. The system will reset after a successful firmware update and boot with the
+   updated firmware. This can be confirmed by checking the terminal logs; if
+   there are lines in the log like below, then the upgrade was successful and
+   the system has successfully rebooted with the updated firmware.
+
+   In ``terminal_rse_uart``:
+
+   .. code-block:: text
+
+      [INF]: [FWU]: Flashing the image succeeded.
+      [INF]: [FWU]: Performing system reset...
+      ...
+      ...
+      [INF]:[FWU]: get_fwu_agent_state: enter, boot_index = 1
+
+3. The system will eventually boot into Linux using the upgraded firmware.
+
+4. To shut down the FVP and terminate the emulation, select the terminal titled
+   as ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0``
+   and press ``Ctrl-c`` to stop the FVP process.
+
+Automated Validation
+^^^^^^^^^^^^^^^^^^^^
+
+Ensure the creation of the initial firmware flash images because previously updated
+firmware will lead to failure of the tests.
+
+.. code-block:: text
+
+  kas shell -c "bitbake firmware-fvp-rd-kronos -C deploy"
+
+To run the configuration menu:
+
+.. code-block:: text
+
+  kas menu sw-ref-stack/Kconfig
+
+To run the validation tests:
+
+  1. Select ``Critical Application Monitoring Demo`` as ``Use-Case``.
+  2. Select ``Virtualization`` from the ``Reference Software Stack Architecture``
      menu.
   3. Select ``Run Automated Validation`` from the ``Runtime Validation Setup``
      menu.

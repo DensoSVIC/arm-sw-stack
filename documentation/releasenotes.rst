@@ -45,6 +45,7 @@ Changed
 * Supported EFI System Partition (ESP) checks in Arm Systemready IR ACS test
 * Updated Safety Island Actuation Demo from v2.0 to v2.1
 * Fixed a bug in TF-M where the RSE communication request from AP was not handled by RSE.
+* Added Secure Firmware Update support on Virtualization architecture
 
 Third-party Yocto layers used to build the Reference Software Stack:
 
