@@ -161,7 +161,6 @@ TEST_SUITES:cam = " \
     test_99_linuxshutdown \
     "
 TEST_SUITES:remove:cam:virtualization = " \
-    test_00_fwu \
     test_00_secure_partition \
     "
 TEST_SUITES:append:cam:baremetal = " \

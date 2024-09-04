@@ -26,6 +26,4 @@ python() {
 }
 
 # Ensure the capsule update disk image is deployed
-do_image_complete[depends] += \
-    " ${@bb.utils.contains('ARM_SYSTEMREADY_CAPSULE_UPDATE', '1', ' \
-                           efi-capsule-update-disk-image-${MACHINE}:do_deploy', '', d)} "
+do_image_complete[depends] += "efi-capsule-update-disk-image-${MACHINE}:do_deploy"
