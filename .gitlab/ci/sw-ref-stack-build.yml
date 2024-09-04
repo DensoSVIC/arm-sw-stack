@@ -214,7 +214,7 @@ Bsp-Image-Build-systemready-linux-distros-opensuse:
 Image-Build-baremetal:
   extends: .kas_image_build_arm_auto_solutions
   variables:
-    KAS_CONFIGS: arm-bsp-extras/baremetal
+    KAS_CONFIGS: arm-bsp-extras/baremetal/actuation
 
 Image-Build-baremetal-si0-bridge-ethernet0:
   extends: .kas_image_build_arm_auto_solutions
@@ -269,7 +269,7 @@ fvp-summary-render:
 Image-Build-virtualization:
   extends: .kas_image_build_arm_auto_solutions
   variables:
-    KAS_CONFIGS: arm-bsp-extras/virtualization
+    KAS_CONFIGS: arm-bsp-extras/virtualization/actuation
 
 Image-Build-virtualization-hipc-validation:
   extends: .kas_image_build_arm_auto_solutions
