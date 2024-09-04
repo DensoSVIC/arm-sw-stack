@@ -3140,7 +3140,89 @@ openSUSE
 Distro Unattended Installation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Not supported in the current release.
+In this test we have modified the installation ISO image to add the automatic
+installation file inside it. This required adding the ``autoinst.xml`` file inside
+the ISO image to locate the installation configuration file (:repo:`yocto/kas/\
+patches/meta-arm-systemready/\
+0001-arm-systemready-linux-distros-Implement-unattended-o.patch`)
+
+
+Distro Installation
+~~~~~~~~~~~~~~~~~~~
+
+The firmware flash images need to be recreated with the following command:
+
+.. code-block:: text
+
+  kas shell -c "bitbake firmware-fvp-rd-kronos -C deploy"
+
+To run the configuration menu:
+
+.. code-block:: text
+
+  kas menu sw-ref-stack/Kconfig
+
+To build the Arm SystemReady IR Linux distros installation tests:
+
+1. Select ``openSUSE Linux Distro Installation`` under
+   ``Linux Distribution Installation (Debian, openSUSE and Fedora)`` from the
+   ``Use-Case`` menu.
+2. Select ``Build``.
+
+.. image:: ../images/build_config_sr_distro_opensuse_unattended.*
+   :align: center
+   :width: 60 %
+   :alt: Arm Auto Solutions Build Configuration Menu - openSUSE Linux Distro Installation
+
+|
+
+  A similar output to the following indicates when the installation is finished, which will take
+  around 12 hours:
+
+  .. code-block:: text
+
+     Transitioned to on
+     Installation status: Loading the kernel, initrd and basic drivers...
+     Installation status: Starting hardware detection...
+     Installation status: Loading Installation System...
+     Installation status: Performing Installation...
+     Installation status: Finishing Configuration...
+     Installation status: openSUSE installation finished successfully.
+     Transitioned to off
+     RESULTS:
+     RESULTS - arm_systemready_opensuse_unattended.SystemReadyOpenSUSEUnattendedTest.test_opensuse_unattended: PASSED (24367.99s)
+     SUMMARY:
+     arm-systemready-linux-distros-opensuse () - Ran 1 test in 24367.997s
+
+* Log in
+
+  After the installation is finished, run the following command to log
+  into the Linux shell:
+
+  .. code-block:: text
+
+     kas shell -c "../layers/meta-arm/scripts/runfvp -t tmux --verbose"
+  
+  Log into the Linux shell with the user created during the installation
+  using the username ``user`` and the password ``unsafe``.
+
+* Terminate the FVP
+
+  To shut down the FVP and terminate the emulation automatically, run the
+  following command.
+
+      .. code-block:: text
+
+         sudo shutdown now
+
+  The below message indicates the shutdown process is complete.
+
+      .. code-block:: text
+
+         reboot: Power down
+
+  Subsequently running the FVP will boot into openSUSE.
+
 
 Distro Manual Installation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -3167,17 +3249,16 @@ To build the Arm SystemReady IR Linux distros installation tests:
 1. Select ``openSUSE Linux Distro Installation`` under
    ``Linux Distribution Installation (Debian, openSUSE and Fedora)`` from the
    ``Use-Case`` menu.
-2. Select ``Build``.
+2. Unselect ``Run Unattended Installation`` under
+   ``Distros Unattended Installation Setup`` menu.
+3. Select ``Build``.
 
-.. image:: ../images/build_config_sr_distro_opensuse.*
+.. image:: ../images/build_config_sr_distro_opensuse_manual.*
    :align: center
    :width: 60 %
    :alt: Arm Auto Solutions Build Configuration Menu - openSUSE Linux Distro Installation
 
 |
-
-Distro Installation
-~~~~~~~~~~~~~~~~~~~
 
 Run the following command to start the installation:
 
