@@ -81,10 +81,10 @@ config RUN_TESTS
     default n
 
 comment "Distros Unattended Installation Setup"
-    depends on USE_CASE_LINUX_DISTRO_FEDORA
+    depends on USE_CASE_LINUX_DISTRO_FEDORA || USE_CASE_LINUX_DISTRO_OPENSUSE
 
 config RUN_DISTROS_UNATTENDED_TESTS
-    depends on USE_CASE_LINUX_DISTRO_FEDORA
+    depends on USE_CASE_LINUX_DISTRO_FEDORA || USE_CASE_LINUX_DISTRO_OPENSUSE
     bool "Run Unattended Installation"
     default y
 

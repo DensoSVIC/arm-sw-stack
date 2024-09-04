@@ -10,6 +10,23 @@ header:
     - repo: meta-arm
       file: kas/arm-systemready-linux-distros-opensuse.yml
 
+
+repos:
+  meta-arm:
+    patches:
+      unattended_opensuse1:
+        repo: sw-ref-stack
+        path: "yocto/kas/patches/meta-arm-systemready/\
+          0001-arm-systemready-linux-distros-Implement-unattended-o.patch"
+      unattended_opensuse2:
+        repo: sw-ref-stack
+        path: "yocto/kas/patches/meta-arm-systemready/\
+          0002-arm-systemready-oeqa-Add-unattended-installation-tes.patch"
+      unattended_opensuse3:
+        repo: sw-ref-stack
+        path: "yocto/kas/patches/meta-arm-systemready/\
+          0003-kas-Include-unattended-openSUSE-test.patch"
+
 local_conf_header:
   arm-systemready-linux-distros: |
     TMPDIR = "${TOPDIR}/tmp_systemready"
