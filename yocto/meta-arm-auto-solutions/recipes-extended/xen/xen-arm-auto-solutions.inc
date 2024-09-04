@@ -55,6 +55,7 @@ SRC_URI += "\
     file://0040-libs-light-Increase-hotplug-timeout.patch \
     file://0041-xen-arm-PCI-devices-passthrough-on-Arm.patch \
     file://0042-xen-arm-introduce-GICv4.1-on-ARM-platform.patch \
+    file://0043-arm-gic-Disable-redistributors-view-of-the-VPE-table.patch \
     "
 # /* cSpell:enable */
 

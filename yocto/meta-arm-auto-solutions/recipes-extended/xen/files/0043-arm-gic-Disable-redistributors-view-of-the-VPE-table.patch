@@ -1,0 +1,80 @@
+From ef34bc5daeaec12cca5818f1a067afde3f2b83f1 Mon Sep 17 00:00:00 2001
+From: Rahul Singh <rahul.singh@arm.com>
+Date: Tue, 3 Sep 2024 22:11:11 +0100
+Subject: [PATCH] arm/gic: Disable redistributors' view of the VPE table at
+ boot time
+
+1- Invalidate any reference that any RD has to the VPE table
+   when discovering the RDs. The ITS can then be programmed
+   as expected.
+
+2- V{PEND,PROP}BASER being 64bit registers, they need some
+   ad-hoc accessors on 32bit, specially given that VPENDBASER
+   contains a Valid bit, making the access a bit convoluted.
+
+Upstream-Status: Pending
+Signed-off-by: Rahul Singh <rahul.singh@arm.com>
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ xen/arch/arm/gic-v3.c                 | 16 ++++++++++++++++
+ xen/arch/arm/include/asm/gic_v4_its.h | 12 ++++++------
+ 2 files changed, 22 insertions(+), 6 deletions(-)
+
+diff --git a/xen/arch/arm/gic-v3.c b/xen/arch/arm/gic-v3.c
+index 4bb7fd8a38..8d18cd8fae 100644
+--- a/xen/arch/arm/gic-v3.c
++++ b/xen/arch/arm/gic-v3.c
+@@ -888,6 +888,22 @@ static int __init __gicv4_update_vlpi_properties(struct rdist_region *region,
+     uint64_t typer;
+ 
+     typer = readq_relaxed(ptr + GICR_TYPER);
++    /* Boot-time cleanup */
++    if ((typer & GICR_TYPER_VLPIS) && (typer & GICR_TYPER_RVPEID)) {
++        uint64_t val;
++
++        /* Deactivate any present vPE */
++        val = gits_read_vpendbaser(ptr + SZ_128K + GICR_VPENDBASER);
++        if (val & GICR_VPENDBASER_Valid)
++            gits_write_vpendbaser(GICR_VPENDBASER_PendingLast,
++                                  ptr + SZ_128K + GICR_VPENDBASER);
++
++        /* Mark the VPE table as invalid */
++        val = gits_read_vpropbaser(ptr + SZ_128K + GICR_VPROPBASER);
++        val &= ~GICR_VPROPBASER_4_1_VALID;
++        gits_write_vpropbaser(val, ptr + SZ_128K + GICR_VPROPBASER);
++    }
++
+     gicv4.has_vlpis &= !!(typer & GICR_TYPER_VLPIS);
+     gicv4.has_rvpeid &= !!(typer & GICR_TYPER_RVPEID);
+     /* RVPEID implies some form of DirectLPI. */
+diff --git a/xen/arch/arm/include/asm/gic_v4_its.h b/xen/arch/arm/include/asm/gic_v4_its.h
+index 12b0a2c3d3..97ecbf3fd1 100644
+--- a/xen/arch/arm/include/asm/gic_v4_its.h
++++ b/xen/arch/arm/include/asm/gic_v4_its.h
+@@ -115,17 +115,17 @@ int allocate_vpe_l1_table(void);
+  */
+ static inline void gits_write_vpendbaser(uint64_t val, void __iomem *addr)
+ {
+-    uint64_t tmp;
++    uint32_t tmp;
+ 
+-    tmp = readq_relaxed(addr);
++    tmp = readl_relaxed(addr + 4);
+     while ( tmp & GICR_VPENDBASER_Valid )
+     {
+-        tmp &= ~GICR_VPENDBASER_Valid;
+-        writeq_relaxed(tmp, addr);
+-        tmp = readq_relaxed(addr);
++        tmp &= ~(GICR_VPENDBASER_Valid >> 32);
++        writel_relaxed(tmp, addr + 4);
++        tmp = readl_relaxed(addr + 4);
+     }
+ 
+-    writeq_relaxed(val, addr);
++    writeq_relaxed_non_atomic(val, addr);
+ }
+ #define gits_read_vpendbaser(c)     readq_relaxed(c)
+ 
+-- 
+2.34.1
+
