@@ -44,6 +44,10 @@ version of the documentation under `public/`:
 To render and explore the documentation, simply open `public/index.html` in a
 web browser.
 
+# Disclaimer
+
+Arm is a registered trademark of Arm Limited (or its subsidiaries or affiliates).
+
 [1]: https://trustedfirmware-m.readthedocs.io/en/tf-mv2.1.0/platform/arm/rse/readme.html
 [2]: https://www.arm.com/architecture/system-architectures/systemready-certification-program/ir
 [3]: https://cassini.readthedocs.io/en/scarthgap-dev/
