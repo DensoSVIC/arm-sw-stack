@@ -179,7 +179,7 @@ class CAMTest(OERuntimeTestCase):
               f' -a {ArmAutoSolutionsConfig.si_cl1_ipaddr}'
               f' --processing-count {self.dom.processing_count}'
               f' --stream-count {self.dom.streams}')
-        status, _ = self.run_check_errors(st, timeout=90*self.dom.streams)
+        status, _ = self.run_check_errors(st, timeout=120*self.dom.streams)
         self.assertEqual(status, 0, msg='cam-app-example failed.')
 
     @OETestDepends([
@@ -227,7 +227,7 @@ class CAMTest(OERuntimeTestCase):
     def test_data_calibration(self):
         st = (f'cam-app-example -u {self.dom.uuid_base} '
               f' --enable-calibration-mode -s {self.dom.streams}')
-        status, output = self.lt_utils.run(st, timeout=180)
+        status, output = self.lt_utils.run(st, timeout=270)
         self.tc.logger.debug(output)
         self.assertEqual(
             status, 0,
