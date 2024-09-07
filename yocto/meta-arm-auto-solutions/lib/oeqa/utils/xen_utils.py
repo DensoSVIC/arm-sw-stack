@@ -35,6 +35,9 @@ class XenUtils:
                            telnet=True):
         sleep(3)
         # Return to Dom0
+
+        # Stop any running command with ctrl-C
+        console.sendcontrol('C')
         console.sendline()
         console.expect(domu_prompt, timeout=45)
         # Send an "exit" to logout from the guest
