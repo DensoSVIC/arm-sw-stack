@@ -136,6 +136,9 @@ Known Issues
   * For Heterogeneous Inter-Processor Communication (HIPC), during ping between
     Clusters, a transient issue is observed where ICMP replies take longer time
     to reach the originating Cluster.
+  * The CAM automated validation might rarely fail with the error: "Received timestamp
+    is in the future" in the Safety Island console. This is caused by PTP sync loss
+    between the Primary Compute and Safety Island in the FVP model.
   * Same as `v1.0 Known Issues`_.
 
 ****
