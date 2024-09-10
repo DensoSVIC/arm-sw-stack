@@ -61,11 +61,11 @@ Install Dependencies
 
     For more details on kas installation, see
     `kas Dependencies & installation`_.
-  * Install tmux (required for the ``runfvp`` tool):
+  * Install tmux and telnet (required for the ``runfvp`` tool):
 
     .. code-block:: text
 
-      sudo apt install tmux
+      sudo apt install tmux telnet
 
 .. _user_guide_reproduce_download:
 
