@@ -63,6 +63,7 @@ behaviour
 bindgen
 bindir
 binname
+binutils
 bitbake
 bitbang
 bitfield

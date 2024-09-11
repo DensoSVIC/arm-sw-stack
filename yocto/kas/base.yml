@@ -21,6 +21,11 @@ repos:
     layers:
       meta:
       meta-poky:
+    patches:
+      gnu-efi-by-binutils-recipe-not-host-tool:
+        repo: sw-ref-stack
+        path: "yocto/kas/patches/poky/\
+          0001-poky-meta-Build-gnu-efi-by-binutils-recipe.patch"
 
   meta-openembedded:
     url: https://git.openembedded.org/meta-openembedded
