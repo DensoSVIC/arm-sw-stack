@@ -10,7 +10,7 @@ LIC_FILES_CHKSUM = "file://license_terms/license_agreement.txt;md5=1a33828e132ba
                     file://license_terms/third_party_licenses/third_party_licenses.txt;md5=a3ce84371977a6b9c624408238309a90 \
                     file://license_terms/third_party_licenses/arm_license_management_utilities/third_party_licenses.txt;md5=abcaafefc7b7a0cdf6664c51f9075c5b"
 
-FVP_BUILD_NUMBER ?= "11.27.6"
+FVP_BUILD_NUMBER ?= "11.27.19"
 PV = "${FVP_BUILD_NUMBER}"
 
 MODEL = "RD-Kronos"
@@ -23,8 +23,8 @@ FVP_SERVER_KEY ?= ""
 # Download URL contains ${PV_URL}, not ${PV}
 # nooelint: oelint.vars.downloadfilename
 SRC_URI = "${FVP_SERVER_URL}/${MODEL_CODE}_${PV_URL}_${FVP_ARCH}.tgz;user=${FVP_SERVER_USER};pswd=${FVP_SERVER_KEY};subdir=${BP};name=${BUILD_ARCH}"
-SRC_URI[aarch64.sha256sum] = "0a635041d74ed2986dbce5ae0e3cf230dd79046027a336a9f7d8bd633cde1650"
-SRC_URI[x86_64.sha256sum] = "2b6a1636450c2ed42334c670d321f2dc7b59cd7780a3bd41c3eac56f46d0fc50"
+SRC_URI[aarch64.sha256sum] = "3ee204d8bdb5509015bccc360f946dad9a104cf6298fdf39a548091d2ef210ff"
+SRC_URI[x86_64.sha256sum] = "d8fff91dae81a1fd565c9139a0d615df5a4fe58b65570da5dacf8de410711b18"
 
 # Mark no COMPATIBLE_HOST for the target, so that FVP related recipes can't be
 # run inside the FVP.
