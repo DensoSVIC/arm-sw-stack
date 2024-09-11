@@ -47,6 +47,58 @@ Changed
 * Fixed a bug in TF-M where the RSE communication request from AP was not handled by RSE.
 * Added Secure Firmware Update support on Virtualization architecture
 
+The versions of the main components used in the Reference Software Stack:
+
+..
+  cspell:disable
+
+.. list-table::
+  :header-rows: 1
+
+  * - Component
+    - Version
+    - Source
+  * - Kronos Reference Design FVP (FVP_RD_Kronos)
+    - 11.27.19
+    - `FVP download (arm64 host) <https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Automotive%20FVPs/FVP_RD_Kronos_11.27_19_Linux64_armv8l.tgz>`__
+      `FVP download (x86 host) <https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Automotive%20FVPs/FVP_RD_Kronos_11.27_19_Linux64.tgz>`__
+  * - RSE (Trusted Firmware-M)
+    - 53aa78efef274b9e46e63b429078ae1863609728 (based on master branch post v1.8.1)
+    - `Trusted Firmware-M repository <https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git/+/53aa78efef274b9e46e63b429078ae1863609728>`__
+  * - SCP-firmware
+    - cc4c9e017348d92054f74026ee1beb081403c168 (based on master branch post v2.13.0)
+    - `SCP-Firmware repository <https://git.gitlab.arm.com/firmware/SCP-firmware/-/tree/cc4c9e017348d92054f74026ee1beb081403c168>`__
+  * - Trusted Firmware-A
+    - ff0bd5f9bb2ba2f31fb9cec96df917747af9e92d lts-v2.8.6
+    - `Trusted Firmware-A repository <https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/+/lts-v2.8.6>`__
+  * - OP-TEE
+    - 3.22.0
+    - `OP-TEE repository <https://github.com/OP-TEE/optee_os/tree/3.22.0>`__
+  * - Trusted Services
+    - 602be607198ea784bc5ab1c0c9d3ac4e2c67f1d9 (based on main branch, post v1.0.0)
+    - `Trusted Services repository <https://git.trustedfirmware.org/TS/trusted-services/+/602be607198ea784bc5ab1c0c9d3ac4e2c67f1d9>`__
+  * - U-Boot
+    - 2023.07.02
+    - `U-Boot repository <https://source.denx.de/u-boot/u-boot/-/tree/v2023.07.02>`__
+  * - Xen
+    - 4.18
+    - `Xen repository <https://xenbits.xen.org/gitweb/?p=xen.git;a=tree;h=refs/heads/stable-4.18>`__
+  * - Linux Kernel
+    - 6.6.35
+    - `Linux repository <https://git.yoctoproject.org/linux-yocto/log/?h=v6.6%2Fstandard%2Fbase&id=f71bb11887bae80ab718b3f38f1c1e80c07676a3>`__ and `Linux preempt-rt repository <https://git.yoctoproject.org/linux-yocto/log/?h=v6.6%2Fstandard%2Fpreempt-rt%2Fbase&id=4209a548f26ad97f610f6c7acfee7fabe009dd3d>`__
+  * - Zephyr
+    - 3.5.0
+    - `Zephyr repository`_
+  * - Safety Island Actuation Demo
+    - v2.1
+    - `Actuation repository <https://gitlab.arm.com/automotive-and-industrial/safety-island/actuation-demo/-/tree/v2.1>`__
+  * - Mbed TLS
+    - 1ec69067fa1351427f904362c1221b31538c8b57 (based on 3.5.0)
+    - `Mbed TLS repository <https://github.com/Mbed-TLS/mbedtls/tree/1ec69067fa1351427f904362c1221b31538c8b57>`__
+  * - Critical Application Monitoring
+    - 4dc4f58bc8f8d22675e10978f6db4a3a3acb7a40 (based on main branch, post v1.0)
+    - `Critical Application Monitoring repository <https://gitlab.arm.com/automotive-and-industrial/safety-island/critical-app-monitoring/-/tree/4dc4f58bc8f8d22675e10978f6db4a3a3acb7a40>`__
+
 Third-party Yocto layers used to build the Reference Software Stack:
 
   .. code-block:: yaml

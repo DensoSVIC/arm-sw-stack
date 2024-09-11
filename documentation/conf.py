@@ -160,7 +160,7 @@ ewaol_version = "ewaol-2.0.0"
 fvp_version = "11.25.3"
 kas_version = "4.3.2"
 linux_version = "6.6"
-linux_version_patch = "23"
+linux_version_patch = "35"
 mbedtls_base_version = "3.5.0"
 mbedtls_version = "1ec69067fa1351427f904362c1221b31538c8b57"
 optee_version = "3.22.0"
@@ -168,7 +168,7 @@ psa_arch_tests_version = "v23.06_API1.5_ADAC_EAC"
 scp_firmware_base_version = "main branch post v2.13.0"
 scp_firmware_version = "cc4c9e017348d92054f74026ee1beb081403c168"
 systemready_ir_acs_version = "2.1.0"
-trusted_firmware_a_version = "2.8.0"
+trusted_firmware_a_version = "lts-v2.8.6"
 trusted_firmware_a_doc_version = "v2.8"
 trusted_firmware_m_base_version = "main branch post v1.8.1"
 trusted_firmware_m_version = "53aa78efef274b9e46e63b429078ae1863609728"
@@ -330,7 +330,7 @@ rst_prolog = f"""
 .. _Trusted Board Boot Requirements (TBBR): https://developer.arm.com/documentation/den0006/latest
 .. _TrustZone: https://www.arm.com/technologies/trustzone-for-cortex-a/tee-reference-documentation
 .. _Trusted Firmware-A (TF-A): https://trustedfirmware-a.readthedocs.io
-.. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/+/v{trusted_firmware_a_version}
+.. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/+/{trusted_firmware_a_version}
 .. _Trusted Firmware-M (TF-M): https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}
 .. _Trusted Firmware-M PSA Protected Storage Interfaces: https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/integration_guide/services/tfm_ps_integration_guide.html#psa-protected-storage-interfaces
 .. _Trusted Firmware-M PSA Internal Trusted Storage Interfaces: https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/integration_guide/services/tfm_its_integration_guide.html#psa-internal-trusted-storage-interfaces
