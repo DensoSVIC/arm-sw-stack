@@ -163,44 +163,44 @@ The versions of the main components used in the Reference Software Stack:
     - Source
   * - Kronos Reference Design FVP (FVP_RD_Kronos)
     - 11.25.15
-    - `FVP download (arm64 host) <https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Automotive%20FVPs/FVP_RD_Kronos_11.25_15_Linux64_armv8l.tgz>`_
-      `FVP download (x86 host) <https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Automotive%20FVPs/FVP_RD_Kronos_11.25_15_Linux64.tgz>`_
+    - `FVP download (arm64 host) <https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Automotive%20FVPs/FVP_RD_Kronos_11.25_15_Linux64_armv8l.tgz>`__
+      `FVP download (x86 host) <https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Automotive%20FVPs/FVP_RD_Kronos_11.25_15_Linux64.tgz>`__
   * - RSS (Trusted Firmware-M)
     - 53aa78efef274b9e46e63b429078ae1863609728 (based on master branch post v1.8.1)
-    - `Trusted Firmware-M repository`_
+    - `Trusted Firmware-M repository <https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git/+/53aa78efef274b9e46e63b429078ae1863609728>`__
   * - SCP-firmware
     - cc4c9e017348d92054f74026ee1beb081403c168 (based on master branch post v2.13.0)
-    - `SCP-Firmware repository`_
+    - `SCP-Firmware repository <https://github.com/ARM-software/SCP-firmware/tree/cc4c9e017348d92054f74026ee1beb081403c168>`__
   * - Trusted Firmware-A
     - 2.8.0
-    - `Trusted Firmware-A repository`_
+    - `Trusted Firmware-A repository <https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/+/v2.8.0>`__
   * - OP-TEE
     - 3.22.0
-    - `OP-TEE repository`_
+    - `OP-TEE repository <https://github.com/OP-TEE/optee_os/tree/3.22.0>`__
   * - Trusted Services
     - 08b3d39471f4914186bd23793dc920e83b0e3197 (based on main branch, pre v1.0.0)
-    - `Trusted Services repository`_
+    - `Trusted Services repository <https://git.trustedfirmware.org/TS/trusted-services/+/08b3d39471f4914186bd23793dc920e83b0e3197>`__
   * - U-Boot
     - 2023.07.02
-    - `U-Boot repository`_
+    - `U-Boot repository <https://source.denx.de/u-boot/u-boot/-/tree/v2023.07.02>`__
   * - Xen
     - 4.18
-    - `Xen repository`_
+    - `Xen repository <https://xenbits.xen.org/gitweb/?p=xen.git;a=tree;h=refs/heads/stable-4.18>`__
   * - Linux Kernel
     - 6.1.73
-    - `Linux repository`_ and `Linux preempt-rt repository`_
+    - `Linux repository <https://git.yoctoproject.org/linux-yocto/log/?h=v6.1%2Fstandard%2Fbase>`__ and `Linux preempt-rt repository <https://git.yoctoproject.org/linux-yocto/log/?h=v6.1%2Fstandard%2Fpreempt-rt%2Fbase>`__
   * - Zephyr
     - 3.5.0
-    - `Zephyr repository`_
+    - `Zephyr repository <https://github.com/zephyrproject-rtos/zephyr/tree/v3.5.0>`__
   * - Safety Island Actuation Demo
     - v2.0
-    - https://gitlab.arm.com/automotive-and-industrial/safety-island/actuation-demo/-/tree/v2.0
+    - `Actuation repository <https://gitlab.arm.com/automotive-and-industrial/safety-island/actuation-demo/-/tree/v2.0>`__
   * - Mbed TLS
     - 1ec69067fa1351427f904362c1221b31538c8b57 (based on 3.5.0)
-    - `Mbed TLS repository`_
+    - `Mbed TLS repository <https://github.com/Mbed-TLS/mbedtls/tree/1ec69067fa1351427f904362c1221b31538c8b57>`__
   * - Critical Application Monitoring
     - v1.0
-    - `Critical Application Monitoring repository`_
+    - `Critical Application Monitoring repository <https://gitlab.arm.com/automotive-and-industrial/safety-island/critical-app-monitoring/-/tree/v1.0>`__
 
 ..
   cspell:enable
