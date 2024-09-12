@@ -157,11 +157,9 @@ release = arm_auto_solutions_version
 cassini_version = "v2.0.0"
 critical_application_monitoring_version = "latest"
 ewaol_version = "ewaol-2.0.0"
-fvp_version = "11.25.3"
 kas_version = "4.3.2"
 linux_version = "6.6"
 linux_version_patch = "35"
-mbedtls_base_version = "3.5.0"
 mbedtls_version = "1ec69067fa1351427f904362c1221b31538c8b57"
 optee_version = "3.22.0"
 psa_arch_tests_version = "v23.06_API1.5_ADAC_EAC"
@@ -189,10 +187,7 @@ rst_prolog = f"""
 .. |CoreLink| replace:: Arm\\ :sup:`®` CoreLink\\ :sup:`TM`
 .. |Cortex| replace:: Arm\\ :sup:`®` Cortex\\ :sup:`®`
 .. |Critical Application Monitoring version| replace:: {critical_application_monitoring_version}
-.. |FVP_RD_Kronos version| replace:: {fvp_version}
 .. |Linux version| replace:: {linux_version}.{linux_version_patch}
-.. |Mbed TLS base version| replace:: {mbedtls_base_version}
-.. |Mbed TLS version| replace:: {mbedtls_version}
 .. |Neoverse| replace:: Arm\\ :sup:`®` Neoverse\\ :sup:`TM`
 .. |OP-TEE version| replace:: {optee_version}
 .. |SCP-firmware base version| replace:: {scp_firmware_base_version}
@@ -246,8 +241,6 @@ rst_prolog = f"""
 .. |poky revision| replace:: HEAD
 .. |yocto version| replace:: {yocto_version}
 
-.. _ACS: https://developer.arm.com/Architectures/Architectural%20Compliance%20Suite
-.. _Arm Confidential Compute Architecture: https://www.arm.com/architecture/security-features/arm-confidential-compute-architecture
 .. _Arm Ecosystem FVPs: https://developer.arm.com/downloads/-/arm-ecosystem-fvps
 .. _Arm Firmware Framework for Arm A-profile: https://developer.arm.com/documentation/den0077/latest
 .. _Arm Memory Partitioning and Monitoring: https://developer.arm.com/documentation/ddi0598/latest
