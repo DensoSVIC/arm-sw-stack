@@ -10,11 +10,11 @@ LIC_FILES_CHKSUM = "file://license_terms/license_agreement.txt;md5=1a33828e132ba
                     file://license_terms/third_party_licenses/third_party_licenses.txt;md5=a3ce84371977a6b9c624408238309a90 \
                     file://license_terms/third_party_licenses/arm_license_management_utilities/third_party_licenses.txt;md5=abcaafefc7b7a0cdf6664c51f9075c5b"
 
-FVP_BUILD_NUMBER ?= "11.27.19"
+FVP_BUILD_NUMBER ?= "11.27.20"
 PV = "${FVP_BUILD_NUMBER}"
 
 MODEL = "RD-Kronos"
-MODEL_CODE = "FVP_RD_Kronos"
+MODEL_CODE = "FVP_RD_1_AE"
 
 FVP_SERVER_URL ?= "https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Automotive%20FVPs"
 FVP_SERVER_USER ?= ""
@@ -23,8 +23,8 @@ FVP_SERVER_KEY ?= ""
 # Download URL contains ${PV_URL}, not ${PV}
 # nooelint: oelint.vars.downloadfilename
 SRC_URI = "${FVP_SERVER_URL}/${MODEL_CODE}_${PV_URL}_${FVP_ARCH}.tgz;user=${FVP_SERVER_USER};pswd=${FVP_SERVER_KEY};subdir=${BP};name=${BUILD_ARCH}"
-SRC_URI[aarch64.sha256sum] = "3ee204d8bdb5509015bccc360f946dad9a104cf6298fdf39a548091d2ef210ff"
-SRC_URI[x86_64.sha256sum] = "d8fff91dae81a1fd565c9139a0d615df5a4fe58b65570da5dacf8de410711b18"
+SRC_URI[aarch64.sha256sum] = "297ded55d025772c9ad8497c6a97e0619fc1762dd1236e3ddec14da449f51ca4"
+SRC_URI[x86_64.sha256sum] = "e2b01fafac9cd560ed7a42f155241971d0cef086404c56bbb44dc6c9bf672e7d"
 
 # Mark no COMPATIBLE_HOST for the target, so that FVP related recipes can't be
 # run inside the FVP.

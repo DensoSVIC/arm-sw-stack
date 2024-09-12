@@ -20,8 +20,8 @@ meta-arm-bsp-extras Yocto Layer
 
 The ``meta-arm-bsp-extras`` layer primarily depends on the ``meta-arm`` layer
 which implements the ``fvp-rd-kronos`` bitbake ``MACHINE`` definition to enable
-the Arm Automotive Solutions to run on the Arm Kronos Reference Design FVP
-(FVP_RD_Kronos).
+the Arm Automotive Solutions to run on the Arm Reference Design-1 AE FVP
+(FVP_RD_1_AE).
 
 ***********************************
 meta-arm-auto-solutions Yocto Layer
