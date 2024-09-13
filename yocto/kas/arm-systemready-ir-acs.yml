@@ -9,6 +9,7 @@ header:
   includes:
     - repo: meta-arm
       file: kas/arm-systemready-ir-acs.yml
+    - yocto/kas/secure-sign.yml
 
 # Following patches are applied for running the SIE SCT extension of the
 # SystemReady IR ACS

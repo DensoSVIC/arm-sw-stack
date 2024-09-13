@@ -9,6 +9,7 @@ header:
   includes:
     - repo: meta-arm
       file: kas/arm-systemready-firmware.yml
+    - yocto/kas/secure-sign.yml
 
 local_conf_header:
   arm-systemready-firmware: |

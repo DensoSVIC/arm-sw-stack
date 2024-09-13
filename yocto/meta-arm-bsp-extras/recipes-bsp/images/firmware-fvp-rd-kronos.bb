@@ -17,6 +17,7 @@ DEPENDS += "\
     ${SAFETY_ISLAND_C0_RECIPE} \
     ${SAFETY_ISLAND_C1_RECIPE} \
     ${SAFETY_ISLAND_C2_RECIPE} \
+    efitools-native \
     fiptool-native \
     scp-firmware \
     trusted-firmware-a \
@@ -112,9 +113,27 @@ MKEFICAPSULE_ARGS = "\
 "
 
 do_uefi_capsule() {
+    # Three capsule images are created:
+    # fw.cap (signed), unsigned_fw.cap and tampered_fw.cap
+    # These are for validation purposes. The unsigned and tampered
+    # capsule images can be removed.
+
+    # Create the unsigned update capsule
     mkeficapsule ${MKEFICAPSULE_ARGS} \
                  ${UEFI_FIRMWARE_BINARY} \
+                 ${CAPSULE_IMG_LOCATION}/unsigned_${UEFI_FIRMWARE_BINARY}.uefi.capsule
+
+    # Create the signed update capsule
+    mkeficapsule ${MKEFICAPSULE_ARGS} \
+                 --private-key "${UEFI_SB_KEYS_DIR}/DB.key" \
+                 --certificate "${UEFI_SB_KEYS_DIR}/DB.crt" \
+                 ${UEFI_FIRMWARE_BINARY} \
                  ${CAPSULE_IMG_LOCATION}/${UEFI_FIRMWARE_BINARY}.uefi.capsule
+
+    cp ${CAPSULE_IMG_LOCATION}/${UEFI_FIRMWARE_BINARY}.uefi.capsule \
+       ${CAPSULE_IMG_LOCATION}/tampered_${UEFI_FIRMWARE_BINARY}.uefi.capsule
+
+    echo "tampered" >> ${CAPSULE_IMG_LOCATION}/tampered_${UEFI_FIRMWARE_BINARY}.uefi.capsule
 }
 do_uefi_capsule[depends] += "u-boot-tools-native:do_populate_sysroot"
 do_uefi_capsule[dirs] = "${B}"
