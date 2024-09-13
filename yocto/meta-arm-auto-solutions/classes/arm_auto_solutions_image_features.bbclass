@@ -164,6 +164,9 @@ TEST_SUITES:remove:cam:virtualization = " \
     test_00_secure_partition \
     "
 TEST_SUITES:append:cam:baremetal = " \
+    ping \
+    ssh \
+    test_50_trusted_services \
     test_99_uefi_secure_boot \
     "
 
