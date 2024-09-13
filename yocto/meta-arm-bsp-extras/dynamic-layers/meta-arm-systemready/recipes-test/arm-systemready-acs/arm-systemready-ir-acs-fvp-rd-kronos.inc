@@ -15,8 +15,8 @@ SRC_URI[acs-img.sha256sum] = "c9bf2abfe06878f4c47af5052a73260239f61860e3bae39345
 # The do_deploy task depends on BUILD_ARCH, which is excluded from the task signature
 do_deploy[nostamp] = "1"
 
-# Ensure FVP shuts down cleanly
-TEST_SUITES += "arm_systemready_ir_acs_shutdown"
+# Run capsule update test and ensure FVP shuts down cleanly
+TEST_SUITES += "arm_systemready_ir_acs_capsule_update arm_systemready_ir_acs_shutdown"
 
 # Monkey-patch the acs_logs_handle function to handle the change in partition number for v2.1.0
 python() {
