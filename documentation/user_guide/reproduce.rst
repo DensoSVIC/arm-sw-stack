@@ -2416,6 +2416,9 @@ failed tests:
   TOTAL SKIPPED   : 6
   ******************************************
 
+.. note::
+    This use-case does not require waiting for the Primary Compute to boot.
+
 To shut down the FVP and terminate the emulation, select the terminal titled as
 ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0`` and press
 ``Ctrl-c`` to stop the FVP process.
@@ -2513,12 +2516,12 @@ Normally no failure should be seen::
   TOTAL SKIPPED   : 0
   ******************************************
 
+.. note::
+    This use-case does not require waiting for the Primary Compute to boot.
+
 To shut down the FVP and terminate the emulation, select the terminal titled as
 ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0`` and press
 ``Ctrl-c`` to stop the FVP process.
-
-.. note::
-  This use-case does not require waiting for the Primary Compute to boot.
 
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
@@ -2759,6 +2762,10 @@ and GIC-720AE FMU and how this affects the SSU safety state.
     The state can now only be affected through a full system reset (e.g. by
     stopping and starting the FVP), after which the state will be ``TEST``
     once again.
+
+ .. note::
+    This use-case does not require waiting for the Primary Compute to boot.
+
  9. To shut down the FVP and terminate the emulation, select the terminal titled
     as ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0``
     and press ``Ctrl-c`` to stop the FVP process.
@@ -3787,9 +3794,25 @@ Run the Demo
 
 3. The system will eventually boot into Linux using the upgraded firmware.
 
-4. To shut down the FVP and terminate the emulation, select the terminal titled
-   as ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0``
-   and press ``Ctrl-c`` to stop the FVP process.
+4. To shut down the FVP and terminate the emulation automatically, follow the
+   below steps:
+
+    * Issue the following command on the Primary Compute terminal.
+
+      .. code-block:: text
+
+         shutdown now
+
+      The below messages indicate the shutdown process is complete.
+
+      .. code-block:: text
+
+         [  OK  ] Finished System Power Off.
+         [  OK  ] Reached target System Power Off.
+         reboot: Power down
+
+    * Close the tmux pane started for the build host machine by pressing
+      ``Ctrl-d``.
 
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
@@ -3972,9 +3995,25 @@ Run the Demo
 
 3. The system will eventually boot into Linux using the upgraded firmware.
 
-4. To shut down the FVP and terminate the emulation, select the terminal titled
-   as ``python3`` where the ``runfvp`` was launched by pressing ``Ctrl-b 0``
-   and press ``Ctrl-c`` to stop the FVP process.
+4. To shut down the FVP and terminate the emulation automatically, follow the
+   below steps:
+
+    * Issue the following command on the Primary Compute terminal.
+
+      .. code-block:: text
+
+         shutdown now
+
+      The below messages indicate the shutdown process is complete.
+
+      .. code-block:: text
+
+         [  OK  ] Finished System Power Off.
+         [  OK  ] Reached target System Power Off.
+         reboot: Power down
+
+    * Close the tmux pane started for the build host machine by pressing
+      ``Ctrl-d``.
 
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
