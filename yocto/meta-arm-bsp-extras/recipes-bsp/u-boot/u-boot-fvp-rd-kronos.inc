@@ -59,6 +59,7 @@ SRC_URI:append:fvp-rd-kronos = " \
         file://0048-efi_loader-Add-Update-Capsule-flags-check.patch \
         file://0049-efi-workaround-of-Scatter-Gather-List-hard-coded-val.patch  \
         file://0050-efi-vexpress64-fwu-update-RPC-ABI.patch \
+        file://0051-efi_loader-Introduce-EFI-authenticated-capsule-updat.patch \
         file://kronos.cfg \
         file://boot.cmd \
         "

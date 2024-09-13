@@ -66,17 +66,17 @@ SRC_URI += "\
     file://0053-rss-kronos-Add-SI-RSS-ATU-mapping.patch \
     file://0054-rss-kronos-Add-FVP-shutdown-handler.patch \
     file://0055-rss-kronos-Remove-unused-PCIe-address-mapping.patch \
-    file://0056-rss-kronos-Align-capsule-update-structs.patch \
-    file://0057-rss-kronos-Remove-LCP.patch \
-    file://0058-rss-kronos-Reduce-the-number-of-used-RSS-SCP-MHUv3-c.patch \
-    file://0059-rss-driver-Power-on-redistributor-for-GIC-View-0.patch \
-    file://0060-Kronos-Enlarge-the-payload-size-of-rss_comms-message.patch \
-    file://0061-Platform-Kronos-Increase-buffers-for-EFI-vars.patch \
-    file://0062-Platform-Kronos-Power-on-all-the-Fainlight-GIC-redis.patch \
-    file://0063-rss-driver-Fix-computation-of-GIC-IVIEWRn.patch \
-    file://0064-Platform-Kronos-Configure-RSS-MPU.patch \
-    file://0065-Fix-Increased-variable-sizes-for-assets-and-crypt-bu.patch \
-    file://0066-SPM-Record-schedule-attempt-in-PendSV-if-scheduler-i.patch \
+    file://0056-rss-kronos-Remove-LCP.patch \
+    file://0057-rss-kronos-Reduce-the-number-of-used-RSS-SCP-MHUv3-c.patch \
+    file://0058-rss-driver-Power-on-redistributor-for-GIC-View-0.patch \
+    file://0059-Kronos-Enlarge-the-payload-size-of-rss_comms-message.patch \
+    file://0060-Platform-Kronos-Increase-buffers-for-EFI-vars.patch \
+    file://0061-Platform-Kronos-Power-on-all-the-Fainlight-GIC-redis.patch \
+    file://0062-rss-driver-Fix-computation-of-GIC-IVIEWRn.patch \
+    file://0063-Platform-Kronos-Configure-RSS-MPU.patch \
+    file://0064-Fix-Increased-variable-sizes-for-assets-and-crypt-bu.patch \
+    file://0065-SPM-Record-schedule-attempt-in-PendSV-if-scheduler-i.patch \
+    file://0066-rss-kronos-Enable-signed-capsule.patch \
 "
 # cSpell:enable
 

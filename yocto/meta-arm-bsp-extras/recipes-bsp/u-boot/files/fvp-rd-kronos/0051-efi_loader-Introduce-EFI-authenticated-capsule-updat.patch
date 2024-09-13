@@ -1,0 +1,89 @@
+From 6b2a430b6b71086d234773d4d41ca4c3b9fcc9c3 Mon Sep 17 00:00:00 2001
+From: Isaac Perry <isaac.perry@arm.com>
+Date: Fri, 13 Sep 2024 12:28:18 +0000
+Subject: [PATCH] efi_loader: Introduce EFI authenticated capsule update
+
+Introduces EFI authenticated capsule update for Kronos FVP.
+Kronos FVP implements platform-specific capsule update mechanism in
+u-bootdue to the SoC design. This patch add authenticated capsule
+update mechanism to the platform-specific firmware-update routine.
+
+Signed-off-by: Emekcan Aras <emekcan.aras@arm.com>
+Upstream-Status: Inappropriate [Redesign of Capsule update interface is required]
+---
+ lib/efi_loader/efi_capsule.c | 45 ++++++++++++++++++++++++++++++++----
+ 1 file changed, 41 insertions(+), 4 deletions(-)
+
+diff --git a/lib/efi_loader/efi_capsule.c b/lib/efi_loader/efi_capsule.c
+index e4bc584637..7486991745 100644
+--- a/lib/efi_loader/efi_capsule.c
++++ b/lib/efi_loader/efi_capsule.c
+@@ -827,6 +827,15 @@ efi_status_t __efi_runtime EFIAPI efi_update_capsule(
+ 	struct efi_capsule_header *capsule;
+ 	unsigned int i;
+ 	efi_status_t ret;
++	
++#if IS_ENABLED(CONFIG_TARGET_CORSTONE1000) || IS_ENABLED(CONFIG_TARGET_VEXPRESS64_BASE_FVP)
++	struct efi_firmware_management_capsule_header *capsule_header;
++	struct efi_firmware_management_capsule_image_header *image_header;
++	size_t image_binary_size;
++	size_t tmp_capsule_payload_size = 0;
++	void *tmp_capsule_payload = NULL;
++	void *image_binary;
++#endif
+ 
+ 	EFI_ENTRY("%p, %zu, %llu\n", capsule_header_array, capsule_count,
+ 		  scatter_gather_list);
+@@ -837,10 +846,15 @@ efi_status_t __efi_runtime EFIAPI efi_update_capsule(
+ 	}
+ 
+ #if IS_ENABLED(CONFIG_TARGET_CORSTONE1000) || IS_ENABLED(CONFIG_TARGET_VEXPRESS64_BASE_FVP)
+-		if (capsule_count != 1 || !fvp_capsule_buf) {
+-			ret = EFI_INVALID_PARAMETER;
+-			goto out;
+-		}
++	if (capsule_count != 1 || !fvp_capsule_buf) {
++		ret = EFI_INVALID_PARAMETER;
++		goto out;
++	}
++
++	if (!IS_ENABLED(CONFIG_EFI_CAPSULE_AUTHENTICATE)) {
++		log_debug("FVP: Capsule authentication disabled. ");
++		log_debug("FVP: Updating capsule without authenticating.\n");
++	}
+ #endif
+ 
+ 	ret = EFI_SUCCESS;
+@@ -896,6 +910,29 @@ efi_status_t __efi_runtime EFIAPI efi_update_capsule(
+ 			goto out;
+ 		}
+ 
++		capsule_header = (void *)capsule + capsule->header_size;
++		image_header = (void *)capsule_header + capsule_header->item_offset_list[0];
++		if (IS_ENABLED(CONFIG_EFI_CAPSULE_AUTHENTICATE)) {
++			if (!(image_header->image_capsule_support & CAPSULE_SUPPORT_AUTHENTICATION)) {
++                		/* no signature */
++                		ret = EFI_SECURITY_VIOLATION;
++                		log_err("FVP: Capsule authentication flag check failed: Error %d. Aborting update\n", (int)ret);
++                		goto out;
++			}
++
++			image_binary = (void *)image_header + sizeof(*image_header);
++			image_binary_size = image_header->update_image_size;
++			ret = efi_capsule_authenticate(image_binary, image_binary_size,
++					&tmp_capsule_payload,
++					&tmp_capsule_payload_size);
++			if (ret != EFI_SUCCESS) {
++				log_err("FVP: Capsule authentication check failed: Error %d. Aborting update\n", (int)ret);
++				goto out;
++			}
++
++			log_debug("FVP: Capsule authentication successful\n");
++		}
++
+ 		/* copy the data to the contiguous buffer */
+ 		efi_memcpy_runtime(fvp_capsule_buf, capsule, capsule->capsule_image_size);
+ 
+-- 
+2.25.1
+

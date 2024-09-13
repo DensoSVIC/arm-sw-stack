@@ -1,0 +1,175 @@
+From 91fa08e0e43656ad6392232d1c9659599131cce9 Mon Sep 17 00:00:00 2001
+From: Isaac Perry <isaac.perry@arm.com>
+Date: Thu, 19 Sep 2024 16:58:21 +0000
+Subject: [PATCH] rss/kronos: Enable signed capsule
+
+UEFI update capsule parser handles update capsules with a signature for
+authentication. The parsing code has an alignment workaround for the
+FMP payload header where it copies from an unaligned address to the
+stack.
+
+Upstream-Status: Inappropriate [Diverges from upstream]
+Signed-off-by: Isaac Perry <isaac.perry@arm.com>
+---
+ .../fw_update_agent/uefi_capsule_parser.c     | 43 ++++++++++---------
+ .../fw_update_agent/uefi_capsule_parser.h     |  5 ++-
+ 2 files changed, 27 insertions(+), 21 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c
+index 4e8c7aeba..b64b2b0c9 100644
+--- a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.c
+@@ -29,21 +29,21 @@ Update Capsule Structure (UEFI spec 2.9 1004)
+             Payload n (item_offset[embedded_driver_count + payload_item_count -1])
+ */
+ 
+-typedef struct {
++typedef __PACKED_STRUCT {
+     struct efi_guid         capsule_guid;
+     uint32_t                header_size;
+     uint32_t                flags;
+     uint32_t                capsule_image_size;
+ } efi_capsule_header_t;
+ 
+-typedef struct {
++typedef __PACKED_STRUCT {
+     uint32_t                version;
+     uint16_t                embedded_driver_count;
+     uint16_t                payload_item_count;
+     uint64_t                item_offset_list[];
+ } efi_firmware_management_capsule_header_t;
+ 
+-typedef struct {
++typedef __PACKED_STRUCT {
+     uint32_t                version;
+     struct efi_guid         update_image_type_id;
+     uint8_t                 update_image_index;
+@@ -56,20 +56,20 @@ typedef struct {
+ 
+ #define ANYSIZE_ARRAY 0
+ 
+-typedef struct {
++typedef __PACKED_STRUCT {
+     uint32_t                dwLength;
+     uint16_t                wRevision;
+     uint16_t                wCertificateType;
+     uint8_t                 bCertificate[ANYSIZE_ARRAY];
+ } WIN_CERTIFICATE;
+ 
+-typedef struct {
++typedef __PACKED_STRUCT {
+     WIN_CERTIFICATE         hdr;
+     struct efi_guid         cert_type;
+     uint8_t                 cert_data[ANYSIZE_ARRAY];
+ } win_certificate_uefi_guid_t;
+ 
+-typedef struct {
++typedef __PACKED_STRUCT {
+     uint64_t                    monotonic_count;
+     win_certificate_uefi_guid_t   auth_info;
+ } efi_firmware_image_authentication_t;
+@@ -82,7 +82,7 @@ enum uefi_capsule_error_t uefi_capsule_retrieve_images(void* capsule_ptr,
+     efi_firmware_management_capsule_header_t* fmp_capsule_header;
+     efi_firmware_management_capsule_image_header_t* image_header;
+     efi_firmware_image_authentication_t* image_auth;
+-    fmp_payload_header_t *fmp_payload_header;
++    fmp_payload_header_t fmp_payload_header;
+     uint32_t total_size;
+     uint32_t image_count;
+     uint32_t auth_size;
+@@ -94,11 +94,9 @@ enum uefi_capsule_error_t uefi_capsule_retrieve_images(void* capsule_ptr,
+     }
+ 
+     capsule_header = (efi_capsule_header_t*)ptr;
+-    ptr += sizeof(efi_capsule_header_t) + sizeof(uint32_t);
++    ptr += sizeof(efi_capsule_header_t);
+     fmp_capsule_header = (efi_firmware_management_capsule_header_t*)ptr;
+ 
+-    fmp_payload_header = fmp_capsule_header + sizeof(*fmp_capsule_header);
+-
+     total_size = capsule_header->capsule_image_size;
+     image_count = fmp_capsule_header->payload_item_count;
+     images_info->nr_image = image_count;
+@@ -116,17 +114,17 @@ enum uefi_capsule_error_t uefi_capsule_retrieve_images(void* capsule_ptr,
+                                 fmp_capsule_header->item_offset_list[i]);
+ 
+         images_info->size[i] = image_header->update_image_size;
+-        images_info->version[i] = fmp_payload_header->fw_version;
+-        INFO("%s: image %i, version = %u", __func__, i,
+-                                images_info->version[i]);
++
+ #ifdef AUTHENTICATED_CAPSULE
+         image_auth = (efi_firmware_image_authentication_t*)(
+                         (char*)image_header +
+                         sizeof (efi_firmware_management_capsule_image_header_t)
+                      );
+         auth_size = sizeof(uint64_t) /* monotonic_count */  +
+-                    image_auth->auth_info.hdr.dwLength /* WIN_CERTIFICATE + cert_data */ +
+-                    sizeof(struct efi_guid) /* cert_type */;
++                    image_auth->auth_info.hdr.dwLength /* WIN_CERTIFICATE + cert_data */;
++
++        memcpy(&fmp_payload_header, (char*)image_auth + auth_size,
++                sizeof(fmp_payload_header));
+ 
+         INFO("%s: auth size = %u", __func__, auth_size);
+ 
+@@ -135,18 +133,23 @@ enum uefi_capsule_error_t uefi_capsule_retrieve_images(void* capsule_ptr,
+         images_info->image[i] = (
+                 (char*)image_header +
+                 sizeof(efi_firmware_management_capsule_image_header_t) +
+-                auth_size);
++                auth_size + sizeof(fmp_payload_header));
+ #else
+         images_info->image[i] = (
+                 (char*)image_header +
+                 sizeof(efi_firmware_management_capsule_image_header_t) +
+-                sizeof(*fmp_payload_header));
++                sizeof(fmp_payload_header));
++        memcpy(&fmp_payload_header,
++                (char *)image_header + sizeof(efi_firmware_management_capsule_image_header_t),
++                sizeof(fmp_payload_header));
+ #endif
+         memcpy(&images_info->guid[i], &(image_header->update_image_type_id),
+-                                                        sizeof(struct efi_guid));
++                sizeof(struct efi_guid));
++        images_info->version[i] = fmp_payload_header.fw_version;
+ 
+-        INFO("%s: image %d at %p, size=%u", __func__, i,
+-                        images_info->image[i], images_info->size[i]);
++        INFO("%s: image %d, version = %u at %p, size=%u", __func__, i,
++                images_info->version[i], images_info->image[i],
++                images_info->size[i]);
+ 
+         if ((fmp_capsule_header->item_offset_list[i] +
+              sizeof(efi_firmware_management_capsule_image_header_t) +
+diff --git a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.h b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.h
+index 0a379fe61..716dad9c8 100644
+--- a/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.h
++++ b/platform/ext/target/arm/rss/kronos/fw_update_agent/uefi_capsule_parser.h
+@@ -11,6 +11,7 @@
+ #include <stdint.h>
+ #include "flash_layout.h"
+ #include "partition/uuid.h"
++#include "cmsis_compiler.h"
+ 
+ enum uefi_capsule_error_t {
+     UEFI_CAPSULE_PARSER_SUCCESS = 0,
+@@ -25,7 +26,7 @@ typedef struct capsule_image_info {
+     uint32_t version[NR_OF_IMAGES_IN_FW_BANK];
+ } capsule_image_info_t;
+ 
+-typedef struct {
++typedef __PACKED_STRUCT {
+     uint32_t                signature;
+     uint32_t                header_size;
+     uint32_t                fw_version;
+@@ -34,4 +35,6 @@ typedef struct {
+ enum uefi_capsule_error_t uefi_capsule_retrieve_images(void* capsule_ptr,
+         capsule_image_info_t* images_info);
+ 
++#define AUTHENTICATED_CAPSULE 1
++
+ #endif /* UEFI_CAPSULE_PARSER_H */
+-- 
+2.25.1
+
