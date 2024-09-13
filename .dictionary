@@ -362,6 +362,7 @@ IMAGETYPE
 imgtool
 importlib
 inappropriatemsg
+incbin
 incdefs
 INCDIR
 includedir

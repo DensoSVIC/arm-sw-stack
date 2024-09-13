@@ -45,7 +45,7 @@ TFA_SPD = "spmd"
 TFA_SPMD_SPM_AT_SEL2 = "0"
 
 # BL2 loads BL32 (optee). So, optee needs to be built first:
-DEPENDS += "optee-os"
+DEPENDS += "optee-os efitools-native"
 
 # ENABLE_MPAM_FOR_LOWER_ELS is the TF-A make parameter to support Xen MPAM
 EXTRA_OEMAKE:append = " \
@@ -63,7 +63,10 @@ EXTRA_OEMAKE:append = " \
 
 # This is needed to have the native tools executing properly by setting the RPATH
 # correctly for TF-A 2.8.6
-do_compile[prefuncs] += "fix_ldlibs"
+do_compile[prefuncs] += "fix_ldlibs gen_esl"
 fix_ldlibs() {
     sed -i '/^LDLIBS/ s,$, \$\{BUILD_LDFLAGS},' ${S}/tools/fiptool/Makefile
+}
+gen_esl() {
+    cert-to-efi-sig-list "${UEFI_SB_KEYS_DIR}/DB.crt" "${WORKDIR}/capsule.esl"
 }
