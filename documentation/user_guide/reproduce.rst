@@ -162,6 +162,28 @@ To run the configuration menu:
 
 |
 
+.. note::
+  Typically, the build process should complete without any interruptions.
+  However, if it is manually interrupted (e.g., by pressing ``Ctrl-c``) or due
+  to network/resource failures, errors may occur when rerunning the build,
+  such as:
+
+  .. code-block:: text
+
+    NOTE: Reconnecting to bitbake server...
+    NOTE: No reply from server in 30s (for command <command> at 10:11:08.527092)
+
+  This happens because some processes might still be running in the background.
+  To resolve this, you can manually terminate them using: ``killall -e Cooker``
+  
+  Check for lock files and ensure there are no leftover lock files from the
+  previous build. You can locate and remove them with:
+  ``find . -name "bitbake.lock" -exec rm -f {} \;``
+  
+  If the above steps don’t resolve the issue, a system reboot might help clear
+  any lingering problems.
+
+
 FVP
 ---
 

@@ -407,6 +407,7 @@ kernelcfg
 Keypair
 KFEATURE
 kfree
+killall
 kinfo
 kmachine
 kmeta
