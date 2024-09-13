@@ -3506,7 +3506,7 @@ Here are some tips for installing Fedora:
    .. code-block:: console
 
       Starting installer, one moment...
-      anaconda 38.23.4-2.fc38 for Fedora 38 started.
+      anaconda 39.32.6-2.fc39 for Fedora 39 started.
        * installation log files are stored in /tmp during the installation
        * shell is available on TTY2 and in second TMUX pane (ctrl+b, then press 2)
        * when reporting a bug add logs from /tmp as separate text/plain attachments
