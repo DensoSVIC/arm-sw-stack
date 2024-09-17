@@ -9,6 +9,8 @@ header:
   includes:
     - repo: meta-arm
       file: kas/arm-systemready-linux-distros-opensuse.yml
+    - repo: meta-arm
+      file: kas/arm-systemready-linux-distros-unattended-installation.yml
 
 
 repos:
@@ -22,10 +24,6 @@ repos:
         repo: sw-ref-stack
         path: "yocto/kas/patches/meta-arm-systemready/\
           0002-arm-systemready-oeqa-Add-unattended-installation-tes.patch"
-      unattended_opensuse3:
-        repo: sw-ref-stack
-        path: "yocto/kas/patches/meta-arm-systemready/\
-          0003-kas-Include-unattended-openSUSE-test.patch"
 
 local_conf_header:
   arm-systemready-linux-distros: |
