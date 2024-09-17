@@ -601,8 +601,8 @@ the ``.csd`` files.
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
 
-Ensure the creation of the initial firmware flash images because previously updated
-firmware will lead to failure of the tests.
+Run this step to ensure the creation of the initial firmware flash images:
+
 
 .. code-block:: text
 
@@ -3663,8 +3663,8 @@ the image for the software stack when building. The firmware capsule is placed
 on a removable storage device (in the case of Arm FVPs, an MMC card
 implementation).
 
-Ensure the creation of the initial firmware flash images because previously
-updated firmware will lead to failure of the secure firmware update tests.
+Run this step to ensure the creation of the initial firmware flash images:
+
 
 .. code-block:: text
 
@@ -3817,8 +3817,8 @@ Run the Demo
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
 
-Ensure the creation of the initial firmware flash images because previously updated
-firmware will lead to failure of the tests.
+Run this step to ensure the creation of the initial firmware flash images:
+
 
 .. code-block:: text
 
@@ -3863,8 +3863,8 @@ the image for the software stack when building. The firmware capsule is placed
 on a removable storage device (in the case of Arm FVPs, an MMC card
 implementation).
 
-Ensure the creation of the initial firmware flash images because previously
-updated firmware will lead to failure of the secure firmware update tests.
+Run this step to ensure the creation of the initial firmware flash images:
+
 
 .. code-block:: text
 
@@ -4018,8 +4018,8 @@ Run the Demo
 Automated Validation
 ^^^^^^^^^^^^^^^^^^^^
 
-Ensure the creation of the initial firmware flash images because previously updated
-firmware will lead to failure of the tests.
+Run this step to ensure the creation of the initial firmware flash images:
+
 
 .. code-block:: text
 
