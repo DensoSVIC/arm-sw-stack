@@ -26,3 +26,13 @@ and :ref:`Use-Cases <overview_use_cases>`.
 Provides an overview of the key components and the applied changes for this
 project so that the user can determine how to isolate and build them
 independently and import them into their existing project.
+
+
+.. toctree::
+   :maxdepth: 1
+
+   customize
+
+Describes how to customize the Reference Software Stack image configuration for
+any of the :ref:`Use-Cases <overview_use_cases>`.
+

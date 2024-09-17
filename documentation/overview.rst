@@ -80,7 +80,8 @@ Documentation Structure
   * :ref:`User Guide <user_guide/index:User Guide>`
 
     Provides guidance for configuring, building, and deploying the solutions
-    on the FVP and running and validating the supported functionalities.
+    on the FVP and running and validating the supported functionalities. Also
+    provides instructions on additional, user-defined image customization.
 
   * :ref:`Solution Design <design/index:Solution Design>`
 
