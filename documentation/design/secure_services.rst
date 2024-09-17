@@ -41,8 +41,8 @@ On Primary Compute, the implementation of `Crypto Service`_ and `Secure Storage
 Service`_ is based on the SE Proxy secure partition.
 
 The Primary Compute also provides the implementation of
-`UEFI SMM Services`_ via the SMM Gateway secure partition to support UEFI System
-Management Mode (SMM).
+`UEFI SMM Services`_ via the SMM Gateway Secure Partition (SMM Gateway SP) to
+support UEFI System Management Mode (SMM).
 
 These Secure Services are provided by the `Trusted Services`_ project, and
 implemented by leveraging the `TrustZone`_ technology in the Primary Compute and
@@ -110,7 +110,7 @@ SE Proxy SP
 The Secure Enclave Proxy Secure Partition (`SE Proxy SP`_) is a proxy partition
 managed by `OP-TEE`_. It provides access to services hosted by the RSE.
 
-The ``SE Proxy SP`` receives secure service operation requests from the Normal
+The ``SE Proxy SP`` receives Secure Service operation requests from the Normal
 world, translates the request parameters to IPC calls, and invokes the runtime
 services provided by the RSE. The IPC is carried by Shared Memory and Message 
 Handling Unit (MHUv3) Doorbell communication between the Primary Compute and the
@@ -162,7 +162,7 @@ The `PSA Crypto API`_ is implemented by the ``libmbedcrypto`` library of
 `Mbed TLS`_.
 
 Mbed TLS supports drivers for cryptographic accelerators, secure elements and
-random number generators. An `RSE Communication Driver` is created to communicate with
+random number generators. An RSE Communication Driver is created to communicate with
 RSE for calling the crypto service that is provided there. The driver invokes
 the ``psa_call()`` interface to communicate with the RSE via MHUv3.
 
