@@ -1,0 +1,86 @@
+From b80d042a3ffac035738019500e43544cac334e2d Mon Sep 17 00:00:00 2001
+From: Ziad Elhanafy <ziad.elhanafy@arm.com>
+Date: Wed, 18 Sep 2024 09:39:11 +0100
+Subject: [PATCH] net: zperf: Add TCP and UDP receivers stack size Kconfig
+ options
+
+The stack size for the TCP and UDP receivers was previously
+hardcoded in the source code, making it difficult to change
+when enabling options that require a larger stack.
+
+Upstream-Status: Inappropriate [Diverges from upstream]
+Signed-off-by: Ziad Elhanafy <ziad.elhanafy@arm.com>
+---
+ subsys/net/lib/zperf/Kconfig              | 12 ++++++++++++
+ subsys/net/lib/zperf/zperf_tcp_receiver.c |  4 +---
+ subsys/net/lib/zperf/zperf_udp_receiver.c |  4 +---
+ 3 files changed, 14 insertions(+), 6 deletions(-)
+
+diff --git a/subsys/net/lib/zperf/Kconfig b/subsys/net/lib/zperf/Kconfig
+index 204144a805b..9774c093361 100644
+--- a/subsys/net/lib/zperf/Kconfig
++++ b/subsys/net/lib/zperf/Kconfig
+@@ -41,4 +41,16 @@ config NET_ZPERF_MAX_SESSIONS
+ 	help
+ 	  Upper size limit for connections handled by zperf.
+ 
++config TCP_RECEIVER_STACK_SIZE
++	int "TCP receiver stack size"
++	default 2048
++	help
++	  Set the TCP receiver stack size in bytes.
++
++config UDP_RECEIVER_STACK_SIZE
++	int "UDP receiver stack size"
++	default 2048
++	help
++	  Set the UDP receiver stack size in bytes.
++
+ endif
+diff --git a/subsys/net/lib/zperf/zperf_tcp_receiver.c b/subsys/net/lib/zperf/zperf_tcp_receiver.c
+index cd0add89cd9..59e8bae10dd 100644
+--- a/subsys/net/lib/zperf/zperf_tcp_receiver.c
++++ b/subsys/net/lib/zperf/zperf_tcp_receiver.c
+@@ -29,8 +29,6 @@ LOG_MODULE_DECLARE(net_zperf, CONFIG_NET_ZPERF_LOG_LEVEL);
+ #define TCP_RECEIVER_THREAD_PRIORITY K_PRIO_PREEMPT(8)
+ #endif
+ 
+-#define TCP_RECEIVER_STACK_SIZE 2048
+-
+ #define SOCK_ID_IPV4_LISTEN 0
+ #define SOCK_ID_IPV6_LISTEN 1
+ #define SOCK_ID_MAX         (CONFIG_NET_ZPERF_MAX_SESSIONS + 2)
+@@ -38,7 +36,7 @@ LOG_MODULE_DECLARE(net_zperf, CONFIG_NET_ZPERF_LOG_LEVEL);
+ #define TCP_RECEIVER_BUF_SIZE 1500
+ #define POLL_TIMEOUT_MS 100
+ 
+-static K_THREAD_STACK_DEFINE(tcp_receiver_stack_area, TCP_RECEIVER_STACK_SIZE);
++static K_THREAD_STACK_DEFINE(tcp_receiver_stack_area, CONFIG_TCP_RECEIVER_STACK_SIZE);
+ static struct k_thread tcp_receiver_thread_data;
+ 
+ static zperf_callback tcp_session_cb;
+diff --git a/subsys/net/lib/zperf/zperf_udp_receiver.c b/subsys/net/lib/zperf/zperf_udp_receiver.c
+index 0b6997e401e..a9c69145537 100644
+--- a/subsys/net/lib/zperf/zperf_udp_receiver.c
++++ b/subsys/net/lib/zperf/zperf_udp_receiver.c
+@@ -31,8 +31,6 @@ static struct sockaddr_in *in4_addr_my;
+ #define UDP_RECEIVER_THREAD_PRIORITY K_PRIO_PREEMPT(8)
+ #endif
+ 
+-#define UDP_RECEIVER_STACK_SIZE 2048
+-
+ #define SOCK_ID_IPV4 0
+ #define SOCK_ID_IPV6 1
+ #define SOCK_ID_MAX 2
+@@ -40,7 +38,7 @@ static struct sockaddr_in *in4_addr_my;
+ #define UDP_RECEIVER_BUF_SIZE 1500
+ #define POLL_TIMEOUT_MS 100
+ 
+-static K_THREAD_STACK_DEFINE(udp_receiver_stack_area, UDP_RECEIVER_STACK_SIZE);
++static K_THREAD_STACK_DEFINE(udp_receiver_stack_area, CONFIG_UDP_RECEIVER_STACK_SIZE);
+ static struct k_thread udp_receiver_thread_data;
+ 
+ static zperf_callback udp_session_cb;
+-- 
+2.34.1
+
