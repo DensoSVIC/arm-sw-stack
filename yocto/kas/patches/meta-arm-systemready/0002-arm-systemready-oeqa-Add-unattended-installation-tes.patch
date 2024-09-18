@@ -41,7 +41,7 @@ index 00000000..aea8df3e
 +
 +        self.target.expect(self.console,
 +                           'Starting hardware detection...',
-+                           timeout=(40 * 60))
++                           timeout=(60 * 60))
 +        bb.plain('Installation status: Starting hardware detection...')
 +
 +        self.target.expect(self.console,
@@ -56,7 +56,7 @@ index 00000000..aea8df3e
 +
 +        self.target.expect(self.console,
 +                           'Finishing Configuration',
-+                           timeout=(15 * 60 * 60))
++                           timeout=(20 * 60 * 60))
 +        bb.plain('Installation status: Finishing Configuration...')
 +
 +        # Waiting till the installation is finished.

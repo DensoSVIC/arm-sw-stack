@@ -196,6 +196,9 @@ Bsp-Image-Build-systemready-linux-distros-opensuse:
   extends: .kas_image_build_systemready_linux_distros
   variables:
     KAS_CONFIGS: arm-bsp-extras/arm-systemready-linux-distros-opensuse
+    # OpenSUSE requires more memory than the other distros
+    KUBERNETES_MEMORY_LIMIT: 40Gi
+    KUBERNETES_MEMORY_REQUEST: 40Gi
 
 .kas_image_build_arm_auto_solutions:
   extends: .kas_image_build_sw_ref_stack
