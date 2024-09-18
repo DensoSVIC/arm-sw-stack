@@ -1486,10 +1486,10 @@ Run the Demo
    A message similar to the following should appear on the Primary Compute
    terminal:
 
-   .. code-block::text
+   .. code-block:: text
 
-      Waiting for readers...
-      ...Done. Starting replay.
+      Waiting for readers...     │1146571223376: -0.0000 (m/s^2) | 0.0000 (rad)
+      ...Done. Starting replay.  │Thread get_analyzer_handle performing a blocking accept
 
    A message similar to the following should appear on the SI Cluster 2
    terminal:
@@ -1517,8 +1517,8 @@ Run the Demo
     INFO : analyzer_client.py/_connect_to: Successfully connected to (localhost : 49152)
     INFO : analyzer_client.py/run_analyze_on_chain: (1) Analyzer synced with packet chain
 
-   The following messages should appear, but values may differ once the Packet
-   Analyzer has finished running:
+   The following messages should appear on the host terminal, but values may
+   differ once the Packet Analyzer has finished running:
 
    .. code-block:: text
 
@@ -1990,7 +1990,7 @@ Parsec-enabled TLS Demo
 =======================
 
 The demo can be run on the Baremetal Architecture. It consists of a TLS server
-and a TLS client. 
+and a TLS client application. 
 
 Refer to :ref:`design_applications_parsec_enabled_tls` for more information on
 this application. This demo is included as part of the 
@@ -2039,7 +2039,7 @@ Wait for it to return. The expected terminal output is ``running``.
 Run the Demo
 ^^^^^^^^^^^^
 
-The demo consists of a TLS server and a TLS client. 
+The demo consists of a TLS server and a TLS client application. 
 
 Refer to :ref:`design_applications_parsec_enabled_tls` for more information on
 this application.
@@ -2061,7 +2061,8 @@ this application.
         . Setting up the SSL data.... ok
         . Waiting for a remote connection ...
 
-   The TLS client can take an optional parameter as the TLS server IP address.
+   The TLS client application can take an optional parameter as the TLS server
+   IP address.
    The default value of the parameter is ``localhost``.
 
 2. Run ``ssl_client1`` from the Primary Compute terminal in a container:
@@ -2074,23 +2075,44 @@ this application.
 
    .. code-block:: text
 
+      Trying to pull docker.io/library/ubuntu:22.04...
+      Getting image source signatures
+      Copying blob a186900671ab done   | 
+      Copying config 981912c48e done   | 
+      Writing manifest to image destination
+
          . Seeding the random number generator... ok
          . Loading the CA root certificate ... ok (0 skipped)
          . Connecting to tcp/localhost/4433... ok
+         . Performing the SSL/TLS handshake... ok
          . Setting up the SSL/TLS structure... ok
          . Performing the SSL/TLS handshake... ok
-         . Verifying peer X.509 certificate... ok
-         > Write to server: 18 bytes written
+         < Read from client: 18 bytes read
 
-       GET / HTTP/1.0
+      GET / HTTP/1.0
 
-       < Read from server: 156 bytes read
+         > Write to client: 156 bytes written
 
-       HTTP/1.0 200 OK
-       Content-Type: text/html
+      HTTP/1.0 200 OK
+      Content-Type: text/html
 
-       <h2>mbed TLS Test Server</h2>
-       <p>Successful connection using: TLS-ECDHE-RSA-WITH-CHACHA20-POLY1305-SHA256</p>
+      <h2>Mbed TLS Test Server</h2>
+      <p>Successful connection using: TLS-ECDHE-RSA-WITH-CHACHA20-POLY1305-SHA256</p> 
+      
+       ok
+        . Verifying peer X.509 certificate... ok
+        > Write to server:  . Closing the connection... ok
+       18 bytes written
+
+      GET / HTTP/1.0
+
+        < Read from server:  . Waiting for a remote connection ... 156 bytes read
+
+      HTTP/1.0 200 OK
+      Content-Type: text/html
+
+      <h2>Mbed TLS Test Server</h2>
+      <p>Successful connection using: TLS-ECDHE-RSA-WITH-CHACHA20-POLY1305-SHA256</p>
 
 3. Stop the TLS server and synchronize the container image to the
    persistent storage:
@@ -3302,6 +3324,13 @@ process begins when you see the following:
       :align: center
       :width: 60 %
       :alt: Leap Install Options Menu - openSUSE Linux Distro Installation
+
+Select ``No`` when you get to the ``Online Repositories`` screen.
+
+   .. image:: ../images/sr-ir-linux-distro-opensuse-install-online-repo.*
+      :align: center
+      :width: 60 %
+      :alt: Online Repositories Options Menu - openSUSE Linux Distro Installation
 
 Select ``Installation`` to start the installation process.
 

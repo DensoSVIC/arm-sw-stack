@@ -20,7 +20,7 @@ Security (TLS) connection is established, and a simple webpage is transferred.
 The TLS session consists of both symmetric and asymmetric cryptographic
 operations. In this demo, the symmetric operations are executed by `Mbed TLS`_
 in Linux userspace. The asymmetric operations are carried out by `Parsec`_. The
-backend of the Parsec service is based on the RSE crypto runtime service.
+backend of the Parsec service is based on the RSE crypto service.
 
 ************
 Architecture
@@ -49,7 +49,7 @@ The following components are involved in the demo:
     The server application is provided by Mbed TLS. The source code can be
     found at ``program/ssl/ssl_server.c`` of `Mbed TLS repository`_.
 
-* TLS Client
+* TLS Client Application
 
     The TLS client application connects to the server at the ``4433`` port for
     the TLS connection. It is deployed in a container environment. The client
@@ -90,8 +90,8 @@ The following components are involved in the demo:
     in the Secure world of Primary Compute and finally handled by the RSE crypto
     service.
 
-For more information of how the operations are handled by Parsec service, the SE
-Proxy SP and the RSE, refer to :ref:`design_secure_services`.
+For more information of how the operations are handled by the Parsec service, 
+the SE Proxy SP and the RSE, refer to :ref:`design_secure_services`.
 
 TLS Handshake
 =============
@@ -151,8 +151,8 @@ In the TLS handshake step ``3. Server Certificate`` and ``4. Server Key
 Exchange``, the client performs asymmetric crypto operations to verify digital
 signatures from the server side. The client invokes the Parsec Secure Element
 Driver in Mbed TLS to handle the asymmetric operations. Finally the operations
-are served by the RSE crypto runtime service. Specifically, the TLS client calls
-following APIs from the RSE for the asymmetric crypto operations:
+are served by the RSE crypto service. Specifically, the TLS client application 
+calls the following APIs from the RSE for the asymmetric crypto operations:
 
 * ``psa_import_key``
 
@@ -162,8 +162,9 @@ following APIs from the RSE for the asymmetric crypto operations:
 * ``psa_verify_hash``
 
     * The API verifies the signature of a hash or short message using a public
-      key. The TLS client uses this API to verify digital signatures of the TLS
-      server assets with the public key imported by ``psa_import_key``.
+      key. The TLS client application uses this API to verify digital signatures
+      of the TLS server assets with the public key imported by
+      ``psa_import_key``.
 
 * ``psa_destroy_key``
 

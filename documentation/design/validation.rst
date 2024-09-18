@@ -273,8 +273,8 @@ the hardware isolated RSE.
 The test is performed under the following configuration:
 
  * The TLS server operates on the Primary Compute.
- * The TLS client operates within a container that resides on the Primary
-   Compute.
+ * The TLS client application operates within a container that resides on the
+   Primary Compute.
 
 .. _validation_xen:
 
