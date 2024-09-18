@@ -22,7 +22,8 @@ do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 do_install[noexec] = "1"
 
-# Set Dom0 VCPU affinity, MPAM SLC and SVE2 config
+# Set Dom0 VCPU affinity, MPAM SLC, SVE2 config and Dom0 memory
+DOM0_MEMORY_SIZE ?= "1024M"
 DOM0_SVE_SETTING ?= "${@ '128' if d.getVar('SVE_DISABLE_FLAG', True) != '1' else '0'}"
 EXTRA_XEN_CMDLINE_CONFIG ?= "maxcpus=4 dom0_max_vcpus=1 dom0_vcpus_pin dom0_mpam=slc:0xf iommu=yes dom0=sve=${DOM0_SVE_SETTING}"
 
@@ -35,7 +36,7 @@ do_deploy() {
 default=xen
 
 [xen]
-options=noreboot dom0_mem=1024M ${EXTRA_XEN_CMDLINE_CONFIG}
+options=noreboot dom0_mem=${DOM0_MEMORY_SIZE} ${EXTRA_XEN_CMDLINE_CONFIG}
 kernel=Image console=hvc0 earlycon=xenboot root=/dev/vda2 rootwait ${EXTRA_PCI_PASSTHROUGH_CONFIG}
 EOF
     cp ${WORKDIR}/xen.cfg ${DEPLOYDIR}/xen.cfg
