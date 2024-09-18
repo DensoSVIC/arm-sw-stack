@@ -47,6 +47,13 @@ Changed
 * Fixed a bug in TF-M where the RSE communication request from AP was not handled by RSE.
 * Added Secure Firmware Update support on Virtualization architecture
 * Made the Dom0 RAM size configurable
+* Exposed the following kas build parameters:
+
+  * ``CASSINI_ROOTFS_EXTRA_SPACE``
+  * ``BAREMETAL_IMAGE_MEM_SIZE``
+  * ``DOM0_MEMORY_SIZE``
+  * ``DOMU1_MEMORY_SIZE``
+  * ``DOMU2_MEMORY_SIZE``
 
 The versions of the main components used in the Reference Software Stack:
 
