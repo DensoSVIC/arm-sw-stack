@@ -3653,8 +3653,9 @@ Here are some tips for installing Fedora:
 * Log in
 
   When the installation reaches the final ``Finishing the installation``
-  phase, you will need to wait some time to finish the remaining tasks,
-  and then it will automatically reboot into the installed OS. You can log into
+  phase, you will need to wait some time to finish the remaining tasks.
+  Once you see the message ``Installation complete. Press ENTER to quit:``,
+  you need to press enter to reboot into the installed OS. You can log into
   the Linux shell with the user created during installation.
 
 * Terminate the FVP
