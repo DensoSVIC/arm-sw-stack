@@ -82,17 +82,9 @@ In the current software stack, the RSE offers:
   Engine (RSE) since TF-M v2.1.0. The downstream patches are not updated and the
   source code mentions the RSS.
 
-The RSE internally consists of 3 boot loaders and a runtime. The following
-diagram illustrates the high-level software structure of the RSE and some
-relevant external components.
-
-|
-
-.. image:: ../images/rse_software_structure_simplified.*
-   :align: center
-   :alt: RSE Software Structure
-
-|
+The RSE internally consists of 3 boot loaders and a runtime. The Boot Flow
+diagram in the :ref:`design_boot_process_boot_flow` section illustrates the
+high-level software structure of the RSE.
 
 The :ref:`design_secure_services` section provides more details of the RSE
 Runtime and the relevant components.
