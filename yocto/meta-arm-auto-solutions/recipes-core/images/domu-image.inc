@@ -20,6 +20,10 @@ COMPATIBLE_MACHINE = "genericarm64"
 
 DOMU_HOSTNAME ?= "domu"
 
+# DomU rootfs images are ramfs and no extra space can be set
+# nooelint: oelint.vars.mispell
+CASSINI_ROOTFS_EXTRA_SPACE = "0"
+
 update_hostname() {
     echo "${DOMU_HOSTNAME}" >  ${IMAGE_ROOTFS}/etc/hostname
     sed -i "s/127.0.1.1.*${MACHINE}/127.0.1.1 ${DOMU_HOSTNAME}/g"\
