@@ -344,10 +344,10 @@ files may therefore be included in the repository under alternative licenses in
 order to be compliant with the licensing requirements of the associated external
 works.
 
-The Arm corporate logo and words marked with ® or ™ are registered trademarks 
-or trademarks of Arm Limited (or its affiliates) in the US and/or elsewhere. 
-All rights reserved. Other brands and names mentioned in this document may be 
-the trademarks of their respective owners. 
+The Arm corporate logo and words marked with ® or ™ are registered trademarks
+or trademarks of Arm Limited (or its affiliates) in the US and/or elsewhere.
+All rights reserved. Other brands and names mentioned in this document may be
+the trademarks of their respective owners.
 Please follow Arm’s trademark usage guidelines at `Arm Trademark Policies`_.
 
 *********************************
