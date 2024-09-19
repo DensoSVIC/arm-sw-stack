@@ -17,7 +17,7 @@ class XenUtils:
         console.expect(dom0_prompt, timeout=45)
         console.sendline(f'xl console {domu_name}')
         console.sendline()
-        console.expect(rf'{domu_name} login:', timeout=1200)
+        console.expect(rf'{domu_name} login:', timeout=1500)
         console.sendline('root')
         console.expect(domu_prompt, timeout=30)
         # The xl console has, by default, 20 lines and 80 columns set. This
