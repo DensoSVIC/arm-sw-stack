@@ -1,0 +1,47 @@
+From bbe6ca0e051a9ec2f958ea915ad0d02bd450b116 Mon Sep 17 00:00:00 2001
+From: Isaac Perry <isaac.perry@arm.com>
+Date: Fri, 20 Sep 2024 12:20:35 +0000
+Subject: [PATCH] arm-systemready: Copy capsule-update.log to FW directory
+
+To include the capsule update test results as part of the ACS test
+results, capsule-update.log is copied from the acs_results directory
+to fw/capsule-update.log.
+
+Upstream-Status: Pending
+
+Signed-off-by: Isaac Perry <isaac.perry@arm.com>
+Signed-off-by: Michael Zhao <michael.zhao2@arm.com>
+---
+ meta-arm-systemready/classes/arm-systemready-acs.bbclass | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/meta-arm-systemready/classes/arm-systemready-acs.bbclass b/meta-arm-systemready/classes/arm-systemready-acs.bbclass
+index 8c0c5008..18d2d163 100644
+--- a/meta-arm-systemready/classes/arm-systemready-acs.bbclass
++++ b/meta-arm-systemready/classes/arm-systemready-acs.bbclass
+@@ -88,7 +88,7 @@ do_testimage[depends] += "edk2-test-parser-native:do_populate_sysroot \
+                           parted-native:do_populate_sysroot"
+ 
+ # Generate fw folder and the logs under it
+-# So far only uefi-sniff.log is created.
++# So far only uefi-sniff.log and capsule-update.log are created.
+ def generate_fw_logs(d):
+     # Create fw directory
+     fwdir = d.getVar('FW_DIR')
+@@ -138,6 +138,13 @@ def generate_fw_logs(d):
+             with open(log_path, "rb") as fr:
+                 fw.write(fr.read())
+ 
++    # Copy capsule-update.log into fw
++    import shutil
++    testimage_dir = d.getVar('TEST_LOG_DIR')
++    testimage_capsule_log = os.path.join(testimage_dir, "capsule-update.log")
++    fwdir_capsule_log = os.path.join(fwdir, "capsule-update.log")
++    shutil.copyfile(testimage_capsule_log, fwdir_capsule_log)
++
+ # Process the logs
+ python acs_logs_handle() {
+     import logging
+-- 
+2.34.1
+

@@ -16,22 +16,26 @@ header:
 repos:
   meta-arm:
     patches:
-      enable-acs-sie-1:
+      0001-Enable-SIE-SCT-extension-of-ACS.patch:
         repo: sw-ref-stack
         path: "yocto/kas/patches/meta-arm-systemready/\
           0001-Enable-SIE-SCT-extension-of-ACS.patch"
-      enable-acs-sie-2:
+      0002-Support-the-parsing-of-SIE-result.patch:
         repo: sw-ref-stack
         path: "yocto/kas/patches/meta-arm-systemready/\
           0002-Support-the-parsing-of-SIE-result.patch"
-      enable-acs-sie-3:
+      0003-Documentation-Enable-SIE-extension.patch:
         repo: sw-ref-stack
         path: "yocto/kas/patches/meta-arm-systemready/\
           0003-Documentation-Enable-SIE-extension.patch"
-      create-fw-uefi-sniff-log:
+      0004-arm-systemready-Create-fw-and-uefi-sniff.log-in-ACS-.patch:
         repo: sw-ref-stack
         path: "yocto/kas/patches/meta-arm-systemready/\
           0004-arm-systemready-Create-fw-and-uefi-sniff.log-in-ACS-.patch"
+      0005-arm-systemready-Copy-capsule-update.log-to-FW-direct.patch:
+        repo: sw-ref-stack
+        path: "yocto/kas/patches/meta-arm-systemready/\
+          0005-arm-systemready-Copy-capsule-update.log-to-FW-direct.patch"
 
 local_conf_header:
   arm-systemready-ir-acs: |
