@@ -23,6 +23,7 @@ SRC_URI:append = " \
     file://0008-check-sr-results-Enable-SIE-SCT-log-files-checking.patch \
     file://0009-check-sr-results-logs-not-optional.patch \
     file://0010-check-sr-results-Workarounds-for-ESP-checks.patch \
+    file://0011-check-sr-results-The-capsule-update-log-is-not-optio.patch \
 "
 
 # cSpell: enable

@@ -1,0 +1,30 @@
+From 715d8f0a9fffe4216c9ceb359aa704037b60a968 Mon Sep 17 00:00:00 2001
+From: Isaac Perry <isaac.perry@arm.com>
+Date: Fri, 20 Sep 2024 12:26:40 +0000
+Subject: [PATCH] check-sr-results: The capsule update log is not optional
+
+Since the capsule update test is being run in ACS tests,
+capsule-update.log is mandatory.
+
+Upstream-status: Inappropriate [Kronos-specific update]
+
+Signed-off-by: Isaac Perry <isaac.perry@arm.com>
+---
+ check-sr-results.yaml | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/check-sr-results.yaml b/check-sr-results.yaml
+index 5fca903..bf3fc8a 100644
+--- a/check-sr-results.yaml
++++ b/check-sr-results.yaml
+@@ -492,7 +492,6 @@ tree:
+           - No EFI system partition
+           - Failed to persist EFI variables
+       - file: capsule-update.log
+-        optional:
+         must-have-esp:
+         must-contain:
+           - Welcome to GRUB!
+-- 
+2.34.1
+
