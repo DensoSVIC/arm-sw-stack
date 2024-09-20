@@ -17,8 +17,8 @@ RSE-oriented Boot Flow
 The :ref:`design_components_rse` is the root of trust chain. It is the
 first booting element when the system is powered up.
 
-The boot sequence is shown in the RSE-oriented Boot Flow diagram in the Boot 
-Flow section :ref:`design_boot_process_boot_flow` section.
+The boot sequence is shown in the RSE-oriented Boot Flow diagram in the
+:ref:`design_boot_process_boot_flow` section.
 
 The RSE flash is used to store the images of various components, including:
 
