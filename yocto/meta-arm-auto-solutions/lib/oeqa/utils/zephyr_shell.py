@@ -95,7 +95,8 @@ class Shell:
         regex_prompt = re.escape(self.prompt)
         self.target.expect(self.console, regex_prompt,
                            timeout=timeout_prompt)
-        lines = self.target.before(self.console).strip().decode()
+        lines = self.target.before(self.console).strip().decode(
+            "utf-8", errors="replace")
         self.logger.debug(f"Output:\n{lines}")
         return lines, fn_return
 
