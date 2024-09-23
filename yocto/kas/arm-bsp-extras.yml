@@ -21,6 +21,11 @@ repos:
     layers:
       meta-arm:
       meta-arm-toolchain:
+    patches:
+      0001-arm-lib-Handle-timeout-for-spawn-object-on-stop.patch:
+        repo: sw-ref-stack
+        path: "yocto/kas/patches/meta-arm/\
+          0001-arm-lib-Handle-timeout-for-spawn-object-on-stop.patch"
 
   meta-openembedded:
     layers:

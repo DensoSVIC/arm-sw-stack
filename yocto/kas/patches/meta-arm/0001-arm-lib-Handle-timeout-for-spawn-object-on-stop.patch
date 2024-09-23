@@ -1,0 +1,45 @@
+From 8e51e4d36d467a5d85b5438df3b40b4978af0339 Mon Sep 17 00:00:00 2001
+From: Luca Fancellu <luca.fancellu@arm.com>
+Date: Mon, 23 Sep 2024 11:26:49 +0100
+Subject: [PATCH] arm/lib: Handle timeout for spawn object on stop()
+
+The current code is waiting 5 seconds to get an EOF on the
+console pexpect spawn object, on a particularly slow machine
+this timeout was not enough ending up into a TIMEOUT exception.
+
+To solve this, increase the timeout and handle the TIMEOUT exception
+by printing an error on the debug console instead of letting the
+exception raise up to the stack, force the spawn object close() call
+as well, since at this stage we would like the process to terminate
+anyway.
+
+Upstream-Status: Pending
+Signed-off-by: Luca Fancellu <luca.fancellu@arm.com>
+---
+ meta-arm/lib/fvp/runner.py | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/meta-arm/lib/fvp/runner.py b/meta-arm/lib/fvp/runner.py
+index e7c1358553a7..4e414e995de2 100644
+--- a/meta-arm/lib/fvp/runner.py
++++ b/meta-arm/lib/fvp/runner.py
+@@ -134,8 +134,14 @@ class FVPRunner:
+         for console in self._pexpects:
+             import pexpect
+             # Ensure pexpect logs all remaining output to the logfile
+-            console.expect(pexpect.EOF, timeout=5.0)
+-            console.close()
++            try:
++                console.expect(pexpect.EOF, timeout=30.0)
++            except pexpect.TIMEOUT:
++                pexpect_logfile = ""
++                if console.logfile is not None:
++                    pexpect_logfile = f" ({console.logfile})"
++                self._logger.debug(f"Unable to get EOF on pexpect spawn obj{pexpect_logfile}.")
++            console.close(force=True)
+ 
+         if self._fvp_process and self._fvp_process.returncode and \
+                 self._fvp_process.returncode > 0:
+-- 
+2.34.1
+
