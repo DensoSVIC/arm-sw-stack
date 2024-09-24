@@ -295,6 +295,114 @@ sender link to RSE and wait for a reply message on the MHUv3 receiver.
 The messages are defined as packed C structures, which are serialized in
 byte-order over the MHUv3 links.
 
+**********************
+Secure Storage Layouts
+**********************
+
+The secure storage is handled by the TF-M on the RSE and its configuration 
+is based on multiple macros in the codebase. 
+
+The two different types of storage are:
+  * Protected Storage
+  * Internal Trusted Storage
+
+Protected Storage
+=================
+
+The PS is a flash memory area (usually from an off-chip device)
+that can be used to store generic data. In the Kronos Reference Design, 
+it is used to store EFI variables and recorded FMU faults. PS will 
+store each of them as data chunks within an asset.
+
+The maximum number and maximum size of the PS assets are configured in
+TF-M configuration. However, TF-M does not validate whether the 
+potential total size of assets exceeds the size of the PS area.
+
+Configuration:
+The configuration used for TF-M is as follows:
+
+.. list-table:: PS configurations in TF-M
+   :widths: 25 25 50
+   :header-rows: 1
+
+   * - PS config
+     - Value  
+     - Description 
+   * - PS_MAX_ASSET_SIZE
+     - 3456 bytes
+     - Maximum size of each asset
+   * - PS_NUM_ASSETS
+     - 20 Assets
+     - Maximum number of assets that can be stored
+   * - RSS_FLASH_PS_SIZE
+     - 0x10000 (64Kb) 
+     - Size in bytes of the protected storage area
+
+.. warning::
+    The actual number of the assets stored in PS can vary 
+    according to the sizes of the assets. In a rare case, 
+    if all the asset sizes are `PS_MAX_ASSET_SIZE`, at most
+    only 18 assets can be stored in PS area. Otherwise, PS 
+    can run out of storage.
+
+
+Asset usage in PS
+-----------------
+
+EFI Variables
+^^^^^^^^^^^^^
+
+An asset can store upto a total of 16 EFI variables, where
+each EFI variable takes 216 bytes of storage in the asset.
+
+Here is a memory layout:
+
+.. image:: ../images/ps_efi_asset_layout.*
+   :align: center
+   :alt: Memory Layout for EFI variable in asset
+
+FMU fault storage
+^^^^^^^^^^^^^^^^^
+The implementation limits the number of entries stored in the asset to a 
+maximum number defined by the Kconfig symbol `MAX_PSA_PROTECTED_STORAGE_SIZE` 
+and its default value is 50. Content is serialized into an array of 
+`MAX_PSA_PROTECTED_STORAGE_SIZE` struct items, where the struct is formed by 
+two 8-byte fields: key and value.
+
+The memory layout looks like following on the asset:
+
+.. image:: ../images/ps_fmu_asset_layout.*
+   :align: center
+   :alt: Memory Layout for FMU faults in asset
+ 
+
+Internal Trusted Storage
+========================
+
+The ITS is a flash memory area (usually from an on-chip device) that 
+can be used to store assets that require high confidentiality. 
+
+Configuration:
+The configuration used for TF-M is as follows:
+
+.. list-table:: ITS configurations in TF-M
+   :widths: 25 25 50
+   :header-rows: 1
+
+   * - ITS config
+     - Value  
+     - Description 
+   * - ITS_MAX_ASSET_SIZE
+     - 4096 bytes
+     - Maximum size of each asset
+   * - ITS_NUM_ASSETS
+     - 20 Assets
+     - Maximum number of assets that can be stored
+   * - RSS_FLASH_ITS_SIZE
+     - 0x100000 (1MB) 
+     - Size in bytes of the PS area
+
+
 *******************
 RSE Secure Firmware
 *******************
