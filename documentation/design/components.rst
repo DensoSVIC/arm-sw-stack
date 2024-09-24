@@ -737,3 +737,4 @@ related to:
  * Conforming to the gPTP VLAN rules.
  * Adding compiler tuning for Cortex-R82.
  * Adding TCP and UDP receivers stack size Kconfig options.
+ * Adding a ticket spinlock implementation.

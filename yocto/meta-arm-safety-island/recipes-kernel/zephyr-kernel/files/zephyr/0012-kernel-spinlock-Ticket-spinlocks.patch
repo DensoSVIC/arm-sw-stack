@@ -1,0 +1,230 @@
+From 9643139744b3ee91bcff028336bbd54a2ca463dd Mon Sep 17 00:00:00 2001
+From: Alexander Razinkov <alexander.razinkov@syntacore.com>
+Date: Tue, 8 Aug 2023 13:31:18 +0300
+Subject: [PATCH] kernel: spinlock: Ticket spinlocks
+
+Basic spinlock implementation is based on single
+atomic variable and doesn't guarantee locking fairness
+across multiple CPUs. It's even possible that single CPU
+will win the contention every time which will result
+in a live-lock.
+
+Ticket spinlocks provide a FIFO order of lock aquisition
+which resolves such unfairness issue at the cost of slightly
+increased memory footprint.
+
+Upstream-Status: Backport [https://github.com/zephyrproject-rtos/zephyr/commit/4664813a12c3500c930538949108feb72b307889]
+Signed-off-by: Alexander Razinkov <alexander.razinkov@syntacore.com>
+---
+ .../qemu_riscv64/qemu_riscv64_smp_defconfig   |  1 +
+ include/zephyr/spinlock.h                     | 96 +++++++++++++++++--
+ kernel/Kconfig                                | 13 +++
+ 3 files changed, 102 insertions(+), 8 deletions(-)
+
+diff --git a/boards/riscv/qemu_riscv64/qemu_riscv64_smp_defconfig b/boards/riscv/qemu_riscv64/qemu_riscv64_smp_defconfig
+index df0a497cbfe..78b5b74de9a 100644
+--- a/boards/riscv/qemu_riscv64/qemu_riscv64_smp_defconfig
++++ b/boards/riscv/qemu_riscv64/qemu_riscv64_smp_defconfig
+@@ -15,3 +15,4 @@ CONFIG_QEMU_ICOUNT=n
+ 
+ CONFIG_IDLE_STACK_SIZE=1024
+ CONFIG_RISCV_PMP=y
++CONFIG_TICKET_SPINLOCKS=y
+diff --git a/include/zephyr/spinlock.h b/include/zephyr/spinlock.h
+index 823ff7eea68..51c160b0f85 100644
+--- a/include/zephyr/spinlock.h
++++ b/include/zephyr/spinlock.h
+@@ -43,9 +43,28 @@ struct z_spinlock_key {
+  * application code.
+  */
+ struct k_spinlock {
++/**
++ * @cond INTERNAL_HIDDEN
++ */
+ #ifdef CONFIG_SMP
++#ifdef CONFIG_TICKET_SPINLOCKS
++	/*
++	 * Ticket spinlocks are conceptually two atomic variables,
++	 * one indicating the current FIFO head (spinlock owner),
++	 * and the other indicating the current FIFO tail.
++	 * Spinlock is acquired in the following manner:
++	 * - current FIFO tail value is atomically incremented while it's
++	 *   original value is saved as a "ticket"
++	 * - we spin until the FIFO head becomes equal to the ticket value
++	 *
++	 * Spinlock is released by atomic increment of the FIFO head
++	 */
++	atomic_t owner;
++	atomic_t tail;
++#else
+ 	atomic_t locked;
+-#endif
++#endif /* CONFIG_TICKET_SPINLOCKS */
++#endif /* CONFIG_SMP */
+ 
+ #ifdef CONFIG_SPIN_VALIDATE
+ 	/* Stores the thread that holds the lock with the locking CPU
+@@ -76,6 +95,9 @@ struct k_spinlock {
+ 	 */
+ 	char dummy;
+ #endif
++/**
++ * INTERNAL_HIDDEN @endcond
++ */
+ };
+ 
+ /* There's a spinlock validation framework available when asserts are
+@@ -170,10 +192,22 @@ static ALWAYS_INLINE k_spinlock_key_t k_spin_lock(struct k_spinlock *l)
+ 
+ 	z_spinlock_validate_pre(l);
+ #ifdef CONFIG_SMP
++#ifdef CONFIG_TICKET_SPINLOCKS
++	/*
++	 * Enqueue ourselves to the end of a spinlock waiters queue
++	 * receiving a ticket
++	 */
++	atomic_val_t ticket = atomic_inc(&l->tail);
++	/* Spin until our ticket is served */
++	while (atomic_get(&l->owner) != ticket) {
++		arch_spin_relax();
++	}
++#else
+ 	while (!atomic_cas(&l->locked, 0, 1)) {
+ 		arch_spin_relax();
+ 	}
+-#endif
++#endif /* CONFIG_TICKET_SPINLOCKS */
++#endif /* CONFIG_SMP */
+ 	z_spinlock_validate_post(l);
+ 
+ 	return k;
+@@ -199,16 +233,47 @@ static ALWAYS_INLINE int k_spin_trylock(struct k_spinlock *l, k_spinlock_key_t *
+ 
+ 	z_spinlock_validate_pre(l);
+ #ifdef CONFIG_SMP
++#ifdef CONFIG_TICKET_SPINLOCKS
++	/*
++	 * atomic_get and atomic_cas operations below are not executed
++	 * simultaneously.
++	 * So in theory k_spin_trylock can lock an already locked spinlock.
++	 * To reproduce this the following conditions should be met after we
++	 * executed atomic_get and before we executed atomic_cas:
++	 *
++	 * - spinlock needs to be taken 0xffff_..._ffff + 1 times
++	 * (which requires 0xffff_..._ffff number of CPUs, as k_spin_lock call
++	 * is blocking) or
++	 * - spinlock needs to be taken and released 0xffff_..._ffff times and
++	 * then taken again
++	 *
++	 * In real-life systems this is considered non-reproducible given that
++	 * required actions need to be done during this tiny window of several
++	 * CPU instructions (which execute with interrupt locked,
++	 * so no preemption can happen here)
++	 */
++	atomic_val_t ticket_val = atomic_get(&l->owner);
++
++	if (!atomic_cas(&l->tail, ticket_val, ticket_val + 1)) {
++		goto busy;
++	}
++#else
+ 	if (!atomic_cas(&l->locked, 0, 1)) {
+-		arch_irq_unlock(key);
+-		return -EBUSY;
++		goto busy;
+ 	}
+-#endif
++#endif /* CONFIG_TICKET_SPINLOCKS */
++#endif /* CONFIG_SMP */
+ 	z_spinlock_validate_post(l);
+ 
+ 	k->key = key;
+ 
+ 	return 0;
++
++#ifdef CONFIG_SMP
++busy:
++	arch_irq_unlock(key);
++	return -EBUSY;
++#endif /* CONFIG_SMP */
+ }
+ 
+ /**
+@@ -249,6 +314,10 @@ static ALWAYS_INLINE void k_spin_unlock(struct k_spinlock *l,
+ #endif /* CONFIG_SPIN_VALIDATE */
+ 
+ #ifdef CONFIG_SMP
++#ifdef CONFIG_TICKET_SPINLOCKS
++	/* Give the spinlock to the next CPU in a FIFO */
++	atomic_inc(&l->owner);
++#else
+ 	/* Strictly we don't need atomic_clear() here (which is an
+ 	 * exchange operation that returns the old value).  We are always
+ 	 * setting a zero and (because we hold the lock) know the existing
+@@ -257,7 +326,8 @@ static ALWAYS_INLINE void k_spin_unlock(struct k_spinlock *l,
+ 	 * Zephyr framework for that.
+ 	 */
+ 	atomic_clear(&l->locked);
+-#endif
++#endif /* CONFIG_TICKET_SPINLOCKS */
++#endif /* CONFIG_SMP */
+ 	arch_irq_unlock(key.key);
+ }
+ 
+@@ -275,9 +345,15 @@ static ALWAYS_INLINE void k_spin_unlock(struct k_spinlock *l,
+  */
+ static ALWAYS_INLINE bool z_spin_is_locked(struct k_spinlock *l)
+ {
++#ifdef CONFIG_TICKET_SPINLOCKS
++	atomic_val_t ticket_val = atomic_get(&l->owner);
++
++	return !atomic_cas(&l->tail, ticket_val, ticket_val);
++#else
+ 	return l->locked;
++#endif /* CONFIG_TICKET_SPINLOCKS */
+ }
+-#endif
++#endif /* defined(CONFIG_SMP) && defined(CONFIG_TEST) */
+ 
+ /* Internal function: releases the lock, but leaves local interrupts disabled */
+ static ALWAYS_INLINE void k_spin_release(struct k_spinlock *l)
+@@ -287,8 +363,12 @@ static ALWAYS_INLINE void k_spin_release(struct k_spinlock *l)
+ 	__ASSERT(z_spin_unlock_valid(l), "Not my spinlock %p", l);
+ #endif
+ #ifdef CONFIG_SMP
++#ifdef CONFIG_TICKET_SPINLOCKS
++	atomic_inc(&l->owner);
++#else
+ 	atomic_clear(&l->locked);
+-#endif
++#endif /* CONFIG_TICKET_SPINLOCKS */
++#endif /* CONFIG_SMP */
+ }
+ 
+ #if defined(CONFIG_SPIN_VALIDATE) && defined(__GNUC__)
+diff --git a/kernel/Kconfig b/kernel/Kconfig
+index 2178b041cfd..783d4a9eb85 100644
+--- a/kernel/Kconfig
++++ b/kernel/Kconfig
+@@ -1193,6 +1193,19 @@ config KERNEL_COHERENCE
+ 	  may fail strangely.  Some assertions exist to catch these
+ 	  mistakes, but not all circumstances can be tested.
+ 
++config TICKET_SPINLOCKS
++	bool "Ticket spinlocks for lock acquisition fairness [EXPERIMENTAL]"
++	select EXPERIMENTAL
++	help
++	  Basic spinlock implementation is based on single
++	  atomic variable and doesn't guarantee locking fairness
++	  across multiple CPUs. It's even possible that single CPU
++	  will win the contention every time which will result
++	  in a live-lock.
++	  Ticket spinlocks provide a FIFO order of lock acquisition
++	  which resolves such unfairness issue at the cost of slightly
++	  increased memory footprint.
++
+ endmenu
+ 
+ config TICKLESS_KERNEL
+-- 
+2.34.1
+

@@ -23,6 +23,7 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0009-mbedtls-Add-rss-driver-to-build.patch;patchdir=zephyr \
     file://zephyr/0010-arch-arm-cortex-r-Add-compiler-tuning-for-Cortex-R82.patch;patchdir=zephyr \
     file://zephyr/0011-net-zperf-Add-TCP-and-UDP-receivers-stack-size-Kconf.patch;patchdir=zephyr \
+    file://zephyr/0012-kernel-spinlock-Ticket-spinlocks.patch;patchdir=zephyr \
     "
 # /* cSpell:enable */
 

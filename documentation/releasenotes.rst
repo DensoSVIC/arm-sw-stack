@@ -199,9 +199,6 @@ Known Issues
   * The CAM automated validation might rarely fail with the error: "Received timestamp
     is in the future" in the Safety Island console. This is caused by PTP sync loss
     between the Primary Compute and Safety Island in the FVP model.
-  * For Heterogeneous Inter-Processor Communication (HIPC) automated validation
-    a transient failure is observed where Safety Island becomes unresponsive thus
-    causing the OEQA tests to fail.
   * Same as `v1.0 Known Issues`_.
 
 ****
