@@ -54,7 +54,7 @@ through both the Primary Compute and the Safety Island.
 .. _design_primary_compute_secure_services_architecture:
 
 Architecture
-------------
+============
 
 The following diagram illustrates the components and data flow that implement
 the Primary Compute Secure Services.
@@ -68,7 +68,7 @@ the Primary Compute Secure Services.
 |
 
 PSA Secure Storage and Crypto APIs Arch Tests
----------------------------------------------
+=============================================
 
 The PSA Protected Storage, PSA Internal Trusted Storage and PSA Crypto APIs
 Arch Tests can be accessed from the Primary Compute Linux terminal by running
@@ -78,7 +78,7 @@ a table of results is displayed upon completion.
 Refer to :ref:`validation_trusted_services_tests` for more information.
 
 Parsec
-------
+======
 
 `Parsec`_, The Platform AbstRaction for SECurity, is an open-source initiative
 to provide a common API to hardware security and cryptographic services in a
@@ -90,7 +90,7 @@ backend. ``Parsec`` service calls the API provided by ``libts`` which further
 invokes the RSE for cryptographic services.
 
 libts
------
+=====
 
 In Linux userspace, the Secure Services are provided in the form of `libts`_
 API. ``libts`` is a library that is provided by `Trusted Services`_ for handling
@@ -105,7 +105,7 @@ Secure world SP is carried by the `Arm Firmware Framework for Arm A-profile`_
 (FF-A) call which is supported by Linux kernel and Trusted Firmware-A.
 
 SE Proxy SP
------------
+===========
 
 The Secure Enclave Proxy Secure Partition (`SE Proxy SP`_) is a proxy partition
 managed by `OP-TEE`_. It provides access to services hosted by the RSE.
@@ -117,7 +117,7 @@ Handling Unit (MHUv3) Doorbell communication between the Primary Compute and the
 RSE.
 
 SMM Gateway SP
---------------
+==============
 
 The System Management Mode Gateway Secure Partition (`SMM Gateway SP`_) serves
 as a gateway for the variable storage required by the implementation of UEFI
@@ -140,7 +140,7 @@ The Safety Island provides the implementation of `Crypto Service`_ and
 `Secure Storage Service`_. The data paths of the services are different.
 
 Architecture
-------------
+============
 
 The following diagram illustrates the components and data flow that implement
 the Safety Island Secure Services.
@@ -156,7 +156,7 @@ the Safety Island Secure Services.
 .. _design_safety_island_secure_services_psa_crypto_apis:
 
 PSA Crypto APIs
----------------
+===============
 
 The `PSA Crypto API`_ is implemented by the ``libmbedcrypto`` library of
 `Mbed TLS`_.
@@ -196,7 +196,7 @@ different ways:
   optimized.
 
 PSA Secure Storage APIs
------------------------
+=======================
 
 Two use cases are addressed by `PSA Secure Storage API`_:
 
@@ -244,7 +244,7 @@ threads within the same cluster or from different clusters, Where the
 request completes.
 
 Memory Map
-----------
+==========
 
 RSE shares dedicated SRAM with Safety Island Clusters 0, 1, and 2 and Primary
 Compute.
@@ -284,7 +284,7 @@ Primary Compute side:
    Compute Secure World and RSE
 
 RSE communication
------------------
+=================
 
 The RSE communication protocol is designed to be a lightweight serialization of
 the ``psa_call()`` API through a combination of in-band MHUv3
