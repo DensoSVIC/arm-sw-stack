@@ -55,6 +55,8 @@ Changed
   * ``DOMU1_MEMORY_SIZE``
   * ``DOMU2_MEMORY_SIZE``
 
+* Updated Critical Application Monitoring Demo from v1.0 to v1.1
+
 The versions of the main components used in the Reference Software Stack:
 
 ..
@@ -104,8 +106,8 @@ The versions of the main components used in the Reference Software Stack:
     - 1ec69067fa1351427f904362c1221b31538c8b57 (based on 3.5.0)
     - `Mbed TLS repository <https://github.com/Mbed-TLS/mbedtls/tree/1ec69067fa1351427f904362c1221b31538c8b57>`__
   * - Critical Application Monitoring
-    - 4dc4f58bc8f8d22675e10978f6db4a3a3acb7a40 (based on main branch, post v1.0)
-    - `Critical Application Monitoring repository <https://gitlab.arm.com/automotive-and-industrial/safety-island/critical-app-monitoring/-/tree/4dc4f58bc8f8d22675e10978f6db4a3a3acb7a40>`__
+    - v1.1
+    - `Critical Application Monitoring repository <https://gitlab.arm.com/automotive-and-industrial/safety-island/critical-app-monitoring/-/tree/v1.1>`__
 
 Third-party Yocto layers used to build the Reference Software Stack:
 
