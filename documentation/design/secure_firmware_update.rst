@@ -30,14 +30,25 @@ The new images are accepted in the form of a UEFI capsule.
 
 .. _design_secure_firmware_update_architecture:
 
+**************
+Authentication
+**************
+
+An optional feature of the `Platform Security Firmware Update Specification`_
+implemented in the Reference Software Stack is the authentication of UEFI update
+capsules. A capsule is prepended with a verification signature by the platform
+owner. The public key of the key pair used to generate the signature is
+stored as part of the X509 certificate. With this, unsigned or tampered-with
+capsules submitted for an update are rejected.
+
 ************
 Architecture
 ************
 
-As standardized into the `Platform Security Firmware Update Specification`_,
-each one of the RSE flash and secure flash is divided into two banks, where one
-bank has the currently running images and the other bank is used for staging
-new images. The flash layouts are shown in the following figures.
+As standardized in the `Platform Security Firmware Update Specification`_, each
+one of the RSE flash and secure flash is divided into two banks, where one bank
+has the currently running images and the other bank is used for staging new
+images. The flash layouts are shown in the following figures.
 
 .. image:: ../images/rse_flash_layout.*
    :align: center
@@ -84,16 +95,17 @@ following steps:
      service to access.
   2. The firmware upgrade process is initiated from the UEFI UpdateCapsule
      runtime service.
-  3. The capsule image is then read and copied from the Primary Compute
-     disk to the Shared Memory between the Primary Compute and RSE.
+  3. U-Boot verifies the capsule's signature against the stored public key.
+     Once verified, the capsule image is read and copied from the Primary
+     Compute disk to the Shared Memory between the Primary Compute and RSE.
   4. The Capsule Update service in SE Proxy SP handles the firmware update
      request. It then sends a request to the RSE Platform Runtime Service to
      handle the firmware update request.
-  5. Once the RSE Platform service receives the firmware update request, it
-     firstly carries out validations of the header of the capsule, the version
-     of the images, and the counter of the images, then copies the image from
-     the Shared Memory to the RSE flash, and finally updates the image to the
-     Bank-0 or the Bank-1 of the RSE flash and Primary Compute Secure Flash.
+  5. Once the RSE Platform service receives the firmware update request it
+     validates the capsule's header, the image version, and the image counters
+     before copying the image from the Shared Memory to the RSE flash. Finally,
+     it updates the image to Bank-0 or Bank-1 of the RSE flash and Primary
+     Compute Secure Flash.
   6. The system will reset after a successful firmware update and boot from
      the bank with the new firmware images. If the firmware update fails, when
      the user restarts the system from the UEFI shell the system will boot

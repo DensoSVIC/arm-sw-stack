@@ -413,6 +413,7 @@ to:
 * Add MM communication support using FF-A transport.
 * Add Secure Firmware Update support.
 * Add runtime checks of Update Capsule flags.
+* Enable capsule authentication as part of Secure Firmware Update.
 
 .. _design_components_xen:
 
