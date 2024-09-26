@@ -299,10 +299,10 @@ Stack:
    * SE Proxy SP calls the RSE's Protected Storage service via MHUv3. The
      service is used to store the authenticated variables.
 
-  2. U-Boot loads the signed GRUB image from the boot partition and verifies it.
+2. U-Boot loads the signed GRUB image from the boot partition and verifies it.
 
-  3. GRUB boots Linux using U-Boot services. The signed Linux kernel image is
-     verified by U-Boot.
+3. GRUB boots Linux using U-Boot services. The signed Linux kernel image is
+   verified by U-Boot.
 
 .. note::
 

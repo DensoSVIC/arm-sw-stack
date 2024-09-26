@@ -60,7 +60,6 @@ new images. The flash layouts are shown in the following figures.
 
 .. image:: ../images/secure_flash_layout.*
    :align: center
-   :width: 35 %
    :alt: Primary Compute Secure Flash Layout
 
 |
@@ -73,7 +72,6 @@ the Secure Firmware Update.
 
 .. image:: ../images/secure_firmware_update.*
    :align: center
-   :width: 80 %
    :alt: Secure Firmware Update Architecture
 
 |

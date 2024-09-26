@@ -14,7 +14,7 @@ Heterogeneous Inter-Processor Communication (HIPC)
 Introduction
 ************
 
-The FVP contains Armv9-A (Primary Compute) and Armv8-R64 (Safety Island)
+The FVP contains Armv9-A (Primary Compute) and Armv8-R AArch64 (Safety Island)
 heterogeneous processing elements which share data via the Message Handling
 Unit (MHUv3) and shared Static Random Access Memory (SRAM). The MHUv3 is a
 mailbox controller used for signal transmission and the shared memory is used

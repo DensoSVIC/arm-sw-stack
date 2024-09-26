@@ -126,7 +126,7 @@ The platform consists of the following hardware IP:
    Component           RD-1 AE Reference Design
    =================== ======================================
    Primary Compute     Neoverse-V3AE Armv9.2-A (16 clusters)
-   Safety Island       Cortex-R82AE Armv8-R64
+   Safety Island       Cortex-R82AE Armv8-R AArch64
    RSE                 Cortex-M55 Armv8.1-M
    SCP                 Cortex-M7 Armv7-M
    =================== ======================================
