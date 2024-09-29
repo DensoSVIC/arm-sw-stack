@@ -164,6 +164,11 @@ The script
 in the meta-arm-systemready Yocto layer monitors the ACS tests output from the
 bitbake testimage task.
 
+The script
+:repo:`yocto/meta-arm-bsp-extras/lib/oeqa/runtime/cases/arm_systemready_ir_acs_capsule_update.py`
+automates the capsule update test. It covers the test of signed capsule,
+unsigned capsule and tampered capsule.
+
 See :meta-arm-repo:`meta-arm-systemready/README.md` for more details.
 To run the tests, refer to :ref:`user_guide_reproduce_sr_ir_acs`.
 

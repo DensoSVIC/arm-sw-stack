@@ -2954,21 +2954,24 @@ A similar output to the following is printed out:
   Test Group (GetMemoryMap_Func): PASSED
   ...
   ...
-  Test Group (virtio_blk virtio1): vda
-  Test Group (Supported ports):
-  Linux tests complete
+  Capsule update test succeeded
+  Transitioned to off
   RESULTS:
-  RESULTS - arm_systemready_ir_acs.SystemReadyACSTest.test_acs: PASSED (32417.37s)
+  RESULTS - arm_systemready_ir_acs.SystemReadyACSTest.test_acs: PASSED (17074.54s)
+  RESULTS - arm_systemready_ir_acs_capsule_update.SystemReadyACSCapsuleUpdateTest.test_capsule_update: PASSED (229.49s)
+  RESULTS - arm_systemready_ir_acs_shutdown.SystemReadyACSShutdownTest.test_shutdown: PASSED (15.17s)
   SUMMARY:
-  arm-systemready-ir-acs () - Ran 1 test in 32417.375s
-  arm-systemready-ir-acs - OK - All required tests passed (successes=1, skipped=0, failures=0, errors=0)
+  arm-systemready-ir-acs () - Ran 3 tests in 17327.711s
+  arm-systemready-ir-acs - OK - All required tests passed (successes=3, skipped=0, failures=0, errors=0)
 
 As seen in the above logs, some Test Groups are expected to fail. The following
 messages are expected to validate this Use-Case:
 
 .. code-block:: text
 
-  RESULTS - arm_systemready_ir_acs.SystemReadyACSTest.test_acs: PASSED (32417.37s)
+  RESULTS - arm_systemready_ir_acs.SystemReadyACSTest.test_acs: PASSED (17074.54s)
+  RESULTS - arm_systemready_ir_acs_capsule_update.SystemReadyACSCapsuleUpdateTest.test_capsule_update: PASSED (229.49s)
+  RESULTS - arm_systemready_ir_acs_shutdown.SystemReadyACSShutdownTest.test_shutdown: PASSED (15.17s)
 
 .. note::
 
