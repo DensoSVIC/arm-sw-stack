@@ -130,10 +130,13 @@ do_uefi_capsule() {
                  ${UEFI_FIRMWARE_BINARY} \
                  ${CAPSULE_IMG_LOCATION}/${UEFI_FIRMWARE_BINARY}.uefi.capsule
 
-    cp ${CAPSULE_IMG_LOCATION}/${UEFI_FIRMWARE_BINARY}.uefi.capsule \
-       ${CAPSULE_IMG_LOCATION}/tampered_${UEFI_FIRMWARE_BINARY}.uefi.capsule
-
-    echo "tampered" >> ${CAPSULE_IMG_LOCATION}/tampered_${UEFI_FIRMWARE_BINARY}.uefi.capsule
+    # Truncate the last 5 bytes of the tampered capsule
+    head -c -5 ${CAPSULE_IMG_LOCATION}/${UEFI_FIRMWARE_BINARY}.uefi.capsule \
+        > ${CAPSULE_IMG_LOCATION}/tampered_${UEFI_FIRMWARE_BINARY}.uefi.capsule
+    # Tamper the last 5 bytes.
+    # Keep the size of payload to make sure the layouts of all images won't be
+    # changed.
+    echo 'BEEF' >> ${CAPSULE_IMG_LOCATION}/tampered_${UEFI_FIRMWARE_BINARY}.uefi.capsule
 }
 do_uefi_capsule[depends] += "u-boot-tools-native:do_populate_sysroot"
 do_uefi_capsule[dirs] = "${B}"
