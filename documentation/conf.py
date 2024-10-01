@@ -161,8 +161,19 @@ kas_version = "4.3.2"
 linux_version = "6.6"
 linux_version_patch = "35"
 mbedtls_version = "1ec69067fa1351427f904362c1221b31538c8b57"
+meta_arm_revision = "38bce82e42ea093333a53c4a10e51d1b26cbc989"
+meta_cassini_revision = "bef1d728c6db464ff89828afae5b51e648058f35"
+meta_clang_revision = "0acff283249842eb1f617b20c2ed4ebf9f8e3557"
+meta_ewaol_revision = "c28142e72691202ba55a954f0faaed4375615b68"
+meta_oe_revision = "78a14731cf0cf38a19ff8bd0e9255b319afaf3a7"
+meta_ptx_revision = "547b079bf309ebe1576aa5ae0d58564feb245a42"
+meta_secure_core_revision = "f3f928d097917b8a131044fe718440eb7f7e381b"
+meta_security_revision = "11ea91192d43d7c2b0b95a93aa63ca7e73e38034"
+meta_virtualization_revision = "37c06acf58f9020bccfc61954eeefe160642d5f3"
+meta_zephyr_revision = "763c72fc3088fc09ccfde6edfcdad43811d16616"
 optee_version = "3.22.0"
 psa_arch_tests_version = "v23.06_API1.5_ADAC_EAC"
+poky_revision = "ca27724b44031fe11b631ee50eb1e20f7a60009d"
 scp_firmware_base_version = "main branch post v2.13.0"
 scp_firmware_version = "cc4c9e017348d92054f74026ee1beb081403c168"
 systemready_ir_acs_version = "2.1.0"
@@ -203,39 +214,39 @@ rst_prolog = f"""
 .. |arm auto solutions repository| replace:: https://gitlab.arm.com/automotive-and-industrial/arm-auto-solutions/sw-ref-stack
 .. |arm auto solutions version| replace:: {arm_auto_solutions_version}
 .. |layer dependency statement| replace:: {arm_auto_solutions_version} branch
-.. |meta-arm branch| replace:: kronos-{yocto_version}
-.. |meta-arm repository| replace:: https://gitlab.arm.com/automotive-and-industrial/meta-arm
-.. |meta-arm revision| replace:: HEAD
-.. |meta-cassini branch| replace:: {cassini_version}
+.. |meta-arm branch| replace:: {yocto_version}
+.. |meta-arm repository| replace:: https://git.yoctoproject.org/meta-arm
+.. |meta-arm revision| replace:: {meta_arm_revision}
+.. |meta-cassini branch| replace:: {yocto_version}
 .. |meta-cassini repository| replace:: https://gitlab.com/Linaro/cassini/meta-cassini
-.. |meta-cassini revision| replace:: {cassini_version}
+.. |meta-cassini revision| replace:: {meta_cassini_revision}
 .. |meta-clang branch| replace:: {yocto_version}
 .. |meta-clang repository| replace:: https://github.com/kraj/meta-clang
-.. |meta-clang revision| replace:: HEAD
-.. |meta-ewaol branch| replace:: {ewaol_version}
+.. |meta-clang revision| replace:: {meta_clang_revision}
+.. |meta-ewaol branch| replace:: {yocto_version}
 .. |meta-ewaol repository| replace:: https://gitlab.com/soafee/ewaol/meta-ewaol
-.. |meta-ewaol revision| replace:: {ewaol_version}
+.. |meta-ewaol revision| replace:: {meta_ewaol_revision}
 .. |meta-openembedded branch| replace:: {yocto_version}
 .. |meta-openembedded repository| replace:: https://git.openembedded.org/meta-openembedded
-.. |meta-openembedded revision| replace:: HEAD
+.. |meta-openembedded revision| replace:: {meta_oe_revision}
 .. |meta-ptx branch| replace:: {yocto_version}
 .. |meta-ptx repository| replace:: https://github.com/pengutronix/meta-ptx
-.. |meta-ptx revision| replace:: HEAD
+.. |meta-ptx revision| replace:: {meta_ptx_revision}
 .. |meta-secure-core branch| replace:: {yocto_version}
 .. |meta-secure-core repository| replace:: https://github.com/Wind-River/meta-secure-core
-.. |meta-secure-core revision| replace:: HEAD
+.. |meta-secure-core revision| replace:: {meta_secure_core_revision}
 .. |meta-security branch| replace:: {yocto_version}
 .. |meta-security repository| replace:: https://git.yoctoproject.org/git/meta-security
-.. |meta-security revision| replace:: HEAD
+.. |meta-security revision| replace:: {meta_security_revision}
 .. |meta-virtualization branch| replace:: {yocto_version}
 .. |meta-virtualization repository| replace:: https://git.yoctoproject.org/git/meta-virtualization
-.. |meta-virtualization revision| replace:: HEAD
+.. |meta-virtualization revision| replace:: {meta_virtualization_revision}
 .. |meta-zephyr branch| replace:: {yocto_version}
 .. |meta-zephyr repository| replace:: https://git.yoctoproject.org/git/meta-zephyr
-.. |meta-zephyr revision| replace:: HEAD
+.. |meta-zephyr revision| replace:: {meta_zephyr_revision}
 .. |poky branch| replace:: {yocto_version}
 .. |poky repository| replace:: https://git.yoctoproject.org/git/poky
-.. |poky revision| replace:: HEAD
+.. |poky revision| replace:: {poky_revision}
 .. |yocto version| replace:: {yocto_version}
 
 .. _Arm Ecosystem FVPs: https://developer.arm.com/downloads/-/arm-ecosystem-fvps

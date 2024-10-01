@@ -85,7 +85,7 @@ The layer dependency sources and their revisions for the ``kronos`` repository
     revision: |meta-arm revision|
 
     URL: |meta-cassini repository|
-    layers: meta-cassini-distro
+    layers: meta-cassini-distro, meta-cassini-tests
     branch: |meta-cassini branch|
     revision: |meta-cassini revision|
 
@@ -100,7 +100,7 @@ The layer dependency sources and their revisions for the ``kronos`` repository
     revision: |meta-ewaol revision|
 
     URL: |meta-openembedded repository|
-    layers: meta-filesystems, meta-networking, meta-oe, meta-python
+    layers: meta-filesystems, meta-networking, meta-oe, meta-python, meta-perl
     branch: |meta-openembedded branch|
     revision: |meta-openembedded revision|
 
