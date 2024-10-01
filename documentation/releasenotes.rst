@@ -185,8 +185,6 @@ Limitations
 Resolved and Known Issues
 =========================
 
-.. _releasenotes_knownissues:
-
 Resolved Issues
 ---------------
 
@@ -194,6 +192,8 @@ Resolved Issues
     SystemReady IR ACS SCT Update Capsule test failure.
   * Fixed a bug in TF-M where the RSE communication request from AP was not
     handled by RSE.
+
+.. _releasenotes_knownissues:
 
 Known Issues
 ------------
@@ -204,6 +204,26 @@ Known Issues
   * The CAM automated validation might rarely fail with the error: "Received timestamp
     is in the future" in the Safety Island console. This is caused by PTP sync loss
     between the Primary Compute and Safety Island in the FVP model.
+  * The Virtualization Architecture might rarely fail to boot a DomU, leaving it
+    hanging before reaching its shell. This may be caused by an RCU stalling
+    issue. The last expected line printed by the DomU is (potentially followed
+    by an RCU backtrace):
+
+    .. code-block:: text
+
+      Freeing initrd memory: 117108K
+
+    When running the Automated Validation the output looks like:
+
+    .. code-block:: text
+
+      pexpect.exceptions.TIMEOUT: Timeout exceeded.
+      [...]
+      RESULTS - test_10_linuxlogin.LinuxLoginTest.test_linux_login: ERROR
+
+    To overcome the problem, restart the command that launched the FVP (either
+    directly or through the Automated Validation).
+
   * Same as `v1.0 Known Issues`_.
 
 ****
