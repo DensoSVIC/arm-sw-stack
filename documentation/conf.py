@@ -177,7 +177,8 @@ poky_revision = "ca27724b44031fe11b631ee50eb1e20f7a60009d"
 scp_firmware_base_version = "main branch post v2.13.0"
 scp_firmware_version = "cc4c9e017348d92054f74026ee1beb081403c168"
 systemready_ir_acs_version = "2.1.0"
-trusted_firmware_a_version = "lts-v2.8.6"
+trusted_firmware_a_base_version = "lts-v2.8.6"
+trusted_firmware_a_version = "ff0bd5f9bb2ba2f31fb9cec96df917747af9e92d"
 trusted_firmware_a_doc_version = "v2.8"
 trusted_firmware_m_base_version = "main branch post v1.8.1"
 trusted_firmware_m_version = "53aa78efef274b9e46e63b429078ae1863609728"
@@ -201,6 +202,7 @@ rst_prolog = f"""
 .. |SCP-firmware base version| replace:: {scp_firmware_base_version}
 .. |SCP-firmware version| replace:: {scp_firmware_version}
 .. |SystemReady IR ACS version| replace:: {systemready_ir_acs_version}
+.. |Trusted Firmware-A base version| replace:: {trusted_firmware_a_base_version}
 .. |Trusted Firmware-A version| replace:: {trusted_firmware_a_version}
 .. |Trusted Firmware-M base version| replace:: {trusted_firmware_m_base_version}
 .. |Trusted Firmware-M version| replace:: {trusted_firmware_m_version}
@@ -329,7 +331,7 @@ rst_prolog = f"""
 .. _Trusted Board Boot Requirements (TBBR): https://developer.arm.com/documentation/den0006/latest
 .. _TrustZone: https://www.arm.com/technologies/trustzone-for-cortex-a/tee-reference-documentation
 .. _Trusted Firmware-A (TF-A): https://trustedfirmware-a.readthedocs.io
-.. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/+/{trusted_firmware_a_version}
+.. _Trusted Firmware-A repository: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/+/{trusted_firmware_a_base_version}
 .. _Trusted Firmware-M (TF-M): https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}
 .. _Trusted Firmware-M PSA Protected Storage Interfaces: https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/integration_guide/services/tfm_ps_integration_guide.html#psa-protected-storage-interfaces
 .. _Trusted Firmware-M PSA Internal Trusted Storage Interfaces: https://trustedfirmware-m.readthedocs.io/en/{trusted_firmware_m_doc_version}/integration_guide/services/tfm_its_integration_guide.html#psa-internal-trusted-storage-interfaces

@@ -25,7 +25,7 @@ Arm Automotive Solutions comprises of the following main components:
     - |SCP-firmware version| (based on |SCP-firmware base version|)
     - `SCP-firmware repository`_
   * - :ref:`design_components_trusted-firmware-a`
-    - |Trusted Firmware-A version|
+    - |Trusted Firmware-A version| (based on |Trusted Firmware-A base version|)
     - `Trusted Firmware-A repository`_
   * - :ref:`design_components_op-tee`
     - |OP-TEE version|
