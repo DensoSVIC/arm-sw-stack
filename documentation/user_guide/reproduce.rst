@@ -159,7 +159,6 @@ To run the configuration menu:
 
 .. image:: ../images/build_config.*
    :align: center
-   :width: 60 %
    :alt: Arm Auto Solutions Build Configuration Menu
 
 |
@@ -2854,7 +2853,6 @@ Refer to :ref:`design_systemready_ir` for more details.
 
 .. image:: ../images/build_config_sr_ir.*
    :align: center
-   :width: 60 %
    :alt: Arm Auto Solutions Build Configuration Menu - Arm SystemReady IR Firmware Build
 
 |
@@ -3082,7 +3080,6 @@ To build the Arm SystemReady IR Linux distros installation tests:
 
 .. image:: ../images/build_config_sr_distro_debian.*
    :align: center
-   :width: 60 %
    :alt: Arm Auto Solutions Build Configuration Menu - Debian Linux Distro Installation
 
 |
@@ -3101,7 +3098,6 @@ install process begins when you see the following:
 
     .. image:: ../images/sr-ir-linux-distro-debian-install-grub-4.*
        :align: center
-       :width: 60 %
        :alt: Grub Install Options Menu - Debian Linux Distro Installation
 
 Select ``Install`` to start the installation process.
@@ -3118,7 +3114,6 @@ installation process and how to solve it:
 
   .. image:: ../images/sr-ir-linux-distro-debian-install-grub-0.*
      :align: center
-     :width: 60 %
      :alt: Grub Installation Failure Prompt - Debian Linux Distro Installation
 
 |
@@ -3138,7 +3133,6 @@ installation process and how to solve it:
 
   .. image:: ../images/sr-ir-linux-distro-debian-install-grub-1.*
      :align: center
-     :width: 60 %
      :alt: Grub Workaround Console Output - Debian Linux Distro Installation
 
 |
@@ -3148,7 +3142,6 @@ installation process and how to solve it:
 
   .. image:: ../images/sr-ir-linux-distro-debian-install-grub-2.*
      :align: center
-     :width: 60 %
      :alt: Second Grub Installation Failure Prompt - Debian Linux Distro Installation
 
 |
@@ -3158,7 +3151,6 @@ installation process and how to solve it:
 
   .. image:: ../images/sr-ir-linux-distro-debian-install-grub-3.*
      :align: center
-     :width: 60 %
      :alt: Debian Installer Main Menu - Debian Linux Distro Installation
 
 |
@@ -3224,7 +3216,6 @@ To build the Arm SystemReady IR Linux distros installation tests:
 
 .. image:: ../images/build_config_sr_distro_opensuse_unattended.*
    :align: center
-   :width: 60 %
    :alt: Arm Auto Solutions Build Configuration Menu - openSUSE Linux Distro Installation
 
 |
@@ -3308,7 +3299,6 @@ To build the Arm SystemReady IR Linux distros installation tests:
 
 .. image:: ../images/build_config_sr_distro_opensuse_manual.*
    :align: center
-   :width: 60 %
    :alt: Arm Auto Solutions Build Configuration Menu - openSUSE Linux Distro Installation
 
 |
@@ -3324,14 +3314,12 @@ process begins when you see the following:
 
    .. image:: ../images/sr-ir-linux-distro-opensuse-install-installation.*
       :align: center
-      :width: 60 %
       :alt: Leap Install Options Menu - openSUSE Linux Distro Installation
 
 Select ``No`` when you get to the ``Online Repositories`` screen.
 
    .. image:: ../images/sr-ir-linux-distro-opensuse-install-online-repo.*
       :align: center
-      :width: 60 %
       :alt: Online Repositories Options Menu - openSUSE Linux Distro Installation
 
 Select ``Installation`` to start the installation process.
@@ -3343,7 +3331,6 @@ Select ``Installation`` to start the installation process.
 
    .. image:: ../images/sr-ir-linux-distro-opensuse-install-system-role.*
       :align: center
-      :width: 60 %
       :alt: System Role Selection Menu - openSUSE Linux Distro Installation
 
    |
@@ -3424,7 +3411,6 @@ To build the Arm SystemReady IR Linux distros installation tests:
 
 .. image:: ../images/build_config_sr_distro_fedora_unattended.*
    :align: center
-   :width: 60 %
    :alt: Arm Auto Solutions Build Configuration Menu - Fedora Linux Distro Installation
 
 |
@@ -3505,7 +3491,6 @@ To build the Arm SystemReady IR Linux distros installation tests:
 
 .. image:: ../images/build_config_sr_distro_fedora_manual.*
    :align: center
-   :width: 60 %
    :alt: Arm Auto Solutions Build Configuration Menu - Fedora Linux Distro Installation
 
 |
@@ -3524,7 +3509,6 @@ install process begins when you see the following:
 
     .. image:: ../images/sr-ir-linux-distro-fedora-install-grub.*
        :align: center
-       :width: 60 %
        :alt: Grub Install Options Menu - Fedora Linux Distro Installation
 
 Select ``Install Fedora 39`` to start the installation process.
