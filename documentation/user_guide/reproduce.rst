@@ -3808,6 +3808,21 @@ Run the Demo
       ...
       [INF]:[FWU]: get_fwu_agent_state: enter, boot_index = 1
 
+   .. note::
+      The following error messages will appear in the logs:
+
+      .. code-block:: text
+
+         [ERR]:[FWU]: flash_rss_capsule: version error
+         ...
+         [ERR]:[FWU]: flash_fip_capsule: version error
+         ...
+         ...
+         [ERR]: [FWU]: Flashing the image Failed.
+      
+      These errors are expected. As long as you scroll upwards and see 
+      the aforementioned lines then the update was successful.
+
 3. The system will eventually boot into Linux using the upgraded firmware.
 
 4. To shut down the FVP and terminate the emulation automatically, follow the
@@ -4008,6 +4023,21 @@ Run the Demo
       ...
       ...
       [INF]:[FWU]: get_fwu_agent_state: enter, boot_index = 1
+
+   .. note::
+      The following error messages will appear in the logs:
+
+      .. code-block:: text
+
+         [ERR]:[FWU]: flash_rss_capsule: version error
+         ...
+         [ERR]:[FWU]: flash_fip_capsule: version error
+         ...
+         ...
+         [ERR]: [FWU]: Flashing the image Failed.
+      
+      These errors are expected. As long as you scroll upwards and see 
+      the aforementioned lines then the update was successful.
 
 3. The system will eventually boot into Linux using the upgraded firmware.
 
