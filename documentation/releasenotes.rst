@@ -44,7 +44,6 @@ Changed
 * Using bindings of Linux Kernel from 6.3.7 to 6.10 for SystemReady IR Devicetree validation.
 * Supported EFI System Partition (ESP) checks in Arm Systemready IR ACS test.
 * Updated Safety Island Actuation Demo from v2.0 to v2.1.
-* Fixed a bug in TF-M where the RSE communication request from AP was not handled by RSE.
 * Added Secure Firmware Update support on Virtualization architecture.
 * Enabled capsule authentication for Secure Firmware Update.
 * Made the Dom0 RAM size configurable.
@@ -192,6 +191,8 @@ Resolved Issues
 
   * Added runtime checks of Update Capsule flags in U-Boot, which fixed
     SystemReady IR ACS SCT Update Capsule test failure.
+  * Fixed a bug in TF-M where the RSE communication request from AP was not
+    handled by RSE.
 
 Known Issues
 ------------
