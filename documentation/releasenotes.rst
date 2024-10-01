@@ -20,34 +20,34 @@ Implementation of :ref:`design_boot_process_uefi_secure_boot`.
 Changed
 =======
 
-* Use the EWAOL Yocto distribution instead of Cassini
-* Extended SystemReady IR ACS with the Security Interface Extension (SIE) Self-Certification Test (SCT)
-* Assembled the firmware images using genimage from the meta-ptx Yocto layer instead of wks/wic images
-* Updated support from openSUSE 15.4 to 15.5
-* Updated support from Debian 11.7 to 12.4
+* Use the EWAOL Yocto distribution instead of Cassini.
+* Extended SystemReady IR ACS with the Security Interface Extension (SIE) Self-Certification Test (SCT).
+* Assembled the firmware images using genimage from the meta-ptx Yocto layer instead of wks/wic images.
+* Updated support from openSUSE 15.4 to 15.5.
+* Updated support from Debian 11.7 to 12.4.
 * Added Fedora 39.1.5 distribution to comply with the SystemReady IR v2.1 requirements.
 * Added Fedora 39.1.5 distribution unattended installation option.
 * Added openSUSE 15.5 distribution unattended installation option.
-* Added compiler tuning for Cortex-R82 to the Zephyr toolchain
-* Upgraded from Yocto nanbield to scarthgap
-* Introduced the Yocto layer meta-arm-safety-island
-* Removed LCP from the boot flow
-* Aligned the number of supported MHUv3 channels with the RSE specification
-* Enabled TF-A Trusted Board Boot (TBB)
-* Enabled PSA Internal Trusted Storage API on Primary Compute
-* Added an AP_REFCLK non-secure Generic Timer node in Kronos device tree
-* Updated identified non-alignments on RD-Kronos for Devicetree missing schemas
+* Added compiler tuning for Cortex-R82 to the Zephyr toolchain.
+* Upgraded from Yocto nanbield to scarthgap.
+* Introduced the Yocto layer meta-arm-safety-island.
+* Removed LCP from the boot flow.
+* Aligned the number of supported MHUv3 channels with the RSE specification.
+* Enabled TF-A Trusted Board Boot (TBB).
+* Enabled PSA Internal Trusted Storage API on Primary Compute.
+* Added an AP_REFCLK non-secure Generic Timer node in Kronos device tree.
+* Updated identified non-alignments on RD-Kronos for Devicetree missing schemas.
 * Introduced Safety Island GIC FMU device for Safety Island Cluster 1 and automated tests.
 * Renamed Runtime Security Subsystem (RSS) to Runtime Security Engine (RSE) to be aligned with TF-M naming.
-* Fixed the System FMU ERRIIDR register value in the Fault Management driver
-* Fixed the GIC-720AE IVIEWRn register offsets in TF-M
-* Using bindings of Linux Kernel from 6.3.7 to 6.10 for SystemReady IR Devicetree validation
-* Supported EFI System Partition (ESP) checks in Arm Systemready IR ACS test
-* Updated Safety Island Actuation Demo from v2.0 to v2.1
+* Fixed the System FMU ERRIIDR register value in the Fault Management driver.
+* Fixed the GIC-720AE IVIEWRn register offsets in TF-M.
+* Using bindings of Linux Kernel from 6.3.7 to 6.10 for SystemReady IR Devicetree validation.
+* Supported EFI System Partition (ESP) checks in Arm Systemready IR ACS test.
+* Updated Safety Island Actuation Demo from v2.0 to v2.1.
 * Fixed a bug in TF-M where the RSE communication request from AP was not handled by RSE.
-* Added Secure Firmware Update support on Virtualization architecture
-* Enabled capsule authentication for Secure Firmware Update
-* Made the Dom0 RAM size configurable
+* Added Secure Firmware Update support on Virtualization architecture.
+* Enabled capsule authentication for Secure Firmware Update.
+* Made the Dom0 RAM size configurable.
 * Exposed the following kas build parameters:
 
   * ``CASSINI_ROOTFS_EXTRA_SPACE``
@@ -56,7 +56,7 @@ Changed
   * ``DOMU1_MEMORY_SIZE``
   * ``DOMU2_MEMORY_SIZE``
 
-* Updated Critical Application Monitoring Demo from v1.0 to v1.1
+* Updated Critical Application Monitoring Demo from v1.0 to v1.1.
 
 The versions of the main components used in the Reference Software Stack:
 
