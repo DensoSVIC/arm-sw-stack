@@ -3096,7 +3096,7 @@ Run the following command to start the installation:
 The whole process of installing Debian will probably take about 5 hours. The
 install process begins when you see the following:
 
-    .. image:: ../images/sr-ir-linux-distro-debian-install-grub-4.*
+    .. image:: ../images/sr-ir-linux-distro-debian-install-grub-0.*
        :align: center
        :alt: Grub Install Options Menu - Debian Linux Distro Installation
 
@@ -3108,11 +3108,19 @@ installation process and how to solve it:
 * Install the GRUB boot loader
 
   When the installation reaches the ``Install the GRUB boot loader`` phase,
-  there will be an error ``Unable to install GRUB in dummy``.
+  choose ``Yes``.
+
+  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-1.*
+     :align: center
+     :alt: Grub Installation Prompt - Debian Linux Distro Installation
+
+|
+
+  There will be an error ``Unable to install GRUB in dummy``.
   This is because on an EBBR platform, UEFI ``SetVariable()`` is not required at
   runtime (however, it is required at boot time).
 
-  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-0.*
+  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-2.*
      :align: center
      :alt: Grub Installation Failure Prompt - Debian Linux Distro Installation
 
@@ -3126,12 +3134,11 @@ installation process and how to solve it:
 
      chroot /target
      update-grub
-     mkdir /boot/efi/EFI/BOOT
      cp -v /boot/efi/EFI/debian/grubaa64.efi /boot/efi/EFI/BOOT/bootaa64.efi
 
   A snapshot is as below:
 
-  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-1.*
+  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-3.*
      :align: center
      :alt: Grub Workaround Console Output - Debian Linux Distro Installation
 
@@ -3140,7 +3147,7 @@ installation process and how to solve it:
   After doing the above GRUB workaround, press ``Ctrl-a p`` to go back to the
   installer again. Select ``Continue`` on the GRUB failure screen.
 
-  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-2.*
+  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-4.*
      :align: center
      :alt: Second Grub Installation Failure Prompt - Debian Linux Distro Installation
 
@@ -3149,7 +3156,7 @@ installation process and how to solve it:
   Select ``Continue without boot loader`` in the ``Debian installer main menu``
   and continue.
 
-  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-3.*
+  .. image:: ../images/sr-ir-linux-distro-debian-install-grub-5.*
      :align: center
      :alt: Debian Installer Main Menu - Debian Linux Distro Installation
 
