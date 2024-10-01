@@ -1208,66 +1208,66 @@ the ``.csd`` files.
     Stream 1 sends event 0
     ...
 
-    As observed from the SI Cluster 1 terminal, ``cam-service`` is loading
-    four stream deployment files from DomU1 and two stream deployment files from
-    DomU2 for monitoring. In the following log, the stream messages are received
-    and processed by it:
+   As observed from the SI Cluster 1 terminal, ``cam-service`` is loading
+   four stream deployment files from DomU1 and two stream deployment files from
+   DomU2 for monitoring. In the following log, the stream messages are received
+   and processed by it:
 
-    .. code-block:: text
+   .. code-block:: text
 
-       Connection 4 is created.
-       Init Message
-       Stream 11085ddc-bc10-11ed-9a44-7ef9696e0002 configuration is loaded.
-       Init Message
-       Stream 11085ddc-bc10-11ed-9a44-7ef9696e0001 configuration is loaded.
-       Init Message
-       Stream 11085ddc-bc10-11ed-9a44-7ef9696e0003 configuration is loaded.
-       Init Message
-       Stream 11085ddc-bc10-11ed-9a44-7ef9696e0000 configuration is loaded.
-       Start Message
-       Start Message
-       Start Message
-       Start Message
-       Event Message
-       Event Message
-       Event Message
-       Event Message
+    Connection 4 is created.
+    Init Message
+    Stream 11085ddc-bc10-11ed-9a44-7ef9696e0002 configuration is loaded.
+    Init Message
+    Stream 11085ddc-bc10-11ed-9a44-7ef9696e0001 configuration is loaded.
+    Init Message
+    Stream 11085ddc-bc10-11ed-9a44-7ef9696e0003 configuration is loaded.
+    Init Message
+    Stream 11085ddc-bc10-11ed-9a44-7ef9696e0000 configuration is loaded.
+    Start Message
+    Start Message
+    Start Message
+    Start Message
+    Event Message
+    Event Message
+    Event Message
+    Event Message
 
-       Connection 5 is created.
-       Init Message
-       Stream 22085ddc-bc10-11ed-9a44-7ef9696e0001 configuration is loaded.
-       Init Message
-       Stream 22085ddc-bc10-11ed-9a44-7ef9696e0000 configuration is loaded.
-       Start Message
-       Start Message
-       Event Message
-       Event Message
-       Event Message
-       # Repeated event messages
-       ...
+    Connection 5 is created.
+    Init Message
+    Stream 22085ddc-bc10-11ed-9a44-7ef9696e0001 configuration is loaded.
+    Init Message
+    Stream 22085ddc-bc10-11ed-9a44-7ef9696e0000 configuration is loaded.
+    Start Message
+    Start Message
+    Event Message
+    Event Message
+    Event Message
+    # Repeated event messages
+    ...
 
-    The fault happens 1000ms after stream initialization. At that time
-    ``cam-service`` should detect a stream temporal error with the following
-    output from the SI Cluster 1 terminal.
+   The fault happens 1000ms after stream initialization. At that time
+   ``cam-service`` should detect a stream temporal error with the following
+   output from the SI Cluster 1 terminal.
 
-    .. code-block:: text
+   .. code-block:: text
 
-       # Repeated event messages
-       ...
-       ERROR: Stream temporal error:
-       ERROR:     stream_name: CAM STREAM  0
-       ERROR:     stream_uuid: 2285ddc-bc10-11ed-9a44-7ef9696e0000
-       ERROR:     event_id: 0
-       ERROR:     time_received: 0
-       ERROR:     time_expected: 1710275907816057
-       # Repeated event messages
-       ...
-       ERROR: Stream state error:
-       ERROR:     stream_name: CAM STREAM  0
-       ERROR:     stream_uuid: 22085ddc-bc10-11ed-9a44-7ef9696e0000
-       ERROR:     timestamp: 1710275909816069
-       ERROR:     current_state: Failed state
-       ERROR:     requested_state: In-progress state
+    # Repeated event messages
+    ...
+    ERROR: Stream temporal error:
+    ERROR:     stream_name: CAM STREAM  0
+    ERROR:     stream_uuid: 2285ddc-bc10-11ed-9a44-7ef9696e0000
+    ERROR:     event_id: 0
+    ERROR:     time_received: 0
+    ERROR:     time_expected: 1710275907816057
+    # Repeated event messages
+    ...
+    ERROR: Stream state error:
+    ERROR:     stream_name: CAM STREAM  0
+    ERROR:     stream_uuid: 22085ddc-bc10-11ed-9a44-7ef9696e0000
+    ERROR:     timestamp: 1710275909816069
+    ERROR:     current_state: Failed state
+    ERROR:     requested_state: In-progress state
 
 .. note::
    ``time_received: 0`` should be ignored as the ``time_received`` is not set
