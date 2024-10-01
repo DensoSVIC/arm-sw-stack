@@ -32,7 +32,7 @@ DOMU1_BRIDGES ?= "vif = ['script=vif-openvswitch,bridge=ovsbr0,vifname=domu1.ext
 DOMU1_NUMBER_OF_CPUS ?= "2"
 # Refer to https://xenbits.xen.org/docs/4.17-testing/man/xl.cfg.5.html#CPU-Allocation
 # about how to set the CPULIST.
-DOMU1_VCPU_PIN ?= "cpus = [\"1-2\"]"
+DOMU1_VCPU_PIN ?= "cpus = [\"1\", \"2\"]"
 DOMU1_MPAM ?= "mpam = [\"slc=0xc0\"]"
 DOMU1_SVE ?= "sve = \"${DOMU_SVE_SETTING}\""
 DOMU1_PCI_PASSTHROUGH ?= "pci = [\"${DOMU1_PCI_ID}\"]"
