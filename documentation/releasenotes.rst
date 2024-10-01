@@ -74,10 +74,10 @@ The versions of the main components used in the Reference Software Stack:
     - `FVP download (arm64 host) <https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Automotive%20FVPs/FVP_RD_1_AE_11.27_20_Linux64_armv8l.tgz>`__
       `FVP download (x86 host) <https://developer.arm.com/-/media/Arm%20Developer%20Community/Downloads/OSS/FVP/Automotive%20FVPs/FVP_RD_1_AE_11.27_20_Linux64.tgz>`__
   * - RSE (Trusted Firmware-M)
-    - 53aa78efef274b9e46e63b429078ae1863609728 (based on master branch post v1.8.1)
+    - 53aa78efef274b9e46e63b429078ae1863609728 (based on main branch post v1.8.1)
     - `Trusted Firmware-M repository <https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git/+/53aa78efef274b9e46e63b429078ae1863609728>`__
   * - SCP-firmware
-    - cc4c9e017348d92054f74026ee1beb081403c168 (based on master branch post v2.13.0)
+    - cc4c9e017348d92054f74026ee1beb081403c168 (based on main branch post v2.13.0)
     - `SCP-Firmware repository <https://git.gitlab.arm.com/firmware/SCP-firmware/-/tree/cc4c9e017348d92054f74026ee1beb081403c168>`__
   * - Trusted Firmware-A
     - ff0bd5f9bb2ba2f31fb9cec96df917747af9e92d lts-v2.8.6
