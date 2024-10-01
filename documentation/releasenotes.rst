@@ -8,9 +8,9 @@
 Release Notes
 #############
 
-**********
-Unreleased
-**********
+****
+v1.1
+****
 
 New Features
 ============
