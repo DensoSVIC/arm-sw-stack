@@ -144,10 +144,12 @@ latex_elements = {
 # there are variables that refer to it later.
 yocto_version = "scarthgap"
 
+env_gitlab_ci = os.environ.get('CI_COMMIT_REF_NAME', 'main')
+
+env_rtd = os.environ.get('READTHEDOCS_GIT_IDENTIFIER', env_gitlab_ci)
+
 arm_auto_solutions_version = os.environ.get(
-    'READTHEDOCS_GIT_IDENTIFIER',
-    os.environ.get(
-        'CI_COMMIT_REF_NAME', 'main'))
+    'RTD_ENV_ARM_AUTO_SOLUTIONS_VERSION', env_rtd)
 
 # The following variables are mostly used for pdf generation
 version = arm_auto_solutions_version
