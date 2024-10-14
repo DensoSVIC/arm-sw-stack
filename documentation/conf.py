@@ -90,6 +90,15 @@ html_theme_options = {
 
 # -- Extension configuration -------------------------------------------------
 
+# -- Options for googleanalytics --------------------------------------------
+
+# Enable Google Analytics if an ID is defined
+googleanalytics_id = os.environ.get("GOOGLE_ANALYTICS_ID")
+
+if googleanalytics_id:
+    extensions.append('sphinxcontrib.googleanalytics')
+    googleanalytics_enabled = True
+
 # -- Options for autosectionlabel --------------------------------------------
 
 # Prefix each section label with the name of the document it is in

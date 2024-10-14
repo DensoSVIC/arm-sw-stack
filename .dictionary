@@ -318,6 +318,7 @@ gitsm
 gntalloc
 gntdev
 gnueabi
+googleanalytics
 googletest
 gpio
 gpios
@@ -683,6 +684,7 @@ reportsettings
 requireinclude
 requirenotfound
 resm
+resolvedissues
 rightmark
 rmem
 romfw
@@ -752,6 +754,7 @@ SOLIBSDEV
 sourceparams
 SOURCEPATH
 spdx
+sphinxcontrib
 sphinxheadercomma
 spinlock
 SPINLOCKS

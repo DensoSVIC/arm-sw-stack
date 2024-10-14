@@ -8,6 +8,45 @@
 Release Notes
 #############
 
+******
+v1.1.1
+******
+
+New Features
+============
+
+No new features were introduced.
+
+Changed
+=======
+
+Bug fixes as listed in :ref:`releasenotes_resolvedissues`.
+
+.. _releasenotes_limitations:
+
+Limitations
+===========
+
+ * Same as `v1.1 Limitations`_.
+
+Resolved and Known Issues
+=========================
+
+.. _releasenotes_resolvedissues:
+
+Resolved Issues
+---------------
+
+  * Added Google Analytics extension for Read The Docs to replace removed
+    integrated Google Analytics support.
+
+.. _releasenotes_knownissues:
+
+Known Issues
+------------
+
+  * Same as `v1.1 Known Issues`_.
+
 ****
 v1.1
 ****
@@ -172,7 +211,7 @@ Third-party Yocto layers used to build the Reference Software Stack:
     branch: scarthgap
     revision: ca27724b44031fe11b631ee50eb1e20f7a60009d
 
-.. _releasenotes_limitations:
+.. _v1.1 Limitations:
 
 Limitations
 ===========
@@ -193,7 +232,7 @@ Resolved Issues
   * Fixed a bug in TF-M where the RSE communication request from AP was not
     handled by RSE.
 
-.. _releasenotes_knownissues:
+.. _v1.1 Known Issues:
 
 Known Issues
 ------------
