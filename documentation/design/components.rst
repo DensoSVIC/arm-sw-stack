@@ -92,7 +92,7 @@ Runtime and the relevant components.
 .. note::
   The release version of TF-M specified in this documentation can be different
   from that integrated in Kronos implementation.
-  
+
   Refer to the TF-M documentation plaintext in `Trusted Firmware-M repository`_
   if any mismatch occurs.
 
@@ -254,6 +254,8 @@ Patches for the SCP are included at
 * Add Primary Compute and Safety Island shared SRAM to Interconnect memory
   region map.
 * Add a shutdown handler to be able to shutdown the FVP.
+* Add the fix for vulnerability
+  `CVE-2024-9413 <https://www.cve.org/CVERecord?id=CVE-2024-9413>`__.
 
 ***************
 Primary Compute

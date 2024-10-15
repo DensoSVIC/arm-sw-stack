@@ -20,9 +20,9 @@ No new features were introduced.
 Changed
 =======
 
-* Change diagram showing RSE-oriented boot flow to show that RSE BL1_2 
+* Change diagram showing RSE-oriented boot flow to show that RSE BL1_2
   is executed from SRAM.
-* Change diagram showing RSE-oriented boot flow to show that BL2 releases 
+* Change diagram showing RSE-oriented boot flow to show that BL2 releases
   SCP RAMFW from reset.
 
 Bug fixes as listed in :ref:`releasenotes_resolvedissues`.
@@ -45,6 +45,7 @@ Resolved Issues
   * Added Google Analytics extension for Read The Docs to replace removed
     integrated Google Analytics support.
   * Fixed incorrect ``if()`` conditional statements in RSE drivers.
+  * Backported a fix for SCP vulnerability `CVE-2024-9413 <https://www.cve.org/CVERecord?id=CVE-2024-9413>`__.
 
 .. _releasenotes_knownissues:
 
