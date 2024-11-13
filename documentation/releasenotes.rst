@@ -20,6 +20,11 @@ No new features were introduced.
 Changed
 =======
 
+* Change diagram showing RSE-oriented boot flow to show that RSE BL1_2 
+  is executed from SRAM.
+* Change diagram showing RSE-oriented boot flow to show that BL2 releases 
+  SCP RAMFW from reset.
+
 Bug fixes as listed in :ref:`releasenotes_resolvedissues`.
 
 .. _releasenotes_limitations:
