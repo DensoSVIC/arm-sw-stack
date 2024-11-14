@@ -1,0 +1,57 @@
+From bfc994b80c4856e419761777ea54abfd0c1cf820 Mon Sep 17 00:00:00 2001
+From: David Hu <david.hu2@arm.com>
+Date: Wed, 13 Nov 2024 22:52:22 +0000
+Subject: [PATCH] RSS: Fix coding issues
+
+Fix incorrect if() conditional statements in RSS drivers.
+
+Upstream-Status: Inappropriate [Kronos specific]
+Signed-off-by: David Hu <david.hu2@arm.com>
+---
+ .../ext/target/arm/rss/common/native_drivers/ni710ae_drv.c    | 4 ++--
+ .../ext/target/arm/rss/common/native_drivers/tower_nci_drv.c  | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.c b/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.c
+index ef4b88e27..274223cd2 100644
+--- a/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.c
++++ b/platform/ext/target/arm/rss/common/native_drivers/ni710ae_drv.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2023, Arm Limited. All rights reserved.
++ * Copyright (c) 2023-2024, Arm Limited. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -270,7 +270,7 @@ enum ni710ae_err_t ni710ae_apu_initialize_region(
+         }
+     }
+ 
+-    if (region_enable = NCI_REGION_ENABLE) {
++    if (region_enable == NCI_REGION_ENABLE) {
+         err = ni710ae_apu_set_region_enable(dev, region);
+         if (err != NI710AE_SUCCESS) {
+             return 1;
+diff --git a/platform/ext/target/arm/rss/common/native_drivers/tower_nci_drv.c b/platform/ext/target/arm/rss/common/native_drivers/tower_nci_drv.c
+index 86dc8972e..25fab4b9d 100644
+--- a/platform/ext/target/arm/rss/common/native_drivers/tower_nci_drv.c
++++ b/platform/ext/target/arm/rss/common/native_drivers/tower_nci_drv.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2023, Arm Limited. All rights reserved.
++ * Copyright (c) 2023-2024, Arm Limited. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -408,7 +408,7 @@ enum tower_nci_err_t tower_nci_discovery(
+     if (TOWER_NCI_TYPE_IS_DOMAIN(cfg_node->type)) {
+         child_count = ((tower_nci_domain_cfg_hdr *)(hdr_base))->child_node_info;
+     } else if (TOWER_NCI_TYPE_IS_COMPONENT(cfg_node->type)) {
+-        if (cfg_node == TOWER_NCI_PMU) {
++        if (cfg_node->type == TOWER_NCI_PMU) {
+             /* Skipping because PMU doesn't have children */
+             return TOWER_NCI_SUCCESS;
+         }
+-- 
+2.34.1
+

@@ -77,6 +77,7 @@ SRC_URI += "\
     file://0064-Fix-Increased-variable-sizes-for-assets-and-crypt-bu.patch \
     file://0065-SPM-Record-schedule-attempt-in-PendSV-if-scheduler-i.patch \
     file://0066-rss-kronos-Enable-signed-capsule.patch \
+    file://0067-RSS-Fix-coding-issues.patch \
 "
 # cSpell:enable
 

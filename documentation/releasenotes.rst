@@ -44,6 +44,7 @@ Resolved Issues
 
   * Added Google Analytics extension for Read The Docs to replace removed
     integrated Google Analytics support.
+  * Fixed incorrect ``if()`` conditional statements in RSE drivers.
 
 .. _releasenotes_knownissues:
 
