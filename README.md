@@ -22,7 +22,7 @@ sector, including:
   [Arm SystemReady IR][2].
 
 The remaining software in the Primary Compute subsystem, based on the
-[Cassini][3] distribution, is available in two main architectures:
+[EWAOL][3] distribution, is available in two main architectures:
 baremetal and virtualization.
 
 ## Arm Automotive Solutions Documentation
@@ -50,5 +50,5 @@ Arm is a registered trademark of Arm Limited (or its subsidiaries or affiliates)
 
 [1]: https://trustedfirmware-m.readthedocs.io/en/tf-mv2.1.0/platform/arm/rse/readme.html
 [2]: https://www.arm.com/architecture/system-architectures/systemready-certification-program/ir
-[3]: https://cassini.readthedocs.io/en/scarthgap-dev/
+[3]: https://gitlab.com/soafee/ewaol/meta-ewaol/-/tree/ewaol-2.0.0
 [4]: https://www.sphinx-doc.org/
