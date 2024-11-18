@@ -50,6 +50,7 @@ Resolved Issues
   integrated Google Analytics support.
 * Fixed incorrect ``if()`` conditional statements in RSE drivers.
 * Backported a fix for SCP vulnerability `CVE-2024-9413 <https://www.cve.org/CVERecord?id=CVE-2024-9413>`__.
+* Fixed MHUv3 communication documentation mistake in Secure Services section.
 
 .. _releasenotes_knownissues:
 

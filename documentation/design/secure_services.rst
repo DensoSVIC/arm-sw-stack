@@ -287,10 +287,10 @@ RSE communication
 =================
 
 The RSE communication protocol is designed to be a lightweight serialization of
-the ``psa_call()`` API through a combination of in-band MHUv3
+the ``psa_call()`` API through a combination of out-band MHUv3
 transport and parameter-passing through Shared Memory.
 
-To call an RSE service, the client must send a message in-band over the MHUv3
+To call an RSE service, the client must send a message out-band over the MHUv3
 sender link to RSE and wait for a reply message on the MHUv3 receiver.
 The messages are defined as packed C structures, which are serialized in
 byte-order over the MHUv3 links.
