@@ -32,7 +32,11 @@ Bug fixes as listed in :ref:`releasenotes_resolvedissues`.
 Limitations
 ===========
 
- * Same as `v1.1 Limitations`_.
+* The platform lacks hardware support for partitioning DRAM into secure and non-secure regions.
+  Consequently, a non-secure endpoint running on the AP can access the DRAM region allocated
+  for AP BL32, compromising its security.
+
+* Same as `v1.1 Limitations`_.
 
 Resolved and Known Issues
 =========================
@@ -42,17 +46,17 @@ Resolved and Known Issues
 Resolved Issues
 ---------------
 
-  * Added Google Analytics extension for Read The Docs to replace removed
-    integrated Google Analytics support.
-  * Fixed incorrect ``if()`` conditional statements in RSE drivers.
-  * Backported a fix for SCP vulnerability `CVE-2024-9413 <https://www.cve.org/CVERecord?id=CVE-2024-9413>`__.
+* Added Google Analytics extension for Read The Docs to replace removed
+  integrated Google Analytics support.
+* Fixed incorrect ``if()`` conditional statements in RSE drivers.
+* Backported a fix for SCP vulnerability `CVE-2024-9413 <https://www.cve.org/CVERecord?id=CVE-2024-9413>`__.
 
 .. _releasenotes_knownissues:
 
 Known Issues
 ------------
 
-  * Same as `v1.1 Known Issues`_.
+* Same as `v1.1 Known Issues`_.
 
 ****
 v1.1
