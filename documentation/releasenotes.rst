@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2025 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -24,6 +24,8 @@ Changed
   is executed from SRAM.
 * Change diagram showing RSE-oriented boot flow to show that BL2 releases
   SCP RAMFW from reset.
+* Change diagram showing Yocto layer dependencies to show that 
+  meta-efi-secure-boot depends on meta-perl.
 
 Bug fixes as listed in :ref:`releasenotes_resolvedissues`.
 
