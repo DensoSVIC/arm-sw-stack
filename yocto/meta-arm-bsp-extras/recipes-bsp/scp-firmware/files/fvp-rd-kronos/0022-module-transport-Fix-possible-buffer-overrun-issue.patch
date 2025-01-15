@@ -1,0 +1,623 @@
+From df7110879d3b95e61edd8a74ce7903b9ad5608f0 Mon Sep 17 00:00:00 2001
+From: Matthew Wellings <matthew.wellings@arm.com>
+Date: Wed, 27 Nov 2024 15:25:11 +0000
+Subject: [PATCH] module/transport: Fix possible buffer overrun issue.
+
+This change fixes a recently identified integer overflow issue with the
+bound check expression ((offset + size) > channel_ctx->max_payload_size)
+which under the condition ((size + offset) > SIZE_MAX) could potentially
+be exploited to write to the buffer with a larger but invalid length
+(size), or a large but invalid offset. The change makes use of the
+fwk_str_is_in_boundry function which uses a re-arranged expression to
+avoid this integer overflow.
+
+NOTE: At present there is no known code path in the firmware that leads
+to this situation.
+
+Also adds associated unit tests.
+
+Signed-off-by: Matthew Wellings <matthew.wellings@arm.com>
+Upstream-Status: Backport [https://gitlab.arm.com/firmware/SCP-firmware/-/commit/a73d200bed61f76ee0f1ffb4a1110584a578e04d]
+Signed-off-by: Debbie Martin <Debbie.Martin@arm.com>
+---
+ module/transport/src/mod_transport.c          |   2 +-
+ module/transport/test/CMakeLists.txt          |  32 +++
+ module/transport/test/fwk_module_idx.h        |  36 +++
+ .../transport/test/mod_transport_unit_test.c  | 219 ++++++++++++++++++
+ unit_test/CMakeLists.txt                      |   1 +
+ unit_test/unity_mocks/mocks/Mockfwk_string.c  | 185 +++++++++++++++
+ unit_test/unity_mocks/mocks/Mockfwk_string.h  |  18 ++
+ 7 files changed, 492 insertions(+), 1 deletion(-)
+ create mode 100644 module/transport/test/CMakeLists.txt
+ create mode 100644 module/transport/test/fwk_module_idx.h
+ create mode 100644 module/transport/test/mod_transport_unit_test.c
+
+diff --git a/module/transport/src/mod_transport.c b/module/transport/src/mod_transport.c
+index 733548cdb..ee5262b93 100644
+--- a/module/transport/src/mod_transport.c
++++ b/module/transport/src/mod_transport.c
+@@ -194,7 +194,7 @@ static int transport_write_payload(
+         MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_NONE);
+ 
+     if ((payload == NULL) ||
+-        ((offset + size) > channel_ctx->max_payload_size)) {
++        !fwk_str_is_in_boundry(channel_ctx->max_payload_size, offset, size)) {
+         fwk_unexpected();
+         return FWK_E_PARAM;
+     }
+diff --git a/module/transport/test/CMakeLists.txt b/module/transport/test/CMakeLists.txt
+new file mode 100644
+index 000000000..c37fb458f
+--- /dev/null
++++ b/module/transport/test/CMakeLists.txt
+@@ -0,0 +1,32 @@
++#
++# Arm SCP/MCP Software
++# Copyright (c) 2022-2024, Arm Limited and Contributors. All rights reserved.
++#
++# SPDX-License-Identifier: BSD-3-Clause
++#
++
++set(TEST_SRC mod_transport)
++set(TEST_FILE mod_transport)
++
++set(UNIT_TEST_TARGET mod_${TEST_MODULE}_unit_test)
++
++set(MODULE_SRC ${MODULE_ROOT}/${TEST_MODULE}/src)
++set(MODULE_INC ${MODULE_ROOT}/${TEST_MODULE}/include)
++set(MODULE_UT_SRC ${CMAKE_CURRENT_LIST_DIR})
++set(MODULE_UT_INC ${CMAKE_CURRENT_LIST_DIR})
++set(MODULE_UT_MOCK_SRC ${CMAKE_CURRENT_LIST_DIR}/mocks)
++
++list(APPEND MOCK_REPLACEMENTS fwk_core)
++list(APPEND MOCK_REPLACEMENTS fwk_module)
++list(APPEND MOCK_REPLACEMENTS fwk_id)
++list(APPEND MOCK_REPLACEMENTS fwk_notification)
++
++include(${SCP_ROOT}/unit_test/module_common.cmake)
++
++target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC
++    "BUILD_HAS_SCMI_NOTIFICATION")
++
++target_compile_definitions(${UNIT_TEST_TARGET} PRIVATE BUILD_HAS_MOD_TRANSPORT)
++target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC BUILD_HAS_INBAND_MSG_SUPPORT)
++target_compile_definitions(${UNIT_TEST_TARGET} PUBLIC BUILD_HAS_OUTBAND_MSG_SUPPORT)
++target_compile_definitions(${UNIT_TEST_TARGET} PRIVATE BUILD_HAS_NOTIFICATION)
+diff --git a/module/transport/test/fwk_module_idx.h b/module/transport/test/fwk_module_idx.h
+new file mode 100644
+index 000000000..d2f3bd9a9
+--- /dev/null
++++ b/module/transport/test/fwk_module_idx.h
+@@ -0,0 +1,36 @@
++/*
++ * Arm SCP/MCP Software
++ * Copyright (c) 2022-2024, Arm Limited and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++#ifndef TEST_FWK_MODULE_MODULE_IDX_H
++#define TEST_FWK_MODULE_MODULE_IDX_H
++
++#include <fwk_id.h>
++
++enum fwk_module_idx {
++    FWK_MODULE_IDX_SCMI,
++    FWK_MODULE_IDX_SCMI_PERF,
++    FWK_MODULE_IDX_DVFS,
++    FWK_MODULE_IDX_TIMER,
++    FWK_MODULE_IDX_PERF_CONTROLLER,
++    FWK_MODULE_IDX_PERF_PLUGIN,
++    FWK_MODULE_IDX_TRANSPORT,
++    FWK_MODULE_IDX_COUNT,
++};
++
++static const fwk_id_t fwk_module_id_scmi =
++    FWK_ID_MODULE_INIT(FWK_MODULE_IDX_SCMI);
++
++static const fwk_id_t fwk_module_id_scmi_perf =
++    FWK_ID_MODULE_INIT(FWK_MODULE_IDX_SCMI_PERF);
++
++static const fwk_id_t fwk_module_id_dvfs =
++    FWK_ID_MODULE_INIT(FWK_MODULE_IDX_DVFS);
++
++static const fwk_id_t fwk_module_id_timer =
++    FWK_ID_MODULE_INIT(FWK_MODULE_IDX_TIMER);
++
++#endif /* TEST_FWK_MODULE_MODULE_IDX_H */
+diff --git a/module/transport/test/mod_transport_unit_test.c b/module/transport/test/mod_transport_unit_test.c
+new file mode 100644
+index 000000000..7c6a44ad7
+--- /dev/null
++++ b/module/transport/test/mod_transport_unit_test.c
+@@ -0,0 +1,219 @@
++/*
++ * Arm SCP/MCP Software
++ * Copyright (c) 2022-2024, Arm Limited and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++#include "scp_unity.h"
++#include "unity.h"
++
++#ifdef TEST_ON_TARGET
++#    include <fwk_id.h>
++#    include <fwk_module.h>
++#else
++
++#    include <Mockfwk_id.h>
++#    include <Mockfwk_module.h>
++#endif
++
++#include <internal/transport.h>
++
++#include <mod_transport.h>
++
++#include <fwk_element.h>
++#include <fwk_macros.h>
++
++#include UNIT_TEST_SRC
++
++#define BUILD_HAS_BASE_PROTOCOL
++
++#define FAKE_MODULE_ID    0x5
++#define TEST_MAILBOX_SIZE 100
++
++enum fake_services {
++    FAKE_SERVICE_IDX_PSCI,
++    FAKE_SERVICE_IDX_OSPM,
++    FAKE_SERVICE_IDX_COUNT,
++};
++
++void setUp(void)
++{
++    fwk_id_t service_id =
++        FWK_ID_ELEMENT_INIT(FAKE_MODULE_ID, FAKE_SERVICE_IDX_OSPM);
++
++    transport_init(service_id, FAKE_SERVICE_IDX_COUNT, NULL);
++
++    fwk_id_get_element_idx_ExpectAndReturn(service_id, FAKE_SERVICE_IDX_OSPM);
++
++    static const struct mod_transport_channel_config config = {
++        .transport_type = MOD_TRANSPORT_CHANNEL_TRANSPORT_TYPE_IN_BAND,
++        .channel_type = MOD_TRANSPORT_CHANNEL_TYPE_REQUESTER,
++        .in_band_mailbox_size = TEST_MAILBOX_SIZE
++    };
++    transport_channel_init(service_id, 0, &config);
++}
++
++void tearDown(void)
++{
++}
++
++void test_transport_payload_size(void)
++{
++    struct transport_channel_ctx *channel_ctx =
++        &transport_ctx.channel_ctx_table[FAKE_SERVICE_IDX_OSPM];
++
++    TEST_ASSERT_EQUAL(
++        TEST_MAILBOX_SIZE - sizeof(struct mod_transport_buffer),
++        channel_ctx->max_payload_size);
++}
++
++void test_transport_write_payload_invalid_param_null_payload(void)
++{
++    int status;
++
++    fwk_id_t service_id =
++        FWK_ID_ELEMENT_INIT(FAKE_MODULE_ID, FAKE_SERVICE_IDX_OSPM);
++    char string[] = "Test";
++
++    /* We are not going through a proper message cycle so let's set the lock */
++    struct transport_channel_ctx *channel_ctx =
++        &transport_ctx.channel_ctx_table[FAKE_SERVICE_IDX_OSPM];
++    channel_ctx->locked = true;
++
++    fwk_id_get_element_idx_ExpectAndReturn(service_id, FAKE_SERVICE_IDX_OSPM);
++
++    status = transport_write_payload(service_id, 0, NULL, sizeof(string));
++    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
++}
++
++void test_transport_write_payload_invalid_param_large_size(void)
++{
++    int status;
++    size_t offset = 50;
++
++    fwk_id_t service_id =
++        FWK_ID_ELEMENT_INIT(FAKE_MODULE_ID, FAKE_SERVICE_IDX_OSPM);
++    char payload[] = "Test";
++
++    /* We are not going through a proper message cycle so let's set the lock */
++    struct transport_channel_ctx *channel_ctx =
++        &transport_ctx.channel_ctx_table[FAKE_SERVICE_IDX_OSPM];
++    channel_ctx->locked = true;
++
++    fwk_id_get_element_idx_ExpectAndReturn(service_id, FAKE_SERVICE_IDX_OSPM);
++
++    status = transport_write_payload(
++        service_id, offset, payload, SIZE_MAX - (offset / 2));
++    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
++}
++
++void test_transport_write_payload_invalid_param_large_offset(void)
++{
++    int status;
++
++    fwk_id_t service_id =
++        FWK_ID_ELEMENT_INIT(FAKE_MODULE_ID, FAKE_SERVICE_IDX_OSPM);
++    char payload[] = "Test";
++
++    /* We are not going through a proper message cycle so let's set the lock */
++    struct transport_channel_ctx *channel_ctx =
++        &transport_ctx.channel_ctx_table[FAKE_SERVICE_IDX_OSPM];
++    channel_ctx->locked = true;
++
++    fwk_id_get_element_idx_ExpectAndReturn(service_id, FAKE_SERVICE_IDX_OSPM);
++
++    status = transport_write_payload(
++        service_id, SIZE_MAX - 2, payload, sizeof(payload));
++    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
++}
++
++void test_transport_write_payload_invalid_param_offset_beyond_end(void)
++{
++    int status;
++
++    fwk_id_t service_id =
++        FWK_ID_ELEMENT_INIT(FAKE_MODULE_ID, FAKE_SERVICE_IDX_OSPM);
++    char payload[] = "Test";
++
++    /* We are not going through a proper message cycle so let's set the lock */
++    struct transport_channel_ctx *channel_ctx =
++        &transport_ctx.channel_ctx_table[FAKE_SERVICE_IDX_OSPM];
++    channel_ctx->locked = true;
++
++    fwk_id_get_element_idx_ExpectAndReturn(service_id, FAKE_SERVICE_IDX_OSPM);
++
++    status = transport_write_payload(
++        service_id, channel_ctx->max_payload_size, payload, 1);
++    TEST_ASSERT_EQUAL(FWK_E_PARAM, status);
++}
++
++void test_transport_write_payload_valid_param_start(void)
++{
++    int status;
++
++    fwk_id_t service_id =
++        FWK_ID_ELEMENT_INIT(FAKE_MODULE_ID, FAKE_SERVICE_IDX_OSPM);
++    char payload[] = "Test";
++
++    /* We are not going through a proper message cycle so let's set the lock */
++    struct transport_channel_ctx *channel_ctx =
++        &transport_ctx.channel_ctx_table[FAKE_SERVICE_IDX_OSPM];
++    channel_ctx->locked = true;
++
++    fwk_id_get_element_idx_ExpectAndReturn(service_id, FAKE_SERVICE_IDX_OSPM);
++
++    status = transport_write_payload(service_id, 0, payload, sizeof(payload));
++    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
++
++    uint8_t *dst_payload = (uint8_t *)channel_ctx->out->payload;
++    for (size_t i = 0; i < sizeof(payload); i++) {
++        TEST_ASSERT_EQUAL(payload[i], dst_payload[i]);
++    }
++}
++
++void test_transport_write_payload_valid_param_end(void)
++{
++    int status;
++
++    fwk_id_t service_id =
++        FWK_ID_ELEMENT_INIT(FAKE_MODULE_ID, FAKE_SERVICE_IDX_OSPM);
++    char payload[] = "T";
++
++    /* We are not going through a proper message cycle so let's set the lock */
++    struct transport_channel_ctx *channel_ctx =
++        &transport_ctx.channel_ctx_table[FAKE_SERVICE_IDX_OSPM];
++    channel_ctx->locked = true;
++
++    fwk_id_get_element_idx_ExpectAndReturn(service_id, FAKE_SERVICE_IDX_OSPM);
++
++    status = transport_write_payload(
++        service_id, channel_ctx->max_payload_size - 1, payload, 1);
++    TEST_ASSERT_EQUAL(FWK_SUCCESS, status);
++
++    uint8_t *dst_payload = (uint8_t *)channel_ctx->out->payload;
++    TEST_ASSERT_EQUAL(
++        payload[0], dst_payload[channel_ctx->max_payload_size - 1]);
++}
++
++int scmi_test_main(void)
++{
++    UNITY_BEGIN();
++
++    RUN_TEST(test_transport_payload_size);
++    RUN_TEST(test_transport_write_payload_invalid_param_null_payload);
++    RUN_TEST(test_transport_write_payload_invalid_param_large_size);
++    RUN_TEST(test_transport_write_payload_invalid_param_large_offset);
++    RUN_TEST(test_transport_write_payload_invalid_param_offset_beyond_end);
++    RUN_TEST(test_transport_write_payload_valid_param_start);
++    RUN_TEST(test_transport_write_payload_valid_param_end);
++
++    return UNITY_END();
++}
++
++#if !defined(TEST_ON_TARGET)
++int main(void)
++{
++    return scmi_test_main();
++}
++#endif
+diff --git a/unit_test/CMakeLists.txt b/unit_test/CMakeLists.txt
+index f77d71929..900d66716 100644
+--- a/unit_test/CMakeLists.txt
++++ b/unit_test/CMakeLists.txt
+@@ -119,6 +119,7 @@ list(APPEND UNIT_MODULE smcf)
+ list(APPEND UNIT_MODULE thermal_mgmt)
+ list(APPEND UNIT_MODULE traffic_cop)
+ list(APPEND UNIT_MODULE scmi_system_power)
++list(APPEND UNIT_MODULE transport)
+ list(APPEND UNIT_MODULE xr77128)
+ 
+ list(LENGTH UNIT_MODULE UNIT_TEST_MAX)
+diff --git a/unit_test/unity_mocks/mocks/Mockfwk_string.c b/unit_test/unity_mocks/mocks/Mockfwk_string.c
+index 3a2d20c08..d920aa80e 100644
+--- a/unit_test/unity_mocks/mocks/Mockfwk_string.c
++++ b/unit_test/unity_mocks/mocks/Mockfwk_string.c
+@@ -5,12 +5,16 @@
+ #include "cmock.h"
+ #include "Mockfwk_string.h"
+ 
++static const char* CMockString_buffer_size = "buffer_size";
+ static const char* CMockString_ch = "ch";
+ static const char* CMockString_count = "count";
++static const char* CMockString_data_size = "data_size";
+ static const char* CMockString_dest = "dest";
++static const char* CMockString_fwk_str_is_in_boundry = "fwk_str_is_in_boundry";
+ static const char* CMockString_fwk_str_memcpy = "fwk_str_memcpy";
+ static const char* CMockString_fwk_str_memset = "fwk_str_memset";
+ static const char* CMockString_fwk_str_strncpy = "fwk_str_strncpy";
++static const char* CMockString_offset = "offset";
+ static const char* CMockString_src = "src";
+ 
+ typedef struct _CMOCK_fwk_str_memset_CALL_INSTANCE
+@@ -64,6 +68,20 @@ typedef struct _CMOCK_fwk_str_strncpy_CALL_INSTANCE
+ 
+ } CMOCK_fwk_str_strncpy_CALL_INSTANCE;
+ 
++typedef struct _CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE
++{
++  UNITY_LINE_TYPE LineNumber;
++  char ExpectAnyArgsBool;
++  bool ReturnVal;
++  size_t Expected_buffer_size;
++  size_t Expected_offset;
++  size_t Expected_data_size;
++  char IgnoreArg_buffer_size;
++  char IgnoreArg_offset;
++  char IgnoreArg_data_size;
++
++} CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE;
++
+ static struct Mockfwk_stringInstance
+ {
+   char fwk_str_memset_IgnoreBool;
+@@ -81,6 +99,12 @@ static struct Mockfwk_stringInstance
+   CMOCK_fwk_str_strncpy_CALLBACK fwk_str_strncpy_CallbackFunctionPointer;
+   int fwk_str_strncpy_CallbackCalls;
+   CMOCK_MEM_INDEX_TYPE fwk_str_strncpy_CallInstance;
++  char fwk_str_is_in_boundry_IgnoreBool;
++  bool fwk_str_is_in_boundry_FinalReturn;
++  char fwk_str_is_in_boundry_CallbackBool;
++  CMOCK_fwk_str_is_in_boundry_CALLBACK fwk_str_is_in_boundry_CallbackFunctionPointer;
++  int fwk_str_is_in_boundry_CallbackCalls;
++  CMOCK_MEM_INDEX_TYPE fwk_str_is_in_boundry_CallInstance;
+ } Mock;
+ 
+ extern jmp_buf AbortFrame;
+@@ -128,6 +152,19 @@ void Mockfwk_string_Verify(void)
+     call_instance = CMOCK_GUTS_NONE;
+     (void)call_instance;
+   }
++  call_instance = Mock.fwk_str_is_in_boundry_CallInstance;
++  if (Mock.fwk_str_is_in_boundry_IgnoreBool)
++    call_instance = CMOCK_GUTS_NONE;
++  if (CMOCK_GUTS_NONE != call_instance)
++  {
++    UNITY_SET_DETAIL(CMockString_fwk_str_is_in_boundry);
++    UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
++  }
++  if (Mock.fwk_str_is_in_boundry_CallbackFunctionPointer != NULL)
++  {
++    call_instance = CMOCK_GUTS_NONE;
++    (void)call_instance;
++  }
+ }
+ 
+ void Mockfwk_string_Init(void)
+@@ -614,3 +651,151 @@ void fwk_str_strncpy_CMockIgnoreArg_count(UNITY_LINE_TYPE cmock_line)
+   cmock_call_instance->IgnoreArg_count = 1;
+ }
+ 
++bool fwk_str_is_in_boundry(size_t buffer_size, size_t offset, size_t data_size)
++{
++  UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
++  CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE* cmock_call_instance;
++  UNITY_SET_DETAIL(CMockString_fwk_str_is_in_boundry);
++  cmock_call_instance = (CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.fwk_str_is_in_boundry_CallInstance);
++  Mock.fwk_str_is_in_boundry_CallInstance = CMock_Guts_MemNext(Mock.fwk_str_is_in_boundry_CallInstance);
++  if (Mock.fwk_str_is_in_boundry_IgnoreBool)
++  {
++    UNITY_CLR_DETAILS();
++    if (cmock_call_instance == NULL)
++      return Mock.fwk_str_is_in_boundry_FinalReturn;
++    Mock.fwk_str_is_in_boundry_FinalReturn = cmock_call_instance->ReturnVal;
++    return cmock_call_instance->ReturnVal;
++  }
++  if (!Mock.fwk_str_is_in_boundry_CallbackBool &&
++      Mock.fwk_str_is_in_boundry_CallbackFunctionPointer != NULL)
++  {
++    bool cmock_cb_ret = Mock.fwk_str_is_in_boundry_CallbackFunctionPointer(buffer_size, offset, data_size, Mock.fwk_str_is_in_boundry_CallbackCalls++);
++    UNITY_CLR_DETAILS();
++    return cmock_cb_ret;
++  }
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringCalledMore);
++  cmock_line = cmock_call_instance->LineNumber;
++  if (!cmock_call_instance->ExpectAnyArgsBool)
++  {
++  if (!cmock_call_instance->IgnoreArg_buffer_size)
++  {
++    UNITY_SET_DETAILS(CMockString_fwk_str_is_in_boundry,CMockString_buffer_size);
++    UNITY_TEST_ASSERT_EQUAL_MEMORY((void*)(&cmock_call_instance->Expected_buffer_size), (void*)(&buffer_size), sizeof(size_t), cmock_line, CMockStringMismatch);
++  }
++  if (!cmock_call_instance->IgnoreArg_offset)
++  {
++    UNITY_SET_DETAILS(CMockString_fwk_str_is_in_boundry,CMockString_offset);
++    UNITY_TEST_ASSERT_EQUAL_MEMORY((void*)(&cmock_call_instance->Expected_offset), (void*)(&offset), sizeof(size_t), cmock_line, CMockStringMismatch);
++  }
++  if (!cmock_call_instance->IgnoreArg_data_size)
++  {
++    UNITY_SET_DETAILS(CMockString_fwk_str_is_in_boundry,CMockString_data_size);
++    UNITY_TEST_ASSERT_EQUAL_MEMORY((void*)(&cmock_call_instance->Expected_data_size), (void*)(&data_size), sizeof(size_t), cmock_line, CMockStringMismatch);
++  }
++  }
++  if (Mock.fwk_str_is_in_boundry_CallbackFunctionPointer != NULL)
++  {
++    cmock_call_instance->ReturnVal = Mock.fwk_str_is_in_boundry_CallbackFunctionPointer(buffer_size, offset, data_size, Mock.fwk_str_is_in_boundry_CallbackCalls++);
++  }
++  UNITY_CLR_DETAILS();
++  return cmock_call_instance->ReturnVal;
++}
++
++void CMockExpectParameters_fwk_str_is_in_boundry(CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE* cmock_call_instance, size_t buffer_size, size_t offset, size_t data_size);
++void CMockExpectParameters_fwk_str_is_in_boundry(CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE* cmock_call_instance, size_t buffer_size, size_t offset, size_t data_size)
++{
++  memcpy((void*)(&cmock_call_instance->Expected_buffer_size), (void*)(&buffer_size),
++         sizeof(size_t[sizeof(buffer_size) == sizeof(size_t) ? 1 : -1])); /* add size_t to :treat_as_array if this causes an error */
++  cmock_call_instance->IgnoreArg_buffer_size = 0;
++  memcpy((void*)(&cmock_call_instance->Expected_offset), (void*)(&offset),
++         sizeof(size_t[sizeof(offset) == sizeof(size_t) ? 1 : -1])); /* add size_t to :treat_as_array if this causes an error */
++  cmock_call_instance->IgnoreArg_offset = 0;
++  memcpy((void*)(&cmock_call_instance->Expected_data_size), (void*)(&data_size),
++         sizeof(size_t[sizeof(data_size) == sizeof(size_t) ? 1 : -1])); /* add size_t to :treat_as_array if this causes an error */
++  cmock_call_instance->IgnoreArg_data_size = 0;
++}
++
++void fwk_str_is_in_boundry_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, bool cmock_to_return)
++{
++  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE));
++  CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE* cmock_call_instance = (CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
++  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
++  Mock.fwk_str_is_in_boundry_CallInstance = CMock_Guts_MemChain(Mock.fwk_str_is_in_boundry_CallInstance, cmock_guts_index);
++  Mock.fwk_str_is_in_boundry_IgnoreBool = (char)0;
++  cmock_call_instance->LineNumber = cmock_line;
++  cmock_call_instance->ExpectAnyArgsBool = (char)0;
++  cmock_call_instance->ReturnVal = cmock_to_return;
++  Mock.fwk_str_is_in_boundry_IgnoreBool = (char)1;
++}
++
++void fwk_str_is_in_boundry_CMockStopIgnore(void)
++{
++  if(Mock.fwk_str_is_in_boundry_IgnoreBool)
++    Mock.fwk_str_is_in_boundry_CallInstance = CMock_Guts_MemNext(Mock.fwk_str_is_in_boundry_CallInstance);
++  Mock.fwk_str_is_in_boundry_IgnoreBool = (char)0;
++}
++
++void fwk_str_is_in_boundry_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, bool cmock_to_return)
++{
++  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE));
++  CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE* cmock_call_instance = (CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
++  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
++  Mock.fwk_str_is_in_boundry_CallInstance = CMock_Guts_MemChain(Mock.fwk_str_is_in_boundry_CallInstance, cmock_guts_index);
++  Mock.fwk_str_is_in_boundry_IgnoreBool = (char)0;
++  cmock_call_instance->LineNumber = cmock_line;
++  cmock_call_instance->ExpectAnyArgsBool = (char)0;
++  cmock_call_instance->ReturnVal = cmock_to_return;
++  cmock_call_instance->ExpectAnyArgsBool = (char)1;
++}
++
++void fwk_str_is_in_boundry_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, size_t buffer_size, size_t offset, size_t data_size, bool cmock_to_return)
++{
++  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE));
++  CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE* cmock_call_instance = (CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
++  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
++  Mock.fwk_str_is_in_boundry_CallInstance = CMock_Guts_MemChain(Mock.fwk_str_is_in_boundry_CallInstance, cmock_guts_index);
++  Mock.fwk_str_is_in_boundry_IgnoreBool = (char)0;
++  cmock_call_instance->LineNumber = cmock_line;
++  cmock_call_instance->ExpectAnyArgsBool = (char)0;
++  CMockExpectParameters_fwk_str_is_in_boundry(cmock_call_instance, buffer_size, offset, data_size);
++  cmock_call_instance->ReturnVal = cmock_to_return;
++}
++
++void fwk_str_is_in_boundry_AddCallback(CMOCK_fwk_str_is_in_boundry_CALLBACK Callback)
++{
++  Mock.fwk_str_is_in_boundry_IgnoreBool = (char)0;
++  Mock.fwk_str_is_in_boundry_CallbackBool = (char)1;
++  Mock.fwk_str_is_in_boundry_CallbackFunctionPointer = Callback;
++}
++
++void fwk_str_is_in_boundry_Stub(CMOCK_fwk_str_is_in_boundry_CALLBACK Callback)
++{
++  Mock.fwk_str_is_in_boundry_IgnoreBool = (char)0;
++  Mock.fwk_str_is_in_boundry_CallbackBool = (char)0;
++  Mock.fwk_str_is_in_boundry_CallbackFunctionPointer = Callback;
++}
++
++void fwk_str_is_in_boundry_CMockIgnoreArg_buffer_size(UNITY_LINE_TYPE cmock_line)
++{
++  CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE* cmock_call_instance = (CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.fwk_str_is_in_boundry_CallInstance));
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
++  cmock_call_instance->IgnoreArg_buffer_size = 1;
++}
++
++void fwk_str_is_in_boundry_CMockIgnoreArg_offset(UNITY_LINE_TYPE cmock_line)
++{
++  CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE* cmock_call_instance = (CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.fwk_str_is_in_boundry_CallInstance));
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
++  cmock_call_instance->IgnoreArg_offset = 1;
++}
++
++void fwk_str_is_in_boundry_CMockIgnoreArg_data_size(UNITY_LINE_TYPE cmock_line)
++{
++  CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE* cmock_call_instance = (CMOCK_fwk_str_is_in_boundry_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.fwk_str_is_in_boundry_CallInstance));
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
++  cmock_call_instance->IgnoreArg_data_size = 1;
++}
++
+diff --git a/unit_test/unity_mocks/mocks/Mockfwk_string.h b/unit_test/unity_mocks/mocks/Mockfwk_string.h
+index a8a6c8ca6..08e406484 100644
+--- a/unit_test/unity_mocks/mocks/Mockfwk_string.h
++++ b/unit_test/unity_mocks/mocks/Mockfwk_string.h
+@@ -94,6 +94,24 @@ void fwk_str_strncpy_CMockIgnoreArg_dest(UNITY_LINE_TYPE cmock_line);
+ void fwk_str_strncpy_CMockIgnoreArg_src(UNITY_LINE_TYPE cmock_line);
+ #define fwk_str_strncpy_IgnoreArg_count() fwk_str_strncpy_CMockIgnoreArg_count(__LINE__)
+ void fwk_str_strncpy_CMockIgnoreArg_count(UNITY_LINE_TYPE cmock_line);
++#define fwk_str_is_in_boundry_IgnoreAndReturn(cmock_retval) fwk_str_is_in_boundry_CMockIgnoreAndReturn(__LINE__, cmock_retval)
++void fwk_str_is_in_boundry_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, bool cmock_to_return);
++#define fwk_str_is_in_boundry_StopIgnore() fwk_str_is_in_boundry_CMockStopIgnore()
++void fwk_str_is_in_boundry_CMockStopIgnore(void);
++#define fwk_str_is_in_boundry_ExpectAnyArgsAndReturn(cmock_retval) fwk_str_is_in_boundry_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
++void fwk_str_is_in_boundry_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, bool cmock_to_return);
++#define fwk_str_is_in_boundry_ExpectAndReturn(buffer_size, offset, data_size, cmock_retval) fwk_str_is_in_boundry_CMockExpectAndReturn(__LINE__, buffer_size, offset, data_size, cmock_retval)
++void fwk_str_is_in_boundry_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, size_t buffer_size, size_t offset, size_t data_size, bool cmock_to_return);
++typedef bool (* CMOCK_fwk_str_is_in_boundry_CALLBACK)(size_t buffer_size, size_t offset, size_t data_size, int cmock_num_calls);
++void fwk_str_is_in_boundry_AddCallback(CMOCK_fwk_str_is_in_boundry_CALLBACK Callback);
++void fwk_str_is_in_boundry_Stub(CMOCK_fwk_str_is_in_boundry_CALLBACK Callback);
++#define fwk_str_is_in_boundry_StubWithCallback fwk_str_is_in_boundry_Stub
++#define fwk_str_is_in_boundry_IgnoreArg_buffer_size() fwk_str_is_in_boundry_CMockIgnoreArg_buffer_size(__LINE__)
++void fwk_str_is_in_boundry_CMockIgnoreArg_buffer_size(UNITY_LINE_TYPE cmock_line);
++#define fwk_str_is_in_boundry_IgnoreArg_offset() fwk_str_is_in_boundry_CMockIgnoreArg_offset(__LINE__)
++void fwk_str_is_in_boundry_CMockIgnoreArg_offset(UNITY_LINE_TYPE cmock_line);
++#define fwk_str_is_in_boundry_IgnoreArg_data_size() fwk_str_is_in_boundry_CMockIgnoreArg_data_size(__LINE__)
++void fwk_str_is_in_boundry_CMockIgnoreArg_data_size(UNITY_LINE_TYPE cmock_line);
+ 
+ #if defined(__GNUC__) && !defined(__ICC) && !defined(__TMS470__)
+ #if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 6 || (__GNUC_MINOR__ == 6 && __GNUC_PATCHLEVEL__ > 0)))
+-- 
+2.25.1
+

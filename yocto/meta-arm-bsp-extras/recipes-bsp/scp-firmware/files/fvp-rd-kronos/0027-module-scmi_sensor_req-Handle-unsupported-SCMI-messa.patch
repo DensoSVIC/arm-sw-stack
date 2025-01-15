@@ -1,0 +1,130 @@
+From a04d6b4fc3392133a4ff8ecfab2cf5a8c4fe121b Mon Sep 17 00:00:00 2001
+From: Wei-Chia Su <Wei-Chia.Su@arm.com>
+Date: Tue, 12 Nov 2024 12:08:39 +0000
+Subject: [PATCH] module/scmi_sensor_req: Handle unsupported SCMI message
+
+In the SCMI handler table, unsupported messages are indicated by leaving the
+corresponding function pointer unassigned. However, there is no validation
+check on entry which leads to potential null pointer dereference while handling
+message. This change explicitly initializes the handler table and validates
+entry in runtime to determine whether a given message is supported.
+
+Signed-off-by: Wei-Chia Su <Wei-Chia.Su@arm.com>
+Upstream-Status: Backport [https://gitlab.arm.com/firmware/SCP-firmware/-/commit/b27f2da48aaf08ff7ac119a5f619cad1a1503050]
+Signed-off-by: Debbie Martin <Debbie.Martin@arm.com>
+---
+ .../include/mod_scmi_sensor_req.h             |  8 +++-
+ .../scmi_sensor_req/src/mod_scmi_sensor_req.c | 47 +++++++++++++++----
+ 2 files changed, 44 insertions(+), 11 deletions(-)
+
+diff --git a/module/scmi_sensor_req/include/mod_scmi_sensor_req.h b/module/scmi_sensor_req/include/mod_scmi_sensor_req.h
+index a1ed6732..a01add9d 100644
+--- a/module/scmi_sensor_req/include/mod_scmi_sensor_req.h
++++ b/module/scmi_sensor_req/include/mod_scmi_sensor_req.h
+@@ -1,6 +1,6 @@
+ /*
+  * Arm SCP/MCP Software
+- * Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
++ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -69,6 +69,12 @@ struct scmi_sensor_req_config {
+     enum scmi_sensor_req_async_flag async_flag;
+ };
+ 
++/*!
++ * \brief Message handler table per protocol.
++ */
++typedef int (
++    *scmi_sensor_req_handler_table_t)(fwk_id_t, const uint32_t *, size_t);
++
+ /*!
+  * \}
+  */
+diff --git a/module/scmi_sensor_req/src/mod_scmi_sensor_req.c b/module/scmi_sensor_req/src/mod_scmi_sensor_req.c
+index e83c567e..4d203e17 100644
+--- a/module/scmi_sensor_req/src/mod_scmi_sensor_req.c
++++ b/module/scmi_sensor_req/src/mod_scmi_sensor_req.c
+@@ -1,6 +1,6 @@
+ /*
+  * Arm SCP/MCP Software
+- * Copyright (c) 2022, Arm Limited and Contributors. All rights reserved.
++ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -57,18 +57,33 @@ static int scmi_sensor_req_ret_reading_handler(
+     fwk_id_t service_id,
+     const uint32_t *payload,
+     size_t payload_size);
+-
++static int scmi_sensor_req_message_not_supported(
++    fwk_id_t service_id,
++    const uint32_t *payload,
++    size_t payload_size);
+ /*
+  * Internal variables.
+  */
+ static struct scmi_sensor_req_context scmi_sensor_req_ctx;
+ 
+-static int (*handler_table[MOD_SCMI_SENSOR_COMMAND_COUNT])(
+-    fwk_id_t,
+-    const uint32_t *,
+-    size_t) = {
+-    [MOD_SCMI_SENSOR_READING_GET] = scmi_sensor_req_ret_reading_handler
+-};
++static scmi_sensor_req_handler_table_t
++    handler_table[MOD_SCMI_SENSOR_COMMAND_COUNT] = {
++        [MOD_SCMI_PROTOCOL_VERSION] = scmi_sensor_req_message_not_supported,
++        [MOD_SCMI_PROTOCOL_ATTRIBUTES] = scmi_sensor_req_message_not_supported,
++        [MOD_SCMI_PROTOCOL_MESSAGE_ATTRIBUTES] =
++            scmi_sensor_req_message_not_supported,
++        [MOD_SCMI_SENSOR_DESCRIPTION_GET] =
++            scmi_sensor_req_message_not_supported,
++        [MOD_SCMI_SENSOR_TRIP_POINT_NOTIFY] =
++            scmi_sensor_req_message_not_supported,
++        [MOD_SCMI_SENSOR_TRIP_POINT_CONFIG] =
++            scmi_sensor_req_message_not_supported,
++        [MOD_SCMI_SENSOR_READING_GET] = scmi_sensor_req_ret_reading_handler
++#ifdef BUILD_HAS_SCMI_SENSOR_V2
++            [MOD_SCMI_SENSOR_AXIS_DESCRIPTION_GET] =
++                scmi_sensor_req_message_not_supported,
++#endif
++    };
+ 
+ static unsigned int payload_size_table[MOD_SCMI_SENSOR_COMMAND_COUNT] = {
+     [MOD_SCMI_SENSOR_READING_GET] =
+@@ -151,6 +166,14 @@ static int scmi_sensor_req_ret_reading_handler(
+     return status;
+ }
+ 
++static int scmi_sensor_req_message_not_supported(
++    fwk_id_t service_id,
++    const uint32_t *payload,
++    size_t payload_size)
++{
++    return FWK_E_SUPPORT;
++}
++
+ /*
+  * Sensor Requester APIs implementations
+  */
+@@ -241,8 +264,12 @@ static int scmi_sensor_req_message_handler(
+         return FWK_E_PARAM;
+     }
+ 
+-    handler_status =
+-        handler_table[message_id](service_id, payload, payload_size);
++    if (handler_table[message_id] == NULL) {
++        handler_status = FWK_E_SUPPORT;
++    } else {
++        handler_status =
++            handler_table[message_id](service_id, payload, payload_size);
++    }
+ 
+     resp_status =
+         scmi_sensor_req_ctx.scmi_api->response_message_handler(service_id);
+-- 
+2.43.0
+

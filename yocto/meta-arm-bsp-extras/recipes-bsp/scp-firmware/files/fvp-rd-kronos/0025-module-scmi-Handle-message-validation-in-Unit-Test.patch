@@ -1,0 +1,616 @@
+From f1368922dc305762e3ba4521d21f6f8bcabc8bb1 Mon Sep 17 00:00:00 2001
+From: Wei-Chia Su <Wei-Chia.Su@arm.com>
+Date: Tue, 19 Nov 2024 19:10:01 +0000
+Subject: [PATCH] module/scmi: Handle message validation in Unit Test
+
+This patch updates unit tests to cover the change of validation in message
+handler.
+
+Signed-off-by: Wei-Chia Su <Wei-Chia.Su@arm.com>
+Upstream-Status: Backport [https://gitlab.arm.com/firmware/SCP-firmware/-/commit/b5bcacb6e047a23a9c2364512fa5efb5325396e0]
+Signed-off-by: Debbie Martin <Debbie.Martin@arm.com>
+---
+ module/scmi/test/mocks/Mockmod_scmi_extra.c | 295 ++++++++++++++++++++
+ module/scmi/test/mocks/Mockmod_scmi_extra.h |  30 ++
+ module/scmi/test/mod_scmi_extra.h           |  31 +-
+ module/scmi/test/mod_scmi_unit_test.c       | 113 +++++++-
+ 4 files changed, 467 insertions(+), 2 deletions(-)
+
+diff --git a/module/scmi/test/mocks/Mockmod_scmi_extra.c b/module/scmi/test/mocks/Mockmod_scmi_extra.c
+index 96b6e8fc..52530835 100644
+--- a/module/scmi/test/mocks/Mockmod_scmi_extra.c
++++ b/module/scmi/test/mocks/Mockmod_scmi_extra.c
+@@ -9,6 +9,8 @@ static const char* CMockString_agent_count = "agent_count";
+ static const char* CMockString_agent_id = "agent_id";
+ static const char* CMockString_agent_type = "agent_type";
+ static const char* CMockString_channel_id = "channel_id";
++static const char* CMockString_command_count = "command_count";
++static const char* CMockString_handler_table = "handler_table";
+ static const char* CMockString_message_header = "message_header";
+ static const char* CMockString_message_id = "message_id";
+ static const char* CMockString_mod_scmi_from_protocol_get_agent_count = "mod_scmi_from_protocol_get_agent_count";
+@@ -18,6 +20,7 @@ static const char* CMockString_mod_scmi_from_protocol_get_max_payload_size = "mo
+ static const char* CMockString_mod_scmi_from_protocol_notify = "mod_scmi_from_protocol_notify";
+ static const char* CMockString_mod_scmi_from_protocol_respond = "mod_scmi_from_protocol_respond";
+ static const char* CMockString_mod_scmi_from_protocol_response_message_handler = "mod_scmi_from_protocol_response_message_handler";
++static const char* CMockString_mod_scmi_from_protocol_scmi_message_validation = "mod_scmi_from_protocol_scmi_message_validation";
+ static const char* CMockString_mod_scmi_from_protocol_send_message = "mod_scmi_from_protocol_send_message";
+ static const char* CMockString_mod_scmi_from_protocol_write_payload = "mod_scmi_from_protocol_write_payload";
+ static const char* CMockString_mod_scmi_to_transport_api_get_max_payload_size = "mod_scmi_to_transport_api_get_max_payload_size";
+@@ -31,6 +34,7 @@ static const char* CMockString_mod_scmi_to_transport_api_write_payload = "mod_sc
+ static const char* CMockString_offset = "offset";
+ static const char* CMockString_payload = "payload";
+ static const char* CMockString_payload_size = "payload_size";
++static const char* CMockString_payload_size_table = "payload_size_table";
+ static const char* CMockString_protocol_id = "protocol_id";
+ static const char* CMockString_request_ack_by_interrupt = "request_ack_by_interrupt";
+ static const char* CMockString_scmi_message_id = "scmi_message_id";
+@@ -268,6 +272,33 @@ typedef struct _CMOCK_mod_scmi_from_protocol_respond_CALL_INSTANCE
+ 
+ } CMOCK_mod_scmi_from_protocol_respond_CALL_INSTANCE;
+ 
++typedef struct _CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE
++{
++  UNITY_LINE_TYPE LineNumber;
++  char ExpectAnyArgsBool;
++  int ReturnVal;
++  uint8_t Expected_protocol_id;
++  fwk_id_t Expected_service_id;
++  const uint32_t* Expected_payload;
++  size_t Expected_payload_size;
++  size_t Expected_message_id;
++  const size_t* Expected_payload_size_table;
++  size_t Expected_command_count;
++  const handler_table_t* Expected_handler_table;
++  int Expected_payload_Depth;
++  int Expected_payload_size_table_Depth;
++  int Expected_handler_table_Depth;
++  char IgnoreArg_protocol_id;
++  char IgnoreArg_service_id;
++  char IgnoreArg_payload;
++  char IgnoreArg_payload_size;
++  char IgnoreArg_message_id;
++  char IgnoreArg_payload_size_table;
++  char IgnoreArg_command_count;
++  char IgnoreArg_handler_table;
++
++} CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE;
++
+ typedef struct _CMOCK_mod_scmi_from_protocol_notify_CALL_INSTANCE
+ {
+   UNITY_LINE_TYPE LineNumber;
+@@ -457,6 +488,12 @@ static struct Mockmod_scmi_extraInstance
+   CMOCK_mod_scmi_from_protocol_respond_CALLBACK mod_scmi_from_protocol_respond_CallbackFunctionPointer;
+   int mod_scmi_from_protocol_respond_CallbackCalls;
+   CMOCK_MEM_INDEX_TYPE mod_scmi_from_protocol_respond_CallInstance;
++  char mod_scmi_from_protocol_scmi_message_validation_IgnoreBool;
++  int mod_scmi_from_protocol_scmi_message_validation_FinalReturn;
++  char mod_scmi_from_protocol_scmi_message_validation_CallbackBool;
++  CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALLBACK mod_scmi_from_protocol_scmi_message_validation_CallbackFunctionPointer;
++  int mod_scmi_from_protocol_scmi_message_validation_CallbackCalls;
++  CMOCK_MEM_INDEX_TYPE mod_scmi_from_protocol_scmi_message_validation_CallInstance;
+   char mod_scmi_from_protocol_notify_IgnoreBool;
+   char mod_scmi_from_protocol_notify_CallbackBool;
+   CMOCK_mod_scmi_from_protocol_notify_CALLBACK mod_scmi_from_protocol_notify_CallbackFunctionPointer;
+@@ -682,6 +719,19 @@ void Mockmod_scmi_extra_Verify(void)
+     call_instance = CMOCK_GUTS_NONE;
+     (void)call_instance;
+   }
++  call_instance = Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance;
++  if (Mock.mod_scmi_from_protocol_scmi_message_validation_IgnoreBool)
++    call_instance = CMOCK_GUTS_NONE;
++  if (CMOCK_GUTS_NONE != call_instance)
++  {
++    UNITY_SET_DETAIL(CMockString_mod_scmi_from_protocol_scmi_message_validation);
++    UNITY_TEST_FAIL(cmock_line, CMockStringCalledLess);
++  }
++  if (Mock.mod_scmi_from_protocol_scmi_message_validation_CallbackFunctionPointer != NULL)
++  {
++    call_instance = CMOCK_GUTS_NONE;
++    (void)call_instance;
++  }
+   call_instance = Mock.mod_scmi_from_protocol_notify_CallInstance;
+   if (Mock.mod_scmi_from_protocol_notify_IgnoreBool)
+     call_instance = CMOCK_GUTS_NONE;
+@@ -3117,6 +3167,251 @@ void mod_scmi_from_protocol_respond_CMockIgnoreArg_size(UNITY_LINE_TYPE cmock_li
+   cmock_call_instance->IgnoreArg_size = 1;
+ }
+ 
++int mod_scmi_from_protocol_scmi_message_validation(uint8_t protocol_id, fwk_id_t service_id, const uint32_t* payload, size_t payload_size, size_t message_id, const size_t* payload_size_table, size_t command_count, const handler_table_t* handler_table)
++{
++  UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
++  CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE* cmock_call_instance;
++  UNITY_SET_DETAIL(CMockString_mod_scmi_from_protocol_scmi_message_validation);
++  cmock_call_instance = (CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance);
++  Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance = CMock_Guts_MemNext(Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance);
++  if (Mock.mod_scmi_from_protocol_scmi_message_validation_IgnoreBool)
++  {
++    UNITY_CLR_DETAILS();
++    if (cmock_call_instance == NULL)
++      return Mock.mod_scmi_from_protocol_scmi_message_validation_FinalReturn;
++    Mock.mod_scmi_from_protocol_scmi_message_validation_FinalReturn = cmock_call_instance->ReturnVal;
++    return cmock_call_instance->ReturnVal;
++  }
++  if (!Mock.mod_scmi_from_protocol_scmi_message_validation_CallbackBool &&
++      Mock.mod_scmi_from_protocol_scmi_message_validation_CallbackFunctionPointer != NULL)
++  {
++    int cmock_cb_ret = Mock.mod_scmi_from_protocol_scmi_message_validation_CallbackFunctionPointer(protocol_id, service_id, payload, payload_size, message_id, payload_size_table, command_count, handler_table, Mock.mod_scmi_from_protocol_scmi_message_validation_CallbackCalls++);
++    UNITY_CLR_DETAILS();
++    return cmock_cb_ret;
++  }
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringCalledMore);
++  cmock_line = cmock_call_instance->LineNumber;
++  if (!cmock_call_instance->ExpectAnyArgsBool)
++  {
++  if (!cmock_call_instance->IgnoreArg_protocol_id)
++  {
++    UNITY_SET_DETAILS(CMockString_mod_scmi_from_protocol_scmi_message_validation,CMockString_protocol_id);
++    UNITY_TEST_ASSERT_EQUAL_HEX8(cmock_call_instance->Expected_protocol_id, protocol_id, cmock_line, CMockStringMismatch);
++  }
++  if (!cmock_call_instance->IgnoreArg_service_id)
++  {
++    UNITY_SET_DETAILS(CMockString_mod_scmi_from_protocol_scmi_message_validation,CMockString_service_id);
++    UNITY_TEST_ASSERT_EQUAL_MEMORY((void*)(&cmock_call_instance->Expected_service_id), (void*)(&service_id), sizeof(fwk_id_t), cmock_line, CMockStringMismatch);
++  }
++  if (!cmock_call_instance->IgnoreArg_payload)
++  {
++    UNITY_SET_DETAILS(CMockString_mod_scmi_from_protocol_scmi_message_validation,CMockString_payload);
++    if (cmock_call_instance->Expected_payload == NULL)
++      { UNITY_TEST_ASSERT_NULL(payload, cmock_line, CMockStringExpNULL); }
++    else
++      { UNITY_TEST_ASSERT_EQUAL_HEX32_ARRAY(cmock_call_instance->Expected_payload, payload, cmock_call_instance->Expected_payload_Depth, cmock_line, CMockStringMismatch); }
++  }
++  if (!cmock_call_instance->IgnoreArg_payload_size)
++  {
++    UNITY_SET_DETAILS(CMockString_mod_scmi_from_protocol_scmi_message_validation,CMockString_payload_size);
++    UNITY_TEST_ASSERT_EQUAL_MEMORY((void*)(&cmock_call_instance->Expected_payload_size), (void*)(&payload_size), sizeof(size_t), cmock_line, CMockStringMismatch);
++  }
++  if (!cmock_call_instance->IgnoreArg_message_id)
++  {
++    UNITY_SET_DETAILS(CMockString_mod_scmi_from_protocol_scmi_message_validation,CMockString_message_id);
++    UNITY_TEST_ASSERT_EQUAL_MEMORY((void*)(&cmock_call_instance->Expected_message_id), (void*)(&message_id), sizeof(size_t), cmock_line, CMockStringMismatch);
++  }
++  if (!cmock_call_instance->IgnoreArg_payload_size_table)
++  {
++    UNITY_SET_DETAILS(CMockString_mod_scmi_from_protocol_scmi_message_validation,CMockString_payload_size_table);
++    if (cmock_call_instance->Expected_payload_size_table == NULL)
++      { UNITY_TEST_ASSERT_NULL(payload_size_table, cmock_line, CMockStringExpNULL); }
++    else
++      { UNITY_TEST_ASSERT_EQUAL_MEMORY_ARRAY((void*)(cmock_call_instance->Expected_payload_size_table), (void*)(payload_size_table), sizeof(const size_t), cmock_call_instance->Expected_payload_size_table_Depth, cmock_line, CMockStringMismatch); }
++  }
++  if (!cmock_call_instance->IgnoreArg_command_count)
++  {
++    UNITY_SET_DETAILS(CMockString_mod_scmi_from_protocol_scmi_message_validation,CMockString_command_count);
++    UNITY_TEST_ASSERT_EQUAL_MEMORY((void*)(&cmock_call_instance->Expected_command_count), (void*)(&command_count), sizeof(size_t), cmock_line, CMockStringMismatch);
++  }
++  if (!cmock_call_instance->IgnoreArg_handler_table)
++  {
++    UNITY_SET_DETAILS(CMockString_mod_scmi_from_protocol_scmi_message_validation,CMockString_handler_table);
++    if (cmock_call_instance->Expected_handler_table == NULL)
++      { UNITY_TEST_ASSERT_NULL(handler_table, cmock_line, CMockStringExpNULL); }
++    else
++      { UNITY_TEST_ASSERT_EQUAL_MEMORY_ARRAY((void*)(cmock_call_instance->Expected_handler_table), (void*)(handler_table), sizeof(const handler_table_t), cmock_call_instance->Expected_handler_table_Depth, cmock_line, CMockStringMismatch); }
++  }
++  }
++  if (Mock.mod_scmi_from_protocol_scmi_message_validation_CallbackFunctionPointer != NULL)
++  {
++    cmock_call_instance->ReturnVal = Mock.mod_scmi_from_protocol_scmi_message_validation_CallbackFunctionPointer(protocol_id, service_id, payload, payload_size, message_id, payload_size_table, command_count, handler_table, Mock.mod_scmi_from_protocol_scmi_message_validation_CallbackCalls++);
++  }
++  UNITY_CLR_DETAILS();
++  return cmock_call_instance->ReturnVal;
++}
++
++void CMockExpectParameters_mod_scmi_from_protocol_scmi_message_validation(CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE* cmock_call_instance, uint8_t protocol_id, fwk_id_t service_id, const uint32_t* payload, int payload_Depth, size_t payload_size, size_t message_id, const size_t* payload_size_table, int payload_size_table_Depth, size_t command_count, const handler_table_t* handler_table, int handler_table_Depth);
++void CMockExpectParameters_mod_scmi_from_protocol_scmi_message_validation(CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE* cmock_call_instance, uint8_t protocol_id, fwk_id_t service_id, const uint32_t* payload, int payload_Depth, size_t payload_size, size_t message_id, const size_t* payload_size_table, int payload_size_table_Depth, size_t command_count, const handler_table_t* handler_table, int handler_table_Depth)
++{
++  cmock_call_instance->Expected_protocol_id = protocol_id;
++  cmock_call_instance->IgnoreArg_protocol_id = 0;
++  memcpy((void*)(&cmock_call_instance->Expected_service_id), (void*)(&service_id),
++         sizeof(fwk_id_t[sizeof(service_id) == sizeof(fwk_id_t) ? 1 : -1])); /* add fwk_id_t to :treat_as_array if this causes an error */
++  cmock_call_instance->IgnoreArg_service_id = 0;
++  cmock_call_instance->Expected_payload = payload;
++  cmock_call_instance->Expected_payload_Depth = payload_Depth;
++  cmock_call_instance->IgnoreArg_payload = 0;
++  memcpy((void*)(&cmock_call_instance->Expected_payload_size), (void*)(&payload_size),
++         sizeof(size_t[sizeof(payload_size) == sizeof(size_t) ? 1 : -1])); /* add size_t to :treat_as_array if this causes an error */
++  cmock_call_instance->IgnoreArg_payload_size = 0;
++  memcpy((void*)(&cmock_call_instance->Expected_message_id), (void*)(&message_id),
++         sizeof(size_t[sizeof(message_id) == sizeof(size_t) ? 1 : -1])); /* add size_t to :treat_as_array if this causes an error */
++  cmock_call_instance->IgnoreArg_message_id = 0;
++  cmock_call_instance->Expected_payload_size_table = payload_size_table;
++  cmock_call_instance->Expected_payload_size_table_Depth = payload_size_table_Depth;
++  cmock_call_instance->IgnoreArg_payload_size_table = 0;
++  memcpy((void*)(&cmock_call_instance->Expected_command_count), (void*)(&command_count),
++         sizeof(size_t[sizeof(command_count) == sizeof(size_t) ? 1 : -1])); /* add size_t to :treat_as_array if this causes an error */
++  cmock_call_instance->IgnoreArg_command_count = 0;
++  cmock_call_instance->Expected_handler_table = handler_table;
++  cmock_call_instance->Expected_handler_table_Depth = handler_table_Depth;
++  cmock_call_instance->IgnoreArg_handler_table = 0;
++}
++
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
++{
++  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE));
++  CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE* cmock_call_instance = (CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
++  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
++  Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance = CMock_Guts_MemChain(Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance, cmock_guts_index);
++  Mock.mod_scmi_from_protocol_scmi_message_validation_IgnoreBool = (char)0;
++  cmock_call_instance->LineNumber = cmock_line;
++  cmock_call_instance->ExpectAnyArgsBool = (char)0;
++  cmock_call_instance->ReturnVal = cmock_to_return;
++  Mock.mod_scmi_from_protocol_scmi_message_validation_IgnoreBool = (char)1;
++}
++
++void mod_scmi_from_protocol_scmi_message_validation_CMockStopIgnore(void)
++{
++  if(Mock.mod_scmi_from_protocol_scmi_message_validation_IgnoreBool)
++    Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance = CMock_Guts_MemNext(Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance);
++  Mock.mod_scmi_from_protocol_scmi_message_validation_IgnoreBool = (char)0;
++}
++
++void mod_scmi_from_protocol_scmi_message_validation_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
++{
++  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE));
++  CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE* cmock_call_instance = (CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
++  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
++  Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance = CMock_Guts_MemChain(Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance, cmock_guts_index);
++  Mock.mod_scmi_from_protocol_scmi_message_validation_IgnoreBool = (char)0;
++  cmock_call_instance->LineNumber = cmock_line;
++  cmock_call_instance->ExpectAnyArgsBool = (char)0;
++  cmock_call_instance->ReturnVal = cmock_to_return;
++  cmock_call_instance->ExpectAnyArgsBool = (char)1;
++}
++
++void mod_scmi_from_protocol_scmi_message_validation_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, uint8_t protocol_id, fwk_id_t service_id, const uint32_t* payload, size_t payload_size, size_t message_id, const size_t* payload_size_table, size_t command_count, const handler_table_t* handler_table, int cmock_to_return)
++{
++  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE));
++  CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE* cmock_call_instance = (CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
++  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
++  Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance = CMock_Guts_MemChain(Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance, cmock_guts_index);
++  Mock.mod_scmi_from_protocol_scmi_message_validation_IgnoreBool = (char)0;
++  cmock_call_instance->LineNumber = cmock_line;
++  cmock_call_instance->ExpectAnyArgsBool = (char)0;
++  CMockExpectParameters_mod_scmi_from_protocol_scmi_message_validation(cmock_call_instance, protocol_id, service_id, payload, payload_size, payload_size, message_id, payload_size_table, 1, command_count, handler_table, 1);
++  cmock_call_instance->ReturnVal = cmock_to_return;
++}
++
++void mod_scmi_from_protocol_scmi_message_validation_AddCallback(CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALLBACK Callback)
++{
++  Mock.mod_scmi_from_protocol_scmi_message_validation_IgnoreBool = (char)0;
++  Mock.mod_scmi_from_protocol_scmi_message_validation_CallbackBool = (char)1;
++  Mock.mod_scmi_from_protocol_scmi_message_validation_CallbackFunctionPointer = Callback;
++}
++
++void mod_scmi_from_protocol_scmi_message_validation_Stub(CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALLBACK Callback)
++{
++  Mock.mod_scmi_from_protocol_scmi_message_validation_IgnoreBool = (char)0;
++  Mock.mod_scmi_from_protocol_scmi_message_validation_CallbackBool = (char)0;
++  Mock.mod_scmi_from_protocol_scmi_message_validation_CallbackFunctionPointer = Callback;
++}
++
++void mod_scmi_from_protocol_scmi_message_validation_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, uint8_t protocol_id, fwk_id_t service_id, const uint32_t* payload, int payload_Depth, size_t payload_size, size_t message_id, const size_t* payload_size_table, int payload_size_table_Depth, size_t command_count, const handler_table_t* handler_table, int handler_table_Depth, int cmock_to_return)
++{
++  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE));
++  CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE* cmock_call_instance = (CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
++  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
++  Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance = CMock_Guts_MemChain(Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance, cmock_guts_index);
++  Mock.mod_scmi_from_protocol_scmi_message_validation_IgnoreBool = (char)0;
++  cmock_call_instance->LineNumber = cmock_line;
++  cmock_call_instance->ExpectAnyArgsBool = (char)0;
++  CMockExpectParameters_mod_scmi_from_protocol_scmi_message_validation(cmock_call_instance, protocol_id, service_id, payload, payload_Depth, payload_size, message_id, payload_size_table, payload_size_table_Depth, command_count, handler_table, handler_table_Depth);
++  cmock_call_instance->ReturnVal = cmock_to_return;
++}
++
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_protocol_id(UNITY_LINE_TYPE cmock_line)
++{
++  CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE* cmock_call_instance = (CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance));
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
++  cmock_call_instance->IgnoreArg_protocol_id = 1;
++}
++
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_service_id(UNITY_LINE_TYPE cmock_line)
++{
++  CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE* cmock_call_instance = (CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance));
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
++  cmock_call_instance->IgnoreArg_service_id = 1;
++}
++
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_payload(UNITY_LINE_TYPE cmock_line)
++{
++  CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE* cmock_call_instance = (CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance));
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
++  cmock_call_instance->IgnoreArg_payload = 1;
++}
++
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_payload_size(UNITY_LINE_TYPE cmock_line)
++{
++  CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE* cmock_call_instance = (CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance));
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
++  cmock_call_instance->IgnoreArg_payload_size = 1;
++}
++
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_message_id(UNITY_LINE_TYPE cmock_line)
++{
++  CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE* cmock_call_instance = (CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance));
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
++  cmock_call_instance->IgnoreArg_message_id = 1;
++}
++
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_payload_size_table(UNITY_LINE_TYPE cmock_line)
++{
++  CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE* cmock_call_instance = (CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance));
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
++  cmock_call_instance->IgnoreArg_payload_size_table = 1;
++}
++
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_command_count(UNITY_LINE_TYPE cmock_line)
++{
++  CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE* cmock_call_instance = (CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance));
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
++  cmock_call_instance->IgnoreArg_command_count = 1;
++}
++
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_handler_table(UNITY_LINE_TYPE cmock_line)
++{
++  CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE* cmock_call_instance = (CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALL_INSTANCE*)CMock_Guts_GetAddressFor(CMock_Guts_MemEndOfChain(Mock.mod_scmi_from_protocol_scmi_message_validation_CallInstance));
++  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringIgnPreExp);
++  cmock_call_instance->IgnoreArg_handler_table = 1;
++}
++
+ void mod_scmi_from_protocol_notify(fwk_id_t service_id, int protocol_id, int message_id, const void* payload, size_t size)
+ {
+   UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
+diff --git a/module/scmi/test/mocks/Mockmod_scmi_extra.h b/module/scmi/test/mocks/Mockmod_scmi_extra.h
+index c019a589..00242dcf 100644
+--- a/module/scmi/test/mocks/Mockmod_scmi_extra.h
++++ b/module/scmi/test/mocks/Mockmod_scmi_extra.h
+@@ -326,6 +326,36 @@ void mod_scmi_from_protocol_respond_CMockIgnoreArg_service_id(UNITY_LINE_TYPE cm
+ void mod_scmi_from_protocol_respond_CMockIgnoreArg_payload(UNITY_LINE_TYPE cmock_line);
+ #define mod_scmi_from_protocol_respond_IgnoreArg_size() mod_scmi_from_protocol_respond_CMockIgnoreArg_size(__LINE__)
+ void mod_scmi_from_protocol_respond_CMockIgnoreArg_size(UNITY_LINE_TYPE cmock_line);
++#define mod_scmi_from_protocol_scmi_message_validation_IgnoreAndReturn(cmock_retval) mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreAndReturn(__LINE__, cmock_retval)
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
++#define mod_scmi_from_protocol_scmi_message_validation_StopIgnore() mod_scmi_from_protocol_scmi_message_validation_CMockStopIgnore()
++void mod_scmi_from_protocol_scmi_message_validation_CMockStopIgnore(void);
++#define mod_scmi_from_protocol_scmi_message_validation_ExpectAnyArgsAndReturn(cmock_retval) mod_scmi_from_protocol_scmi_message_validation_CMockExpectAnyArgsAndReturn(__LINE__, cmock_retval)
++void mod_scmi_from_protocol_scmi_message_validation_CMockExpectAnyArgsAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
++#define mod_scmi_from_protocol_scmi_message_validation_ExpectAndReturn(protocol_id, service_id, payload, payload_size, message_id, payload_size_table, command_count, handler_table, cmock_retval) mod_scmi_from_protocol_scmi_message_validation_CMockExpectAndReturn(__LINE__, protocol_id, service_id, payload, payload_size, message_id, payload_size_table, command_count, handler_table, cmock_retval)
++void mod_scmi_from_protocol_scmi_message_validation_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, uint8_t protocol_id, fwk_id_t service_id, const uint32_t* payload, size_t payload_size, size_t message_id, const size_t* payload_size_table, size_t command_count, const handler_table_t* handler_table, int cmock_to_return);
++typedef int (* CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALLBACK)(uint8_t protocol_id, fwk_id_t service_id, const uint32_t* payload, size_t payload_size, size_t message_id, const size_t* payload_size_table, size_t command_count, const handler_table_t* handler_table, int cmock_num_calls);
++void mod_scmi_from_protocol_scmi_message_validation_AddCallback(CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALLBACK Callback);
++void mod_scmi_from_protocol_scmi_message_validation_Stub(CMOCK_mod_scmi_from_protocol_scmi_message_validation_CALLBACK Callback);
++#define mod_scmi_from_protocol_scmi_message_validation_StubWithCallback mod_scmi_from_protocol_scmi_message_validation_Stub
++#define mod_scmi_from_protocol_scmi_message_validation_ExpectWithArrayAndReturn(protocol_id, service_id, payload, payload_Depth, payload_size, message_id, payload_size_table, payload_size_table_Depth, command_count, handler_table, handler_table_Depth, cmock_retval) mod_scmi_from_protocol_scmi_message_validation_CMockExpectWithArrayAndReturn(__LINE__, protocol_id, service_id, payload, payload_Depth, payload_size, message_id, payload_size_table, payload_size_table_Depth, command_count, handler_table, handler_table_Depth, cmock_retval)
++void mod_scmi_from_protocol_scmi_message_validation_CMockExpectWithArrayAndReturn(UNITY_LINE_TYPE cmock_line, uint8_t protocol_id, fwk_id_t service_id, const uint32_t* payload, int payload_Depth, size_t payload_size, size_t message_id, const size_t* payload_size_table, int payload_size_table_Depth, size_t command_count, const handler_table_t* handler_table, int handler_table_Depth, int cmock_to_return);
++#define mod_scmi_from_protocol_scmi_message_validation_IgnoreArg_protocol_id() mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_protocol_id(__LINE__)
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_protocol_id(UNITY_LINE_TYPE cmock_line);
++#define mod_scmi_from_protocol_scmi_message_validation_IgnoreArg_service_id() mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_service_id(__LINE__)
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_service_id(UNITY_LINE_TYPE cmock_line);
++#define mod_scmi_from_protocol_scmi_message_validation_IgnoreArg_payload() mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_payload(__LINE__)
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_payload(UNITY_LINE_TYPE cmock_line);
++#define mod_scmi_from_protocol_scmi_message_validation_IgnoreArg_payload_size() mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_payload_size(__LINE__)
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_payload_size(UNITY_LINE_TYPE cmock_line);
++#define mod_scmi_from_protocol_scmi_message_validation_IgnoreArg_message_id() mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_message_id(__LINE__)
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_message_id(UNITY_LINE_TYPE cmock_line);
++#define mod_scmi_from_protocol_scmi_message_validation_IgnoreArg_payload_size_table() mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_payload_size_table(__LINE__)
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_payload_size_table(UNITY_LINE_TYPE cmock_line);
++#define mod_scmi_from_protocol_scmi_message_validation_IgnoreArg_command_count() mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_command_count(__LINE__)
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_command_count(UNITY_LINE_TYPE cmock_line);
++#define mod_scmi_from_protocol_scmi_message_validation_IgnoreArg_handler_table() mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_handler_table(__LINE__)
++void mod_scmi_from_protocol_scmi_message_validation_CMockIgnoreArg_handler_table(UNITY_LINE_TYPE cmock_line);
+ #define mod_scmi_from_protocol_notify_Ignore() mod_scmi_from_protocol_notify_CMockIgnore()
+ void mod_scmi_from_protocol_notify_CMockIgnore(void);
+ #define mod_scmi_from_protocol_notify_StopIgnore() mod_scmi_from_protocol_notify_CMockStopIgnore()
+diff --git a/module/scmi/test/mod_scmi_extra.h b/module/scmi/test/mod_scmi_extra.h
+index 86d543bc..4b4c6322 100644
+--- a/module/scmi/test/mod_scmi_extra.h
++++ b/module/scmi/test/mod_scmi_extra.h
+@@ -1,6 +1,6 @@
+ /*
+  * Arm SCP/MCP Software
+- * Copyright (c) 2022-2023, Arm Limited and Contributors. All rights reserved.
++ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -273,6 +273,35 @@ int mod_scmi_from_protocol_respond(
+     const void *payload,
+     size_t size);
+ 
++/*!
++ * \brief Validate received protocol message.
++ *
++ * \param protocol_id Protocol identifier.
++ * \param service_id Service identifier.
++ * \param payload Payload data to write, or NULL if a payload has already
++ *      been written.
++ * \param payload_size Payload size.
++ * \param message_id Message ID.
++ * \param payload_size_table Expected size of payload per message ID.
++ * \param command_count total number of commands per protocol.
++ * \param handler_table pointer to message handler.
++ *
++ * \retval ::FWK_SUCCESS Protocol frame is valid.
++ * \retval ::SCMI_INVALID_PARAMETERS Payload is NULL or protocol ID error.
++ * \retval ::SCMI_NOT_FOUND Message ID out of range.
++ * \retval ::SCMI_PROTOCOL_ERROR Payload size pegger than expected payload.
++ * \retval ::SCMI_DENIED Agent has no permission for the protocol.
++ */
++int mod_scmi_from_protocol_scmi_message_validation(
++    uint8_t protocol_id,
++    fwk_id_t service_id,
++    const uint32_t *payload,
++    size_t payload_size,
++    size_t message_id,
++    const size_t *payload_size_table,
++    size_t command_count,
++    const handler_table_t *handler_table);
++
+ /*!
+  * \brief Send a notification to the agent on behalf on an SCMI service.
+  *
+diff --git a/module/scmi/test/mod_scmi_unit_test.c b/module/scmi/test/mod_scmi_unit_test.c
+index 35d0e17c..e9325838 100644
+--- a/module/scmi/test/mod_scmi_unit_test.c
++++ b/module/scmi/test/mod_scmi_unit_test.c
+@@ -1,6 +1,6 @@
+ /*
+  * Arm SCP/MCP Software
+- * Copyright (c) 2022-2023, Arm Limited and Contributors. All rights reserved.
++ * Copyright (c) 2022-2025, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  */
+@@ -132,6 +132,7 @@ static const struct mod_scmi_from_protocol_api from_protocol_api = {
+     .get_max_payload_size = mod_scmi_from_protocol_get_max_payload_size,
+     .write_payload = mod_scmi_from_protocol_write_payload,
+     .respond = mod_scmi_from_protocol_respond,
++    .scmi_message_validation = mod_scmi_from_protocol_scmi_message_validation,
+     .notify = mod_scmi_from_protocol_notify,
+ };
+ 
+@@ -246,6 +247,16 @@ void test_send_to_message_handler(void)
+     ctx.scmi_protocol_id = 0x12;
+     protocol = &scmi_ctx.protocol_table[PROTOCOL_TABLE_BASE_PROTOCOL_IDX];
+ 
++    mod_scmi_from_protocol_scmi_message_validation_ExpectAndReturn(
++        MOD_SCMI_PROTOCOL_ID_BASE,
++        event.target_id,
++        &payload,
++        sizeof(payload),
++        ctx.scmi_message_id,
++        base_payload_size_table,
++        (unsigned int)MOD_SCMI_BASE_COMMAND_COUNT,
++        base_handler_table,
++        FWK_SUCCESS);
+     mod_scmi_from_protocol_respond_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+ 
+     test_mod_scmi_notification_message_handler_ExpectAnyArgsAndReturn(
+@@ -274,6 +285,16 @@ void test_send_to_notification_handler(void)
+     ctx.scmi_protocol_id = 0x12;
+     protocol = &scmi_ctx.protocol_table[PROTOCOL_TABLE_BASE_PROTOCOL_IDX];
+ 
++    mod_scmi_from_protocol_scmi_message_validation_ExpectAndReturn(
++        MOD_SCMI_PROTOCOL_ID_BASE,
++        event.target_id,
++        &payload,
++        sizeof(payload),
++        ctx.scmi_message_id,
++        base_payload_size_table,
++        (unsigned int)MOD_SCMI_BASE_COMMAND_COUNT,
++        base_handler_table,
++        FWK_SUCCESS);
+     mod_scmi_from_protocol_respond_ExpectAnyArgsAndReturn(FWK_SUCCESS);
+ 
+     test_mod_scmi_notification_message_handler_ExpectAnyArgsAndReturn(
+@@ -283,6 +304,91 @@ void test_send_to_notification_handler(void)
+     TEST_ASSERT_EQUAL(status, FWK_SUCCESS);
+ }
+ 
++void test_message_validation_invalid_params(void)
++{
++    int status;
++    fwk_id_t service_id =
++        FWK_ID_ELEMENT_INIT(FAKE_MODULE_ID, FAKE_SERVICE_IDX_OSPM);
++    struct scmi_base_discover_list_protocols_a2p payload = { 0 };
++    size_t payload_size = sizeof(struct scmi_base_discover_list_protocols_a2p);
++    size_t message_id = MOD_SCMI_BASE_DISCOVER_LIST_PROTOCOLS;
++
++    status = scmi_message_validation(
++        MOD_SCMI_MESSAGE_ID_ATTRIBUTE,
++        service_id,
++        (const uint32_t *)&payload,
++        payload_size,
++        message_id,
++        base_payload_size_table,
++        MOD_SCMI_BASE_COMMAND_COUNT,
++        base_handler_table);
++    TEST_ASSERT_EQUAL(status, SCMI_INVALID_PARAMETERS);
++}
++
++void test_message_validation_not_found(void)
++{
++    int status;
++    fwk_id_t service_id =
++        FWK_ID_ELEMENT_INIT(FAKE_MODULE_ID, FAKE_SERVICE_IDX_OSPM);
++    struct scmi_base_discover_list_protocols_a2p payload = { 0 };
++    size_t payload_size = sizeof(struct scmi_base_discover_list_protocols_a2p);
++    size_t message_id = MOD_SCMI_BASE_RESET_AGENT_CONFIG + 1;
++
++    status = scmi_message_validation(
++        MOD_SCMI_PROTOCOL_ID_BASE,
++        service_id,
++        (const uint32_t *)&payload,
++        payload_size,
++        message_id,
++        base_payload_size_table,
++        MOD_SCMI_BASE_COMMAND_COUNT,
++        base_handler_table);
++    TEST_ASSERT_EQUAL(status, SCMI_NOT_FOUND);
++}
++
++void test_message_validation_protocol_error(void)
++{
++    int status;
++    fwk_id_t service_id =
++        FWK_ID_ELEMENT_INIT(FAKE_MODULE_ID, FAKE_SERVICE_IDX_OSPM);
++    struct scmi_base_discover_list_protocols_a2p payload = { 0 };
++    size_t payload_size = 0;
++    size_t message_id = MOD_SCMI_BASE_DISCOVER_LIST_PROTOCOLS;
++
++    status = scmi_message_validation(
++        MOD_SCMI_PROTOCOL_ID_BASE,
++        service_id,
++        (const uint32_t *)&payload,
++        payload_size,
++        message_id,
++        base_payload_size_table,
++        MOD_SCMI_BASE_COMMAND_COUNT,
++        base_handler_table);
++    TEST_ASSERT_EQUAL(status, SCMI_PROTOCOL_ERROR);
++}
++
++void test_message_validation_success(void)
++{
++    int status;
++    fwk_id_t service_id =
++        FWK_ID_ELEMENT_INIT(FAKE_MODULE_ID, FAKE_SERVICE_IDX_OSPM);
++    struct scmi_base_discover_list_protocols_a2p payload = { 0 };
++    size_t payload_size = sizeof(struct scmi_base_discover_list_protocols_a2p);
++    size_t message_id = MOD_SCMI_BASE_DISCOVER_LIST_PROTOCOLS;
++
++    status = scmi_message_validation(
++        MOD_SCMI_PROTOCOL_ID_BASE,
++        service_id,
++        (const uint32_t *)&payload,
++        payload_size,
++        message_id,
++        base_payload_size_table,
++        MOD_SCMI_BASE_COMMAND_COUNT,
++        base_handler_table);
++
++    TEST_ASSERT_EQUAL(status, SCMI_SUCCESS);
++}
++
+ int scmi_test_main(void)
+ {
+     UNITY_BEGIN();
+@@ -292,6 +398,11 @@ int scmi_test_main(void)
+ 
+     RUN_TEST(test_send_to_message_handler);
+     RUN_TEST(test_send_to_notification_handler);
++
++    RUN_TEST(test_message_validation_invalid_params);
++    RUN_TEST(test_message_validation_not_found);
++    RUN_TEST(test_message_validation_protocol_error);
++    RUN_TEST(test_message_validation_success);
+     return UNITY_END();
+ }
+ 
+-- 
+2.43.0
+

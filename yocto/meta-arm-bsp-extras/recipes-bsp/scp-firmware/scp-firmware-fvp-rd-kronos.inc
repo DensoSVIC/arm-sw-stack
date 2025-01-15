@@ -1,5 +1,5 @@
 #
-# SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
+# SPDX-FileCopyrightText: <text>Copyright 2023-2025 Arm Limited and/or its
 # affiliates <open-source-office@arm.com></text>
 #
 # SPDX-License-Identifier: MIT
@@ -29,6 +29,14 @@ SRC_URI += "\
     file://0018-product-rdkronos-Remove-LCP.patch \
     file://0019-product-rdkronos-Reduce-the-number-of-used-RSS-SCP-M.patch \
     file://0020-transport-Handle-SCMI-payload-size-error.patch \
+    file://0021-framework-Add-fwk_str_is_in_boundry-function.patch \
+    file://0022-module-transport-Fix-possible-buffer-overrun-issue.patch \
+    file://0023-scmi_validation-validation-check.patch \
+    file://0024-module-scmi-Handle-unsupported-SCMI-message.patch \
+    file://0025-module-scmi-Handle-message-validation-in-Unit-Test.patch \
+    file://0026-module-scmi_system_power-Handle-unsupported-SCMI-mes.patch \
+    file://0027-module-scmi_sensor_req-Handle-unsupported-SCMI-messa.patch \
+    file://0028-morello-n1sdp-Handle-unsupported-SCMI-message.patch \
 "
 # cSpell:enable
 

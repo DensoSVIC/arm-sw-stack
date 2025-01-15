@@ -1,0 +1,201 @@
+From 104b38cad96d6f6567ecfaa43bcb474203755fb2 Mon Sep 17 00:00:00 2001
+From: khaled ali ahmed <khaled.aliahmed@arm.com>
+Date: Mon, 25 Mar 2024 09:52:05 +0000
+Subject: [PATCH] scmi_validation: validation check
+
+Add new scmi API scmi_frame_validation to validate scmi frames as early
+as possible and unify it for all scmi protocols.
+
+Change-Id: Id9706248938c78430f9cc135441f54ad00ab569d
+Signed-off-by: khaled ali ahmed <khaled.aliahmed@arm.com>
+Upstream-Status: Backport [https://gitlab.arm.com/firmware/SCP-firmware/-/commit/262d3f4456e0181dc6d0d967c38995bc8d1cd3b5]
+Signed-off-by: Debbie Martin <Debbie.Martin@arm.com>
+---
+ module/scmi/include/mod_scmi.h     | 36 +++++++++++++-
+ module/scmi/include/mod_scmi_std.h |  7 ++-
+ module/scmi/src/mod_scmi.c         | 78 ++++++++++++++++++++++++++++++
+ 3 files changed, 119 insertions(+), 2 deletions(-)
+
+diff --git a/module/scmi/include/mod_scmi.h b/module/scmi/include/mod_scmi.h
+index 5afe5935c..81b54fe2a 100644
+--- a/module/scmi/include/mod_scmi.h
++++ b/module/scmi/include/mod_scmi.h
+@@ -1,6 +1,6 @@
+ /*
+  * Arm SCP/MCP Software
+- * Copyright (c) 2015-2023, Arm Limited and Contributors. All rights reserved.
++ * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -44,6 +44,11 @@ enum mod_scmi_api_idx {
+     MOD_SCMI_API_IDX_COUNT,
+ };
+
++/*!
++ * \brief Message handler table perprotocol.
++ */
++typedef int (*handler_table_t)(fwk_id_t, const uint32_t *);
++
+ /*!
+  * \brief Entity role.
+  */
+@@ -647,6 +652,35 @@ struct mod_scmi_from_protocol_api {
+      */
+     int (*respond)(fwk_id_t service_id, const void *payload, size_t size);
+
++    /*!
++     * \brief Validate received protocol message.
++     *
++     * \param protocol_id Protocol identifier.
++     * \param service_id Service identifier.
++     * \param payload Payload data to write, or NULL if a payload has already
++     *      been written.
++     * \param payload_size Payload size.
++     * \param message_id Message ID.
++     * \param payload_size_table Expected size of payload per message ID
++     * \param command_count total number of commands per protocol
++     * \param handler_table pointer to message handler
++     *
++     * \retval ::FWK_SUCCESS Protocol frame is valid.
++     * \retval ::SCMI_INVALID_PARAMETERS Payload is NULL or protocol ID error.
++     * \retval ::SCMI_NOT_FOUND Message ID out of range
++     * \retval ::SCMI_PROTOCOL_ERROR Payload size pegger than expected payload.
++     * \retval ::SCMI_DENIED Agent has no permission for the protocol.
++     */
++    int (*scmi_message_validation)(
++        uint8_t protocol_id,
++        fwk_id_t service_id,
++        const uint32_t *payload,
++        size_t payload_size,
++        size_t message_id,
++        const size_t *payload_size_table,
++        size_t command_count,
++        const handler_table_t *handler_table);
++
+     /*!
+      * \brief Send a notification to the agent on behalf on an SCMI service.
+      *
+diff --git a/module/scmi/include/mod_scmi_std.h b/module/scmi/include/mod_scmi_std.h
+index d212c6877..5537fecfa 100644
+--- a/module/scmi/include/mod_scmi_std.h
++++ b/module/scmi/include/mod_scmi_std.h
+@@ -1,6 +1,6 @@
+ /*
+  * Arm SCP/MCP Software
+- * Copyright (c) 2020-2022, Arm Limited and Contributors. All rights reserved.
++ * Copyright (c) 2020-2024, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  *
+@@ -68,6 +68,11 @@ enum scmi_command_id {
+     MOD_SCMI_PROTOCOL_MESSAGE_ATTRIBUTES = 0x002
+ };
+
++/*!
++ * \brief SCMI message attribute index number.
++ */
++#define MOD_SCMI_MESSAGE_ID_ATTRIBUTE UINT32_C(0x03)
++
+ /*!
+  * \brief Definitions of the SCMI Protocol Identifiers and the command
+  *      identifiers for each protocol.
+diff --git a/module/scmi/src/mod_scmi.c b/module/scmi/src/mod_scmi.c
+index 604cef21a..151861726 100644
+--- a/module/scmi/src/mod_scmi.c
++++ b/module/scmi/src/mod_scmi.c
+@@ -364,6 +364,83 @@ static int respond(fwk_id_t service_id, const void *payload, size_t size)
+     return status;
+ }
+
++#ifdef BUILD_HAS_MOD_RESOURCE_PERMS
++static int scmi_permissions_handler(
++    fwk_id_t service_id,
++    uint32_t message_id,
++    uint32_t protocol_id)
++{
++    enum mod_res_perms_permissions perms;
++    unsigned int agent_id;
++    int status;
++
++    status = get_agent_id(service_id, &agent_id);
++    if (status != FWK_SUCCESS) {
++        return FWK_E_PARAM;
++    }
++
++    if (message_id < MOD_SCMI_MESSAGE_ID_ATTRIBUTE) {
++        perms = scmi_ctx.res_perms_api->agent_has_protocol_permission(
++            agent_id, protocol_id);
++
++        if (perms == MOD_RES_PERMS_ACCESS_DENIED) {
++            return FWK_E_ACCESS;
++        }
++    }
++
++    return FWK_SUCCESS;
++}
++#endif
++
++static int scmi_message_validation(
++    uint8_t protocol_id,
++    fwk_id_t service_id,
++    const uint32_t *payload,
++    size_t payload_size,
++    size_t message_id,
++    const size_t *payload_size_table,
++    size_t command_count,
++    const handler_table_t *handler_table)
++{
++#ifdef BUILD_HAS_MOD_RESOURCE_PERMS
++    int status;
++#endif
++
++    fwk_assert(payload != NULL);
++
++    if ((payload_size_table == NULL) ||
++        (protocol_id < MOD_SCMI_PROTOCOL_ID_BASE) ||
++        (protocol_id > MOD_SCMI_PROTOCOL_ID_VOLTAGE_DOMAIN)) {
++        return (int)SCMI_INVALID_PARAMETERS;
++    }
++
++    if (message_id >= command_count) {
++        return (int)SCMI_NOT_FOUND;
++    }
++
++    if (payload_size != payload_size_table[message_id]) {
++        /* Incorrect payload size or message is not supported */
++        return (int)SCMI_PROTOCOL_ERROR;
++    }
++
++    if (handler_table[message_id] == NULL) {
++        return (int)SCMI_NOT_SUPPORTED;
++    }
++
++#ifdef BUILD_HAS_MOD_RESOURCE_PERMS
++    status = scmi_permissions_handler(service_id, message_id, protocol_id);
++    if (status == FWK_E_PARAM) {
++        return (int)SCMI_INVALID_PARAMETERS;
++    }
++
++    if (status == FWK_E_ACCESS) {
++        return (int)SCMI_DENIED;
++    }
++#endif
++
++    return (int)SCMI_SUCCESS;
++}
++
+ static void scmi_notify(fwk_id_t id, int protocol_id, int message_id,
+     const void *payload, size_t size)
+ {
+@@ -499,6 +576,7 @@ static const struct mod_scmi_from_protocol_api scmi_from_protocol_api = {
+     .get_max_payload_size = get_max_payload_size,
+     .write_payload = write_payload,
+     .respond = respond,
++    .scmi_message_validation = scmi_message_validation,
+     .notify = scmi_notify,
+ };
+
+--
+2.25.1
+
