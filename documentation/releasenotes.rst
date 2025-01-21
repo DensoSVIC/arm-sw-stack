@@ -52,9 +52,11 @@ Resolved Issues
   integrated Google Analytics support.
 * Fixed incorrect ``if()`` conditional statements in RSE drivers.
 * Backported fixes for SCP vulnerabilities:
+
   * `CVE-2024-9413 <https://www.cve.org/CVERecord?id=CVE-2024-9413>`__.
   * `CVE-2024-11863 <https://www.cve.org/CVERecord?id=CVE-2024-11863>`__.
   * `CVE-2024-11864 <https://www.cve.org/CVERecord?id=CVE-2024-11864>`__.
+
 * Fixed MHUv3 communication documentation mistake in Secure Services section.
 * Fixed GIC GICR register region size and PSCI cpu_on function ID in Kronos
   device tree.
