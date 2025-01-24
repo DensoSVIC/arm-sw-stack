@@ -1,5 +1,5 @@
 ..
- # SPDX-FileCopyrightText: <text>Copyright 2023-2024 Arm Limited and/or its
+ # SPDX-FileCopyrightText: <text>Copyright 2023-2025 Arm Limited and/or its
  # affiliates <open-source-office@arm.com></text>
  #
  # SPDX-License-Identifier: MIT
@@ -2977,11 +2977,13 @@ messages are expected to validate this Use-Case:
 
   Running the ACS tests more than once will have them resume from where they
   last stopped. Additionally, consecutive runs are not supported by the ACS
-  logs; it will result in a failure after the end of the tests. Use the
-  following to re-start the entire test suite properly:
+  logs; it will result in a failure after the end of the tests.
+  To run the ACS tests again, use the following to refresh the firmware
+  images in flash and re-start the entire ACS test suite properly:
 
   .. code-block:: text
 
+    kas shell -c "bitbake firmware-fvp-rd-kronos -C deploy"
     kas shell -c "bitbake arm-systemready-ir-acs -C unpack"
 
 .. note::

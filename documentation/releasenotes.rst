@@ -26,6 +26,8 @@ Changed
   SCP RAMFW from reset.
 * Change diagram showing Yocto layer dependencies to show that 
   meta-efi-secure-boot depends on meta-perl.
+* Added command to refresh firmware image before re-running entire ACS
+  test suite.
 
 Bug fixes as listed in :ref:`releasenotes_resolvedissues`.
 
