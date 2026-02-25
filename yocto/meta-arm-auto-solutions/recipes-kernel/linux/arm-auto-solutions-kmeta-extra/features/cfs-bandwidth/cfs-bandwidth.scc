@@ -1,0 +1,3 @@
+define KFEATURE_DESCRIPTION "CFS Bandwidth Support"
+
+kconf non-hardware cfs-bandwidth.cfg

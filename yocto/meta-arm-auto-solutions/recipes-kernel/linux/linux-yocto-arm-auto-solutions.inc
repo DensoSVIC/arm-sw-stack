@@ -28,6 +28,7 @@ KERNEL_FEATURES:append = "\
     features/vswitch/vswitch.scc \
     features/xen/xen.scc \
     features/arm-pci-ahci/arm-pci-ahci.scc \
+    features/cfs-bandwidth/cfs-bandwidth.scc \
     "
 
 # Currently, FFA is not supported in Xen, disable it
