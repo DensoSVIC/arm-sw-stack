@@ -1,0 +1,40 @@
+
+config NET_IFACE1_ADDR
+	string "Address for interface 1"
+	default ""
+
+config NET_IFACE1_GW
+	string "Gateway for interface 1"
+	default ""
+
+config NET_IFACE1_NETMASK
+	string "Netmask for interface 1"
+	default ""
+
+config NET_IFACE1_VLAN
+	int "VLAN identifier for interface 1"
+	default 0
+	help
+	  When different from 0, it sets the VLAN id for the interface 1.
+	  Use 0 here if uncertain.
+
+config NET_IFACE2_ADDR
+	string "Address for interface 2"
+	default ""
+
+config NET_IFACE2_GW
+	string "Gateway for interface 2"
+	default ""
+
+config NET_IFACE2_NETMASK
+	string "Netmask for interface 2"
+	default ""
+
+config NET_IFACE2_VLAN
+	int "VLAN identifier for interface 2"
+	default 0
+	help
+	  When different from 0, it sets the VLAN id for the interface 2.
+	  Use 0 here if uncertain.
+
+source "Kconfig.zephyr"

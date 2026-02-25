@@ -22,6 +22,9 @@ OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
                     'virtualization', ':virtualization', '', d)}"
 
 OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
+                    'ebs', ':ebs', '', d)}"
+
+OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
                     'actuation', ':actuation', '', d)}"
 
 OVERRIDES:append = "${@bb.utils.contains('EXTRA_IMAGE_FEATURES', \
@@ -47,6 +50,7 @@ IMAGE_FEATURES[validitems] += " \
     hipc-validation \
     virtualization \
     domu \
+    ebs \
     actuation \
     si0-bridge-ethernet0 \
     cam \
@@ -61,6 +65,7 @@ IMAGE_FEATURES_CONFLICTS_baremetal = "virtualization domu"
 IMAGE_FEATURES_CONFLICTS_virtualization = "baremetal domu"
 IMAGE_FEATURES_CONFLICTS_domu = "baremetal virtualization"
 IMAGE_FEATURES_CONFLICTS_hipc-validation = "si0-bridge-ethernet0 actuation cam si-psa-storage-tests si-psa-crypto-tests"
+IMAGE_FEATURES_CONFLICTS_ebs = "si0-bridge-ethernet0 hipc-validation actuation cam si-psa-storage-tests si-psa-crypto-tests"
 IMAGE_FEATURES_CONFLICTS_actuation = "si0-bridge-ethernet0 hipc-validation cam si-psa-storage-tests si-psa-crypto-tests"
 IMAGE_FEATURES_CONFLICTS_si0-bridge-ethernet0 = "hipc-validation actuation cam si-psa-storage-tests si-psa-crypto-tests"
 IMAGE_FEATURES_CONFLICTS_cam = \
@@ -127,6 +132,7 @@ VIRTUAL-RUNTIME_cloud_service = "no-cloud"
 VIRTUAL-RUNTIME_security_provider:virtualization = "sw-provider"
 VIRTUAL-RUNTIME_security_provider:domu = "sw-provider"
 
+ZEPHYR_APP_SAFETY_ISLAND_CL0:ebs = "bridge"
 ZEPHYR_APP_SAFETY_ISLAND_CL0:actuation = "bridge"
 ZEPHYR_APP_SAFETY_ISLAND_CL0:si0-bridge-ethernet0 = "bridge"
 ZEPHYR_APP_SAFETY_ISLAND_CL0:hipc-validation = "zperf"
@@ -136,6 +142,7 @@ ZEPHYR_APP_SAFETY_ISLAND_CL1:cam = "cam"
 ZEPHYR_APP_SAFETY_ISLAND_CL1:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL1:si0-bridge-ethernet0 = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL1:si-psa-crypto-tests = "psa-crypto-tests"
+ZEPHYR_APP_SAFETY_ISLAND_CL2:ebs = "ebs"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:actuation = "actuation"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:hipc-validation = "zperf"
 ZEPHYR_APP_SAFETY_ISLAND_CL2:si0-bridge-ethernet0 = "zperf"

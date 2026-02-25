@@ -1,0 +1,7 @@
+---
+header:
+  version: 16
+
+local_conf_header:
+  ebs: |
+    EXTRA_IMAGE_FEATURES:append = " ebs"
