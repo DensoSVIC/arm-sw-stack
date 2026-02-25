@@ -35,7 +35,7 @@ DOMU1_NUMBER_OF_CPUS ?= "2"
 DOMU1_VCPU_PIN ?= "cpus = [\"1\", \"2\"]"
 DOMU1_MPAM ?= "mpam = [\"slc=0xc0\"]"
 DOMU1_SVE ?= "sve = \"${DOMU_SVE_SETTING}\""
-DOMU1_PCI_PASSTHROUGH ?= "pci = [\"${DOMU1_PCI_ID}\"]"
+DOMU1_PCI_PASSTHROUGH ?= ""
 DOMU1_EXTRA ?= "${DOMU1_BRIDGES}\\n${DOMU1_VCPU_PIN}\\n${DOMU1_MPAM}\\n${DOMU1_SVE}\\n${DOMU1_PCI_PASSTHROUGH}\\n"
 
 DOMU2_BRIDGES ?= "vif = ['script=vif-openvswitch,bridge=ovsbr0,vifname=domu2.ext0', 'script=vif-openvswitch,bridge=brsi0.100,vifname=domu2.ethsi0', 'script=vif-openvswitch,bridge=brsi1.200,vifname=domu2.ethsi1', 'script=vif-openvswitch,bridge=brsi2.300,vifname=domu2.ethsi2']"
