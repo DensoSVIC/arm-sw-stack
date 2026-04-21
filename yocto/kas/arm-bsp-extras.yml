@@ -52,6 +52,7 @@ local_conf_header:
     EXTRA_IMAGE_FEATURES:append = " debug-tweaks ssh-server-openssh"
     PACKAGECONFIG:pn-openssh = "systemd-sshd-service-mode"
     IMAGE_INSTALL:append = " rsync git python3-pip"
+    IMAGE_INSTALL:append = " telegraf"
     CORE_IMAGE_EXTRA_INSTALL:append = " ssh-pregen-hostkeys"
     LICENSE_FLAGS_ACCEPTED:append = " \
       ${@oe.utils.vartrue('ARM_FVP_EULA_ACCEPT', 'Arm-FVP-EULA', '', d)}"
