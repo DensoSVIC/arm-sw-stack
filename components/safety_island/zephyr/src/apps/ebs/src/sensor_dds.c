@@ -43,7 +43,7 @@ void sensor_dds_setup(void *, void *, void *)
     {
         k_event_wait(&SENSOR_DDS_SETUP_EVENT, SENSOR_DDS_NO_DDS, false, K_FOREVER);
 
-        printf("Starting R-Car DDS transport init\n");
+        printf("Starting Sensor DDS transport init\n");
 
         ucdr_init_buffer(&sensor_dds_ubOut, sensor_dds_ubOutBuffer, 256);
         ucdr_reset_buffer(&sensor_dds_ubOut);
@@ -51,30 +51,30 @@ void sensor_dds_setup(void *, void *, void *)
         
         if (!uxr_init_udp_transport(&sensor_dds_transport, UXR_IPv4, SENSOR_DDS_IP_ADDR, SENSOR_DDS_IP_PORT))
         {
-            printf("Attempted R-Car DDS transport init ...\n");
+            printf("Attempted Sensor DDS transport init ...\n");
             k_sleep(K_SECONDS(5));
             continue;
         } else {
-            printf("Finished R-Car DDS transport init\n");
+            printf("Finished Sensor DDS transport init\n");
         }
 
-        printf("Starting R-Car DDS session init\n");
+        printf("Starting Sensor DDS session init\n");
 
         uxr_init_session(&sensor_dds_session, &sensor_dds_transport.comm, 0xDECAFBAD);
 
         if (!uxr_create_session(&sensor_dds_session))
         {
-            printf("Attempted R-Car dds session init ...\n");
+            printf("Attempted Sensor dds session init ...\n");
             goto remove_session;
         } else {
-            printf("Finished R-Car dds session init\n");
+            printf("Finished Sensor dds session init\n");
         }
 
         uxr_set_topic_callback(&sensor_dds_session, sensor_on_msg, NULL);
 
         if (!uxr_ping_agent_session(&sensor_dds_session, 100, 1))
         {
-            printf("R-Car DDS Sorry, no agent available\n");
+            printf("Sensor DDS Sorry, no agent available\n");
             goto remove_session;
         }
 
@@ -154,7 +154,7 @@ void sensor_dds_setup(void *, void *, void *)
         delivery_control.max_samples        = UXR_MAX_SAMPLES_UNLIMITED;
         uxr_buffer_request_data(&sensor_dds_session, sensor_dds_out, sensor_dds_uxrid_reader, sensor_dds_in, &delivery_control);
         
-        printf("R-Car DDS Success! Agent is up within a session\n");
+        printf("Sensor DDS Success! Agent is up within a session\n");
 
         k_event_set(&SENSOR_DDS_SETUP_EVENT, SENSOR_DDS_CONNECTED);
         continue;
@@ -172,19 +172,18 @@ void sensor_dds_setup(void *, void *, void *)
 void sensor_dds_process(void *, void *, void *) 
 {
     int sensor_dds_fail_count = 0;
-    bool sensor_dds_connected;
 
     while(1)
     {
         k_event_wait(&SENSOR_DDS_SETUP_EVENT, SENSOR_DDS_CONNECTED, false, K_FOREVER);
 
-        sensor_dds_connected = uxr_run_session_timeout(&sensor_dds_session, 20);
+        bool sensor_dds_connected = uxr_ping_agent_session(&sensor_dds_session, 20, 5);
 
         if (!sensor_dds_connected)
         {
             sensor_dds_fail_count++;
 
-            if (sensor_dds_fail_count >= 10)
+            if (sensor_dds_fail_count >= 2)
             {
                 k_sched_lock();
                 uxr_delete_session(&sensor_dds_session);
@@ -194,7 +193,7 @@ void sensor_dds_process(void *, void *, void *)
 
                 k_sched_unlock();
 
-                printf("R-Car Session Disconnected\n");
+                printf("Sensor Session Disconnected\n");
             }
         } else {
             sensor_dds_fail_count = 0;

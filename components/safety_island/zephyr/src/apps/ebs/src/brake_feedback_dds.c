@@ -210,7 +210,7 @@ void brake_dds_check(void *, void *, void *)
             brake_fail_count = 0;
         }
 
-        k_sleep(K_MSEC(250));
+        k_yield();
     }
 }
 
