@@ -24,6 +24,7 @@ SRC_URI_ZEPHYR_EXTRA_PATCHES ?= "\
     file://zephyr/0010-arch-arm-cortex-r-Add-compiler-tuning-for-Cortex-R82.patch;patchdir=zephyr \
     file://zephyr/0011-net-zperf-Add-TCP-and-UDP-receivers-stack-size-Kconf.patch;patchdir=zephyr \
     file://zephyr/0012-kernel-spinlock-Ticket-spinlocks.patch;patchdir=zephyr \
+    file://zephyr/0013-net-iface-Introduce-TX-mutex-locking.patch;patchdir=zephyr \
     "
 # /* cSpell:enable */
 
