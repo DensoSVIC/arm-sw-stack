@@ -1,0 +1,128 @@
+From 61c392c5b13fbc448ca0e4c047848c72c3096a07 Mon Sep 17 00:00:00 2001
+From: Robert Lubos <robert.lubos@nordicsemi.no>
+Date: Fri, 10 Nov 2023 10:23:34 +0100
+Subject: [PATCH] net: iface: Introduce TX mutex locking
+
+A recent iface lock removal in ed17320c3d2e43c76b09dc359d3b371e9d23732d
+exposed issues with concurrent access on TX to drivers that are not
+re-entrant.
+
+Reverting that commit does not really solve the problem, as it would
+still exist if multiple Traffic Class queues are in use.
+
+Therefore, introduce a separate mutex for TX data path, protecting the
+L2/driver from concurrent transfers from several threads.
+
+Signed-off-by: Robert Lubos <robert.lubos@nordicsemi.no>
+Upstream-Status: Backport [https://github.com/zephyrproject-rtos/zephyr/commit/61c392c5b13fbc448ca0e4c047848c72c3096a07]
+---
+ include/zephyr/net/net_if.h  | 29 +++++++++++++++++++++++++++++
+ subsys/net/ip/net_if.c       |  3 +++
+ subsys/net/l2/ethernet/arp.c |  4 +++-
+ 3 files changed, 35 insertions(+), 1 deletion(-)
+
+diff --git a/include/zephyr/net/net_if.h b/include/zephyr/net/net_if.h
+index 82a1447b4f9..2282c3327ef 100644
+--- a/include/zephyr/net/net_if.h
++++ b/include/zephyr/net/net_if.h
+@@ -212,6 +212,9 @@ enum net_if_flag {
+ 	/** IPv6 Multicast Listener Discovery disabled. */
+ 	NET_IF_IPV6_NO_MLD,
+ 
++	/** Mutex locking on TX data path disabled on the interface. */
++	NET_IF_NO_TX_LOCK,
++
+ /** @cond INTERNAL_HIDDEN */
+ 	/* Total number of flags - must be at the end of the enum */
+ 	NET_IF_NUM_FLAGS
+@@ -613,6 +616,7 @@ struct net_if {
+ #endif
+ 
+ 	struct k_mutex lock;
++	struct k_mutex tx_lock;
+ };
+ 
+ static inline void net_if_lock(struct net_if *iface)
+@@ -629,6 +633,31 @@ static inline void net_if_unlock(struct net_if *iface)
+ 	k_mutex_unlock(&iface->lock);
+ }
+ 
++static inline bool net_if_flag_is_set(struct net_if *iface,
++				      enum net_if_flag value);
++
++static inline void net_if_tx_lock(struct net_if *iface)
++{
++	NET_ASSERT(iface);
++
++	if (net_if_flag_is_set(iface, NET_IF_NO_TX_LOCK)) {
++		return;
++	}
++
++	(void)k_mutex_lock(&iface->tx_lock, K_FOREVER);
++}
++
++static inline void net_if_tx_unlock(struct net_if *iface)
++{
++	NET_ASSERT(iface);
++
++	if (net_if_flag_is_set(iface, NET_IF_NO_TX_LOCK)) {
++		return;
++	}
++
++	k_mutex_unlock(&iface->tx_lock);
++}
++
+ /**
+  * @brief Set a value in network interface flags
+  *
+diff --git a/subsys/net/ip/net_if.c b/subsys/net/ip/net_if.c
+index 1a84d07e926..80ccbea32c7 100644
+--- a/subsys/net/ip/net_if.c
++++ b/subsys/net/ip/net_if.c
+@@ -254,7 +254,9 @@ static bool net_if_tx(struct net_if *iface, struct net_pkt *pkt)
+ 			}
+ 		}
+ 
++		net_if_tx_lock(iface);
+ 		status = net_if_l2(iface)->send(iface, pkt);
++		net_if_tx_unlock(iface);
+ 
+ 		if (IS_ENABLED(CONFIG_NET_PKT_TXTIME_STATS)) {
+ 			uint32_t end_tick = k_cycle_get_32();
+@@ -426,6 +428,7 @@ static inline void init_iface(struct net_if *iface)
+ #endif
+ 
+ 	k_mutex_init(&iface->lock);
++	k_mutex_init(&iface->tx_lock);
+ 
+ 	api->init(iface);
+ }
+diff --git a/subsys/net/l2/ethernet/arp.c b/subsys/net/l2/ethernet/arp.c
+index 35a2ec63a64..ab5291dc7b7 100644
+--- a/subsys/net/l2/ethernet/arp.c
++++ b/subsys/net/l2/ethernet/arp.c
+@@ -467,7 +467,7 @@ static void arp_update(struct net_if *iface,
+ 	struct net_pkt *pkt;
+ 
+ 	NET_DBG("src %s", net_sprint_ipv4_addr(src));
+-
++	net_if_tx_lock(iface);
+ 	k_mutex_lock(&arp_mutex, K_FOREVER);
+ 
+ 	entry = arp_entry_get_pending(iface, src);
+@@ -505,6 +505,7 @@ static void arp_update(struct net_if *iface,
+ 		}
+ 
+ 		k_mutex_unlock(&arp_mutex);
++		net_if_tx_unlock(iface);
+ 		return;
+ 	}
+ 
+@@ -541,6 +542,7 @@ static void arp_update(struct net_if *iface,
+ 	}
+ 
+ 	k_mutex_unlock(&arp_mutex);
++	net_if_tx_unlock(iface);
+ }
+ 
+ static inline struct net_pkt *arp_prepare_reply(struct net_if *iface,

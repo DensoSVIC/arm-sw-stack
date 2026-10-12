@@ -1,0 +1,39 @@
+From ed17320c3d2e43c76b09dc359d3b371e9d23732d Mon Sep 17 00:00:00 2001
+From: Chaitanya Tata <Chaitanya.Tata@nordicsemi.no>
+Date: Wed, 8 Nov 2023 20:23:37 +0530
+Subject: [PATCH] net: Remove unnecessary lock
+
+The main action in this function it queueing the packet for
+transmission which doesn't need a lock and interface flags use atomic
+operations.
+
+So, remove the unnecessary lock.
+
+Signed-off-by: Chaitanya Tata <Chaitanya.Tata@nordicsemi.no>
+Upstream-Status: Backport [https://github.com/zephyrproject-rtos/zephyr/commit/ed17320c3d2e43c76b09dc359d3b371e9d23732d]
+---
+ subsys/net/ip/net_if.c | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/subsys/net/ip/net_if.c b/subsys/net/ip/net_if.c
+index 1a84d07..987ea51 100644
+--- a/subsys/net/ip/net_if.c
++++ b/subsys/net/ip/net_if.c
+@@ -437,8 +437,6 @@ enum net_verdict net_if_send_data(struct net_if *iface, struct net_pkt *pkt)
+ 	enum net_verdict verdict = NET_OK;
+ 	int status = -EIO;
+ 
+-	net_if_lock(iface);
+-
+ 	if (!net_if_flag_is_set(iface, NET_IF_LOWER_UP) ||
+ 	    net_if_flag_is_set(iface, NET_IF_SUSPENDED)) {
+ 		/* Drop packet if interface is not up */
+@@ -521,8 +519,6 @@ done:
+ 		net_if_queue_tx(iface, pkt);
+ 	}
+ 
+-	net_if_unlock(iface);
+-
+ 	return verdict;
+ }
+ 
