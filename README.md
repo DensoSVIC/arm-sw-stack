@@ -52,3 +52,17 @@ Arm is a registered trademark of Arm Limited (or its subsidiaries or affiliates)
 [2]: https://www.arm.com/architecture/system-architectures/systemready-certification-program/ir
 [3]: https://gitlab.com/soafee/ewaol/meta-ewaol/-/tree/ewaol-2.0.0
 [4]: https://www.sphinx-doc.org/
+
+# Usage
+
+Bitbake compatibility with AppArmor Security Restrictions. Users on Ubuntu 24.04 host will need to disable AppArmor restrictions for unprivileged user namespace to effectively run bitbake. This can be done by executing the following as before starting the build process:
+
+```
+echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+```
+
+To begin the build, use kas:
+
+```
+kas menu
+```
